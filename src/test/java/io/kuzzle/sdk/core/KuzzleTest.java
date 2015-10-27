@@ -61,8 +61,8 @@ public class KuzzleTest {
     @Test
     public void testDataCollectionFactory() throws URISyntaxException, IOException, JSONException {
         kuzzle = new Kuzzle("http://localhost:7512");
-        assertEquals(kuzzle.dataCollectionFactory("test").get("test", null).getCollection(), "test");
-        assertEquals(kuzzle.dataCollectionFactory("test2").get("test2", null).getCollection(), "test2");
+        assertEquals(kuzzle.dataCollectionFactory("test").fetch("test", null).getCollection(), "test");
+        assertEquals(kuzzle.dataCollectionFactory("test2").fetch("test2", null).getCollection(), "test2");
     }
 
     @Test

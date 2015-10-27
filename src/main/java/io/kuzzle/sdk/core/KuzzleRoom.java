@@ -153,10 +153,9 @@ public class KuzzleRoom {
         this.kuzzle.query(this.collection, "subscribe", "on", data, new ResponseListener() {
             @Override
             public void onSuccess(JSONObject args) throws Exception {
-                JSONObject result = (JSONObject) ((JSONObject) args).get("result");
 
-                KuzzleRoom.this.roomId = result.get("roomId").toString();
-                KuzzleRoom.this.subscriptionId = result.get("roomName").toString();
+                KuzzleRoom.this.roomId = args.get("roomId").toString();
+                KuzzleRoom.this.subscriptionId = args.get("roomName").toString();
                 KuzzleRoom.this.subscriptionTimestamp = new Date().toString();
                 KuzzleRoom.this.kuzzle.getSocket().on(KuzzleRoom.this.roomId, new Emitter.Listener() {
                     @Override

@@ -49,17 +49,13 @@ public class KuzzleDataCollectionTest {
         KuzzleDataCollection collection = new KuzzleDataCollection(k, "test");
         JSONObject filters = new JSONObject();
         Options options = new Options();
-        options.setPersist(false);
-        options.setUpdateIfExist(false);
 
         collection.create(filters);
-        collection.create(filters, options);
         collection.create(new JSONObject());
         options.setPersist(true);
         options.setUpdateIfExist(true);
-        collection.create(filters, options);
-        verify(k, times(3)).query(eq("test"), eq("write"), eq("create"), any(JSONObject.class));
-        verify(k, times(1)).query(eq("test"), eq("write"), eq("createOrUpdate"), any(JSONObject.class));
+        collection.create(filters);
+        verify(k, times(3)).query(eq("test"), eq("write"), eq("create"), any(JSONObject.class), any(ResponseListener.class));
     }
 
     @Test
@@ -70,15 +66,6 @@ public class KuzzleDataCollectionTest {
         collection.delete("42");
         collection.delete(new JSONObject());
         verify(k, times(2)).query(eq("test"), eq("write"), eq("delete"), any(JSONObject.class));
-    }
-
-    @Test
-    public void testGet() throws IOException, JSONException {
-        Kuzzle k = mock(Kuzzle.class);
-
-        KuzzleDataCollection collection = new KuzzleDataCollection(k, "test");
-        collection.get("42", null);
-        verify(k, times(1)).query(eq("test"), eq("read"), eq("get"), any(JSONObject.class), any(ResponseListener.class));
     }
 
     @Test

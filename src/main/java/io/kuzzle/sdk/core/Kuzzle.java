@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import io.kuzzle.sdk.exceptions.KuzzleException;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.enums.EventType;
 import io.kuzzle.sdk.listeners.IEventListener;
@@ -64,7 +63,7 @@ public class Kuzzle {
                     ctx.setState(States.CONNECTED);
                     if (connectionCallback != null) {
                         try {
-                            connectionCallback.onSuccess((JSONObject)args[0]);
+                            connectionCallback.onSuccess(args.length != 0 ? (JSONObject)args[0] : null);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -201,7 +200,7 @@ public class Kuzzle {
      */
     public Kuzzle query(final String collection, final String controller, final String action, final JSONObject query, final ResponseListener cb) throws JSONException, IOException {
         this.isValid();
-
+        //Log.e("kuzzle", "Query to collection " + collection + " ; controller " + controller + " ; action " + action);
         final JSONObject object = query;
         object.put("requestId", UUID.randomUUID().toString())
                 .put("action", action);
@@ -218,9 +217,9 @@ public class Kuzzle {
                     if (cb != null) {
                         try {
                             if (!((JSONObject)args[0]).isNull("error"))
-                                cb.onError((JSONObject)((JSONObject) args[0]).get("error"));
+                                cb.onError((JSONObject)((JSONObject)args[0]).get("error"));
                             else
-                                cb.onSuccess((JSONObject)((JSONObject) args[0]).get("result"));
+                                cb.onSuccess((JSONObject) ((JSONObject) args[0]).get("result"));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

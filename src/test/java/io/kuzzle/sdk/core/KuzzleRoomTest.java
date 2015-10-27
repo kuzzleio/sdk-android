@@ -86,13 +86,11 @@ public class KuzzleRoomTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 //Mock response
-                JSONObject responseObject = new JSONObject();
                 JSONObject result = new JSONObject();
                 result.put("roomId", "42");
                 result.put("roomName", "room");
-                responseObject.put("result", result);
                 //Call callback with response
-                ((ResponseListener)invocation.getArguments()[4]).onSuccess(responseObject);
+                ((ResponseListener)invocation.getArguments()[4]).onSuccess(result);
                 return null;
             }
         }).when(k).query(eq("test"), eq("subscribe"), eq("on"), any(JSONObject.class), any(ResponseListener.class));
