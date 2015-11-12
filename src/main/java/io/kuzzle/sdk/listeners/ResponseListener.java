@@ -3,9 +3,22 @@ package io.kuzzle.sdk.listeners;
 import org.json.JSONObject;
 
 /**
- * Created by kblondel on 13/10/15.
+ * The interface Response listener.
  */
 public interface ResponseListener {
-    void onSuccess(JSONObject object) throws Exception;
-    void onError(JSONObject error) throws Exception;
+  /**
+   * On success.
+   *
+   * @param object the object
+   * @throws Exception the exception
+   */
+  void onSuccess(JSONObject object) throws Exception;
+
+  /**
+   * On error.
+   *
+   * @param error the error
+   * @throws Exception the exception
+   */
+  void onError(JSONObject error) throws Exception;
 }

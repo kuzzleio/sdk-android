@@ -1,26 +1,46 @@
 package io.kuzzle.sdk.util;
 
 /**
- * Created by kblondel on 15/10/15.
+ * The type Options.
  */
 public class Options {
 
-    private boolean persist = false;
-    private boolean updateIfExist = false;
+  private boolean persist = false;
+  private boolean updateIfExist = false;
 
-    public boolean isPersist() {
-        return persist;
-    }
+  /**
+   * Is persist boolean.
+   *
+   * @return the boolean
+   */
+  public boolean isPersist() {
+    return persist;
+  }
 
-    public void setPersist(boolean persist) {
-        this.persist = persist;
-    }
+  /**
+   * Sets persist.
+   *
+   * @param persist the persist
+   */
+  public void setPersist(boolean persist) {
+    this.persist = persist;
+  }
 
-    public boolean isUpdateIfExist() {
-        return updateIfExist;
-    }
+  /**
+   * Is update if exist boolean.
+   *
+   * @return the boolean
+   */
+  public boolean isUpdateIfExist() {
+    return updateIfExist;
+  }
 
-    public void setUpdateIfExist(boolean updateIfExist) {
-        this.updateIfExist = updateIfExist;
-    }
+  /**
+   * Sets update if exist.
+   *
+   * @param updateIfExist the update if exist
+   */
+  public void setUpdateIfExist(boolean updateIfExist) {
+    this.updateIfExist = updateIfExist;
+  }
 }

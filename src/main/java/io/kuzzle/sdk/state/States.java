@@ -1,10 +1,19 @@
 package io.kuzzle.sdk.state;
 
 /**
- * Created by kblondel on 14/10/15.
+ * The enum States.
  */
 public enum States {
-    DISCONNECTED,
-    CONNECTED,
-    POLLING
+  /**
+   * Disconnected states.
+   */
+  DISCONNECTED,
+  /**
+   * Connected states.
+   */
+  CONNECTED,
+  /**
+   * Polling states.
+   */
+  POLLING
 }

@@ -1,12 +1,17 @@
 package io.kuzzle.sdk.exceptions;
 
 /**
- * Created by kblondel on 19/10/15.
+ * The type Kuzzle exception.
  */
 public class KuzzleException extends Exception {
 
-    public KuzzleException(String msg) {
-        super(msg);
-    }
+  /**
+   * Instantiates a new Kuzzle exception.
+   *
+   * @param msg the msg
+   */
+  public KuzzleException(String msg) {
+    super(msg);
+  }
 
 }

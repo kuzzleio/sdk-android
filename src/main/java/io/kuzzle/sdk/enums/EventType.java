@@ -1,8 +1,17 @@
 package io.kuzzle.sdk.enums;
 
 /**
- * Created by kblondel on 13/10/15.
+ * The enum Event type.
  */
 public enum EventType {
-    SUBSCRIBED, UNSUBSCRIBED, DISCONNECTED;
+  /**
+   * Subscribed event type.
+   */
+  SUBSCRIBED, /**
+   * Unsubscribed event type.
+   */
+  UNSUBSCRIBED, /**
+   * Disconnected event type.
+   */
+  DISCONNECTED
 }

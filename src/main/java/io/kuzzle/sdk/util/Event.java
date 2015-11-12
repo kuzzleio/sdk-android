@@ -8,27 +8,43 @@ import io.kuzzle.sdk.enums.EventType;
 import io.kuzzle.sdk.listeners.IEventListener;
 
 /**
- * Created by kblondel on 13/10/15.
+ * The type Event.
  */
 public abstract class Event implements IEventListener {
 
-    private UUID    id;
-    private EventType   type;
+  private UUID id;
+  private EventType type;
 
-    private Event() {}
+  private Event() {
+  }
 
-    public Event(EventType type) {
-        this.id = UUID.randomUUID();
-        this.type = type;
-    }
+  /**
+   * Instantiates a new Event.
+   *
+   * @param type the type
+   */
+  public Event(EventType type) {
+    this.id = UUID.randomUUID();
+    this.type = type;
+  }
 
-    public abstract void trigger(String subscriptionId, JSONObject result);
+  public abstract void trigger(String subscriptionId, JSONObject result);
 
-    public UUID getId() {
-        return id;
-    }
+  /**
+   * Gets id.
+   *
+   * @return the id
+   */
+  public UUID getId() {
+    return id;
+  }
 
-    public EventType    getType() {
-        return this.type;
-    }
+  /**
+   * Gets type.
+   *
+   * @return the type
+   */
+  public EventType getType() {
+    return this.type;
+  }
 }

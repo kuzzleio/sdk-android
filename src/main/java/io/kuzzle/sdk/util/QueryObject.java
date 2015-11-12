@@ -5,35 +5,65 @@ import org.json.JSONObject;
 import io.kuzzle.sdk.listeners.ResponseListener;
 
 /**
- * Created by kblondel on 14/10/15.
+ * The type Query object.
  */
 public class QueryObject {
 
-    private JSONObject  object;
-    private String      controller;
-    private ResponseListener cb;
+  private JSONObject object;
+  private String controller;
+  private ResponseListener cb;
 
-    public JSONObject getObject() {
-        return object;
-    }
+  /**
+   * Gets object.
+   *
+   * @return the object
+   */
+  public JSONObject getObject() {
+    return object;
+  }
 
-    public void setObject(JSONObject object) {
-        this.object = object;
-    }
+  /**
+   * Sets object.
+   *
+   * @param object the object
+   */
+  public void setObject(JSONObject object) {
+    this.object = object;
+  }
 
-    public String getController() {
-        return controller;
-    }
+  /**
+   * Gets controller.
+   *
+   * @return the controller
+   */
+  public String getController() {
+    return controller;
+  }
 
-    public void setController(String controller) {
-        this.controller = controller;
-    }
+  /**
+   * Sets controller.
+   *
+   * @param controller the controller
+   */
+  public void setController(String controller) {
+    this.controller = controller;
+  }
 
-    public ResponseListener getCb() {
-        return cb;
-    }
+  /**
+   * Gets cb.
+   *
+   * @return the cb
+   */
+  public ResponseListener getCb() {
+    return cb;
+  }
 
-    public void setCb(ResponseListener cb) {
-        this.cb = cb;
-    }
+  /**
+   * Sets cb.
+   *
+   * @param cb the cb
+   */
+  public void setCb(ResponseListener cb) {
+    this.cb = cb;
+  }
 }

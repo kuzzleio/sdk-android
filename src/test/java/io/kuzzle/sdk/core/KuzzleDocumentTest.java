@@ -3,7 +3,6 @@ package io.kuzzle.sdk.core;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -28,110 +27,101 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
- * Created by kblondel on 20/10/15.
- */
 public class KuzzleDocumentTest {
 
-    private Kuzzle  k;
-    private KuzzleDocument  doc;
+  private Kuzzle k;
+  private KuzzleDocument doc;
 
-    @Before
-    public void setUp() {
-        k = mock(Kuzzle.class);
-        doc = new KuzzleDocument(new KuzzleDataCollection(k, "test"));
-    }
+  @Before
+  public void setUp() {
+    k = mock(Kuzzle.class);
+    doc = new KuzzleDocument(new KuzzleDataCollection(k, "test"));
+  }
 
-    @Test
-    public void testSaveError() throws KuzzleException, JSONException, IOException {
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                JSONObject response = new JSONObject();
-                response.put("error", "foo");
-                //Call callback with error response
-                ((ResponseListener) invocation.getArguments()[4]).onError(response);
-                return null;
-            }
-        }).when(k).query(eq("test"), eq("write"), any(String.class), any(JSONObject.class), any(ResponseListener.class));
+  @Test
+  public void testSaveError() throws KuzzleException, JSONException, IOException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        JSONObject response = new JSONObject();
+        response.put("error", "foo");
+        //Call callback with error response
+        ((ResponseListener) invocation.getArguments()[4]).onError(response);
+        return null;
+      }
+    }).when(k).query(eq("test"), eq("write"), any(String.class), any(JSONObject.class), any(ResponseListener.class));
 
-        doc.save(false);
-        verify(k, times(1)).query(eq("test"), eq("write"), eq("createOrUpdate"), any(JSONObject.class), any(ResponseListener.class));
-    }
+    doc.save(false);
+    verify(k, times(1)).query(eq("test"), eq("write"), eq("createOrUpdate"), any(JSONObject.class), any(ResponseListener.class));
+  }
 
-    @Test
-    public void testSaveSuccess() throws KuzzleException, JSONException, IOException {
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                JSONObject response = new JSONObject();
-                response.put("_id", "id-42");
-                response.put("result", response);
-                ((ResponseListener) invocation.getArguments()[4]).onSuccess(response);
-                return null;
-            }
-        }).when(k).query(eq("test"), eq("write"), any(String.class), any(JSONObject.class), any(ResponseListener.class));
+  @Test
+  public void testSaveSuccess() throws KuzzleException, JSONException, IOException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        JSONObject response = new JSONObject();
+        response.put("_id", "id-42");
+        response.put("result", response);
+        ((ResponseListener) invocation.getArguments()[4]).onSuccess(response);
+        return null;
+      }
+    }).when(k).query(eq("test"), eq("write"), any(String.class), any(JSONObject.class), any(ResponseListener.class));
 
-        doc.save(false);
-        verify(k, times(1)).query(eq("test"), eq("write"), eq("createOrUpdate"), any(JSONObject.class), any(ResponseListener.class));
-    }
+    doc.save(false);
+    verify(k, times(1)).query(eq("test"), eq("write"), eq("createOrUpdate"), any(JSONObject.class), any(ResponseListener.class));
+  }
 
-    @Test
-    public void testDelete() throws URISyntaxException, IOException, JSONException, KuzzleException {
-        KuzzleDocument spy = spy(doc);
-        // Mocking getId()
-        when(spy.getId()).thenReturn("id-42");
-        spy.save(false);
-        doc.delete();
-        spy.delete();
-        verify(k, times(1)).query(eq("test"), eq("write"), any(String.class), any(JSONObject.class), any(ResponseListener.class));
-    }
+  @Test
+  public void testDelete() throws URISyntaxException, IOException, JSONException, KuzzleException {
+    KuzzleDocument spy = spy(doc);
+    // Mocking getId()
+    when(spy.getId()).thenReturn("id-42");
+    spy.save(false);
+    doc.delete();
+    spy.delete();
+    verify(k, times(1)).query(eq("test"), eq("write"), any(String.class), any(JSONObject.class), any(ResponseListener.class));
+  }
 
-    @Test
-    public void testRefresh() throws IOException, JSONException {
-        KuzzleDocument spy = spy(doc);
-        doc.refresh(null);
-        verify(k, never()).query(eq("test"), eq("read"), eq("get"), any(JSONObject.class));
-        when(spy.getId()).thenReturn("id-42");
+  @Test
+  public void testRefresh() throws IOException, JSONException {
+    KuzzleDocument spy = spy(doc);
+    doc.refresh(null);
+    verify(k, never()).query(eq("test"), eq("read"), eq("get"), any(JSONObject.class));
+    when(spy.getId()).thenReturn("id-42");
 
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                JSONObject response = new JSONObject();
-                response.put("result", "foo");
-                ((ResponseListener) invocation.getArguments()[4]).onSuccess(response);
-                return null;
-            }
-        }).when(k).query(eq("test"), eq("read"), eq("get"), any(JSONObject.class), any(ResponseListener.class));
-        spy.refresh(null);
-        verify(k, times(1)).query(eq("test"), eq("read"), eq("get"), any(JSONObject.class), any(ResponseListener.class));
-        assertNotNull(spy.getContent());
-    }
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        JSONObject response = new JSONObject();
+        response.put("result", "foo");
+        ((ResponseListener) invocation.getArguments()[4]).onSuccess(response);
+        return null;
+      }
+    }).when(k).query(eq("test"), eq("read"), eq("get"), any(JSONObject.class), any(ResponseListener.class));
+    spy.refresh(null);
+    verify(k, times(1)).query(eq("test"), eq("read"), eq("get"), any(JSONObject.class), any(ResponseListener.class));
+    assertNotNull(spy.getContent());
+  }
 
-    @Test
-    public void testSend() throws IOException, JSONException {
-        doc.send();
-        verify(k, times(1)).query(eq("test"), eq("write"), eq("create"), any(JSONObject.class));
-    }
+  @Test
+  public void testSend() throws IOException, JSONException {
+    doc.send();
+    verify(k, times(1)).query(eq("test"), eq("write"), eq("create"), any(JSONObject.class));
+  }
 
-    @Test
-    public void testSetContent() throws JSONException {
-        assertNull(doc.getContent());
-        JSONObject data = new JSONObject();
-        data.put("test", "some content");
-        doc.setContent(data, false);
-        assertEquals(doc.getContent().get("test"), "some content");
-        data = new JSONObject();
-        data.put("test 2", "some other content");
-        doc.setContent(data, true);
-        assertEquals(doc.getContent().get("test 2"), "some other content");
-        assertTrue(doc.getContent().isNull("test"));
-    }
-
-    @Ignore("todo to be implemented")
-    @Test
-    public void testSubscribe() {
-
-    }
+  @Test
+  public void testSetContent() throws JSONException {
+    assertNull(doc.getContent());
+    JSONObject data = new JSONObject();
+    data.put("test", "some content");
+    doc.setContent(data, false);
+    assertEquals(doc.getContent().get("test"), "some content");
+    data = new JSONObject();
+    data.put("test 2", "some other content");
+    doc.setContent(data, true);
+    assertEquals(doc.getContent().get("test 2"), "some other content");
+    assertTrue(doc.getContent().isNull("test"));
+  }
 
 }
