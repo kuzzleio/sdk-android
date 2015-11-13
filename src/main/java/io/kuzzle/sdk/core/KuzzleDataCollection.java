@@ -101,18 +101,15 @@ public class KuzzleDataCollection {
    * @throws IOException   the io exception
    */
   public KuzzleDataCollection createDocument(KuzzleDocument document, Options options) throws JSONException, IOException {
-    JSONObject data = new JSONObject();
-    this.kuzzle.addHeaders(data, this.getHeaders());
     if (options != null && options.isPersist())
-      data.put("persist", true);
+      document.put("persist", true);
     else
-      data.put("persist", false);
-    // TODO: manage KuzzleDocument document argument
+      document.put("persist", false);
 
     if (options != null && options.isUpdateIfExist())
-      this.kuzzle.query(this.collection, "write", "createOrUpdate", data);
+      this.kuzzle.query(this.collection, "write", "createOrUpdate", document);
     else
-      this.kuzzle.query(this.collection, "write", "create", data);
+      this.kuzzle.query(this.collection, "write", "create", document);
     return this;
   }
 

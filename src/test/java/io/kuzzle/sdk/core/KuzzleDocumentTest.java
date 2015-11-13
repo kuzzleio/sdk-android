@@ -33,8 +33,9 @@ public class KuzzleDocumentTest {
   private KuzzleDocument doc;
 
   @Before
-  public void setUp() {
+  public void setUp() throws JSONException, URISyntaxException {
     k = mock(Kuzzle.class);
+    when(k.getHeaders()).thenReturn(new JSONObject());
     doc = new KuzzleDocument(new KuzzleDataCollection(k, "test"));
   }
 
@@ -74,21 +75,20 @@ public class KuzzleDocumentTest {
 
   @Test
   public void testDelete() throws URISyntaxException, IOException, JSONException, KuzzleException {
-    KuzzleDocument spy = spy(doc);
+    KuzzleDocument mock = mock(KuzzleDocument.class);
     // Mocking getId()
-    when(spy.getId()).thenReturn("id-42");
-    spy.save(false);
+    doc.setId("id-42");
     doc.delete();
-    spy.delete();
-    verify(k, times(1)).query(eq("test"), eq("write"), any(String.class), any(JSONObject.class), any(ResponseListener.class));
+    verify(k, times(1)).query(eq("test"), eq("write"), eq("delete"), any(JSONObject.class), any(ResponseListener.class));
   }
 
   @Test
   public void testRefresh() throws IOException, JSONException {
-    KuzzleDocument spy = spy(doc);
+    KuzzleDocument mock = mock(KuzzleDocument.class);
     doc.refresh(null);
     verify(k, never()).query(eq("test"), eq("read"), eq("get"), any(JSONObject.class));
-    when(spy.getId()).thenReturn("id-42");
+    when(mock.getId()).thenReturn("id-42");
+    when(mock.getContent()).thenReturn(new JSONObject());
 
     doAnswer(new Answer() {
       @Override
@@ -99,9 +99,9 @@ public class KuzzleDocumentTest {
         return null;
       }
     }).when(k).query(eq("test"), eq("read"), eq("get"), any(JSONObject.class), any(ResponseListener.class));
-    spy.refresh(null);
+    mock.refresh(null);
     verify(k, times(1)).query(eq("test"), eq("read"), eq("get"), any(JSONObject.class), any(ResponseListener.class));
-    assertNotNull(spy.getContent());
+    assertNotNull(mock.getContent());
   }
 
   @Test
@@ -112,7 +112,7 @@ public class KuzzleDocumentTest {
 
   @Test
   public void testSetContent() throws JSONException {
-    assertNull(doc.getContent());
+    assertEquals(doc.getContent().toString(), new JSONObject().toString());
     JSONObject data = new JSONObject();
     data.put("test", "some content");
     doc.setContent(data, false);

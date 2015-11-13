@@ -142,7 +142,7 @@ public class KuzzleRoom {
       if (listening && cb != null)
         cb.onSuccess(((JSONObject) args[0]).getJSONObject("result"));
       if (KuzzleRoom.this.eventExist(globalEvent)) {
-        triggerEvents(listening, globalEvent, (JSONObject) args[0], cb, args);
+        triggerEvents(listening, globalEvent, (KuzzleDocument) args[0], cb, args);
       }
     } else {
       if (cb != null)

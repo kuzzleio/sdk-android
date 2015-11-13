@@ -2,6 +2,8 @@ package io.kuzzle.sdk.listeners;
 
 import org.json.JSONObject;
 
+import io.kuzzle.sdk.core.KuzzleDocument;
+
 /**
  * The interface Response listener.
  */

@@ -50,7 +50,7 @@ public class Kuzzle {
   public Kuzzle(final String url, KuzzleOptions options, final ResponseListener connectionCallback) throws URISyntaxException, IllegalArgumentException {
     if (url == null || url.isEmpty())
       throw new IllegalArgumentException("Url can't be empty");
-    this.autoReconnect = (options == null ? options.isAutoReconnect() : true);
+    this.autoReconnect = (options != null ? options.isAutoReconnect() : true);
     this.headers = (options != null && options.getHeaders() != null ? options.getHeaders() : new JSONObject());
     this.metadata = (options != null && options.getMetadata() != null ? options.getMetadata() : new JSONObject());
     if (socket == null) {
