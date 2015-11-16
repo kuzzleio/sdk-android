@@ -37,9 +37,9 @@ public class KuzzleRoom {
 
   /**
    * This object is the result of a subscription request, allowing to manipulate the subscription itself.
-   * <p>
+   * <p/>
    * In Kuzzle, you don’t exactly subscribe to a room or a topic but, instead, you subscribe to documents.
-   * <p>
+   * <p/>
    * What it means is that, to subscribe, you provide to Kuzzle a set of matching filters.
    * Once you have subscribed, if a pub/sub message is published matching your filters, or if a matching stored
    * document change (because it is created, updated or deleted), then you’ll receive a notification about it.
@@ -48,7 +48,7 @@ public class KuzzleRoom {
    * @param options              the options
    * @throws NullPointerException the null pointer exception
    */
-  public KuzzleRoom(final KuzzleDataCollection kuzzleDataCollection, final KuzzleRoomOption options) throws NullPointerException {
+  public KuzzleRoom(final KuzzleDataCollection kuzzleDataCollection, final KuzzleRoomOptions options) throws NullPointerException {
     if (kuzzleDataCollection == null) {
       throw new IllegalArgumentException("KuzzleRoom: missing parameters");
     }
@@ -61,6 +61,7 @@ public class KuzzleRoom {
     this.listeningToConnections = (options != null ? options.isListeningToConnections() : false);
     this.listeningToDisconnections = (options != null ? options.isListeningToDisconnections() : false);
     this.subscribeToSelf = (options != null ? options.isSubscribeToSelf() : false);
+    this.metadata = (options != null ? options.getMetadata() : new JSONObject());
   }
 
   /**
@@ -122,10 +123,10 @@ public class KuzzleRoom {
    * @param args the args
    * @throws Exception the exception
    */
-  protected void callAfterRenew(final ResponseListener cb, final Object... args) throws Exception {
+  protected void callAfterRenew(final ResponseListener cb, final Object args) throws Exception {
     if (args == null)
       throw new NullPointerException("Response is null");
-    JSONObject response = ((JSONObject) args[0]);
+    JSONObject response = ((JSONObject) args);
     JSONObject result = (JSONObject) response.get("result");
     final EventType globalEvent;
     final boolean listening;
@@ -140,13 +141,13 @@ public class KuzzleRoom {
         listening = KuzzleRoom.this.listeningToDisconnections;
       }
       if (listening && cb != null)
-        cb.onSuccess(((JSONObject) args[0]).getJSONObject("result"));
+        cb.onSuccess(((JSONObject) args).getJSONObject("result"));
       if (KuzzleRoom.this.eventExist(globalEvent)) {
-        triggerEvents(listening, globalEvent, (KuzzleDocument) args[0], cb, args);
+        triggerEvents(listening, globalEvent, (KuzzleDocument) args, cb, args);
       }
     } else {
       if (cb != null)
-        cb.onSuccess(((JSONObject) args[0]).getJSONObject("result"));
+        cb.onSuccess(((JSONObject) args).getJSONObject("result"));
     }
   }
 
@@ -164,10 +165,12 @@ public class KuzzleRoom {
     this.filters = (filters == null ? new JSONObject() : filters);
     this.unsubscribe();
     final JSONObject data = new JSONObject();
+    final KuzzleOptions options = new KuzzleOptions();
+    options.setMetadata(this.metadata);
     data.put("body", this.filters);
     this.kuzzle.addHeaders(data, this.headers);
 
-    this.kuzzle.query(this.collection, "subscribe", "on", data, new ResponseListener() {
+    this.kuzzle.query(this.collection, "subscribe", "on", data, options, new ResponseListener() {
       @Override
       public void onSuccess(JSONObject args) throws Exception {
         KuzzleRoom.this.roomId = args.get("roomId").toString();

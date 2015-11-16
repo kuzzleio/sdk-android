@@ -231,20 +231,29 @@ public class Kuzzle {
    */
   public Kuzzle query(final String collection, final String controller, final String action, final JSONObject query, KuzzleOptions options, final ResponseListener cb) throws JSONException, IOException {
     this.isValid();
-    final JSONObject object = query;
+    JSONObject object = query;
     if (object.isNull("requestId"))
       object.put("requestId", UUID.randomUUID().toString());
     object.put("action", action);
 
-    object.put("metadata", this.metadata);
+    // Global metadata
+    JSONObject meta = new JSONObject();
+    for (Iterator ite = this.metadata.keys(); ite.hasNext();) {
+      String key = (String)ite.next();
+      meta.put(key, this.metadata.get(key));
+    }
+
+    // Metadata for this query
     if (options != null) {
       if (options.getMetadata() != null) {
         for (Iterator iterator = options.getMetadata().keys(); iterator.hasNext(); ) {
           String key = (String) iterator.next();
-          ((JSONObject) object.get("metadata")).put(key, options.getMetadata().get(key));
+          meta.put(key, options.getMetadata().get(key));
         }
       }
     }
+
+    object.put("metadata", meta);
 
     if (collection != null) {
       object.put("collection", collection);

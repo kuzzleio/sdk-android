@@ -88,6 +88,7 @@ public class KuzzleDocument extends JSONObject {
       @Override
       public void onSuccess(JSONObject args) throws Exception {
         KuzzleDocument.this.put("body", args);
+        KuzzleDocument.this.put("version", args.get("version"));
         if (cb != null)
           cb.onSuccess(args);
       }

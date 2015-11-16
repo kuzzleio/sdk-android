@@ -90,7 +90,7 @@ public class KuzzleDataCollectionTest {
     KuzzleDataCollection collection = new KuzzleDataCollection(k, "test");
     collection.subscribe(new JSONObject(), null, null);
     collection.subscribe(new JSONObject(), null);
-    verify(k, times(2)).query(eq("test"), eq("subscribe"), eq("on"), any(JSONObject.class), any(ResponseListener.class));
+    verify(k, times(2)).query(eq("test"), eq("subscribe"), eq("on"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
   }
 
   @Test

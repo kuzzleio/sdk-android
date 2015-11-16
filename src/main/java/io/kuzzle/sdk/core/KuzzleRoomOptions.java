@@ -1,10 +1,13 @@
 package io.kuzzle.sdk.core;
 
-public class KuzzleRoomOption {
+import org.json.JSONObject;
+
+public class KuzzleRoomOptions {
 
   private boolean subscribeToSelf = false;
   private boolean listeningToConnections = false;
   private boolean listeningToDisconnections = false;
+  private JSONObject  metadata = new JSONObject();
 
   /**
    * Is subscribe to self boolean.
@@ -60,4 +63,11 @@ public class KuzzleRoomOption {
     this.listeningToDisconnections = listeningToDisconnections;
   }
 
+  public JSONObject getMetadata() {
+    return metadata;
+  }
+
+  public void setMetadata(JSONObject metadata) {
+    this.metadata = metadata;
+  }
 }

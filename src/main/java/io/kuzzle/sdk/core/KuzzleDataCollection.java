@@ -361,7 +361,7 @@ public class KuzzleDataCollection {
    * @throws JSONException        the json exception
    * @throws KuzzleException      the kuzzle exception
    */
-  public KuzzleRoom subscribe(JSONObject filters, ResponseListener cb, KuzzleRoomOption options) throws NullPointerException, IOException, JSONException, KuzzleException {
+  public KuzzleRoom subscribe(JSONObject filters, KuzzleRoomOptions options, ResponseListener cb) throws NullPointerException, IOException, JSONException, KuzzleException {
     this.kuzzle.isValid();
     KuzzleRoom room = new KuzzleRoom(this, options);
     return room.renew(filters, cb);
