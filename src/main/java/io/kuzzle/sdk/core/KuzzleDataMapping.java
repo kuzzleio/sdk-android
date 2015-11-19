@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
+import io.kuzzle.sdk.exceptions.KuzzleException;
 import io.kuzzle.sdk.listeners.ResponseListener;
 
 /**
@@ -42,7 +43,7 @@ public class KuzzleDataMapping {
    * @throws JSONException the json exception
    * @throws IOException   the io exception
    */
-  public KuzzleDataMapping apply(ResponseListener cb) throws JSONException, IOException {
+  public KuzzleDataMapping apply(ResponseListener cb) throws JSONException, IOException, KuzzleException {
     JSONObject data = new JSONObject();
     JSONObject properties = new JSONObject();
     properties.put("properties", this.mapping);
@@ -59,7 +60,7 @@ public class KuzzleDataMapping {
    * @throws JSONException the json exception
    * @throws IOException   the io exception
    */
-  public KuzzleDataMapping apply() throws JSONException, IOException {
+  public KuzzleDataMapping apply() throws JSONException, IOException, KuzzleException {
     return apply(null);
   }
 
@@ -73,7 +74,7 @@ public class KuzzleDataMapping {
    * @throws JSONException the json exception
    * @throws IOException   the io exception
    */
-  public KuzzleDataMapping refresh(final ResponseListener cb) throws JSONException, IOException {
+  public KuzzleDataMapping refresh(final ResponseListener cb) throws JSONException, IOException, KuzzleException {
     JSONObject data = new JSONObject();
     this.kuzzle.addHeaders(data, this.headers);
     this.kuzzle.query(this.collection, "admin", "getMapping", data, new ResponseListener() {
@@ -103,7 +104,7 @@ public class KuzzleDataMapping {
    * @throws IOException   the io exception
    * @throws JSONException the json exception
    */
-  public KuzzleDataMapping refresh() throws IOException, JSONException {
+  public KuzzleDataMapping refresh() throws IOException, JSONException, KuzzleException {
     return refresh(null);
   }
 

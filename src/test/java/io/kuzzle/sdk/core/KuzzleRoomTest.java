@@ -30,14 +30,14 @@ import static org.mockito.Mockito.when;
 public class KuzzleRoomTest {
 
   @Test(expected = IllegalArgumentException.class)
-  public void testConstructor() throws IOException, JSONException {
+  public void testConstructor() throws IOException, JSONException, KuzzleException {
     Kuzzle k = mock(Kuzzle.class);
     // Should throw an exception
     new KuzzleRoom(null);
   }
 
   @Test
-  public void testCount() throws IOException, JSONException {
+  public void testCount() throws IOException, JSONException, KuzzleException {
     Kuzzle k = mock(Kuzzle.class);
     KuzzleRoom room = new KuzzleRoom(new KuzzleDataCollection(k, "test"));
 
@@ -75,7 +75,7 @@ public class KuzzleRoomTest {
     });
   }
 
-  private void stubRoom(Kuzzle k) throws IOException, JSONException {
+  private void stubRoom(Kuzzle k) throws IOException, JSONException, KuzzleException {
     // stub to call the query()'s callback from KuzzleRoom.renew method
     doAnswer(new Answer() {
       @Override
@@ -244,7 +244,7 @@ public class KuzzleRoomTest {
   // Class for testing protected callAfterRenew and triggerEvents
   public class KuzzleRoomExtend extends KuzzleRoom {
 
-    public KuzzleRoomExtend(KuzzleDataCollection kuzzleDataCollection) {
+    public KuzzleRoomExtend(KuzzleDataCollection kuzzleDataCollection) throws KuzzleException {
       super(kuzzleDataCollection);
     }
 

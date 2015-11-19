@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
+import io.kuzzle.sdk.exceptions.KuzzleException;
 import io.kuzzle.sdk.listeners.ResponseListener;
 
 import static org.mockito.Matchers.any;
@@ -29,13 +30,13 @@ public class KuzzleDataMappingTest {
   }
 
   @Test
-  public void testApply() throws IOException, JSONException {
+  public void testApply() throws IOException, JSONException, KuzzleException {
     dataMapping.apply();
     verify(k, times(1)).query(eq("test"), eq("admin"), eq("putMapping"), any(JSONObject.class), any(ResponseListener.class));
   }
 
   @Test
-  public void testRefresh() throws IOException, JSONException {
+  public void testRefresh() throws IOException, JSONException, KuzzleException {
     dataMapping.refresh();
     verify(k, times(1)).query(eq("test"), eq("admin"), eq("getMapping"), any(JSONObject.class), any(ResponseListener.class));
   }

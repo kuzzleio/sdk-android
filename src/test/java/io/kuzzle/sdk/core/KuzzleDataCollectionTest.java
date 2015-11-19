@@ -20,7 +20,7 @@ import static org.mockito.Mockito.verify;
 public class KuzzleDataCollectionTest {
 
   @Test
-  public void testAdvancedSearch() throws URISyntaxException, IOException, JSONException {
+  public void testAdvancedSearch() throws URISyntaxException, IOException, JSONException, KuzzleException {
     Kuzzle k = mock(Kuzzle.class);
 
     KuzzleDataCollection collection = new KuzzleDataCollection(k, "test");
@@ -30,7 +30,7 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testCount() throws IOException, JSONException {
+  public void testCount() throws IOException, JSONException, KuzzleException {
     Kuzzle k = mock(Kuzzle.class);
 
     KuzzleDataCollection collection = new KuzzleDataCollection(k, "test");
@@ -40,7 +40,7 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testCreate() throws IOException, JSONException {
+  public void testCreate() throws IOException, JSONException, KuzzleException {
     Kuzzle k = mock(Kuzzle.class);
 
     KuzzleDataCollection collection = new KuzzleDataCollection(k, "test");
@@ -56,7 +56,7 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testDelete() throws IOException, JSONException {
+  public void testDelete() throws IOException, JSONException, KuzzleException {
     Kuzzle k = mock(Kuzzle.class);
 
     KuzzleDataCollection collection = new KuzzleDataCollection(k, "test");
@@ -66,7 +66,7 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testFetch() throws IOException, JSONException {
+  public void testFetch() throws IOException, JSONException, KuzzleException {
     Kuzzle k = mock(Kuzzle.class);
 
     KuzzleDataCollection collection = new KuzzleDataCollection(k, "test");
@@ -75,7 +75,7 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testReplace() throws IOException, JSONException {
+  public void testReplace() throws IOException, JSONException, KuzzleException {
     Kuzzle k = mock(Kuzzle.class);
 
     KuzzleDataCollection collection = new KuzzleDataCollection(k, "test");
@@ -94,7 +94,7 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testUpdate() throws IOException, JSONException {
+  public void testUpdate() throws IOException, JSONException, KuzzleException {
     Kuzzle k = mock(Kuzzle.class);
 
     KuzzleDataCollection collection = new KuzzleDataCollection(k, "test");

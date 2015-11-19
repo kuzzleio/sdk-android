@@ -31,7 +31,7 @@ public class KuzzleRoom {
    *
    * @param kuzzleDataCollection the kuzzle data collection
    */
-  public KuzzleRoom(KuzzleDataCollection kuzzleDataCollection) {
+  public KuzzleRoom(KuzzleDataCollection kuzzleDataCollection) throws KuzzleException {
     this(kuzzleDataCollection, null);
   }
 
@@ -48,7 +48,7 @@ public class KuzzleRoom {
    * @param options              the options
    * @throws NullPointerException the null pointer exception
    */
-  public KuzzleRoom(final KuzzleDataCollection kuzzleDataCollection, final KuzzleRoomOptions options) throws NullPointerException {
+  public KuzzleRoom(final KuzzleDataCollection kuzzleDataCollection, final KuzzleRoomOptions options) throws NullPointerException, KuzzleException {
     if (kuzzleDataCollection == null) {
       throw new IllegalArgumentException("KuzzleRoom: missing parameters");
     }
@@ -72,7 +72,7 @@ public class KuzzleRoom {
    * @throws JSONException the json exception
    * @throws IOException   the io exception
    */
-  public KuzzleRoom count(final ResponseListener cb) throws JSONException, IOException {
+  public KuzzleRoom count(final ResponseListener cb) throws JSONException, IOException, KuzzleException {
     JSONObject body = new JSONObject();
     JSONObject data = new JSONObject();
     data.put("roomId", this.roomId);
@@ -212,7 +212,7 @@ public class KuzzleRoom {
    * @throws JSONException the json exception
    * @throws IOException   the io exception
    */
-  public KuzzleRoom unsubscribe(final ResponseListener listener) throws JSONException, IOException {
+  public KuzzleRoom unsubscribe(final ResponseListener listener) throws JSONException, IOException, KuzzleException {
     if (this.roomId != null) {
       JSONObject roomId = new JSONObject();
       roomId.put("roomId", this.roomId);
@@ -245,7 +245,7 @@ public class KuzzleRoom {
    * @throws IOException   the io exception
    * @throws JSONException the json exception
    */
-  public KuzzleRoom unsubscribe() throws IOException, JSONException {
+  public KuzzleRoom unsubscribe() throws IOException, JSONException, KuzzleException {
     return this.unsubscribe(null);
   }
 

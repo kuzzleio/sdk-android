@@ -22,7 +22,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -83,7 +82,7 @@ public class KuzzleDocumentTest {
   }
 
   @Test
-  public void testRefresh() throws IOException, JSONException {
+  public void testRefresh() throws IOException, JSONException, KuzzleException {
     KuzzleDocument mock = mock(KuzzleDocument.class);
     doc.refresh(null);
     verify(k, never()).query(eq("test"), eq("read"), eq("get"), any(JSONObject.class));
@@ -105,9 +104,9 @@ public class KuzzleDocumentTest {
   }
 
   @Test
-  public void testSend() throws IOException, JSONException {
-    doc.send();
-    verify(k, times(1)).query(eq("test"), eq("write"), eq("create"), any(JSONObject.class));
+  public void testPublish() throws IOException, JSONException, KuzzleException {
+    doc.publish();
+    verify(k, times(1)).query(eq("test"), eq("write"), eq("create"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
   }
 
   @Test

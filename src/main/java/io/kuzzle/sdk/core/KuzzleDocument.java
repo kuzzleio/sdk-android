@@ -4,7 +4,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.Iterator;
 
 import io.kuzzle.sdk.listeners.ResponseListener;
@@ -56,7 +55,7 @@ public class KuzzleDocument extends JSONObject {
    * @throws JSONException the json exception
    * @throws IOException   the io exception
    */
-  public KuzzleDocument delete() throws JSONException, IOException {
+  public KuzzleDocument delete() throws JSONException, IOException, KuzzleException {
     if (this.getId() == null)
       return this;
     this.kuzzle.addHeaders(this, this.getJSONObject("headers"));
@@ -82,7 +81,7 @@ public class KuzzleDocument extends JSONObject {
    * @throws JSONException the json exception
    * @throws IOException   the io exception
    */
-  public KuzzleDocument refresh(final ResponseListener cb) throws JSONException, IOException {
+  public KuzzleDocument refresh(final ResponseListener cb) throws JSONException, IOException, KuzzleException {
     this.kuzzle.query(this.collection, "read", "get", this, new ResponseListener() {
 
       @Override
@@ -113,7 +112,7 @@ public class KuzzleDocument extends JSONObject {
    * @throws JSONException the json exception
    * @throws IOException   the io exception
    */
-  public KuzzleDocument save(final boolean replace, final ResponseListener listener) throws JSONException, IOException {
+  public KuzzleDocument save(final boolean replace, final ResponseListener listener) throws JSONException, IOException, KuzzleException {
     this.kuzzle.addHeaders(this, getJSONObject("headers"));
 
     ResponseListener queryCB = new ResponseListener() {
@@ -149,7 +148,7 @@ public class KuzzleDocument extends JSONObject {
    * @throws JSONException the json exception
    * @throws IOException   the io exception
    */
-  public KuzzleDocument save(boolean replace) throws JSONException, IOException {
+  public KuzzleDocument save(boolean replace) throws JSONException, IOException, KuzzleException {
     return save(replace, null);
   }
 
@@ -160,7 +159,7 @@ public class KuzzleDocument extends JSONObject {
    * @throws JSONException the json exception
    * @throws IOException   the io exception
    */
-  public KuzzleDocument save() throws JSONException, IOException {
+  public KuzzleDocument save() throws JSONException, IOException, KuzzleException {
     return save(false, null);
   }
 
@@ -172,21 +171,33 @@ public class KuzzleDocument extends JSONObject {
    * @throws IOException   the io exception
    * @throws JSONException the json exception
    */
-  public KuzzleDocument save(ResponseListener listener) throws IOException, JSONException {
+  public KuzzleDocument save(ResponseListener listener) throws IOException, JSONException, KuzzleException {
     return save(false, listener);
   }
 
   /**
    * Sends the content of this document as a realtime message.
    *
+   * @param options the options
    * @return kuzzle document
    * @throws JSONException the json exception
    * @throws IOException   the io exception
    */
-  public KuzzleDocument send() throws JSONException, IOException {
+  public KuzzleDocument publish(KuzzleOptions options) throws JSONException, IOException, KuzzleException {
     put("persist", false);
-    kuzzle.query(this.collection, "write", "create", this);
+    kuzzle.query(this.collection, "write", "create", this, options, null);
     return this;
+  }
+
+  /**
+   * Publish kuzzle document.
+   *
+   * @return the kuzzle document
+   * @throws IOException   the io exception
+   * @throws JSONException the json exception
+   */
+  public KuzzleDocument publish() throws IOException, JSONException, KuzzleException {
+    return this.publish(null);
   }
 
   /**
