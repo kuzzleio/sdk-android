@@ -8,7 +8,7 @@ before_install:
     - export TERM=dumb
 
 script:
-    ./gradlew clean build
+    bash gradlew clean build
 
 notifications:
     email: false
