@@ -81,8 +81,7 @@ public class Kuzzle {
         @Override
         public void call(Object... args) {
           // TODO: Invalidate this object for now. Should handle the autoReconnect flag later + bufferize queries
-          Log.e("kuzzle", "Kuzzle connection error");
-          Log.e("kuzzle", args[0].toString());
+          Log.i("kuzzle", "Kuzzle connection error");
           logout();
         }
       });
