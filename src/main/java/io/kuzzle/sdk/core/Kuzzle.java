@@ -32,10 +32,10 @@ import io.socket.emitter.Emitter;
  */
 public class Kuzzle {
 
-  private List<Event> eventListeners = new ArrayList<>();
+  private List<Event> eventListeners = new ArrayList<Event>();
   private Socket socket;
-  private Map<String, KuzzleDataCollection> collections = new HashMap<>();
-  private Context<QueryObject> ctx = new Context<>();
+  private Map<String, KuzzleDataCollection> collections = new HashMap<String, KuzzleDataCollection>();
+  private Context<QueryObject> ctx = new Context<QueryObject>();
   private boolean autoReconnect;
   private JSONObject headers;
   private JSONObject metadata;

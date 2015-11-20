@@ -1,0 +1,14 @@
+language: android
+android:
+    components:
+        - platform-tools
+        - android-10
+
+before_install:
+    - export TERM=dumb
+
+script:
+    ./gradlew clean build
+
+notifications:
+    email: false
