@@ -3,11 +3,10 @@ apply plugin: 'jacoco'
 
 buildscript {
     repositories {
-        mavenCentral()
+        jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.0.+'
-        testCompile 'junit:junit:4.12'
+        classpath 'com.android.tools.build:gradle:1.1.+'
     }
 }
 
@@ -44,8 +43,7 @@ repositories {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:23.0.1'
-    testCompile 'junit:junit:4.12'
     compile 'io.socket:socket.io-client:0.6.2'
+    testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-all:1.8.4'
-    androidTestCompile 'junit:junit:4.12'
 }
