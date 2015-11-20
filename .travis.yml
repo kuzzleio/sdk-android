@@ -3,6 +3,7 @@ android:
     components:
         - platform-tools-23.0.1
         - android-23
+        - tools
 
 before_install:
     - export TERM=dumb
