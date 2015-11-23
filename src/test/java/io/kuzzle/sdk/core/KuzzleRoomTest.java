@@ -39,6 +39,8 @@ public class KuzzleRoomTest {
   @Test
   public void testCount() throws IOException, JSONException, KuzzleException {
     Kuzzle k = mock(Kuzzle.class);
+    JSONObject o = mock(JSONObject.class);
+    when(o.put(any(String.class), any(Object.class))).thenReturn(new JSONObject());
     KuzzleRoom room = new KuzzleRoom(new KuzzleDataCollection(k, "test"));
 
     room.count(null);
