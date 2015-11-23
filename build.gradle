@@ -39,9 +39,9 @@ android {
     */
 
     // "Method ... not mocked."
-    /*testOptions {
+    testOptions {
         unitTests.returnDefaultValues = true
-    }*/
+    }
 }
 
 repositories {
@@ -54,5 +54,4 @@ dependencies {
     compile 'io.socket:socket.io-client:0.6.2'
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-all:1.8.4'
-    androidTestCompile files('libs-test/json-20140107.jar')
 }
