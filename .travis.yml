@@ -11,7 +11,7 @@ before_install:
 
 
 script:
-    bash gradlew clean assembleDebug --debug
+    bash gradlew clean testDebugUnit --debug
 
 notifications:
     email: false
