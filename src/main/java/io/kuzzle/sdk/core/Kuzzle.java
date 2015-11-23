@@ -81,7 +81,6 @@ public class Kuzzle {
         @Override
         public void call(Object... args) {
           // TODO: Invalidate this object for now. Should handle the autoReconnect flag later + bufferize queries
-          Log.i("kuzzle", "Kuzzle connection error");
           logout();
         }
       });
@@ -264,7 +263,8 @@ public class Kuzzle {
    * Disconnects from Kuzzle and invalidate this instance.
    */
   public void logout() {
-    this.socket.close();
+    if (this.socket != null)
+      this.socket.close();
     this.socket = null;
     this.collections.clear();
     ctx.setState(States.DISCONNECTED);
