@@ -72,7 +72,7 @@ public class KuzzleTest {
   @Test
   public void testDataCollectionFactory() throws URISyntaxException, IOException, JSONException, KuzzleException {
     kuzzle = new Kuzzle("http://localhost:7512");
-    assertEquals(kuzzle.dataCollectionFactory("test").fetch("test", null).getCollection(), "test");
+    assertEquals(kuzzle.dataCollectionFactory("test").fetch("test", null).getCollection(), "faketest");
     assertEquals(kuzzle.dataCollectionFactory("test2").fetch("test2", null).getCollection(), "test2");
   }
 
