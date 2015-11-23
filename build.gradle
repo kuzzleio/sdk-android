@@ -49,10 +49,10 @@ repositories {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs', exclude: 'json-20140107.jar')
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:+'
     compile 'io.socket:socket.io-client:0.6.2'
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-all:1.8.4'
-    testCompile files('libs/json-20140107.jar')
+    androidTestCompile files('../libs-test/json-20140107.jar')
 }
