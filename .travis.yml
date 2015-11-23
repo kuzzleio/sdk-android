@@ -10,7 +10,9 @@ before_install:
     - export TERM=dumb
 
 script:
-    bash gradlew clean build --debug
+    bash gradlew clean assembleDebug testDebug --debug
+    bash gradlew clean assembleRelease testRelease
+    bash gradlew clean assemble test
 
 notifications:
     email: false
