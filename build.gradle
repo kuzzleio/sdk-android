@@ -32,11 +32,9 @@ android {
     productFlavors {
     }
 
-    /*
     lintOptions {
         abortOnError false
     }
-    */
 
     // "Method ... not mocked."
     /*testOptions {
