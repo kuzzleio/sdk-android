@@ -9,10 +9,11 @@ android:
 before_install:
     - export TERM=dumb
 
+install:
+    bash gradlew build
+
 script:
-    bash gradlew clean assembleDebug testDebug --debug &&
-    bash gradlew clean assembleRelease testRelease --debug &&
-    bash gradlew clean assemble test --debug
+    bash gradlew clean assembleDebug test --debug
 
 notifications:
     email: false
