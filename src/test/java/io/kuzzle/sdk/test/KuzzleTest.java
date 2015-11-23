@@ -1,4 +1,4 @@
-package io.kuzzle.sdk.core;
+package io.kuzzle.sdk.test;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,7 +31,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class KuzzleTest {
 

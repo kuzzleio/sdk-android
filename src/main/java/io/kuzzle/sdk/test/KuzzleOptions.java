@@ -1,4 +1,4 @@
-package io.kuzzle.sdk.core;
+package io.kuzzle.sdk.test;
 
 import org.json.JSONObject;
 
