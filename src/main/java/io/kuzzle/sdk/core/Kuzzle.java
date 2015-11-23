@@ -237,7 +237,7 @@ public class Kuzzle {
    * @return statistics
    */
   public Kuzzle getStatistics(String since, final ResponseListener listener) throws KuzzleException, IOException, JSONException {
-    this.isValid();
+    //this.isValid();
     JSONObject body = new JSONObject();
     JSONObject data = new JSONObject();
     data.put("since", since);
