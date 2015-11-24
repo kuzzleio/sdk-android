@@ -2,6 +2,7 @@ package io.kuzzle.sdk.core;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.io.IOException;
 
@@ -126,7 +127,8 @@ public class KuzzleRoom {
   protected void callAfterRenew(final ResponseListener cb, final Object args) throws Exception {
     if (args == null)
       throw new NullPointerException("Response is null");
-    JSONObject response = ((JSONObject) args);
+    //JSONObject response = (JSONObject) args;
+    JSONObject response = new JSONObject(args.toString());
     JSONObject result = (JSONObject) response.get("result");
     final EventType globalEvent;
     final boolean listening;
