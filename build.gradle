@@ -1,13 +1,15 @@
 apply plugin: 'com.android.library'
-apply plugin: 'jacoco'
+apply plugin: 'jacoco-android'
 
 buildscript {
     repositories {
-        mavenCentral()
+        jcenter()
     }
 
     dependencies {
         classpath 'com.android.tools.build:gradle:1.1.+'
+        classpath 'com.dicedmelon.gradle:jacoco-android:0.1.0'
+
     }
 }
 

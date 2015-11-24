@@ -8,13 +8,13 @@ android:
 
 before_install:
     - export TERM=dumb
-    - sudo pip install codecov
+    - pip install --user codecov
 
 script:
-    bash gradlew clean build --debug
+    bash gradlew clean build jacocoTestReport
 
 notifications:
     email: false
 
 after_success:
-    - codecov
+    - bash <(curl -s https://codecov.io/bash)
