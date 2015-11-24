@@ -8,10 +8,13 @@ android:
 
 before_install:
     - export TERM=dumb
-
+    - pip install codecov
 
 script:
     bash gradlew clean build --debug
 
 notifications:
     email: false
+
+after_success:
+    - codecov
