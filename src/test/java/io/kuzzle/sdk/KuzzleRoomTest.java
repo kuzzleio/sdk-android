@@ -253,11 +253,11 @@ public class KuzzleRoomTest {
       super(kuzzleDataCollection);
     }
 
-    public void callAfterRenew(ResponseListener cb, Object... args) throws Exception {
-      super.callAfterRenew(cb, args[0]);
+    public void callAfterRenew(ResponseListener cb, Object args) throws Exception {
+      super.callAfterRenew(cb, args);
     }
 
-    public void triggerEvents(boolean listening, EventType globalEvent, JSONObject args2, ResponseListener cb, Object... args) throws Exception {
+    public void triggerEvents(boolean listening, EventType globalEvent, JSONObject args2, ResponseListener cb, Object args) throws Exception {
       super.triggerEvents(listening, globalEvent, args2, cb, args);
     }
   }

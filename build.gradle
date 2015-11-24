@@ -36,6 +36,10 @@ android {
         abortOnError false
     }
 
+    sourceSets {
+        main.setRoot('src/main')
+    }
+
 }
 
 repositories {
