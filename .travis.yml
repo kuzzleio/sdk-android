@@ -8,7 +8,7 @@ android:
 
 before_install:
     - export TERM=dumb
-    - pip install codecov
+    - sudo pip install codecov
 
 script:
     bash gradlew clean build --debug
