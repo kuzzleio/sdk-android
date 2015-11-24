@@ -36,10 +36,6 @@ android {
         abortOnError false
     }
 
-    // "Method ... not mocked."
-    /*testOptions {
-        unitTests.returnDefaultValues = true
-    }*/
 }
 
 repositories {

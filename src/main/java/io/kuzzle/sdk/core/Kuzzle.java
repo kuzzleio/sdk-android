@@ -1,4 +1,4 @@
-package io.kuzzle.sdk.test;
+package io.kuzzle.sdk.core;
 
 import android.util.Log;
 
