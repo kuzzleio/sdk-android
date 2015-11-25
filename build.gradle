@@ -1,0 +1,55 @@
+apply plugin: 'com.android.library'
+apply plugin: 'jacoco-android'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.1.+'
+        classpath 'com.dicedmelon.gradle:jacoco-android:0.1.0'
+    }
+}
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
+    defaultConfig {
+        minSdkVersion 10
+        targetSdkVersion 10
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    productFlavors {
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+    sourceSets {
+        main.setRoot('src/main')
+    }
+
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.android.support:appcompat-v7:+'
+    compile 'io.socket:socket.io-client:0.6.2'
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-core:1.9.5'
+    // for not mocking JSONObject
+    testCompile files('libs-test/json-20140107.jar')
+}
