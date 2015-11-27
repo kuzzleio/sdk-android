@@ -37,7 +37,7 @@ public class Kuzzle {
   private Map<String, KuzzleDataCollection> collections = new HashMap<String, KuzzleDataCollection>();
   private Context<QueryObject> ctx = new Context<QueryObject>();
   private boolean autoReconnect;
-  private JSONObject headers;
+  private JSONObject headers = new JSONObject();
   private JSONObject metadata;
 
   /**
@@ -237,7 +237,7 @@ public class Kuzzle {
    * @return statistics
    */
   public Kuzzle getStatistics(String since, final ResponseListener listener) throws KuzzleException, IOException, JSONException {
-    //this.isValid();
+    this.isValid();
     JSONObject body = new JSONObject();
     JSONObject data = new JSONObject();
     data.put("since", since);
@@ -472,16 +472,31 @@ public class Kuzzle {
    * @return the headers
    */
   public JSONObject getHeaders() {
-    return headers;
+    return this.headers;
   }
 
   /**
    * Sets headers.
    *
-   * @param headers the headers
+   * @param content the headers
    */
-  public void setHeaders(JSONObject headers) {
-    this.headers = headers;
+  public Kuzzle setHeaders(JSONObject content) throws JSONException {
+    return this.setHeaders(content, false);
+  }
+
+  public Kuzzle setHeaders(JSONObject content, boolean replace) throws JSONException {
+    if (this.headers == null) {
+      this.headers = new JSONObject();
+    }
+    if (replace) {
+      this.headers = content;
+    } else {
+      for (Iterator ite = content.keys(); ite.hasNext();) {
+        String key = (String)ite.next();
+        this.headers.put(key, content.get(key));
+      }
+    }
+    return this;
   }
 
   /**

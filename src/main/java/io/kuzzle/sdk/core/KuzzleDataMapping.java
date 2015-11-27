@@ -24,7 +24,7 @@ public class KuzzleDataMapping {
    * It means that, by default, you won't be able to exploit the full capabilities of our persistent data storage layer
    * (currently handled by ElasticSearch), and your searches may suffer from below-average performances, depending on
    * the amount of data you stored in a collection and the complexity of your database.
-   * <p>
+   * <p/>
    * The KuzzleDataMapping object allow to get the current mapping of a data collection and to modify it if needed.
    *
    * @param kuzzleDataCollection the kuzzle data collection
@@ -38,53 +38,126 @@ public class KuzzleDataMapping {
   /**
    * Applies the new mapping to the data collection.
    *
-   * @param cb the cb
    * @return the kuzzle data mapping
-   * @throws JSONException the json exception
-   * @throws IOException   the io exception
+   * @throws KuzzleException the kuzzle exception
+   * @throws IOException     the io exception
+   * @throws JSONException   the json exception
    */
-  public KuzzleDataMapping apply(ResponseListener cb) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataMapping  apply() throws KuzzleException, IOException, JSONException {
+    return this.apply(null, null);
+  }
+
+  /**
+   * Applies the new mapping to the data collection.
+   *
+   * @param options the options
+   * @return the kuzzle data mapping
+   * @throws KuzzleException the kuzzle exception
+   * @throws IOException     the io exception
+   * @throws JSONException   the json exception
+   */
+  public KuzzleDataMapping  apply(KuzzleOptions options) throws KuzzleException, IOException, JSONException {
+    return this.apply(options, null);
+  }
+
+  /**
+   * Applies the new mapping to the data collection.
+   *
+   * @param listener the listener
+   * @return the kuzzle data mapping
+   * @throws KuzzleException the kuzzle exception
+   * @throws IOException     the io exception
+   * @throws JSONException   the json exception
+   */
+  public KuzzleDataMapping  apply(ResponseListener listener) throws KuzzleException, IOException, JSONException {
+    return this.apply(null, listener);
+  }
+
+  /**
+   * Applies the new mapping to the data collection.
+   *
+   * @param options the options
+   * @param cb      the cb
+   * @return the kuzzle data mapping
+   * @throws JSONException   the json exception
+   * @throws IOException     the io exception
+   * @throws KuzzleException the kuzzle exception
+   */
+  public KuzzleDataMapping apply(KuzzleOptions options, ResponseListener cb) throws JSONException, IOException, KuzzleException {
     JSONObject data = new JSONObject();
     JSONObject properties = new JSONObject();
     properties.put("properties", this.mapping);
     data.put("body", properties);
     this.kuzzle.addHeaders(data, this.headers);
-    this.kuzzle.query(this.collection, "admin", "putMapping", data, cb);
+    this.kuzzle.query(this.collection, "admin", "putMapping", data, options, cb);
     return this;
   }
 
   /**
-   * Apply kuzzle data mapping.
+   * Refresh kuzzle data mapping.
    *
    * @return the kuzzle data mapping
-   * @throws JSONException the json exception
-   * @throws IOException   the io exception
+   * @throws KuzzleException the kuzzle exception
+   * @throws IOException     the io exception
+   * @throws JSONException   the json exception
    */
-  public KuzzleDataMapping apply() throws JSONException, IOException, KuzzleException {
-    return apply(null);
+  public KuzzleDataMapping refresh() throws KuzzleException, IOException, JSONException {
+    return this.refresh(null, null);
   }
 
   /**
    * Replaces the current content with the mapping stored in Kuzzle
-   * <p>
+   * <p/>
    * Calling this function will discard any uncommited changes. You can commit changes by calling the "apply" function
    *
-   * @param cb the cb
+   * @param options the options
    * @return the kuzzle data mapping
-   * @throws JSONException the json exception
-   * @throws IOException   the io exception
+   * @throws IOException     the io exception
+   * @throws JSONException   the json exception
+   * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataMapping refresh(final ResponseListener cb) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataMapping refresh(KuzzleOptions options) throws IOException, JSONException, KuzzleException {
+    return refresh(options, null);
+  }
+
+  /**
+   * Replaces the current content with the mapping stored in Kuzzle
+   * <p/>
+   * Calling this function will discard any uncommited changes. You can commit changes by calling the "apply" function
+   *
+   * @param listener the listener
+   * @return the kuzzle data mapping
+   * @throws KuzzleException the kuzzle exception
+   * @throws IOException     the io exception
+   * @throws JSONException   the json exception
+   */
+  public KuzzleDataMapping refresh(ResponseListener listener) throws KuzzleException, IOException, JSONException {
+    return refresh(null, listener);
+  }
+
+  /**
+   * Replaces the current content with the mapping stored in Kuzzle
+   * <p/>
+   * Calling this function will discard any uncommited changes. You can commit changes by calling the "apply" function
+   *
+   * @param options the options
+   * @param cb      the cb
+   * @return the kuzzle data mapping
+   * @throws JSONException   the json exception
+   * @throws IOException     the io exception
+   * @throws KuzzleException the kuzzle exception
+   */
+  public KuzzleDataMapping refresh(KuzzleOptions options, final ResponseListener cb) throws JSONException, IOException, KuzzleException {
     JSONObject data = new JSONObject();
     this.kuzzle.addHeaders(data, this.headers);
-    this.kuzzle.query(this.collection, "admin", "getMapping", data, new ResponseListener() {
+    this.kuzzle.query(this.collection, "admin", "getMapping", data, options, new ResponseListener() {
       @Override
       public void onSuccess(JSONObject args) throws Exception {
-        JSONObject mappings = (JSONObject) ((JSONObject) ((JSONObject) args).get("mainindex")).get("mappings");
+        JSONObject mappings = args.getJSONObject("mainindex").getJSONObject("mappings");
         if (!mappings.isNull(KuzzleDataMapping.this.collection))
-          KuzzleDataMapping.this.mapping = (JSONObject) mappings.get(KuzzleDataMapping.this.collection);
+          KuzzleDataMapping.this.mapping = mappings.getJSONObject(KuzzleDataMapping.this.collection);
         if (cb != null)
-          cb.onSuccess(args);
+          cb.onSuccess(mappings);
       }
 
       @Override
@@ -98,19 +171,8 @@ public class KuzzleDataMapping {
   }
 
   /**
-   * Refresh kuzzle data mapping.
-   *
-   * @return the kuzzle data mapping
-   * @throws IOException   the io exception
-   * @throws JSONException the json exception
-   */
-  public KuzzleDataMapping refresh() throws IOException, JSONException, KuzzleException {
-    return refresh(null);
-  }
-
-  /**
    * Adds or updates a field mapping.
-   * <p>
+   * <p/>
    * Changes made by this function won't be applied until you call the apply method
    *
    * @param field the field
