@@ -37,6 +37,56 @@ public class KuzzleDataCollection {
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function.
    *
+   * @param filter the filter
+   * @return the kuzzle data collection
+   * @throws KuzzleException the kuzzle exception
+   * @throws JSONException   the json exception
+   * @throws IOException     the io exception
+   */
+  public KuzzleDataCollection advancedSearch(JSONObject filter) throws KuzzleException, JSONException, IOException {
+    return this.advancedSearch(filter, null, null);
+  }
+
+  /**
+   * Executes an advanced search on the data collection.
+   * /!\ There is a small delay between documents creation and their existence in our advanced search layer,
+   * usually a couple of seconds.
+   * That means that a document that was just been created won’t be returned by this function.
+   *
+   * @param filter  the filter
+   * @param options the options
+   * @return the kuzzle data collection
+   * @throws KuzzleException the kuzzle exception
+   * @throws JSONException   the json exception
+   * @throws IOException     the io exception
+   */
+  public KuzzleDataCollection advancedSearch(JSONObject filter, KuzzleOptions options) throws KuzzleException, JSONException, IOException {
+    return this.advancedSearch(filter, options, null);
+  }
+
+  /**
+   * Executes an advanced search on the data collection.
+   * /!\ There is a small delay between documents creation and their existence in our advanced search layer,
+   * usually a couple of seconds.
+   * That means that a document that was just been created won’t be returned by this function.
+   *
+   * @param filter   the filter
+   * @param listener the listener
+   * @return the kuzzle data collection
+   * @throws KuzzleException the kuzzle exception
+   * @throws JSONException   the json exception
+   * @throws IOException     the io exception
+   */
+  public KuzzleDataCollection advancedSearch(JSONObject filter, ResponseListener listener) throws KuzzleException, JSONException, IOException {
+    return this.advancedSearch(filter, null, listener);
+  }
+
+  /**
+   * Executes an advanced search on the data collection.
+   * /!\ There is a small delay between documents creation and their existence in our advanced search layer,
+   * usually a couple of seconds.
+   * That means that a document that was just been created won’t be returned by this function.
+   *
    * @param filters  the filters
    * @param options  the options
    * @param listener the listener
@@ -80,6 +130,59 @@ public class KuzzleDataCollection {
       }
     });
     return this;
+  }
+
+  /**
+   * Returns the number of documents matching the provided set of filters.
+   * <p/>
+   * There is a small delay between documents creation and their existence in our advanced search layer,
+   * usually a couple of seconds.
+   * That means that a document that was just been created won’t be returned by this function
+   *
+   * @param filters the filters
+   * @return the kuzzle data collection
+   * @throws KuzzleException the kuzzle exception
+   * @throws IOException     the io exception
+   * @throws JSONException   the json exception
+   */
+  public KuzzleDataCollection count(JSONObject filters) throws KuzzleException, IOException, JSONException {
+    return this.count(filters, null, null);
+  }
+
+  /**
+   * Returns the number of documents matching the provided set of filters.
+   * <p/>
+   * There is a small delay between documents creation and their existence in our advanced search layer,
+   * usually a couple of seconds.
+   * That means that a document that was just been created won’t be returned by this function
+   *
+   * @param filters the filters
+   * @param options the options
+   * @return the kuzzle data collection
+   * @throws KuzzleException the kuzzle exception
+   * @throws IOException     the io exception
+   * @throws JSONException   the json exception
+   */
+  public KuzzleDataCollection count(JSONObject filters, KuzzleOptions options) throws KuzzleException, IOException, JSONException {
+    return this.count(filters, options, null);
+  }
+
+  /**
+   * Returns the number of documents matching the provided set of filters.
+   * <p/>
+   * There is a small delay between documents creation and their existence in our advanced search layer,
+   * usually a couple of seconds.
+   * That means that a document that was just been created won’t be returned by this function
+   *
+   * @param filters  the filters
+   * @param listener the listener
+   * @return the kuzzle data collection
+   * @throws KuzzleException the kuzzle exception
+   * @throws IOException     the io exception
+   * @throws JSONException   the json exception
+   */
+  public KuzzleDataCollection count(JSONObject filters, ResponseListener listener) throws KuzzleException, IOException, JSONException {
+    return this.count(filters, null, listener);
   }
 
   /**
@@ -135,7 +238,7 @@ public class KuzzleDataCollection {
    * @throws KuzzleException the kuzzle exception
    */
   public KuzzleDataCollection createDocument(KuzzleDocument document) throws JSONException, IOException, KuzzleException {
-    return this.createDocument(document, null);
+    return this.createDocument(document, null, null);
   }
 
   /**
@@ -149,7 +252,11 @@ public class KuzzleDataCollection {
    * @throws KuzzleException the kuzzle exception
    */
   public KuzzleDataCollection createDocument(KuzzleDocument document, KuzzleOptions options) throws JSONException, IOException, KuzzleException {
-    return createDocument(document, options, null);
+    return this.createDocument(document, options, null);
+  }
+
+  public KuzzleDataCollection createDocument(KuzzleDocument document, ResponseListener listener) throws KuzzleException, IOException, JSONException {
+    return this.createDocument(document, null ,listener);
   }
 
   /**
@@ -271,31 +378,8 @@ public class KuzzleDataCollection {
     return this;
   }
 
-  /**
-   * Retrieve a single stored document using its unique document ID.
-   *
-   * @param documentId the document id
-   * @return the kuzzle data collection
-   * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
-   * @throws JSONException   the json exception
-   */
-  public KuzzleDataCollection fetchDocument(String documentId) throws KuzzleException, IOException, JSONException {
-    return this.fetchDocument(documentId, null, null);
-  }
-
-  /**
-   * Retrieve a single stored document using its unique document ID.
-   *
-   * @param documentId the document id
-   * @param options    the options
-   * @return the kuzzle data collection
-   * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
-   * @throws JSONException   the json exception
-   */
-  public KuzzleDataCollection fetchDocument(String documentId, KuzzleOptions options) throws KuzzleException, IOException, JSONException {
-    return this.fetchDocument(documentId, options, null);
+  public KuzzleDataCollection fetchDocument(String documentId, ResponseListener listener) throws KuzzleException, IOException, JSONException {
+    return this.fetchDocument(documentId, null, listener);
   }
 
   /**
@@ -316,32 +400,6 @@ public class KuzzleDataCollection {
     this.kuzzle.query(this.collection, "read", "get", data, options, cb);
     return this;
   }
-
-  /**
-   * Retrieves all documents stored in this data collection.
-   *
-   * @return the kuzzle data collection
-   * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
-   * @throws JSONException   the json exception
-   */
-  public KuzzleDataCollection fetchAllDocuments() throws KuzzleException, IOException, JSONException {
-    return this.fetchAllDocuments(null ,null);
-  }
-
-  /**
-   * Retrieves all documents stored in this data collection.
-   *
-   * @param options the options
-   * @return the kuzzle data collection
-   * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
-   * @throws JSONException   the json exception
-   */
-  public KuzzleDataCollection fetchAllDocuments(KuzzleOptions options) throws KuzzleException, IOException, JSONException {
-    return this.fetchAllDocuments(options, null);
-  }
-
 
   /**
    * Retrieves all documents stored in this data collection.

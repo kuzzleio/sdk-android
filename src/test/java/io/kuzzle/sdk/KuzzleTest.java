@@ -51,6 +51,7 @@ public class KuzzleTest {
   @Test(expected = KuzzleException.class)
   public void testIsValid() throws URISyntaxException, KuzzleException {
     kuzzle = new Kuzzle("http://localhost:7512");
+    kuzzle.setSocket(mock(Socket.class));
     kuzzle.logout();
     kuzzle.isValid();
   }
@@ -58,6 +59,7 @@ public class KuzzleTest {
   @Test
   public void testAddListener() throws URISyntaxException, KuzzleException {
     kuzzle = new Kuzzle("http://localhost:7512");
+    kuzzle.setSocket(mock(Socket.class));
     assertEquals(kuzzle.getEventListeners(), new ArrayList<IEventListener>());
     IEventListener event = new IEventListener() {
       @Override
@@ -73,6 +75,7 @@ public class KuzzleTest {
   @Test
   public void testDataCollectionFactory() throws URISyntaxException, IOException, JSONException, KuzzleException {
     kuzzle = new Kuzzle("http://localhost:7512");
+    kuzzle.setSocket(mock(Socket.class));
     assertEquals(kuzzle.dataCollectionFactory("test").fetchDocument("test", null).getCollection(), "test");
     assertEquals(kuzzle.dataCollectionFactory("test2").fetchDocument("test2", null).getCollection(), "test2");
   }
@@ -80,6 +83,7 @@ public class KuzzleTest {
   @Test
   public void testLogout() throws URISyntaxException {
     kuzzle = new Kuzzle("http://localhost:7512");
+    kuzzle.setSocket(mock(Socket.class));
     assertNotNull(kuzzle.getSocket());
     kuzzle.logout();
     assertNull(kuzzle.getSocket());
@@ -108,6 +112,7 @@ public class KuzzleTest {
   @Test
   public void testSetHeaders() throws URISyntaxException, JSONException {
     kuzzle = new Kuzzle("http://localhost:7512");
+    kuzzle.setSocket(mock(Socket.class));
     JSONObject content = new JSONObject();
     content.put("foo", "bar");
     kuzzle.setHeaders(content);
@@ -120,6 +125,7 @@ public class KuzzleTest {
   @Test
   public void testAddHeaders() throws JSONException, URISyntaxException {
     kuzzle = new Kuzzle("http://localhost:7512");
+    kuzzle.setSocket(mock(Socket.class));
     JSONObject query = new JSONObject();
     JSONObject headers = new JSONObject();
     headers.put("testPurpose", "test");
@@ -166,6 +172,7 @@ public class KuzzleTest {
   @Test
   public void testGetAllStatsSuccess() throws Exception {
     kuzzle = new Kuzzle("http://localhost:7512");
+    kuzzle.setSocket(mock(Socket.class));
     Kuzzle spy = spy(kuzzle);
 
     final JSONObject response = new JSONObject();
@@ -214,6 +221,7 @@ public class KuzzleTest {
   @Test
   public void testGetAllStatsError() throws Exception {
     kuzzle = new Kuzzle("http://localhost:7512");
+    kuzzle.setSocket(mock(Socket.class));
     Kuzzle spy = spy(kuzzle);
 
     final JSONObject responseError = new JSONObject();
@@ -241,6 +249,7 @@ public class KuzzleTest {
   @Test
   public void testGetLastStatistic() throws URISyntaxException, JSONException, IOException, KuzzleException {
     kuzzle = new Kuzzle("http://localhost:7512");
+    kuzzle.setSocket(mock(Socket.class));
     Kuzzle spy = spy(kuzzle);
     final JSONObject response = new JSONObject();
     JSONObject stats = new JSONObject();
