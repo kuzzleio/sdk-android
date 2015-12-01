@@ -58,6 +58,7 @@ public class KuzzleTest {
   @Test
   public void testAddListener() throws URISyntaxException, KuzzleException {
     kuzzle = new Kuzzle("http://localhost:7512");
+    kuzzle.setSocket(mock(Socket.class));
     assertEquals(kuzzle.getEventListeners(), new ArrayList<IEventListener>());
     IEventListener event = new IEventListener() {
       @Override

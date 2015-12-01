@@ -63,14 +63,50 @@ public class KuzzleDataCollectionTest {
       public void onError(JSONObject error) throws Exception {
       }
     });
-    verify(k, times(1)).query(eq("test"), eq("read"), eq("search"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    collection.advancedSearch(filters);
+    collection.advancedSearch(filters, new KuzzleOptions());
+    collection.advancedSearch(filters, new ResponseListener() {
+      @Override
+      public void onSuccess(JSONObject object) throws Exception {
+
+      }
+
+      @Override
+      public void onError(JSONObject error) throws Exception {
+
+      }
+    });
+    verify(k, times(4)).query(eq("test"), eq("read"), eq("search"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
   }
 
   @Test
   public void testCount() throws IOException, JSONException, KuzzleException {
     JSONObject filters = new JSONObject();
-    collection.count(filters, null, null);
-    verify(k, times(1)).query(eq("test"), eq("read"), eq("count"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    collection.count(filters);
+    collection.count(filters, new KuzzleOptions());
+    collection.count(filters, new ResponseListener() {
+      @Override
+      public void onSuccess(JSONObject object) throws Exception {
+
+      }
+
+      @Override
+      public void onError(JSONObject error) throws Exception {
+
+      }
+    });
+    collection.count(filters, new KuzzleOptions(), new ResponseListener() {
+      @Override
+      public void onSuccess(JSONObject object) throws Exception {
+
+      }
+
+      @Override
+      public void onError(JSONObject error) throws Exception {
+
+      }
+    });
+    verify(k, times(4)).query(eq("test"), eq("read"), eq("count"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
   }
 
   @Test
@@ -94,7 +130,18 @@ public class KuzzleDataCollectionTest {
     KuzzleDocument doc = new KuzzleDocument(collection);
     doc.setContent("foo", "bar");
     collection.createDocument(doc);
-    verify(k, times(1)).query(eq("test"), eq("write"), eq("create"), eq(doc), any(KuzzleOptions.class), any(ResponseListener.class));
+    collection.createDocument(doc, new ResponseListener() {
+      @Override
+      public void onSuccess(JSONObject object) throws Exception {
+
+      }
+
+      @Override
+      public void onError(JSONObject error) throws Exception {
+
+      }
+    });
+    verify(k, times(2)).query(eq("test"), eq("write"), eq("create"), eq(doc), any(KuzzleOptions.class), any(ResponseListener.class));
   }
 
   @Test
@@ -147,14 +194,33 @@ public class KuzzleDataCollectionTest {
 
   @Test
   public void testFetchDocument() throws IOException, JSONException, KuzzleException {
-    collection.fetchDocument("42");
-    verify(k, times(1)).query(eq("test"), eq("read"), eq("get"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    collection.fetchDocument("42", new ResponseListener() {
+      @Override
+      public void onSuccess(JSONObject object) throws Exception {
+
+      }
+
+      @Override
+      public void onError(JSONObject error) throws Exception {
+
+      }
+    });
+    collection.fetchDocument("42", new KuzzleOptions(), new ResponseListener() {
+      @Override
+      public void onSuccess(JSONObject object) throws Exception {
+
+      }
+
+      @Override
+      public void onError(JSONObject error) throws Exception {
+
+      }
+    });
+    verify(k, times(2)).query(eq("test"), eq("read"), eq("get"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
   }
 
   @Test
   public void testFetchAllDocuments() throws KuzzleException, IOException, JSONException {
-    collection.fetchAllDocuments();
-    collection.fetchAllDocuments(new KuzzleOptions());
     collection.fetchAllDocuments(new KuzzleOptions(), new ResponseListener() {
       @Override
       public void onSuccess(JSONObject object) throws Exception {
@@ -177,7 +243,7 @@ public class KuzzleDataCollectionTest {
 
       }
     });
-    verify(k, times(4)).query(eq("test"), eq("read"), eq("search"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    verify(k, times(2)).query(eq("test"), eq("read"), eq("search"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
   }
 
   @Test
