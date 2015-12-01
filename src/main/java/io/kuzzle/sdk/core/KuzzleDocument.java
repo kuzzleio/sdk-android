@@ -1,5 +1,6 @@
 package io.kuzzle.sdk.core;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,6 +15,7 @@ import io.kuzzle.sdk.exceptions.KuzzleException;
  */
 public class KuzzleDocument extends JSONObject {
 
+  private final KuzzleDataCollection  dataCollection;
   private final String  collection;
   private final Kuzzle  kuzzle;
 
@@ -26,6 +28,7 @@ public class KuzzleDocument extends JSONObject {
    * @throws JSONException the json exception
    */
   public KuzzleDocument(KuzzleDataCollection kuzzleDataCollection, JSONObject content) throws JSONException {
+    this.dataCollection = kuzzleDataCollection;
     this.collection = kuzzleDataCollection.getCollection();
     this.kuzzle = kuzzleDataCollection.getKuzzle();
     this.put("headers", kuzzleDataCollection.getHeaders());
@@ -52,8 +55,9 @@ public class KuzzleDocument extends JSONObject {
    * Deletes this document in Kuzzle.
    *
    * @return kuzzle document
-   * @throws JSONException the json exception
-   * @throws IOException   the io exception
+   * @throws JSONException   the json exception
+   * @throws IOException     the io exception
+   * @throws KuzzleException the kuzzle exception
    */
   public KuzzleDocument delete() throws JSONException, IOException, KuzzleException {
     if (this.getId() == null)
@@ -76,18 +80,36 @@ public class KuzzleDocument extends JSONObject {
   /**
    * Replaces the current content with the last version of this document stored in Kuzzle.
    *
+   * @return the kuzzle document
+   * @throws KuzzleException the kuzzle exception
+   * @throws IOException     the io exception
+   * @throws JSONException   the json exception
+   */
+  public KuzzleDocument refresh() throws KuzzleException, IOException, JSONException {
+    return this.refresh(null);
+  }
+
+  /**
+   * Replaces the current content with the last version of this document stored in Kuzzle.
+   *
    * @param cb the cb
    * @return kuzzle document
-   * @throws JSONException the json exception
-   * @throws IOException   the io exception
+   * @throws JSONException   the json exception
+   * @throws IOException     the io exception
+   * @throws KuzzleException the kuzzle exception
    */
   public KuzzleDocument refresh(final ResponseListener cb) throws JSONException, IOException, KuzzleException {
-    this.kuzzle.query(this.collection, "read", "get", this, new ResponseListener() {
+    if (this.getId() == null) {
+      throw new KuzzleException("KuzzleDocument.refresh: cannot retrieve a document if no id has been provided");
+    }
 
+    JSONObject content = new JSONObject();
+    content.put("_id", this.getId());
+    this.kuzzle.query(this.collection, "read", "get", content, new ResponseListener() {
       @Override
       public void onSuccess(JSONObject args) throws Exception {
-        KuzzleDocument.this.put("body", args);
-        KuzzleDocument.this.put("version", args.get("version"));
+        KuzzleDocument.this.put("body", args.getJSONObject("_source"));
+        KuzzleDocument.this.put("_version", args.get("_version"));
         if (cb != null)
           cb.onSuccess(args);
       }
@@ -103,16 +125,61 @@ public class KuzzleDocument extends JSONObject {
 
   /**
    * Saves this document into Kuzzle.
-   * If this is a new document, this function will create it in Kuzzle. Otherwise, you can specify whether you want
-   * to merge this document with the one stored in Kuzzle, or if you want to replace it.
+   * If this is a new document, this function will create it in Kuzzle and the id property will be made available.
+   * Otherwise, this method will replace the latest version of this document in Kuzzle by the current content of this object.
    *
-   * @param replace  the replace
+   * @return the kuzzle document
+   * @throws JSONException   the json exception
+   * @throws IOException     the io exception
+   * @throws KuzzleException the kuzzle exception
+   */
+  public KuzzleDocument save() throws JSONException, IOException, KuzzleException {
+    return save(null, null);
+  }
+
+  /**
+   * Saves this document into Kuzzle.
+   * If this is a new document, this function will create it in Kuzzle and the id property will be made available.
+   * Otherwise, this method will replace the latest version of this document in Kuzzle by the current content of this object.
+   *
+   * @param options the options
+   * @return the kuzzle document
+   * @throws KuzzleException the kuzzle exception
+   * @throws IOException     the io exception
+   * @throws JSONException   the json exception
+   */
+  public KuzzleDocument save(KuzzleOptions options) throws KuzzleException, IOException, JSONException {
+    return this.save(options, null);
+  }
+
+  /**
+   * Saves this document into Kuzzle.
+   * If this is a new document, this function will create it in Kuzzle and the id property will be made available.
+   * Otherwise, this method will replace the latest version of this document in Kuzzle by the current content of this object.
+   *
+   * @param listener the listener
+   * @return the kuzzle document
+   * @throws IOException     the io exception
+   * @throws JSONException   the json exception
+   * @throws KuzzleException the kuzzle exception
+   */
+  public KuzzleDocument save(ResponseListener listener) throws IOException, JSONException, KuzzleException {
+    return save(null, listener);
+  }
+
+  /**
+   * Saves this document into Kuzzle.
+   * If this is a new document, this function will create it in Kuzzle and the id property will be made available.
+   * Otherwise, this method will replace the latest version of this document in Kuzzle by the current content of this object.
+   *
+   * @param options  the options
    * @param listener the listener
    * @return kuzzle document
-   * @throws JSONException the json exception
-   * @throws IOException   the io exception
+   * @throws JSONException   the json exception
+   * @throws IOException     the io exception
+   * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDocument save(final boolean replace, final ResponseListener listener) throws JSONException, IOException, KuzzleException {
+  public KuzzleDocument save(final KuzzleOptions options, final ResponseListener listener) throws JSONException, IOException, KuzzleException {
     this.kuzzle.addHeaders(this, getJSONObject("headers"));
 
     ResponseListener queryCB = new ResponseListener() {
@@ -121,7 +188,7 @@ public class KuzzleDocument extends JSONObject {
         if (KuzzleDocument.this.isNull("_id"))
           put("_id", args.getString("_id"));
         if (listener != null)
-          listener.onSuccess(args);
+          listener.onSuccess(KuzzleDocument.this);
       }
 
       @Override
@@ -131,48 +198,8 @@ public class KuzzleDocument extends JSONObject {
       }
     };
     this.put("persist", true);
-    String action;
-    if (isNull("_id") || replace)
-      action = "createOrUpdate";
-    else
-      action = "update";
-    kuzzle.query(this.collection, "write", action, this, queryCB);
+    kuzzle.query(this.collection, "write", "createOrUpdate", this, options, queryCB);
     return this;
-  }
-
-  /**
-   * Save kuzzle document.
-   *
-   * @param replace the replace
-   * @return the kuzzle document
-   * @throws JSONException the json exception
-   * @throws IOException   the io exception
-   */
-  public KuzzleDocument save(boolean replace) throws JSONException, IOException, KuzzleException {
-    return save(replace, null);
-  }
-
-  /**
-   * Save kuzzle document.
-   *
-   * @return the kuzzle document
-   * @throws JSONException the json exception
-   * @throws IOException   the io exception
-   */
-  public KuzzleDocument save() throws JSONException, IOException, KuzzleException {
-    return save(false, null);
-  }
-
-  /**
-   * Save kuzzle document.
-   *
-   * @param listener the listener
-   * @return the kuzzle document
-   * @throws IOException   the io exception
-   * @throws JSONException the json exception
-   */
-  public KuzzleDocument save(ResponseListener listener) throws IOException, JSONException, KuzzleException {
-    return save(false, listener);
   }
 
   /**
@@ -180,8 +207,9 @@ public class KuzzleDocument extends JSONObject {
    *
    * @param options the options
    * @return kuzzle document
-   * @throws JSONException the json exception
-   * @throws IOException   the io exception
+   * @throws JSONException   the json exception
+   * @throws IOException     the io exception
+   * @throws KuzzleException the kuzzle exception
    */
   public KuzzleDocument publish(KuzzleOptions options) throws JSONException, IOException, KuzzleException {
     put("persist", false);
@@ -193,8 +221,9 @@ public class KuzzleDocument extends JSONObject {
    * Publish kuzzle document.
    *
    * @return the kuzzle document
-   * @throws IOException   the io exception
-   * @throws JSONException the json exception
+   * @throws IOException     the io exception
+   * @throws JSONException   the json exception
+   * @throws KuzzleException the kuzzle exception
    */
   public KuzzleDocument publish() throws IOException, JSONException, KuzzleException {
     return this.publish(null);
@@ -246,17 +275,68 @@ public class KuzzleDocument extends JSONObject {
   }
 
   /**
-   * Listens to events concerning this document. Has no effect if the document does not have an ID
-   * (i.e. if the document has not yet been created as a persisted document).
+   * Listens to changes occuring on this document.
+   * Throws an error if this document has not yet been created in Kuzzle.
    *
+   * @return the kuzzle document
+   * @throws KuzzleException the kuzzle exception
+   * @throws JSONException   the json exception
+   * @throws IOException     the io exception
+   */
+  public KuzzleDocument subscribe() throws KuzzleException, JSONException, IOException {
+    return this.subscribe(null, null);
+  }
+
+  /**
+   * Listens to changes occuring on this document.
+   * Throws an error if this document has not yet been created in Kuzzle.
+   *
+   * @param options the options
+   * @return the kuzzle document
+   * @throws KuzzleException the kuzzle exception
+   * @throws JSONException   the json exception
+   * @throws IOException     the io exception
+   */
+  public KuzzleDocument subscribe(KuzzleRoomOptions options) throws KuzzleException, JSONException, IOException {
+    return this.subscribe(options, null);
+  }
+
+  /**
+   * Listens to changes occuring on this document.
+   * Throws an error if this document has not yet been created in Kuzzle.
+   *
+   * @param listener the listener
+   * @return the kuzzle document
+   * @throws KuzzleException the kuzzle exception
+   * @throws JSONException   the json exception
+   * @throws IOException     the io exception
+   */
+  public KuzzleDocument subscribe(ResponseListener listener) throws KuzzleException, JSONException, IOException {
+    return this.subscribe(null, listener);
+  }
+
+  /**
+   * Listens to changes occuring on this document.
+   * Throws an error if this document has not yet been created in Kuzzle.
+   *
+   * @param options  the options
+   * @param listener the listener
    * @return kuzzle document
    * @throws KuzzleException the kuzzle exception
    * @throws JSONException   the json exception
+   * @throws IOException     the io exception
    */
-  public KuzzleDocument subscribe() throws KuzzleException, JSONException {
-    if (this.getId() == null)
-      throw new KuzzleException("Cannot subscribe to a document that has not been created into Kuzzle");
-    // TODO: implement this function once KuzzleRoom has been implemented
+  public KuzzleDocument subscribe(KuzzleRoomOptions options, ResponseListener listener) throws KuzzleException, JSONException, IOException {
+    if (this.getId() == null) {
+      throw new KuzzleException("KuzzleDocument.subscribe: cannot subscribe to a document if no ID has been provided");
+    }
+    JSONObject filters = new JSONObject();
+    JSONObject values = new JSONObject();
+    JSONArray ids = new JSONArray();
+    ids.put(this.getId());
+    values.put("values", ids);
+    filters.put("ids", values);
+    this.dataCollection.subscribe(filters, options, listener);
     return null;
   }
 
@@ -266,7 +346,7 @@ public class KuzzleDocument extends JSONObject {
    * @return the collection
    */
   public String getCollection() {
-    return collection;
+    return collection; // $COVERAGE-IGNORE$
   }
 
   /**
@@ -275,7 +355,7 @@ public class KuzzleDocument extends JSONObject {
    * @return the kuzzle
    */
   public Kuzzle getKuzzle() {
-    return kuzzle;
+    return kuzzle; // $COVERAGE-IGNORE$
   }
 
   /**
@@ -285,6 +365,9 @@ public class KuzzleDocument extends JSONObject {
    * @throws JSONException the json exception
    */
   public JSONObject getContent() throws JSONException {
+    if (isNull("body")) {
+      this.put("body", new JSONObject());
+    }
     return this.getJSONObject("body");
   }
 
@@ -295,6 +378,9 @@ public class KuzzleDocument extends JSONObject {
    * @throws JSONException the json exception
    */
   public JSONObject getHeaders() throws JSONException {
+    if (isNull("headers")) {
+      this.put("headers", new JSONObject());
+    }
     return this.getJSONObject("headers");
   }
 
@@ -304,8 +390,9 @@ public class KuzzleDocument extends JSONObject {
    * @param headers the headers
    * @throws JSONException the json exception
    */
-  public void setHeaders(JSONObject headers) throws JSONException {
+  public KuzzleDocument setHeaders(JSONObject headers) throws JSONException {
     this.put("headers", headers);
+    return this;
   }
 
   /**
@@ -315,7 +402,10 @@ public class KuzzleDocument extends JSONObject {
    * @throws JSONException the json exception
    */
   public String getId() throws JSONException {
-    return getString("_id");
+    if (!isNull("_id")) {
+      return getString("_id");
+    }
+    return null;
   }
 
   /**
@@ -324,8 +414,27 @@ public class KuzzleDocument extends JSONObject {
    * @param id the id
    * @throws JSONException the json exception
    */
-  public void setId(final String id) throws JSONException {
+  public KuzzleDocument setId(final String id) throws JSONException {
     put("_id", id);
+    return this;
+  }
+
+  public KuzzleDocument setVersion(final String version) throws JSONException {
+    this.put("_version", version);
+    return this;
+  }
+
+  /**
+   * Gets version.
+   *
+   * @return the version
+   * @throws JSONException the json exception
+   */
+  public String getVersion() throws JSONException {
+    if (!isNull("_version")) {
+      return getString("_version");
+    }
+    return null;
   }
 
 }
