@@ -2,13 +2,12 @@ package io.kuzzle.sdk.core;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.io.IOException;
 
-import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.enums.EventType;
 import io.kuzzle.sdk.exceptions.KuzzleException;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.util.Event;
 import io.socket.emitter.Emitter;
 
@@ -51,9 +50,8 @@ public class KuzzleRoom {
    */
   public KuzzleRoom(final KuzzleDataCollection kuzzleDataCollection, final KuzzleRoomOptions options) throws NullPointerException, KuzzleException {
     if (kuzzleDataCollection == null) {
-      throw new IllegalArgumentException("KuzzleRoom: missing parameters");
+      throw new IllegalArgumentException("KuzzleRoom: missing dataCollection");
     }
-
     kuzzleDataCollection.getKuzzle().isValid();
 
     this.kuzzle = kuzzleDataCollection.getKuzzle();

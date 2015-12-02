@@ -24,15 +24,19 @@ public class KuzzleDocument extends JSONObject {
    * KuzzleDocument is the object representation of one of these documents.
    *
    * @param kuzzleDataCollection - an instanciated KuzzleDataCollection object
+   * @param id                   the id
    * @param content              the content
    * @throws JSONException the json exception
    */
-  public KuzzleDocument(KuzzleDataCollection kuzzleDataCollection, JSONObject content) throws JSONException {
+  public KuzzleDocument(KuzzleDataCollection kuzzleDataCollection, final String id, JSONObject content) throws JSONException {
     this.dataCollection = kuzzleDataCollection;
     this.collection = kuzzleDataCollection.getCollection();
     this.kuzzle = kuzzleDataCollection.getKuzzle();
     this.put("headers", kuzzleDataCollection.getHeaders());
     this.put("body", new JSONObject());
+    if (id != null) {
+      this.setId(id);
+    }
     if (content != null) {
       for (Iterator iterator = content.keys(); iterator.hasNext(); ) {
         String key = (String) iterator.next();
@@ -42,13 +46,39 @@ public class KuzzleDocument extends JSONObject {
   }
 
   /**
-   * Instantiates a new Kuzzle document.
+   * Kuzzle handles documents either as realtime messages or as stored documents.
+   * KuzzleDocument is the object representation of one of these documents.
    *
    * @param kuzzleDataCollection the kuzzle data collection
    * @throws JSONException the json exception
    */
   public KuzzleDocument(KuzzleDataCollection kuzzleDataCollection) throws JSONException {
-    this(kuzzleDataCollection, null);
+    this(kuzzleDataCollection, null, null);
+  }
+
+
+  /**
+   * Kuzzle handles documents either as realtime messages or as stored documents.
+   * KuzzleDocument is the object representation of one of these documents.
+   *
+   * @param kuzzleDataCollection the kuzzle data collection
+   * @param id                   the id
+   * @throws JSONException the json exception
+   */
+  public KuzzleDocument(KuzzleDataCollection kuzzleDataCollection, final String id) throws JSONException {
+    this(kuzzleDataCollection, id, null);
+  }
+
+  /**
+   * Kuzzle handles documents either as realtime messages or as stored documents.
+   * KuzzleDocument is the object representation of one of these documents.
+   *
+   * @param kuzzleDataCollection the kuzzle data collection
+   * @param content              the content
+   * @throws JSONException the json exception
+   */
+  public KuzzleDocument(KuzzleDataCollection kuzzleDataCollection, JSONObject content) throws JSONException {
+    this(kuzzleDataCollection, null, content);
   }
 
   /**
@@ -346,7 +376,7 @@ public class KuzzleDocument extends JSONObject {
    * @return the collection
    */
   public String getCollection() {
-    return collection; // $COVERAGE-IGNORE$
+    return collection;
   }
 
   /**
@@ -355,7 +385,7 @@ public class KuzzleDocument extends JSONObject {
    * @return the kuzzle
    */
   public Kuzzle getKuzzle() {
-    return kuzzle; // $COVERAGE-IGNORE$
+    return kuzzle;
   }
 
   /**
@@ -388,6 +418,7 @@ public class KuzzleDocument extends JSONObject {
    * Sets headers.
    *
    * @param headers the headers
+   * @return the headers
    * @throws JSONException the json exception
    */
   public KuzzleDocument setHeaders(JSONObject headers) throws JSONException {
@@ -412,6 +443,7 @@ public class KuzzleDocument extends JSONObject {
    * Sets id.
    *
    * @param id the id
+   * @return the id
    * @throws JSONException the json exception
    */
   public KuzzleDocument setId(final String id) throws JSONException {
@@ -419,6 +451,13 @@ public class KuzzleDocument extends JSONObject {
     return this;
   }
 
+  /**
+   * Sets version.
+   *
+   * @param version the version
+   * @return the version
+   * @throws JSONException the json exception
+   */
   public KuzzleDocument setVersion(final String version) throws JSONException {
     this.put("_version", version);
     return this;

@@ -43,6 +43,12 @@ public class KuzzleDocumentTest {
   }
 
   @Test
+  public void testConstructor() throws JSONException {
+    doc = new KuzzleDocument(new KuzzleDataCollection(k, "test"), "42");
+    assertEquals(doc.getId(), "42");
+  }
+
+  @Test
   public void testDocumentWithContent() throws JSONException {
     JSONObject content = new JSONObject();
     JSONObject body = new JSONObject();
