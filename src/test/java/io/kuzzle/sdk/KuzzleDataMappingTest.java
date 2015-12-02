@@ -40,6 +40,13 @@ public class KuzzleDataMappingTest {
   }
 
   @Test
+  public void testConstructor() throws JSONException {
+    JSONObject mapping = new JSONObject();
+    mapping.put("type", "string");
+    dataMapping = new KuzzleDataMapping(dataCollection, mapping);
+  }
+
+  @Test
   public void testApply() throws IOException, JSONException, KuzzleException {
     dataMapping.apply();
     dataMapping.apply(new KuzzleOptions());

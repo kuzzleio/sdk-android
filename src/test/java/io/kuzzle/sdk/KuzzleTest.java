@@ -63,7 +63,7 @@ public class KuzzleTest {
     assertEquals(kuzzle.getEventListeners(), new ArrayList<IEventListener>());
     IEventListener event = new IEventListener() {
       @Override
-      public void trigger(String subscriptionId, JSONObject result) {
+      public void trigger(String subscriptionId, JSONObject result) throws Exception {
       }
     };
     List<IEventListener> listenerList = new ArrayList<>();
@@ -97,7 +97,7 @@ public class KuzzleTest {
     Kuzzle spy = spy(kuzzle);
     IEventListener event = new IEventListener() {
       @Override
-      public void trigger(String subscriptionId, JSONObject result) {
+      public void trigger(String subscriptionId, JSONObject result) throws Exception {
       }
     };
     String id = spy.addListener(EventType.UNSUBSCRIBED, event);

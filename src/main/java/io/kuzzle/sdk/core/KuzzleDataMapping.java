@@ -30,9 +30,14 @@ public class KuzzleDataMapping {
    * @param kuzzleDataCollection the kuzzle data collection
    */
   public KuzzleDataMapping(KuzzleDataCollection kuzzleDataCollection) {
+    this(kuzzleDataCollection, null);
+  }
+
+  public KuzzleDataMapping(KuzzleDataCollection kuzzleDataCollection, JSONObject mapping) {
     this.headers = kuzzleDataCollection.getHeaders();
     this.kuzzle = kuzzleDataCollection.getKuzzle();
     this.collection = kuzzleDataCollection.getCollection();
+    this.mapping = mapping == null ? new JSONObject() : mapping;
   }
 
   /**
@@ -194,9 +199,6 @@ public class KuzzleDataMapping {
    * @throws JSONException the json exception
    */
   public KuzzleDataMapping set(String field, JSONObject mapping) throws JSONException {
-    if (this.mapping == null) {
-      this.mapping = new JSONObject();
-    }
     this.mapping.put(field, mapping);
     return this;
   }
