@@ -23,7 +23,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -216,14 +215,22 @@ public class KuzzleDocumentTest {
   public void testSetHeaders() throws JSONException {
     JSONObject headers = new JSONObject();
     headers.put("foo", "bar");
-    when(k.setHeaders(any(JSONObject.class), anyBoolean())).thenCallRealMethod();
-    when(k.getHeaders()).thenCallRealMethod();
     doc.setHeaders(headers, true);
-    assertEquals(k.getHeaders().getString("foo"), "bar");
+    assertEquals(doc.getHeaders().getString("foo"), "bar");
     headers.put("oof", "baz");
     doc.setHeaders(headers);
-    assertEquals(k.getHeaders().getString("foo"), "bar");
-    assertEquals(k.getHeaders().getString("oof"), "baz");
+    assertEquals(doc.getHeaders().getString("foo"), "bar");
+    assertEquals(doc.getHeaders().getString("oof"), "baz");
+  }
+
+  @Test
+  public void testGetHeaders() throws JSONException, IOException, KuzzleException {
+    doc.setHeaders(null);
+    assertNotNull(doc.getHeaders());
+    JSONObject headers = new JSONObject();
+    headers.put("foo", "bar");
+    doc.setHeaders(headers);
+    assertEquals(doc.getHeaders().getString("foo"), "bar");
   }
 
   @Test

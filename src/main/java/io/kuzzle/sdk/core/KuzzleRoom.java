@@ -4,6 +4,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 
 import io.kuzzle.sdk.enums.EventType;
 import io.kuzzle.sdk.exceptions.KuzzleException;
@@ -17,6 +19,7 @@ import io.socket.emitter.Emitter;
 public class KuzzleRoom {
 
   private String collection;
+  private KuzzleDataCollection  dataCollection;
   private JSONObject filters;
   private JSONObject headers;
   private boolean listeningToConnections;
@@ -37,12 +40,10 @@ public class KuzzleRoom {
 
   /**
    * This object is the result of a subscription request, allowing to manipulate the subscription itself.
-   * <p/>
-   * In Kuzzle, you don’t exactly subscribe to a room or a topic but, instead, you subscribe to documents.
-   * <p/>
+   * In Kuzzle, you don't exactly subscribe to a room or a topic but, instead, you subscribe to documents.
    * What it means is that, to subscribe, you provide to Kuzzle a set of matching filters.
    * Once you have subscribed, if a pub/sub message is published matching your filters, or if a matching stored
-   * document change (because it is created, updated or deleted), then you’ll receive a notification about it.
+   * document change (because it is created, updated or deleted), then you'll receive a notification about it.
    *
    * @param kuzzleDataCollection the kuzzle data collection
    * @param options              the options
@@ -53,6 +54,7 @@ public class KuzzleRoom {
       throw new IllegalArgumentException("KuzzleRoom: missing dataCollection");
     }
     kuzzleDataCollection.getKuzzle().isValid();
+    dataCollection = kuzzleDataCollection;
 
     this.kuzzle = kuzzleDataCollection.getKuzzle();
     this.collection = kuzzleDataCollection.getCollection();
@@ -143,7 +145,7 @@ public class KuzzleRoom {
       if (listening && cb != null)
         cb.onSuccess(((JSONObject) args).getJSONObject("result"));
       if (KuzzleRoom.this.eventExist(globalEvent)) {
-        triggerEvents(listening, globalEvent, (KuzzleDocument) args, cb, args);
+        triggerEvents(listening, globalEvent, new KuzzleDocument(dataCollection), cb, args);
       }
     } else {
       if (cb != null)
@@ -152,7 +154,8 @@ public class KuzzleRoom {
   }
 
   /**
-   * Renew the subscription using new filters
+   * Renew the subscription. Force a resubscription using the same filters if no new ones are provided.
+   * Unsubscribes first if this KuzzleRoom was already listening to events.
    *
    * @param filters the filters
    * @param cb      the cb
@@ -190,22 +193,27 @@ public class KuzzleRoom {
 
       @Override
       public void onError(JSONObject arg) throws Exception {
-        cb.onError(arg);
+        if (cb != null) {
+          cb.onError(arg);
+        }
       }
     });
     return this;
   }
 
   private boolean eventExist(EventType event) {
-    for (Event e : kuzzle.getEventListeners()) {
-      if (e.getType() == event)
-        return true;
+    List<Event> eventList = kuzzle.getEventListeners();
+    if (eventList != null) {
+      for (Event e : kuzzle.getEventListeners()) {
+        if (e.getType() == event)
+          return true;
+      }
     }
     return false;
   }
 
   /**
-   * Unsubscribe kuzzle room.
+   * Cancels the current subscription.
    *
    * @param listener the listener
    * @return the kuzzle room
@@ -239,7 +247,7 @@ public class KuzzleRoom {
   }
 
   /**
-   * Unsubscribe kuzzle room.
+   * Cancels the current subscription.
    *
    * @return the kuzzle room
    * @throws IOException   the io exception
@@ -282,16 +290,47 @@ public class KuzzleRoom {
    * @return the headers
    */
   public JSONObject getHeaders() {
-    return headers;
+    return this.headers;
   }
 
   /**
-   * Sets headers.
+   * Helper function allowing to set headers while chaining calls.
+   * If the replace argument is set to true, replace the current headers with the provided content.
+   * Otherwise, it appends the content to the current headers, only replacing already existing values
    *
-   * @param headers the headers
+   * @param content the headers
+   * @return the headers
+   * @throws JSONException the json exception
    */
-  public void setHeaders(JSONObject headers) {
-    this.headers = headers;
+  public KuzzleRoom setHeaders(JSONObject content) throws JSONException {
+    return this.setHeaders(content, false);
+  }
+
+  /**
+   * Helper function allowing to set headers while chaining calls.
+   * If the replace argument is set to true, replace the current headers with the provided content.
+   * Otherwise, it appends the content to the current headers, only replacing already existing values
+   *
+   * @param content - new headers content
+   * @param replace - default: false = append the content. If true: replace the current headers with tj
+   * @return the headers
+   * @throws JSONException the json exception
+   */
+  public KuzzleRoom setHeaders(JSONObject content, boolean replace) throws JSONException {
+    if (this.headers == null) {
+      this.headers = new JSONObject();
+    }
+    if (replace) {
+      this.headers = content;
+    } else {
+      if (content != null) {
+        for (Iterator ite = content.keys(); ite.hasNext(); ) {
+          String key = (String) ite.next();
+          this.headers.put(key, content.get(key));
+        }
+      }
+    }
+    return this;
   }
 
   /**

@@ -403,27 +403,52 @@ public class KuzzleDocument extends JSONObject {
   }
 
   /**
-   * Sets headers.
+   * Helper function allowing to set headers while chaining calls.
+   * If the replace argument is set to true, replace the current headers with the provided content.
+   * Otherwise, it appends the content to the current headers, only replacing already existing values
    *
-   * @param headers the headers
+   * @param content the headers
    * @return the headers
    * @throws JSONException the json exception
    */
-  public KuzzleDocument setHeaders(JSONObject headers) throws JSONException {
-    return this.setHeaders(headers, false);
+  public KuzzleDocument setHeaders(JSONObject content) throws JSONException {
+    return this.setHeaders(content, false);
   }
 
   /**
-   * Sets headers.
+   * Helper function allowing to set headers while chaining calls.
+   * If the replace argument is set to true, replace the current headers with the provided content.
+   * Otherwise, it appends the content to the current headers, only replacing already existing values
    *
-   * @param headers the headers
-   * @param replace the replace
+   * @param content - new headers content
+   * @param replace - default: false = append the content. If true: replace the current headers with tj
    * @return the headers
    * @throws JSONException the json exception
    */
-  public KuzzleDocument setHeaders(JSONObject headers, boolean replace) throws JSONException {
-    this.kuzzle.setHeaders(headers, replace);
+  public KuzzleDocument setHeaders(JSONObject content, boolean replace) throws JSONException {
+    if (replace) {
+      this.put("headers", content);
+    } else {
+      JSONObject headers = new JSONObject();
+      if (content != null) {
+        for (Iterator ite = content.keys(); ite.hasNext(); ) {
+          String key = (String) ite.next();
+          headers.put(key, content.get(key));
+        }
+        this.put("headers", headers);
+      }
+    }
     return this;
+  }
+
+  /**
+   * Gets headers.
+   *
+   * @return the headers
+   * @throws JSONException the json exception
+   */
+  public JSONObject getHeaders() throws JSONException {
+    return this.getJSONObject("headers");
   }
 
   /**
