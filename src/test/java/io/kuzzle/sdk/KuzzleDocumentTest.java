@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -65,12 +66,13 @@ public class KuzzleDocumentTest {
       public Object answer(InvocationOnMock invocation) throws Throwable {
         JSONObject response = new JSONObject();
         response.put("_id", "id-42");
+        response.put("_version", "42");
         response.put("result", response);
         ((ResponseListener) invocation.getArguments()[5]).onSuccess(response);
         ((ResponseListener) invocation.getArguments()[5]).onError(null);
         return null;
       }
-    }).when(k).query(eq("test"), eq("write"), any(String.class), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    }).when(k).query(eq("test"), eq("write"), eq("createOrUpdate"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
     doc.save();
     doc.save(new KuzzleOptions());
     doc.save(new ResponseListener() {
@@ -211,20 +213,46 @@ public class KuzzleDocumentTest {
   }
 
   @Test
-  public void testGetHeaders() throws JSONException, IOException, KuzzleException {
-    doc.setHeaders(null);
-    assertNotNull(doc.getHeaders());
+  public void testSetHeaders() throws JSONException {
     JSONObject headers = new JSONObject();
     headers.put("foo", "bar");
+    when(k.setHeaders(any(JSONObject.class), anyBoolean())).thenCallRealMethod();
+    when(k.getHeaders()).thenCallRealMethod();
+    doc.setHeaders(headers, true);
+    assertEquals(k.getHeaders().getString("foo"), "bar");
+    headers.put("oof", "baz");
     doc.setHeaders(headers);
-    assertEquals(doc.getHeaders().getString("foo"), "bar");
+    assertEquals(k.getHeaders().getString("foo"), "bar");
+    assertEquals(k.getHeaders().getString("oof"), "baz");
   }
 
   @Test
-  public void testGetVersion() throws JSONException {
+  public void testGetVersion() throws JSONException, IOException, KuzzleException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        JSONObject response = new JSONObject();
+        JSONObject source = new JSONObject();
+        source.put("foo", "bar");
+        response.put("_source", source);
+        response.put("_version", "42");
+        response.put("_id", "id");
+        ((ResponseListener) invocation.getArguments()[5]).onSuccess(response);
+        return null;
+      }
+    }).when(k).query(eq("test"), eq("write"), eq("createOrUpdate"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
     assertNull(doc.getVersion());
-    doc.setVersion("42");
-    assertEquals(doc.getVersion(), "42");
+    doc.save(new ResponseListener() {
+      @Override
+      public void onSuccess(JSONObject object) throws Exception {
+        assertEquals(doc.getVersion(), "42");
+      }
+
+      @Override
+      public void onError(JSONObject error) throws Exception {
+
+      }
+    });
   }
 
 }

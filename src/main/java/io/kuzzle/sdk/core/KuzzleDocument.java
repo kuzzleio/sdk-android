@@ -215,10 +215,11 @@ public class KuzzleDocument extends JSONObject {
     ResponseListener queryCB = new ResponseListener() {
       @Override
       public void onSuccess(JSONObject args) throws Exception {
-        if (KuzzleDocument.this.isNull("_id"))
-          put("_id", args.getString("_id"));
-        if (listener != null)
+        put("_id", args.getString("_id"));
+        put("_version", args.getString("_version"));
+        if (listener != null) {
           listener.onSuccess(KuzzleDocument.this);
+        }
       }
 
       @Override
@@ -402,19 +403,6 @@ public class KuzzleDocument extends JSONObject {
   }
 
   /**
-   * Gets headers.
-   *
-   * @return the headers
-   * @throws JSONException the json exception
-   */
-  public JSONObject getHeaders() throws JSONException {
-    if (isNull("headers")) {
-      this.put("headers", new JSONObject());
-    }
-    return this.getJSONObject("headers");
-  }
-
-  /**
    * Sets headers.
    *
    * @param headers the headers
@@ -422,7 +410,19 @@ public class KuzzleDocument extends JSONObject {
    * @throws JSONException the json exception
    */
   public KuzzleDocument setHeaders(JSONObject headers) throws JSONException {
-    this.put("headers", headers);
+    return this.setHeaders(headers, false);
+  }
+
+  /**
+   * Sets headers.
+   *
+   * @param headers the headers
+   * @param replace the replace
+   * @return the headers
+   * @throws JSONException the json exception
+   */
+  public KuzzleDocument setHeaders(JSONObject headers, boolean replace) throws JSONException {
+    this.kuzzle.setHeaders(headers, replace);
     return this;
   }
 
@@ -448,18 +448,6 @@ public class KuzzleDocument extends JSONObject {
    */
   public KuzzleDocument setId(final String id) throws JSONException {
     put("_id", id);
-    return this;
-  }
-
-  /**
-   * Sets version.
-   *
-   * @param version the version
-   * @return the version
-   * @throws JSONException the json exception
-   */
-  public KuzzleDocument setVersion(final String version) throws JSONException {
-    this.put("_version", version);
     return this;
   }
 
