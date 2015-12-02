@@ -24,15 +24,19 @@ public class KuzzleDocument extends JSONObject {
    * KuzzleDocument is the object representation of one of these documents.
    *
    * @param kuzzleDataCollection - an instanciated KuzzleDataCollection object
+   * @param id                   the id
    * @param content              the content
    * @throws JSONException the json exception
    */
-  public KuzzleDocument(KuzzleDataCollection kuzzleDataCollection, JSONObject content) throws JSONException {
+  public KuzzleDocument(KuzzleDataCollection kuzzleDataCollection, final String id, JSONObject content) throws JSONException {
     this.dataCollection = kuzzleDataCollection;
     this.collection = kuzzleDataCollection.getCollection();
     this.kuzzle = kuzzleDataCollection.getKuzzle();
     this.put("headers", kuzzleDataCollection.getHeaders());
     this.put("body", new JSONObject());
+    if (id != null) {
+      this.setId(id);
+    }
     if (content != null) {
       for (Iterator iterator = content.keys(); iterator.hasNext(); ) {
         String key = (String) iterator.next();
@@ -42,13 +46,39 @@ public class KuzzleDocument extends JSONObject {
   }
 
   /**
-   * Instantiates a new Kuzzle document.
+   * Kuzzle handles documents either as realtime messages or as stored documents.
+   * KuzzleDocument is the object representation of one of these documents.
    *
    * @param kuzzleDataCollection the kuzzle data collection
    * @throws JSONException the json exception
    */
   public KuzzleDocument(KuzzleDataCollection kuzzleDataCollection) throws JSONException {
-    this(kuzzleDataCollection, null);
+    this(kuzzleDataCollection, null, null);
+  }
+
+
+  /**
+   * Kuzzle handles documents either as realtime messages or as stored documents.
+   * KuzzleDocument is the object representation of one of these documents.
+   *
+   * @param kuzzleDataCollection the kuzzle data collection
+   * @param id                   the id
+   * @throws JSONException the json exception
+   */
+  public KuzzleDocument(KuzzleDataCollection kuzzleDataCollection, final String id) throws JSONException {
+    this(kuzzleDataCollection, id, null);
+  }
+
+  /**
+   * Kuzzle handles documents either as realtime messages or as stored documents.
+   * KuzzleDocument is the object representation of one of these documents.
+   *
+   * @param kuzzleDataCollection the kuzzle data collection
+   * @param content              the content
+   * @throws JSONException the json exception
+   */
+  public KuzzleDocument(KuzzleDataCollection kuzzleDataCollection, JSONObject content) throws JSONException {
+    this(kuzzleDataCollection, null, content);
   }
 
   /**
@@ -185,10 +215,11 @@ public class KuzzleDocument extends JSONObject {
     ResponseListener queryCB = new ResponseListener() {
       @Override
       public void onSuccess(JSONObject args) throws Exception {
-        if (KuzzleDocument.this.isNull("_id"))
-          put("_id", args.getString("_id"));
-        if (listener != null)
+        put("_id", args.getString("_id"));
+        put("_version", args.getString("_version"));
+        if (listener != null) {
           listener.onSuccess(KuzzleDocument.this);
+        }
       }
 
       @Override
@@ -346,7 +377,7 @@ public class KuzzleDocument extends JSONObject {
    * @return the collection
    */
   public String getCollection() {
-    return collection; // $COVERAGE-IGNORE$
+    return collection;
   }
 
   /**
@@ -355,7 +386,7 @@ public class KuzzleDocument extends JSONObject {
    * @return the kuzzle
    */
   public Kuzzle getKuzzle() {
-    return kuzzle; // $COVERAGE-IGNORE$
+    return kuzzle;
   }
 
   /**
@@ -372,27 +403,52 @@ public class KuzzleDocument extends JSONObject {
   }
 
   /**
+   * Helper function allowing to set headers while chaining calls.
+   * If the replace argument is set to true, replace the current headers with the provided content.
+   * Otherwise, it appends the content to the current headers, only replacing already existing values
+   *
+   * @param content the headers
+   * @return the headers
+   * @throws JSONException the json exception
+   */
+  public KuzzleDocument setHeaders(JSONObject content) throws JSONException {
+    return this.setHeaders(content, false);
+  }
+
+  /**
+   * Helper function allowing to set headers while chaining calls.
+   * If the replace argument is set to true, replace the current headers with the provided content.
+   * Otherwise, it appends the content to the current headers, only replacing already existing values
+   *
+   * @param content - new headers content
+   * @param replace - default: false = append the content. If true: replace the current headers with tj
+   * @return the headers
+   * @throws JSONException the json exception
+   */
+  public KuzzleDocument setHeaders(JSONObject content, boolean replace) throws JSONException {
+    if (replace) {
+      this.put("headers", content);
+    } else {
+      JSONObject headers = new JSONObject();
+      if (content != null) {
+        for (Iterator ite = content.keys(); ite.hasNext(); ) {
+          String key = (String) ite.next();
+          headers.put(key, content.get(key));
+        }
+        this.put("headers", headers);
+      }
+    }
+    return this;
+  }
+
+  /**
    * Gets headers.
    *
    * @return the headers
    * @throws JSONException the json exception
    */
   public JSONObject getHeaders() throws JSONException {
-    if (isNull("headers")) {
-      this.put("headers", new JSONObject());
-    }
     return this.getJSONObject("headers");
-  }
-
-  /**
-   * Sets headers.
-   *
-   * @param headers the headers
-   * @throws JSONException the json exception
-   */
-  public KuzzleDocument setHeaders(JSONObject headers) throws JSONException {
-    this.put("headers", headers);
-    return this;
   }
 
   /**
@@ -412,15 +468,11 @@ public class KuzzleDocument extends JSONObject {
    * Sets id.
    *
    * @param id the id
+   * @return the id
    * @throws JSONException the json exception
    */
   public KuzzleDocument setId(final String id) throws JSONException {
     put("_id", id);
-    return this;
-  }
-
-  public KuzzleDocument setVersion(final String version) throws JSONException {
-    this.put("_version", version);
     return this;
   }
 

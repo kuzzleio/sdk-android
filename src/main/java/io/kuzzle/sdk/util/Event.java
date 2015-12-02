@@ -28,7 +28,7 @@ public abstract class Event implements IEventListener {
     this.type = type;
   }
 
-  public abstract void trigger(String subscriptionId, JSONObject result);
+  public abstract void trigger(String subscriptionId, JSONObject result) throws Exception;
 
   /**
    * Gets id.
