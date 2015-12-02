@@ -17,6 +17,8 @@ import io.kuzzle.sdk.exceptions.KuzzleException;
 import io.kuzzle.sdk.listeners.ResponseListener;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -40,7 +42,30 @@ public class KuzzleDataMappingTest {
   @Test
   public void testApply() throws IOException, JSONException, KuzzleException {
     dataMapping.apply();
-    verify(k, times(1)).query(eq("test"), eq("admin"), eq("putMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    dataMapping.apply(new KuzzleOptions());
+    dataMapping.apply(new ResponseListener() {
+      @Override
+      public void onSuccess(JSONObject object) throws Exception {
+
+      }
+
+      @Override
+      public void onError(JSONObject error) throws Exception {
+
+      }
+    });
+    dataMapping.apply(new KuzzleOptions(), new ResponseListener() {
+      @Override
+      public void onSuccess(JSONObject object) throws Exception {
+
+      }
+
+      @Override
+      public void onError(JSONObject error) throws Exception {
+
+      }
+    });
+    verify(k, times(4)).query(eq("test"), eq("admin"), eq("putMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
   }
 
   @Test
@@ -66,6 +91,7 @@ public class KuzzleDataMappingTest {
             "          }" +
             "        }}}}");
         ((ResponseListener) invocation.getArguments()[5]).onSuccess(response);
+        ((ResponseListener) invocation.getArguments()[5]).onError(null);
         return null;
       }
     }).when(k).query(eq("test"), eq("admin"), eq("getMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
@@ -95,6 +121,38 @@ public class KuzzleDataMappingTest {
       }
     });
     verify(k, times(4)).query(eq("test"), eq("admin"), eq("getMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+  }
+
+  @Test
+  public void testRemove() throws JSONException {
+    JSONObject mapping = new JSONObject();
+    mapping.put("type", "string");
+    dataMapping.set("foo", mapping);
+    assertEquals(dataMapping.getMapping().getJSONObject("foo").getString("type"), "string");
+    dataMapping.remove("foo");
+    assertTrue(dataMapping.getMapping().isNull("foo"));
+  }
+
+  @Test
+  public void testSetHeaders() throws JSONException, KuzzleException {
+    JSONObject headers = new JSONObject();
+    headers.put("foo", "bar");
+    dataMapping.setHeaders(headers, true);
+    assertEquals(dataMapping.getHeaders().getString("foo"), "bar");
+    headers.put("oof", "baz");
+    dataMapping.setHeaders(headers);
+    assertEquals(dataMapping.getHeaders().getString("foo"), "bar");
+    assertEquals(dataMapping.getHeaders().getString("oof"), "baz");
+  }
+
+  @Test
+  public void testGetHeaders() throws JSONException, IOException, KuzzleException {
+    dataMapping.setHeaders(null);
+    assertNotNull(dataMapping.getHeaders());
+    JSONObject headers = new JSONObject();
+    headers.put("foo", "bar");
+    dataMapping.setHeaders(headers);
+    assertEquals(dataMapping.getHeaders().getString("foo"), "bar");
   }
 
 }

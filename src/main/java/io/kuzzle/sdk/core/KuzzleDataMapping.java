@@ -1,10 +1,10 @@
 package io.kuzzle.sdk.core;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import io.kuzzle.sdk.exceptions.KuzzleException;
 import io.kuzzle.sdk.listeners.ResponseListener;
@@ -193,8 +193,11 @@ public class KuzzleDataMapping {
    * @return the kuzzle data mapping
    * @throws JSONException the json exception
    */
-  public KuzzleDataMapping set(String field, JSONArray mapping) throws JSONException {
-    KuzzleDataMapping.this.mapping.put(field, mapping);
+  public KuzzleDataMapping set(String field, JSONObject mapping) throws JSONException {
+    if (this.mapping == null) {
+      this.mapping = new JSONObject();
+    }
+    this.mapping.put(field, mapping);
     return this;
   }
 
@@ -208,12 +211,43 @@ public class KuzzleDataMapping {
   }
 
   /**
-   * Sets headers.
+   * Helper function allowing to set headers while chaining calls.
+   * If the replace argument is set to true, replace the current headers with the provided content.
+   * Otherwise, it appends the content to the current headers, only replacing already existing values
    *
-   * @param headers the headers
+   * @param content the headers
+   * @return the headers
+   * @throws JSONException the json exception
    */
-  public void setHeaders(JSONObject headers) {
-    this.headers = headers;
+  public KuzzleDataMapping setHeaders(JSONObject content) throws JSONException {
+    return this.setHeaders(content, false);
+  }
+
+  /**
+   * Helper function allowing to set headers while chaining calls.
+   * If the replace argument is set to true, replace the current headers with the provided content.
+   * Otherwise, it appends the content to the current headers, only replacing already existing values
+   *
+   * @param content - new headers content
+   * @param replace - default: false = append the content. If true: replace the current headers with tj
+   * @return the headers
+   * @throws JSONException the json exception
+   */
+  public KuzzleDataMapping setHeaders(JSONObject content, boolean replace) throws JSONException {
+    if (this.headers == null) {
+      this.headers = new JSONObject();
+    }
+    if (replace) {
+      this.headers = content;
+    } else {
+      if (content != null) {
+        for (Iterator ite = content.keys(); ite.hasNext(); ) {
+          String key = (String) ite.next();
+          this.headers.put(key, content.get(key));
+        }
+      }
+    }
+    return this;
   }
 
   /**
