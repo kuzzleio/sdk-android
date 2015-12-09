@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import io.kuzzle.sdk.enums.EventType;
 import io.kuzzle.sdk.exceptions.KuzzleException;
@@ -18,6 +19,7 @@ import io.socket.emitter.Emitter;
  */
 public class KuzzleRoom {
 
+  private String id = UUID.randomUUID().toString();
   private String collection;
   private KuzzleDataCollection  dataCollection;
   private JSONObject filters;
@@ -127,7 +129,6 @@ public class KuzzleRoom {
   protected void callAfterRenew(final ResponseListener cb, final Object args) throws Exception {
     if (args == null)
       throw new NullPointerException("Response is null");
-    //JSONObject response = (JSONObject) args;
     JSONObject response = new JSONObject(args.toString());
     JSONObject result = (JSONObject) response.get("result");
     final EventType globalEvent;
@@ -169,6 +170,9 @@ public class KuzzleRoom {
     this.unsubscribe();
     final JSONObject data = new JSONObject();
     final KuzzleOptions options = new KuzzleOptions();
+
+    this.kuzzle.addPendingSubscription(this.id, this);
+
     options.setMetadata(this.metadata);
     data.put("body", this.filters);
     this.kuzzle.addHeaders(data, this.headers);
@@ -176,6 +180,9 @@ public class KuzzleRoom {
     this.kuzzle.query(this.collection, "subscribe", "on", data, options, new ResponseListener() {
       @Override
       public void onSuccess(JSONObject args) throws Exception {
+        KuzzleRoom.this.kuzzle.addSubscription(KuzzleRoom.this.id, KuzzleRoom.this);
+        KuzzleRoom.this.kuzzle.deletePendingSubscription(KuzzleRoom.this.id);
+
         KuzzleRoom.this.roomId = args.get("roomId").toString();
         KuzzleRoom.this.kuzzle.getSocket().on(KuzzleRoom.this.roomId, new Emitter.Listener() {
           @Override
@@ -403,6 +410,14 @@ public class KuzzleRoom {
    */
   public void setSubscribeToSelf(boolean subscribeToSelf) {
     this.subscribeToSelf = subscribeToSelf;
+  }
+
+  /**
+   * Get roomId
+   * @return roomId
+   */
+  public String getRoomId() {
+    return this.roomId;
   }
 
 }

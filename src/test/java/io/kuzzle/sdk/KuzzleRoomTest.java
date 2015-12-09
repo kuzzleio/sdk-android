@@ -17,6 +17,7 @@ import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.core.KuzzleRoom;
 import io.kuzzle.sdk.core.KuzzleRoomOptions;
 import io.kuzzle.sdk.enums.EventType;
+import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.exceptions.KuzzleException;
 import io.kuzzle.sdk.listeners.IEventListener;
 import io.kuzzle.sdk.listeners.ResponseListener;
@@ -172,11 +173,13 @@ public class KuzzleRoomTest {
 
   @Test
   public void testCallAfterRenew() throws Exception {
-    Kuzzle kuzzle = new Kuzzle("http://localhost:7512");
+    KuzzleOptions options = new KuzzleOptions();
+    options.setConnect(Mode.MANUAL);
+    Kuzzle kuzzle = new Kuzzle("http://localhost:7512", options);
     Kuzzle k = spy(kuzzle);
-    KuzzleRoomOptions options = new KuzzleRoomOptions();
-    options.setListeningToConnections(true);
-    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test"), options);
+    KuzzleRoomOptions roomOptions = new KuzzleRoomOptions();
+    roomOptions.setListeningToConnections(true);
+    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test"), roomOptions);
     renew.setListeningToConnections(true);
 
     final JSONObject result = new JSONObject();

@@ -828,9 +828,9 @@ public class KuzzleDataCollection {
       this.kuzzle.query(this.collection, "write", "update", data, options, new ResponseListener() {
         @Override
         public void onSuccess(JSONObject object) throws Exception {
-          KuzzleDocument doc = new KuzzleDocument(KuzzleDataCollection.this);
-          doc.setId(object.getString("_id"));
-          listener.onSuccess(doc);
+            KuzzleDocument doc = new KuzzleDocument(KuzzleDataCollection.this);
+            doc.setId(object.getString("_id"));
+            listener.onSuccess(doc);
         }
 
         @Override
