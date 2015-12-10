@@ -157,16 +157,20 @@ public class KuzzleDataMapping {
     this.kuzzle.addHeaders(data, this.headers);
     this.kuzzle.query(this.collection, "admin", "getMapping", data, options, new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject args) throws Exception {
-        JSONObject mappings = args.getJSONObject("mainindex").getJSONObject("mappings");
-        if (!mappings.isNull(KuzzleDataMapping.this.collection))
-          KuzzleDataMapping.this.mapping = mappings.getJSONObject(KuzzleDataMapping.this.collection);
-        if (cb != null)
-          cb.onSuccess(mappings);
+      public void onSuccess(JSONObject args) {
+        try {
+          JSONObject mappings = args.getJSONObject("mainindex").getJSONObject("mappings");
+          if (!mappings.isNull(KuzzleDataMapping.this.collection))
+            KuzzleDataMapping.this.mapping = mappings.getJSONObject(KuzzleDataMapping.this.collection);
+          if (cb != null)
+            cb.onSuccess(mappings);
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
 
       @Override
-      public void onError(JSONObject object) throws Exception {
+      public void onError(JSONObject object) {
         if (cb != null)
           cb.onError(object);
       }

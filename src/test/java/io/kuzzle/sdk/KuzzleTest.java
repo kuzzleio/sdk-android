@@ -1,12 +1,14 @@
 package io.kuzzle.sdk;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -15,6 +17,7 @@ import java.util.List;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.KuzzleRoom;
 import io.kuzzle.sdk.enums.EventType;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.exceptions.KuzzleException;
@@ -71,12 +74,16 @@ public class KuzzleTest {
     options.setConnect(Mode.MANUAL);
     kuzzle = new Kuzzle("http://localhost:7512", options, new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
-        assertEquals(object.getString("foo"), "bar");
+      public void onSuccess(JSONObject object) {
+        try {
+          assertEquals(object.getString("foo"), "bar");
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -97,12 +104,12 @@ public class KuzzleTest {
     options.setConnect(Mode.MANUAL);
     kuzzle = new Kuzzle("http://localhost:7512", new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -120,7 +127,7 @@ public class KuzzleTest {
     assertEquals(kuzzle.getEventListeners(), new ArrayList<IEventListener>());
     IEventListener event = new IEventListener() {
       @Override
-      public void trigger(String id, JSONObject result) throws Exception {
+      public void trigger(String id, JSONObject result) {
       }
     };
     List<IEventListener> listenerList = new ArrayList<>();
@@ -163,7 +170,7 @@ public class KuzzleTest {
     Kuzzle spy = spy(kuzzle);
     IEventListener event = new IEventListener() {
       @Override
-      public void trigger(String id, JSONObject result) throws Exception {
+      public void trigger(String id, JSONObject result) {
       }
     };
     String id = spy.addListener(EventType.UNSUBSCRIBED, event);
@@ -265,18 +272,22 @@ public class KuzzleTest {
     }).when(spy).query(any(String.class), eq("admin"), eq("getAllStats"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
     spy.getAllStatistics(new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
-        JSONArray array = object.getJSONArray("statistics");
-        for (int i = 0; i < array.length(); i++) {
-          for (Iterator ite = array.getJSONObject(i).keys(); ite.hasNext(); ) {
-            String key = (String) ite.next();
-            assertEquals(array.getJSONObject(i).get(key), responseCallback.getJSONArray("statistics").getJSONObject(i).get(key));
+      public void onSuccess(JSONObject object) {
+        try {
+          JSONArray array = object.getJSONArray("statistics");
+          for (int i = 0; i < array.length(); i++) {
+            for (Iterator ite = array.getJSONObject(i).keys(); ite.hasNext(); ) {
+              String key = (String) ite.next();
+              assertEquals(array.getJSONObject(i).get(key), responseCallback.getJSONArray("statistics").getJSONObject(i).get(key));
+            }
           }
+        } catch (JSONException e) {
+          e.printStackTrace();
         }
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -298,12 +309,16 @@ public class KuzzleTest {
     }).when(spy).query(any(String.class), eq("admin"), eq("getAllStats"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
     spy.getAllStatistics(new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
-        assertEquals(error.get("error"), "rorre");
+      public void onError(JSONObject error) {
+        try {
+          assertEquals(error.get("error"), "rorre");
+        } catch (JSONException e) {
+          throw new RuntimeException(e);
+        }
       }
     });
     verify(spy, times(1)).query(any(String.class), eq("admin"), eq("getAllStats"), any(JSONObject.class), any(ResponseListener.class));
@@ -338,11 +353,11 @@ public class KuzzleTest {
     }).when(spy).query(any(String.class), eq("admin"), eq("getStats"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
     spy.getStatistics(null, new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -379,12 +394,12 @@ public class KuzzleTest {
     }).when(spy).query(any(String.class), eq("admin"), eq("getStats"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
     spy.getStatistics("2015-11-15T13:36:45.558Z", new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -466,12 +481,12 @@ public class KuzzleTest {
 
     kuzzle.query("test", "test", "test", new JSONObject(), new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -511,12 +526,12 @@ public class KuzzleTest {
     kuzzle.connect(null);
     kuzzle.query("test", "test", "test", query, null, new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -564,12 +579,12 @@ public class KuzzleTest {
     kuzzle.setAutoReconnect(true);
     kuzzle.connect(new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -613,12 +628,12 @@ public class KuzzleTest {
 
     ResponseListener listener = new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     };
@@ -627,12 +642,9 @@ public class KuzzleTest {
     verify(spyListener, times(1)).onSuccess(any(JSONObject.class));
     KuzzleDataCollection collection = new KuzzleDataCollection(kuzzleSpy, "test");
     KuzzleDataCollection collection2 = new KuzzleDataCollection(kuzzleSpy, "test2");
-
     collection.subscribe();
     collection2.subscribe();
-
     reset(s);
-
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -676,12 +688,12 @@ public class KuzzleTest {
     when(kuzzleSpy.isValidSate()).thenReturn(false);
     ResponseListener listener = new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     };
@@ -704,12 +716,16 @@ public class KuzzleTest {
     }).when(s).once(eq(Socket.EVENT_CONNECT_ERROR), any(Emitter.Listener.class));
     ResponseListener listener = new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
-        assertEquals(object.get("message"), "foo");
+      public void onSuccess(JSONObject object) {
+        try {
+          assertEquals(object.get("message"), "foo");
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     };
@@ -756,24 +772,24 @@ public class KuzzleTest {
     kuzzleSpy.listCollections(new ResponseListener() {
 
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
     kuzzleSpy.listCollections(options, new ResponseListener() {
 
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -809,6 +825,53 @@ public class KuzzleTest {
     kuzzle.stopQueing();
     kuzzle.query("test", "test", "test", query, null, null);
     assertEquals(kuzzle.getOfflineQueue().size(), 0);
+  }
+
+  @Test
+  public void testQueuable() throws Exception {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        kuzzle.setAutoReconnect(false);
+        ((Emitter.Listener) invocation.getArguments()[1]).call(null);
+        return s;
+      }
+    }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
+    KuzzleOptions options = new KuzzleOptions();
+    options.setAutoQueue(true);
+    kuzzle = new Kuzzle("http://localhost:7512", options);
+    kuzzle.connect(null);
+    kuzzle.listCollections(options);
+    assertEquals(kuzzle.getOfflineQueue().size(), 1);
+    kuzzle.flushQueue();
+    options.setQueuable(false);
+    kuzzle.listCollections(options);
+    assertEquals(kuzzle.getOfflineQueue().size(), 0);
+  }
+
+  @Test
+  public void testDeleteSubscription() throws KuzzleException, IOException, JSONException {
+    kuzzle.setHeaders(new JSONObject());
+    Kuzzle kuzzleSpy = spy(kuzzle);
+    KuzzleDataCollection collection = mock(KuzzleDataCollection.class);
+    when(collection.getKuzzle()).thenReturn(kuzzleSpy);
+    when(collection.getHeaders()).thenReturn(new JSONObject());
+    KuzzleRoom room = new KuzzleRoom(collection);
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        //Mock response
+        JSONObject result = new JSONObject();
+        result.put("roomId", "42");
+        //Call callback with response
+        ((ResponseListener) invocation.getArguments()[5]).onSuccess(result);
+        return null;
+      }
+    }).when(kuzzleSpy).query(any(String.class), eq("subscribe"), eq("on"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    room.renew(new JSONObject(), null);
+    assertEquals(kuzzleSpy.getSubscriptions().size(), 1);
+    room.unsubscribe();
+    assertEquals(kuzzleSpy.getSubscriptions().size(), 0);
   }
 
 }

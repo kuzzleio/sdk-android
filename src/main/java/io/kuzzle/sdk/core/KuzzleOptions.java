@@ -16,7 +16,7 @@ public class KuzzleOptions {
   private int queueTTL = 120000;
   private boolean autoReplay = false;
   private int replayInterval = 10;
-  private boolean queuable = false;
+  private boolean queuable = true;
   private int queueMaxSize = 500;
   private boolean autoQueue = false;
 

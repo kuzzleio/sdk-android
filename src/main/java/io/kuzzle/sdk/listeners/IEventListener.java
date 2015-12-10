@@ -11,6 +11,6 @@ public interface IEventListener {
    * Trigger.
    *
    */
-  void trigger(final String id, final JSONObject object) throws Exception;
+  void trigger(final String id, final JSONObject object);
 
 }

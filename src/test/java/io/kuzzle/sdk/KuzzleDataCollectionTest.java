@@ -48,31 +48,36 @@ public class KuzzleDataCollectionTest {
       public Object answer(InvocationOnMock invocation) throws Throwable {
         JSONObject response = new JSONObject("{\"took\":1,\"timed_out\":false,\"_shards\":{\"total\":5,\"successful\":5,\"failed\":0},\"hits\":{\"total\":4,\"max_score\":1,\"hits\":[{\"_index\":\"mainindex\",\"_type\":\"collection_test\",\"_id\":\"AVE_WabrHN-wg-mnha2s\",\"_score\":1,\"_source\":{\"foo\":\"bar\"}},{\"_index\":\"mainindex\",\"_type\":\"collection_test\",\"_id\":\"AVE_U7iFHN-wg-mnha2o\",\"_score\":1,\"_source\":{\"foo\":\"bar\"}},{\"_index\":\"mainindex\",\"_type\":\"collection_test\",\"_id\":\"AVE_Vqd9HN-wg-mnha2r\",\"_score\":1,\"_source\":{\"foo\":\"bar\"}}]},\"requestId\":\"b3cea072-e3a2-495e-9e79-bc97267d9b9f\",\"controller\":\"read\",\"action\":\"search\",\"collection\":\"collection_test\",\"metadata\":{},\"_source\":{}}");
         ((ResponseListener) invocation.getArguments()[5]).onSuccess(response);
+        ((ResponseListener) invocation.getArguments()[5]).onError(new JSONObject());
         return null;
       }
     }).when(k).query(eq("test"), eq("read"), eq("search"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
 
     collection.advancedSearch(filters, null, new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
-        assertEquals(object.getInt("total"), 3);
-        assertEquals(object.getJSONArray("documents").getJSONObject(1).getJSONObject("body").getString("foo"), "bar");
+      public void onSuccess(JSONObject object) {
+        try {
+          assertEquals(object.getInt("total"), 3);
+          assertEquals(object.getJSONArray("documents").getJSONObject(1).getJSONObject("body").getString("foo"), "bar");
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
       }
     });
     collection.advancedSearch(filters);
     collection.advancedSearch(filters, new KuzzleOptions());
     collection.advancedSearch(filters, new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -86,23 +91,23 @@ public class KuzzleDataCollectionTest {
     collection.count(filters, new KuzzleOptions());
     collection.count(filters, new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
     collection.count(filters, new KuzzleOptions(), new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -113,12 +118,12 @@ public class KuzzleDataCollectionTest {
   public void testCreate() throws KuzzleException, IOException, JSONException {
     collection.create(null, new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -132,12 +137,12 @@ public class KuzzleDataCollectionTest {
     collection.createDocument(doc);
     collection.createDocument(doc, new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -161,24 +166,24 @@ public class KuzzleDataCollectionTest {
     collection.delete(new KuzzleOptions());
     collection.delete(new KuzzleOptions(), new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
     collection.delete(new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -196,23 +201,23 @@ public class KuzzleDataCollectionTest {
   public void testFetchDocument() throws IOException, JSONException, KuzzleException {
     collection.fetchDocument("42", new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
     collection.fetchDocument("42", new KuzzleOptions(), new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -223,23 +228,23 @@ public class KuzzleDataCollectionTest {
   public void testFetchAllDocuments() throws KuzzleException, IOException, JSONException {
     collection.fetchAllDocuments(new KuzzleOptions(), new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
     collection.fetchAllDocuments(new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -252,23 +257,23 @@ public class KuzzleDataCollectionTest {
     collection.getMapping(new KuzzleOptions());
     collection.getMapping(new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
     collection.getMapping(new KuzzleOptions(), new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -291,23 +296,23 @@ public class KuzzleDataCollectionTest {
     collection.putMapping(mapping, new KuzzleOptions());
     collection.putMapping(mapping, new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
     collection.putMapping(mapping, new KuzzleOptions(), new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -343,23 +348,23 @@ public class KuzzleDataCollectionTest {
   public void testSubscribe() throws JSONException, KuzzleException, IOException {
     collection.subscribe(new JSONObject(), new KuzzleRoomOptions(), new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
     collection.subscribe(new JSONObject(), new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -376,23 +381,23 @@ public class KuzzleDataCollectionTest {
     collection.truncate(new KuzzleOptions());
     collection.truncate(new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
     collection.truncate(new KuzzleOptions(), new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -406,8 +411,10 @@ public class KuzzleDataCollectionTest {
       public Object answer(InvocationOnMock invocation) throws Throwable {
         JSONObject response = new JSONObject();
         response.put("_id", "42");
-        if (invocation.getArguments()[5] != null)
+        if (invocation.getArguments()[5] != null) {
           ((ResponseListener) invocation.getArguments()[5]).onSuccess(response);
+          ((ResponseListener) invocation.getArguments()[5]).onError(new JSONObject());
+        }
         return null;
       }
     }).when(k).query(eq("test"), eq("write"), eq("update"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
@@ -417,23 +424,31 @@ public class KuzzleDataCollectionTest {
     collection.updateDocument("42", doc, new KuzzleOptions());
     collection.updateDocument("42", doc, new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
-        assertEquals(object.getString("_id"), "42");
+      public void onSuccess(JSONObject object) {
+        try {
+          assertEquals(object.getString("_id"), "42");
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
     collection.updateDocument("42", doc, new KuzzleOptions(), new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
-        assertEquals(object.getString("_id"), "42");
+      public void onSuccess(JSONObject object) {
+        try {
+          assertEquals(object.getString("_id"), "42");
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });

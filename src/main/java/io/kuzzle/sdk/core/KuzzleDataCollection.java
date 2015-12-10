@@ -105,25 +105,29 @@ public class KuzzleDataCollection {
 
     this.kuzzle.query(this.collection, "read", "search", data, options, new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
-        JSONArray docs = new JSONArray();
-        JSONArray hits = object.getJSONObject("hits").getJSONArray("hits");
-        JSONObject result = new JSONObject();
-        for (int i = 0; i < hits.length(); i++) {
-          KuzzleDocument doc = new KuzzleDocument(KuzzleDataCollection.this);
-          doc.setId(hits.getJSONObject(i).getString("_id"));
-          doc.setContent(hits.getJSONObject(i).getJSONObject("_source"));
-          docs.put(doc);
-        }
-        result.put("documents", docs);
-        result.put("total", hits.length());
-        if (listener != null) {
-          listener.onSuccess(result);
+      public void onSuccess(JSONObject object) {
+        try {
+          JSONArray docs = new JSONArray();
+          JSONArray hits = object.getJSONObject("hits").getJSONArray("hits");
+          JSONObject result = new JSONObject();
+          for (int i = 0; i < hits.length(); i++) {
+            KuzzleDocument doc = new KuzzleDocument(KuzzleDataCollection.this);
+            doc.setId(hits.getJSONObject(i).getString("_id"));
+            doc.setContent(hits.getJSONObject(i).getJSONObject("_source"));
+            docs.put(doc);
+          }
+          result.put("documents", docs);
+          result.put("total", hits.length());
+          if (listener != null) {
+            listener.onSuccess(result);
+          }
+        } catch(JSONException e) {
+          e.printStackTrace();
         }
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
         if (listener != null) {
           listener.onError(error);
         }
@@ -827,14 +831,12 @@ public class KuzzleDataCollection {
     } else {
       this.kuzzle.query(this.collection, "write", "update", data, options, new ResponseListener() {
         @Override
-        public void onSuccess(JSONObject object) throws Exception {
-            KuzzleDocument doc = new KuzzleDocument(KuzzleDataCollection.this);
-            doc.setId(object.getString("_id"));
-            listener.onSuccess(doc);
+        public void onSuccess(JSONObject object) {
+            listener.onSuccess(object);
         }
 
         @Override
-        public void onError(JSONObject error) throws Exception {
+        public void onError(JSONObject error) {
           listener.onError(error);
         }
       });

@@ -49,6 +49,14 @@ public class KuzzleDocumentTest {
   }
 
   @Test
+  public void testCollection() throws KuzzleException, JSONException {
+    Kuzzle k = mock(Kuzzle.class);
+    KuzzleDataCollection collection = new KuzzleDataCollection(k, "test");
+    KuzzleDocument doc = new KuzzleDocument(collection);
+    assertEquals(doc.getCollection(), collection.getCollection());
+  }
+
+  @Test
   public void testDocumentWithContent() throws JSONException {
     JSONObject content = new JSONObject();
     JSONObject body = new JSONObject();
@@ -76,12 +84,16 @@ public class KuzzleDocumentTest {
     doc.save(new KuzzleOptions());
     doc.save(new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
-        assertEquals(object.getString("_id"), "id-42");
+      public void onSuccess(JSONObject object) {
+        try {
+          assertEquals(object.getString("_id"), "id-42");
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -134,13 +146,17 @@ public class KuzzleDocumentTest {
     doc.setContent("foo", "baz");
     doc.refresh(new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
-        assertEquals(doc.getVersion(), "42");
-        assertEquals(doc.getContent().getString("foo"), "bar");
+      public void onSuccess(JSONObject object) {
+        try {
+          assertEquals(doc.getVersion(), "42");
+          assertEquals(doc.getContent().getString("foo"), "bar");
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -180,23 +196,23 @@ public class KuzzleDocumentTest {
     doc.subscribe(new KuzzleRoomOptions());
     doc.subscribe(new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
     doc.subscribe(new KuzzleRoomOptions(), new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -251,12 +267,16 @@ public class KuzzleDocumentTest {
     assertNull(doc.getVersion());
     doc.save(new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
-        assertEquals(doc.getVersion(), "42");
+      public void onSuccess(JSONObject object) {
+        try {
+          assertEquals(doc.getVersion(), "42");
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
