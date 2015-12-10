@@ -15,7 +15,7 @@ before_install:
     - pip install --user codecov
 
 script:
-    bash gradlew clean build jacocoTestReport
+    bash gradlew clean build jacocoTestReport --debug
 
 notifications:
     email: false
