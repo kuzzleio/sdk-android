@@ -4,7 +4,7 @@ import org.json.JSONObject;
 
 public class KuzzleRoomOptions {
 
-  private boolean subscribeToSelf = false;
+  private boolean subscribeToSelf = true;
   private boolean listeningToConnections = false;
   private boolean listeningToDisconnections = false;
   private JSONObject  metadata = new JSONObject();

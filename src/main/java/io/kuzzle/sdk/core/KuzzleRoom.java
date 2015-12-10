@@ -63,7 +63,7 @@ public class KuzzleRoom {
     this.headers = kuzzleDataCollection.getHeaders();
     this.listeningToConnections = (options != null ? options.isListeningToConnections() : false);
     this.listeningToDisconnections = (options != null ? options.isListeningToDisconnections() : false);
-    this.subscribeToSelf = (options != null ? options.isSubscribeToSelf() : false);
+    this.subscribeToSelf = (options != null ? options.isSubscribeToSelf() : true);
     this.metadata = (options != null ? options.getMetadata() : new JSONObject());
   }
 
