@@ -652,6 +652,33 @@ public class Kuzzle {
   }
 
   /**
+   * Helper function allowing to set headers while chaining calls.
+   * If the replace argument is set to true, replace the current headers with the provided content.
+   * Otherwise, it appends the content to the current headers, only replacing already existing values
+   *
+   * @param content - new headers content
+   * @param replace - default: false = append the content. If true: replace the current headers with tj
+   * @return the headers
+   * @throws JSONException the json exception
+   */
+  public Kuzzle setHeaders(JSONObject content, boolean replace) throws JSONException {
+    if (this.headers == null) {
+      this.headers = new JSONObject();
+    }
+    if (replace) {
+      this.headers = content;
+    } else {
+      if (content != null) {
+        for (Iterator ite = content.keys(); ite.hasNext(); ) {
+          String key = (String) ite.next();
+          this.headers.put(key, content.get(key));
+        }
+      }
+    }
+    return this;
+  }
+
+  /**
    * Starts the requests queuing. Works only during offline mode, and if the autoQueue option is set to false.
    *
    * @return
@@ -783,33 +810,6 @@ public class Kuzzle {
    */
   public JSONObject getHeaders() {
     return this.headers;
-  }
-
-  /**
-   * Helper function allowing to set headers while chaining calls.
-   * If the replace argument is set to true, replace the current headers with the provided content.
-   * Otherwise, it appends the content to the current headers, only replacing already existing values
-   *
-   * @param content - new headers content
-   * @param replace - default: false = append the content. If true: replace the current headers with tj
-   * @return the headers
-   * @throws JSONException the json exception
-   */
-  public Kuzzle setHeaders(JSONObject content, boolean replace) throws JSONException {
-    if (this.headers == null) {
-      this.headers = new JSONObject();
-    }
-    if (replace) {
-      this.headers = content;
-    } else {
-      if (content != null) {
-        for (Iterator ite = content.keys(); ite.hasNext(); ) {
-          String key = (String) ite.next();
-          this.headers.put(key, content.get(key));
-        }
-      }
-    }
-    return this;
   }
 
   /**
