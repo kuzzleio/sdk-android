@@ -4,16 +4,12 @@ package io.kuzzle.sdk.state;
  * The enum States.
  */
 public enum States {
-  /**
-   * Disconnected states.
-   */
+  CONNECTING,
   DISCONNECTED,
-  /**
-   * Connected states.
-   */
   CONNECTED,
-  /**
-   * Polling states.
-   */
-  POLLING
+  INITIALIZING,
+  READY,
+  LOGGED_OFF,
+  ERROR,
+  OFFLINE
 }

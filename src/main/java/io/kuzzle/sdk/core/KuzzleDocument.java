@@ -7,8 +7,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.Iterator;
 
-import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.exceptions.KuzzleException;
+import io.kuzzle.sdk.listeners.ResponseListener;
 
 /**
  * The type Kuzzle document.
@@ -18,7 +18,6 @@ public class KuzzleDocument extends JSONObject {
   private final KuzzleDataCollection  dataCollection;
   private final String  collection;
   private final Kuzzle  kuzzle;
-
   /**
    * Kuzzle handles documents either as realtime messages or as stored documents.
    * KuzzleDocument is the object representation of one of these documents.
@@ -95,13 +94,16 @@ public class KuzzleDocument extends JSONObject {
     this.kuzzle.addHeaders(this, this.getJSONObject("headers"));
     this.kuzzle.query(this.collection, "write", "delete", this, new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
-        put("_id", null);
+      public void onSuccess(JSONObject object) {
+        try {
+          put("_id", null);
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
-
+      public void onError(JSONObject error) {
       }
     });
     return this;
@@ -129,6 +131,7 @@ public class KuzzleDocument extends JSONObject {
    * @throws KuzzleException the kuzzle exception
    */
   public KuzzleDocument refresh(final ResponseListener cb) throws JSONException, IOException, KuzzleException {
+
     if (this.getId() == null) {
       throw new KuzzleException("KuzzleDocument.refresh: cannot retrieve a document if no id has been provided");
     }
@@ -137,15 +140,19 @@ public class KuzzleDocument extends JSONObject {
     content.put("_id", this.getId());
     this.kuzzle.query(this.collection, "read", "get", content, new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject args) throws Exception {
-        KuzzleDocument.this.put("body", args.getJSONObject("_source"));
-        KuzzleDocument.this.put("_version", args.get("_version"));
-        if (cb != null)
-          cb.onSuccess(args);
+      public void onSuccess(JSONObject args) {
+        try {
+          KuzzleDocument.this.put("body", args.getJSONObject("_source"));
+          KuzzleDocument.this.put("_version", args.get("_version"));
+          if (cb != null)
+            cb.onSuccess(KuzzleDocument.this);
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
 
       @Override
-      public void onError(JSONObject arg) throws Exception {
+      public void onError(JSONObject arg) {
         if (cb != null)
           cb.onError(arg);
       }
@@ -214,16 +221,20 @@ public class KuzzleDocument extends JSONObject {
 
     ResponseListener queryCB = new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject args) throws Exception {
-        put("_id", args.getString("_id"));
-        put("_version", args.getString("_version"));
-        if (listener != null) {
-          listener.onSuccess(KuzzleDocument.this);
+      public void onSuccess(JSONObject args) {
+        try {
+          put("_id", args.getString("_id"));
+          put("_version", args.getString("_version"));
+          if (listener != null) {
+            listener.onSuccess(KuzzleDocument.this);
+          }
+        } catch (JSONException e) {
+          e.printStackTrace();
         }
       }
 
       @Override
-      public void onError(JSONObject args) throws Exception {
+      public void onError(JSONObject args) {
         if (listener != null)
           listener.onError(args);
       }
@@ -378,15 +389,6 @@ public class KuzzleDocument extends JSONObject {
    */
   public String getCollection() {
     return collection;
-  }
-
-  /**
-   * Gets kuzzle.
-   *
-   * @return the kuzzle
-   */
-  public Kuzzle getKuzzle() {
-    return kuzzle;
   }
 
   /**

@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import io.kuzzle.sdk.enums.EventType;
 import io.kuzzle.sdk.exceptions.KuzzleException;
@@ -18,6 +19,7 @@ import io.socket.emitter.Emitter;
  */
 public class KuzzleRoom {
 
+  private String id = UUID.randomUUID().toString();
   private String collection;
   private KuzzleDataCollection  dataCollection;
   private JSONObject filters;
@@ -93,27 +95,27 @@ public class KuzzleRoom {
    * @param args        the args
    * @throws Exception the exception
    */
-  protected void triggerEvents(boolean listening, EventType globalEvent, JSONObject args2, ResponseListener cb, Object... args) throws Exception {
-    JSONObject response = args2;
+  protected void triggerEvents(boolean listening, EventType globalEvent, JSONObject args2, ResponseListener cb, Object... args) throws JSONException {
+    JSONObject response = (JSONObject) args2;
     if (response == null || !response.isNull("error")) {
       if (listening && cb != null) {
         cb.onSuccess(response);
       }
       if (response == null)
-        throw new NullPointerException("Response is null");
-      throw new KuzzleException(response.get("error").toString());
-    }
-    JSONObject result = (JSONObject) ((JSONObject) args[0]).get("result");
-    result.put("count", args2);
-    if (listening && cb != null) {
-      cb.onSuccess(result);
-    }
+        cb.onError(response.getJSONObject("error"));
+    } else {
+      JSONObject result = (JSONObject) ((JSONObject) args[0]).get("result");
+      result.put("count", args2);
+      if (listening && cb != null) {
+        cb.onSuccess(result);
+      }
 
-    for (Event e : KuzzleRoom.this.kuzzle.getEventListeners()) {
-      if (e.getType() == EventType.SUBSCRIBED && globalEvent == EventType.SUBSCRIBED)
-        e.trigger(KuzzleRoom.this.roomId, result);
-      else if (e.getType() == EventType.UNSUBSCRIBED && globalEvent == EventType.UNSUBSCRIBED)
-        e.trigger(KuzzleRoom.this.roomId, result);
+      for (Event e : KuzzleRoom.this.kuzzle.getEventListeners()) {
+        if (e.getType() == EventType.SUBSCRIBED && globalEvent == EventType.SUBSCRIBED)
+          e.trigger(KuzzleRoom.this.roomId, result);
+        else if (e.getType() == EventType.UNSUBSCRIBED && globalEvent == EventType.UNSUBSCRIBED)
+          e.trigger(KuzzleRoom.this.roomId, result);
+      }
     }
   }
 
@@ -124,32 +126,34 @@ public class KuzzleRoom {
    * @param args the args
    * @throws Exception the exception
    */
-  protected void callAfterRenew(final ResponseListener cb, final Object args) throws Exception {
+  protected void callAfterRenew(final ResponseListener cb, final Object args) {
     if (args == null)
       throw new NullPointerException("Response is null");
-    //JSONObject response = (JSONObject) args;
-    JSONObject response = new JSONObject(args.toString());
-    JSONObject result = (JSONObject) response.get("result");
-    final EventType globalEvent;
-    final boolean listening;
-    if (response != null && !response.isNull("error")) {
-      throw new KuzzleException(response.get("error").toString());
-    } else if (result.get("action").toString().equals("on") || result.get("action").toString().equals("off")) {
-      if (result.get("action").toString().equals("on")) {
-        globalEvent = EventType.SUBSCRIBED;
-        listening = KuzzleRoom.this.listeningToConnections;
+    try {
+      JSONObject response = new JSONObject(args.toString());
+      JSONObject result = (JSONObject) response.get("result");
+      final EventType globalEvent;
+      final boolean listening;
+      if (result.get("action").toString().equals("on") || result.get("action").toString().equals("off")) {
+        if (result.get("action").toString().equals("on")) {
+          globalEvent = EventType.SUBSCRIBED;
+          listening = KuzzleRoom.this.listeningToConnections;
+        } else {
+          globalEvent = EventType.UNSUBSCRIBED;
+          listening = KuzzleRoom.this.listeningToDisconnections;
+        }
+        if (listening && cb != null)
+          cb.onSuccess(((JSONObject) args).getJSONObject("result"));
+        if (KuzzleRoom.this.eventExist(globalEvent)) {
+          triggerEvents(listening, globalEvent, new KuzzleDocument(dataCollection), cb, args);
+        }
       } else {
-        globalEvent = EventType.UNSUBSCRIBED;
-        listening = KuzzleRoom.this.listeningToDisconnections;
+        if (cb != null)
+          cb.onSuccess(((JSONObject) args).getJSONObject("result"));
       }
-      if (listening && cb != null)
-        cb.onSuccess(((JSONObject) args).getJSONObject("result"));
-      if (KuzzleRoom.this.eventExist(globalEvent)) {
-        triggerEvents(listening, globalEvent, new KuzzleDocument(dataCollection), cb, args);
-      }
-    } else {
+    } catch (JSONException e) {
       if (cb != null)
-        cb.onSuccess(((JSONObject) args).getJSONObject("result"));
+        cb.onError((JSONObject) args);
     }
   }
 
@@ -169,30 +173,34 @@ public class KuzzleRoom {
     this.unsubscribe();
     final JSONObject data = new JSONObject();
     final KuzzleOptions options = new KuzzleOptions();
+
+    this.kuzzle.addPendingSubscription(this.id, this);
+
     options.setMetadata(this.metadata);
     data.put("body", this.filters);
     this.kuzzle.addHeaders(data, this.headers);
 
     this.kuzzle.query(this.collection, "subscribe", "on", data, options, new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject args) throws Exception {
-        KuzzleRoom.this.roomId = args.get("roomId").toString();
+      public void onSuccess(JSONObject args) {
+        KuzzleRoom.this.kuzzle.addSubscription(KuzzleRoom.this.id, KuzzleRoom.this);
+        KuzzleRoom.this.kuzzle.deletePendingSubscription(KuzzleRoom.this.id);
+
+        try {
+          KuzzleRoom.this.roomId = args.get("roomId").toString();
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
         KuzzleRoom.this.kuzzle.getSocket().on(KuzzleRoom.this.roomId, new Emitter.Listener() {
           @Override
           public void call(final Object... args) {
-            try {
               callAfterRenew(cb, args[0]);
-            } catch (JSONException e) {
-              e.printStackTrace();
-            } catch (Exception e) {
-              e.printStackTrace();
-            }
           }
         });
       }
 
       @Override
-      public void onError(JSONObject arg) throws Exception {
+      public void onError(JSONObject arg) {
         if (cb != null) {
           cb.onError(arg);
         }
@@ -227,9 +235,10 @@ public class KuzzleRoom {
       JSONObject data = new JSONObject();
       this.kuzzle.addHeaders(data, this.headers);
       data.put("body", roomId);
+      this.kuzzle.deleteSubscription(this.id);
       this.kuzzle.query(this.collection, "subscribe", "off", data, new ResponseListener() {
         @Override
-        public void onSuccess(JSONObject object) throws Exception {
+        public void onSuccess(JSONObject object) {
           KuzzleRoom.this.kuzzle.getSocket().off(String.valueOf(KuzzleRoom.this.roomId));
           KuzzleRoom.this.roomId = null;
           if (listener != null)
@@ -237,7 +246,7 @@ public class KuzzleRoom {
         }
 
         @Override
-        public void onError(JSONObject error) throws Exception {
+        public void onError(JSONObject error) {
           if (listener != null)
             listener.onError(error);
         }
@@ -280,8 +289,9 @@ public class KuzzleRoom {
    *
    * @param filters the filters
    */
-  public void setFilters(JSONObject filters) {
+  public KuzzleRoom setFilters(JSONObject filters) {
     this.filters = filters;
+    return this;
   }
 
   /**
@@ -347,8 +357,9 @@ public class KuzzleRoom {
    *
    * @param listeningToConnections the listening to connections
    */
-  public void setListeningToConnections(boolean listeningToConnections) {
+  public KuzzleRoom setListeningToConnections(boolean listeningToConnections) {
     this.listeningToConnections = listeningToConnections;
+    return this;
   }
 
   /**
@@ -365,8 +376,9 @@ public class KuzzleRoom {
    *
    * @param listeningToDisconnections the listening to disconnections
    */
-  public void setListeningToDisconnections(boolean listeningToDisconnections) {
+  public KuzzleRoom setListeningToDisconnections(boolean listeningToDisconnections) {
     this.listeningToDisconnections = listeningToDisconnections;
+    return this;
   }
 
   /**
@@ -383,8 +395,9 @@ public class KuzzleRoom {
    *
    * @param metadata the metadata
    */
-  public void setMetadata(JSONObject metadata) {
+  public KuzzleRoom setMetadata(JSONObject metadata) {
     this.metadata = metadata;
+    return this;
   }
 
   /**
@@ -401,8 +414,17 @@ public class KuzzleRoom {
    *
    * @param subscribeToSelf the subscribe to self
    */
-  public void setSubscribeToSelf(boolean subscribeToSelf) {
+  public KuzzleRoom setSubscribeToSelf(boolean subscribeToSelf) {
     this.subscribeToSelf = subscribeToSelf;
+    return this;
+  }
+
+  /**
+   * Get roomId
+   * @return roomId
+   */
+  public String getRoomId() {
+    return this.roomId;
   }
 
 }

@@ -6,8 +6,8 @@ jdk:
 android:
     components:
         - tools
-        - build-tools-23.0.1
-        - platform-tools-23.0.1
+        - build-tools-23.0.2
+        - platform-tools
         - android-23
 
 before_install:

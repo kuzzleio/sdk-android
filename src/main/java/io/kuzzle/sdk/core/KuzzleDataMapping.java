@@ -30,9 +30,14 @@ public class KuzzleDataMapping {
    * @param kuzzleDataCollection the kuzzle data collection
    */
   public KuzzleDataMapping(KuzzleDataCollection kuzzleDataCollection) {
+    this(kuzzleDataCollection, null);
+  }
+
+  public KuzzleDataMapping(KuzzleDataCollection kuzzleDataCollection, JSONObject mapping) {
     this.headers = kuzzleDataCollection.getHeaders();
     this.kuzzle = kuzzleDataCollection.getKuzzle();
     this.collection = kuzzleDataCollection.getCollection();
+    this.mapping = mapping == null ? new JSONObject() : mapping;
   }
 
   /**
@@ -152,16 +157,20 @@ public class KuzzleDataMapping {
     this.kuzzle.addHeaders(data, this.headers);
     this.kuzzle.query(this.collection, "admin", "getMapping", data, options, new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject args) throws Exception {
-        JSONObject mappings = args.getJSONObject("mainindex").getJSONObject("mappings");
-        if (!mappings.isNull(KuzzleDataMapping.this.collection))
-          KuzzleDataMapping.this.mapping = mappings.getJSONObject(KuzzleDataMapping.this.collection);
-        if (cb != null)
-          cb.onSuccess(mappings);
+      public void onSuccess(JSONObject args) {
+        try {
+          JSONObject mappings = args.getJSONObject("mainindex").getJSONObject("mappings");
+          if (!mappings.isNull(KuzzleDataMapping.this.collection))
+            KuzzleDataMapping.this.mapping = mappings.getJSONObject(KuzzleDataMapping.this.collection);
+          if (cb != null)
+            cb.onSuccess(mappings);
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
 
       @Override
-      public void onError(JSONObject object) throws Exception {
+      public void onError(JSONObject object) {
         if (cb != null)
           cb.onError(object);
       }
@@ -194,9 +203,6 @@ public class KuzzleDataMapping {
    * @throws JSONException the json exception
    */
   public KuzzleDataMapping set(String field, JSONObject mapping) throws JSONException {
-    if (this.mapping == null) {
-      this.mapping = new JSONObject();
-    }
     this.mapping.put(field, mapping);
     return this;
   }

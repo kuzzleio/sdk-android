@@ -17,6 +17,7 @@ import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.core.KuzzleRoom;
 import io.kuzzle.sdk.core.KuzzleRoomOptions;
 import io.kuzzle.sdk.enums.EventType;
+import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.exceptions.KuzzleException;
 import io.kuzzle.sdk.listeners.IEventListener;
 import io.kuzzle.sdk.listeners.ResponseListener;
@@ -40,21 +41,28 @@ public class KuzzleRoomTest {
 
   private ResponseListener listener = new ResponseListener() {
     @Override
-    public void onSuccess(JSONObject object) throws Exception {
+    public void onSuccess(JSONObject object) {
 
     }
 
     @Override
-    public void onError(JSONObject error) throws Exception {
+    public void onError(JSONObject error) {
 
     }
   };
 
   @Test(expected = IllegalArgumentException.class)
-  public void testConstructor() throws IOException, JSONException, KuzzleException {
-    Kuzzle k = mock(Kuzzle.class);
+  public void testConstructorWithNullCollection() throws IOException, JSONException, KuzzleException {
     // Should throw an exception
     new KuzzleRoom(null);
+  }
+
+  @Test
+  public void testCollection() throws KuzzleException {
+    Kuzzle k = mock(Kuzzle.class);
+    KuzzleDataCollection collection = new KuzzleDataCollection(k, "test");
+    KuzzleRoom room = new KuzzleRoom(collection);
+    assertEquals(room.getCollection(), collection.getCollection());
   }
 
   @Test
@@ -87,12 +95,12 @@ public class KuzzleRoomTest {
     }).when(k).query(eq("test"), eq("subscribe"), eq("on"), any(JSONObject.class), any(ResponseListener.class));
     room.renew(new JSONObject(), new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject args) throws Exception {
+      public void onSuccess(JSONObject args) {
 
       }
 
       @Override
-      public void onError(JSONObject arg) throws Exception {
+      public void onError(JSONObject arg) {
 
       }
     });
@@ -151,6 +159,84 @@ public class KuzzleRoomTest {
     verify(k).query(eq("test"), eq("subscribe"), eq("on"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
   }
 
+  @Test
+  public void testFilters() throws KuzzleException, JSONException, IOException {
+    Kuzzle k = mock(Kuzzle.class);
+    Socket s = mock(Socket.class);
+    when(k.getSocket()).thenReturn(s);
+    JSONObject filters = new JSONObject();
+    filters.put("foo", "bar");
+    KuzzleRoom room = new KuzzleRoom(new KuzzleDataCollection(k, "test"));
+    room.renew(filters, null);
+    assertEquals(room.getFilters().getString("foo"), "bar");
+    JSONObject filters2 = new JSONObject();
+    filters2.put("foo", "rab");
+    room.setFilters(filters2);
+    assertEquals(room.getFilters().getString("foo"), "rab");
+  }
+
+  @Test
+  public void setMetadataThroughConstructor() throws JSONException, KuzzleException, IOException {
+    Kuzzle k = mock(Kuzzle.class);
+    Socket s = mock(Socket.class);
+    when(k.getSocket()).thenReturn(s);
+    JSONObject meta = new JSONObject();
+    meta.put("foo", "bar");
+    KuzzleRoomOptions options = new KuzzleRoomOptions();
+    options.setMetadata(meta);
+    KuzzleRoom room = new KuzzleRoom(new KuzzleDataCollection(k, "test"), options);
+    assertEquals(room.getMetadata().get("foo"), "bar");
+    JSONObject meta2 = new JSONObject();
+    meta2.put("oof", "rab");
+    room.setMetadata(meta2);
+    assertEquals(room.getMetadata().get("oof"), "rab");
+  }
+
+  @Test
+  public void setSubscribeToSelfThroughConstructor() throws JSONException, KuzzleException, IOException {
+    Kuzzle k = mock(Kuzzle.class);
+    Socket s = mock(Socket.class);
+    when(k.getSocket()).thenReturn(s);
+    JSONObject meta = new JSONObject();
+    meta.put("foo", "bar");
+    KuzzleRoomOptions options = new KuzzleRoomOptions();
+    options.setSubscribeToSelf(false);
+    KuzzleRoom room = new KuzzleRoom(new KuzzleDataCollection(k, "test"), options);
+    assertEquals(room.isSubscribeToSelf(), false);
+    room.setSubscribeToSelf(true);
+    assertEquals(room.isSubscribeToSelf(), true);
+  }
+
+  @Test
+  public void setListeningToConnectionsThroughConstructor() throws JSONException, KuzzleException, IOException {
+    Kuzzle k = mock(Kuzzle.class);
+    Socket s = mock(Socket.class);
+    when(k.getSocket()).thenReturn(s);
+    JSONObject meta = new JSONObject();
+    meta.put("foo", "bar");
+    KuzzleRoomOptions options = new KuzzleRoomOptions();
+    options.setListeningToConnections(false);
+    KuzzleRoom room = new KuzzleRoom(new KuzzleDataCollection(k, "test"), options);
+    assertEquals(room.isListeningToConnections(), false);
+    room.setListeningToConnections(true);
+    assertEquals(room.isListeningToConnections(), true);
+  }
+
+  @Test
+  public void setListeningToDisconnectionsThroughConstructor() throws JSONException, KuzzleException, IOException {
+    Kuzzle k = mock(Kuzzle.class);
+    Socket s = mock(Socket.class);
+    when(k.getSocket()).thenReturn(s);
+    JSONObject meta = new JSONObject();
+    meta.put("foo", "bar");
+    KuzzleRoomOptions options = new KuzzleRoomOptions();
+    options.setListeningToDisconnections(false);
+    KuzzleRoom room = new KuzzleRoom(new KuzzleDataCollection(k, "test"), options);
+    assertEquals(room.isListeningToDisconnections(), false);
+    room.setListeningToDisconnections(true);
+    assertEquals(room.isListeningToDisconnections(), true);
+  }
+
   @Test(expected = NullPointerException.class)
   public void testCallAfterRenewWithNoResponse() throws Exception {
     Kuzzle k = mock(Kuzzle.class);
@@ -159,7 +245,7 @@ public class KuzzleRoomTest {
     renew.callAfterRenew(null, null);
   }
 
-  @Test(expected = KuzzleException.class)
+  @Test
   public void testCallAfterRenewWithError() throws Exception {
     Kuzzle k = mock(Kuzzle.class);
     KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test"));
@@ -172,19 +258,25 @@ public class KuzzleRoomTest {
 
   @Test
   public void testCallAfterRenew() throws Exception {
-    Kuzzle kuzzle = new Kuzzle("http://localhost:7512");
+    KuzzleOptions options = new KuzzleOptions();
+    options.setConnect(Mode.MANUAL);
+    Kuzzle kuzzle = new Kuzzle("http://localhost:7512", options);
     Kuzzle k = spy(kuzzle);
-    KuzzleRoomOptions options = new KuzzleRoomOptions();
-    options.setListeningToConnections(true);
-    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test"), options);
+    KuzzleRoomOptions roomOptions = new KuzzleRoomOptions();
+    roomOptions.setListeningToConnections(true);
+    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test"), roomOptions);
     renew.setListeningToConnections(true);
 
     final JSONObject result = new JSONObject();
     JSONObject action = new JSONObject();
     k.addListener(EventType.SUBSCRIBED, new IEventListener() {
       @Override
-      public void trigger(String subscriptionId, JSONObject result) throws Exception {
-        assertEquals(result.getString("action"), "on");
+      public void trigger(String subscriptionId, JSONObject result) {
+        try {
+          assertEquals(result.getString("action"), "on");
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
     });
     action.put("action", "on");
@@ -195,12 +287,16 @@ public class KuzzleRoomTest {
     action.put("action", "unknown");
     renew.callAfterRenew(new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject args) throws Exception {
-        assertEquals(args.get("action"), "unknown");
+      public void onSuccess(JSONObject args) {
+        try {
+          assertEquals(args.get("action"), "unknown");
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     }, result);
@@ -211,26 +307,6 @@ public class KuzzleRoomTest {
     Kuzzle k = mock(Kuzzle.class);
     KuzzleRoomExtend trigger = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test"));
     trigger.triggerEvents(true, EventType.SUBSCRIBED, null, null, null);
-  }
-
-  @Test(expected = KuzzleException.class)
-  public void testTriggerEventsError() throws Exception {
-    Kuzzle k = mock(Kuzzle.class);
-    KuzzleRoomExtend trigger = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test"));
-
-    JSONObject response = new JSONObject();
-    response.put("error", "error");
-    trigger.triggerEvents(true, EventType.SUBSCRIBED, response, new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject args) throws Exception {
-        assertEquals(((JSONObject) args).get("error").toString(), "error");
-      }
-
-      @Override
-      public void onError(JSONObject error) throws Exception {
-
-      }
-    }, null);
   }
 
   @Test
@@ -251,13 +327,17 @@ public class KuzzleRoomTest {
     responseObject.put("result", result);
     trigger.triggerEvents(true, EventType.SUBSCRIBED, new JSONObject(), new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject args) throws Exception {
+      public void onSuccess(JSONObject args) {
         // Test callback
-        assertNotNull(((JSONObject) args).get("count").toString());
+        try {
+          assertNotNull(((JSONObject) args).get("count").toString());
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     }, responseObject);
@@ -314,6 +394,7 @@ public class KuzzleRoomTest {
     }).when(k).query(eq("test"), eq("subscribe"), eq("off"), any(JSONObject.class), any(ResponseListener.class));
 
     room.renew(new JSONObject(), listener);
+    assertEquals(room.getRoomId(), "42");
     room.unsubscribe(listener);
   }
 
@@ -354,7 +435,7 @@ public class KuzzleRoomTest {
       super(kuzzleDataCollection, options);
     }
 
-    public void callAfterRenew(ResponseListener cb, Object args) throws Exception {
+    public void callAfterRenew(ResponseListener cb, Object args) {
       super.callAfterRenew(cb, args);
     }
 

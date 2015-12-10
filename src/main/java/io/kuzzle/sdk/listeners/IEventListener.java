@@ -10,9 +10,7 @@ public interface IEventListener {
   /**
    * Trigger.
    *
-   * @param subscriptionId the subscription id
-   * @param result         the result
    */
-  void trigger(String subscriptionId, JSONObject result) throws Exception;
+  void trigger(final String id, final JSONObject object);
 
 }

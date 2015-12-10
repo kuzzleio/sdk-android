@@ -40,28 +40,35 @@ public class KuzzleDataMappingTest {
   }
 
   @Test
+  public void testConstructor() throws JSONException {
+    JSONObject mapping = new JSONObject();
+    mapping.put("type", "string");
+    dataMapping = new KuzzleDataMapping(dataCollection, mapping);
+  }
+
+  @Test
   public void testApply() throws IOException, JSONException, KuzzleException {
     dataMapping.apply();
     dataMapping.apply(new KuzzleOptions());
     dataMapping.apply(new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
     dataMapping.apply(new KuzzleOptions(), new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
@@ -100,23 +107,27 @@ public class KuzzleDataMappingTest {
     dataMapping.refresh(new KuzzleOptions());
     dataMapping.refresh(new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
-        assertEquals(object.getJSONObject("test").getJSONObject("properties").getJSONObject("foo").getString("type"), "string");
+      public void onSuccess(JSONObject object) {
+        try {
+          assertEquals(object.getJSONObject("test").getJSONObject("properties").getJSONObject("foo").getString("type"), "string");
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
     dataMapping.refresh(new KuzzleOptions(), new ResponseListener() {
       @Override
-      public void onSuccess(JSONObject object) throws Exception {
+      public void onSuccess(JSONObject object) {
 
       }
 
       @Override
-      public void onError(JSONObject error) throws Exception {
+      public void onError(JSONObject error) {
 
       }
     });
