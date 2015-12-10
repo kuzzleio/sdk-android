@@ -165,6 +165,15 @@ public class KuzzleTest {
   }
 
   @Test
+  public void testRemoveAllListenersType() throws Exception {
+    kuzzle.addListener(EventType.SUBSCRIBED, null);
+    kuzzle.addListener(EventType.UNSUBSCRIBED, null);
+    assertEquals(kuzzle.getEventListeners().size(), 2);
+    kuzzle.removeAllListeners(EventType.SUBSCRIBED);
+    assertEquals(kuzzle.getEventListeners().size(), 1);
+  }
+
+  @Test
   public void testRemoveListener() throws Exception {
     assertNotNull(kuzzle.getSocket());
     Kuzzle spy = spy(kuzzle);

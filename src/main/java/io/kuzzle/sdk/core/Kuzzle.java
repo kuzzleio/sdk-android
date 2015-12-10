@@ -269,7 +269,7 @@ public class Kuzzle {
         for (Event e : Kuzzle.this.eventListeners) {
           if (e.getType() == EventType.RECONNECTED) {
             try {
-              e.trigger(null , null);
+              e.trigger(null, null);
             } catch (Exception e1) {
               e1.printStackTrace();
             }
@@ -346,6 +346,20 @@ public class Kuzzle {
       }
     });
     return this;
+  }
+
+  /**
+   * Kuzzle monitors active connections, and ongoing/completed/failed requests.
+   * This method allows getting the last statistics frame
+   *
+   * @param listener the listener
+   * @return statistics statistics
+   * @throws KuzzleException the kuzzle exception
+   * @throws IOException     the io exception
+   * @throws JSONException   the json exception
+   */
+  public Kuzzle getStatistics(final ResponseListener listener) throws KuzzleException, IOException, JSONException {
+    return this.getStatistics(null, listener);
   }
 
   /**
@@ -568,6 +582,15 @@ public class Kuzzle {
    */
   public Kuzzle removeAllListeners() {
     this.eventListeners.clear();
+    return this;
+  }
+
+  public Kuzzle removeAllListeners(EventType type) {
+    for (Iterator ite = this.eventListeners.iterator(); ite.hasNext();) {
+      if (((Event)ite.next()).getType() == type) {
+        ite.remove();
+      }
+    }
     return this;
   }
 
