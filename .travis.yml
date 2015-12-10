@@ -6,7 +6,7 @@ jdk:
 android:
     components:
         - tools
-        - build-tools-23.0.2
+        - build-tools-23.0.1
         - platform-tools
         - android-23
 
@@ -15,7 +15,7 @@ before_install:
     - pip install --user codecov
 
 script:
-    bash gradlew clean build jacocoTestReport --debug
+    bash gradlew clean build jacocoTestReport --info
 
 notifications:
     email: false
