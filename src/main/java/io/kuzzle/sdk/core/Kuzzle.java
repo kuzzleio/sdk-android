@@ -77,7 +77,7 @@ public class Kuzzle {
    * @throws URISyntaxException       the uri syntax exception
    * @throws IllegalArgumentException the illegal argument exception
    */
-  public Kuzzle(final String url, final KuzzleOptions options, final ResponseListener connectionCallback) throws Exception {
+  public Kuzzle(final String url, final KuzzleOptions options, final ResponseListener connectionCallback) throws URISyntaxException {
     if (url == null || url.isEmpty())
       throw new IllegalArgumentException("Url can't be empty");
     this.autoReconnect = (options != null ? options.isAutoReconnect() : true);
@@ -108,7 +108,7 @@ public class Kuzzle {
    * @param url the url
    * @throws URISyntaxException the uri syntax exception
    */
-  public Kuzzle(final String url) throws Exception {
+  public Kuzzle(final String url) throws URISyntaxException {
     this(url, null, null);
   }
 
@@ -119,7 +119,7 @@ public class Kuzzle {
    * @param cb  the cb
    * @throws URISyntaxException the uri syntax exception
    */
-  public Kuzzle(final String url, final ResponseListener cb) throws Exception {
+  public Kuzzle(final String url, final ResponseListener cb) throws URISyntaxException {
     this(url, null, cb);
   }
 
@@ -165,7 +165,7 @@ public class Kuzzle {
    * @return
    * @throws Exception
    */
-  public Kuzzle connect(final ResponseListener listener) throws Exception {
+  public Kuzzle connect(final ResponseListener listener) {
     if (!this.isValidSate()) {
       if (listener != null) {
         listener.onError(null);
