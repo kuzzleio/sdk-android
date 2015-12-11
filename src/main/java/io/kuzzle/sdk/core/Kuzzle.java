@@ -1,6 +1,5 @@
 package io.kuzzle.sdk.core;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -323,18 +322,7 @@ public class Kuzzle {
       @Override
       public void onSuccess(JSONObject object) {
         if (listener != null) {
-          try {
-            JSONArray result = new JSONArray();
-            for (Iterator ite = object.getJSONObject("statistics").keys(); ite.hasNext(); ) {
-              String key = (String) ite.next();
-              JSONObject frame = object.getJSONObject("statistics").getJSONObject(key);
-              frame.put("timestamp", key);
-              result.put(frame);
-            }
-            listener.onSuccess(new JSONObject().put("statistics", result));
-          } catch (JSONException e) {
-            e.printStackTrace();
-          }
+          listener.onSuccess(object);
         }
       }
 
