@@ -184,7 +184,7 @@ public class Kuzzle {
         }
         if (Kuzzle.this.connectionCallback != null) {
           try {
-            Kuzzle.this.connectionCallback.onSuccess(args.length != 0 ? (JSONObject) args[0] : null);
+            Kuzzle.this.connectionCallback.onSuccess(null);
           } catch (Exception e) {
             e.printStackTrace();
           }
@@ -196,7 +196,7 @@ public class Kuzzle {
         }
         if (listener != null) {
           try {
-            listener.onSuccess((JSONObject) args[0]);
+            listener.onSuccess(null);
           } catch (Exception e) {
             e.printStackTrace();
           }
