@@ -165,6 +165,15 @@ public class KuzzleTest {
   }
 
   @Test
+  public void testRemoveAllListenersType() throws Exception {
+    kuzzle.addListener(EventType.SUBSCRIBED, null);
+    kuzzle.addListener(EventType.UNSUBSCRIBED, null);
+    assertEquals(kuzzle.getEventListeners().size(), 2);
+    kuzzle.removeAllListeners(EventType.SUBSCRIBED);
+    assertEquals(kuzzle.getEventListeners().size(), 1);
+  }
+
+  @Test
   public void testRemoveListener() throws Exception {
     assertNotNull(kuzzle.getSocket());
     Kuzzle spy = spy(kuzzle);
@@ -422,7 +431,7 @@ public class KuzzleTest {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
         kuzzle.setAutoReconnect(false);
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null);
+        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
@@ -446,7 +455,7 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null);
+        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
@@ -472,7 +481,7 @@ public class KuzzleTest {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
         kuzzle.setAutoReconnect(false);
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null);
+        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
@@ -513,7 +522,7 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null);
+        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
@@ -565,14 +574,14 @@ public class KuzzleTest {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
         kuzzle.setAutoReconnect(false);
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null);
+        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null);
+        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
@@ -649,7 +658,7 @@ public class KuzzleTest {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
         kuzzleSpy.setAutoReconnect(false);
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null);
+        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
@@ -657,7 +666,7 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null);
+        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
@@ -673,7 +682,7 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null);
+        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
         kuzzleSpy.setSocket(s);
         return s;
       }
@@ -811,7 +820,7 @@ public class KuzzleTest {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
         kuzzle.setAutoReconnect(false);
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null);
+        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
@@ -833,7 +842,7 @@ public class KuzzleTest {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
         kuzzle.setAutoReconnect(false);
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null);
+        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));

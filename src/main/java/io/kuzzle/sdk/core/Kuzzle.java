@@ -77,7 +77,7 @@ public class Kuzzle {
    * @throws URISyntaxException       the uri syntax exception
    * @throws IllegalArgumentException the illegal argument exception
    */
-  public Kuzzle(final String url, final KuzzleOptions options, final ResponseListener connectionCallback) throws Exception {
+  public Kuzzle(final String url, final KuzzleOptions options, final ResponseListener connectionCallback) throws URISyntaxException {
     if (url == null || url.isEmpty())
       throw new IllegalArgumentException("Url can't be empty");
     this.autoReconnect = (options != null ? options.isAutoReconnect() : true);
@@ -108,7 +108,7 @@ public class Kuzzle {
    * @param url the url
    * @throws URISyntaxException the uri syntax exception
    */
-  public Kuzzle(final String url) throws Exception {
+  public Kuzzle(final String url) throws URISyntaxException {
     this(url, null, null);
   }
 
@@ -119,7 +119,7 @@ public class Kuzzle {
    * @param cb  the cb
    * @throws URISyntaxException the uri syntax exception
    */
-  public Kuzzle(final String url, final ResponseListener cb) throws Exception {
+  public Kuzzle(final String url, final ResponseListener cb) throws URISyntaxException {
     this(url, null, cb);
   }
 
@@ -165,7 +165,7 @@ public class Kuzzle {
    * @return
    * @throws Exception
    */
-  public Kuzzle connect(final ResponseListener listener) throws Exception {
+  public Kuzzle connect(final ResponseListener listener) {
     if (!this.isValidSate()) {
       if (listener != null) {
         listener.onError(null);
@@ -269,7 +269,7 @@ public class Kuzzle {
         for (Event e : Kuzzle.this.eventListeners) {
           if (e.getType() == EventType.RECONNECTED) {
             try {
-              e.trigger(null , null);
+              e.trigger(null, null);
             } catch (Exception e1) {
               e1.printStackTrace();
             }
@@ -346,6 +346,20 @@ public class Kuzzle {
       }
     });
     return this;
+  }
+
+  /**
+   * Kuzzle monitors active connections, and ongoing/completed/failed requests.
+   * This method allows getting the last statistics frame
+   *
+   * @param listener the listener
+   * @return statistics statistics
+   * @throws KuzzleException the kuzzle exception
+   * @throws IOException     the io exception
+   * @throws JSONException   the json exception
+   */
+  public Kuzzle getStatistics(final ResponseListener listener) throws KuzzleException, IOException, JSONException {
+    return this.getStatistics(null, listener);
   }
 
   /**
@@ -571,6 +585,15 @@ public class Kuzzle {
     return this;
   }
 
+  public Kuzzle removeAllListeners(EventType type) {
+    for (Iterator ite = this.eventListeners.iterator(); ite.hasNext();) {
+      if (((Event)ite.next()).getType() == type) {
+        ite.remove();
+      }
+    }
+    return this;
+  }
+
   /**
    * Removes a listener from an event.
    *
@@ -626,6 +649,33 @@ public class Kuzzle {
    */
   public Kuzzle setHeaders(JSONObject content) throws JSONException {
     return this.setHeaders(content, false);
+  }
+
+  /**
+   * Helper function allowing to set headers while chaining calls.
+   * If the replace argument is set to true, replace the current headers with the provided content.
+   * Otherwise, it appends the content to the current headers, only replacing already existing values
+   *
+   * @param content - new headers content
+   * @param replace - default: false = append the content. If true: replace the current headers with tj
+   * @return the headers
+   * @throws JSONException the json exception
+   */
+  public Kuzzle setHeaders(JSONObject content, boolean replace) throws JSONException {
+    if (this.headers == null) {
+      this.headers = new JSONObject();
+    }
+    if (replace) {
+      this.headers = content;
+    } else {
+      if (content != null) {
+        for (Iterator ite = content.keys(); ite.hasNext(); ) {
+          String key = (String) ite.next();
+          this.headers.put(key, content.get(key));
+        }
+      }
+    }
+    return this;
   }
 
   /**
@@ -760,33 +810,6 @@ public class Kuzzle {
    */
   public JSONObject getHeaders() {
     return this.headers;
-  }
-
-  /**
-   * Helper function allowing to set headers while chaining calls.
-   * If the replace argument is set to true, replace the current headers with the provided content.
-   * Otherwise, it appends the content to the current headers, only replacing already existing values
-   *
-   * @param content - new headers content
-   * @param replace - default: false = append the content. If true: replace the current headers with tj
-   * @return the headers
-   * @throws JSONException the json exception
-   */
-  public Kuzzle setHeaders(JSONObject content, boolean replace) throws JSONException {
-    if (this.headers == null) {
-      this.headers = new JSONObject();
-    }
-    if (replace) {
-      this.headers = content;
-    } else {
-      if (content != null) {
-        for (Iterator ite = content.keys(); ite.hasNext(); ) {
-          String key = (String) ite.next();
-          this.headers.put(key, content.get(key));
-        }
-      }
-    }
-    return this;
   }
 
   /**
