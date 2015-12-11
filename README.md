@@ -17,7 +17,7 @@ The complete SDK documentation is available [here](http://kuzzleio.github.io/sdk
 
     Kuzzle kuzzle = new Kuzzle("http://host.url", new ResponseListener() {
     @Override
-    public void onSuccess(JSONObject object) throws Exception {
+    public void onSuccess(JSONObject object) {
         // Handle success
         JSONObject doc = new JSONObject();
         doc.put("name", "bar");
@@ -26,7 +26,7 @@ The complete SDK documentation is available [here](http://kuzzleio.github.io/sdk
     }
     
     @Override
-    public void onError(JSONObject error) throws Exception {
+    public void onError(JSONObject error) {
         // Handle error
     }
     });
