@@ -281,12 +281,12 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testPublishDocument() throws JSONException, IOException, KuzzleException {
+  public void testPublishMessage() throws JSONException, IOException, KuzzleException {
     KuzzleDocument doc = new KuzzleDocument(collection);
     doc.setContent("foo", "bar");
-    collection.publishDocument(doc);
-    collection.publishDocument(doc, new KuzzleOptions());
-    verify(k, times(2)).query(eq("test"), eq("write"), eq("create"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    collection.publishMessage(doc);
+    collection.publishMessage(doc, new KuzzleOptions());
+    verify(k, times(2)).query(eq("test"), eq("write"), eq("publish"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
   }
 
   @Test

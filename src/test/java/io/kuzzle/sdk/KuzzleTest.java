@@ -64,7 +64,7 @@ public class KuzzleTest {
       public Object answer(InvocationOnMock invocation) throws Throwable {
         //Mock response
         //Call callback with response
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null);
+        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
@@ -124,8 +124,8 @@ public class KuzzleTest {
     };
     List<IEventListener> listenerList = new ArrayList<>();
     listenerList.add(event);
-    kuzzle.addListener(EventType.SUBSCRIBED, event);
-    assertEquals(kuzzle.getEventListeners().get(0).getType(), EventType.SUBSCRIBED);
+    kuzzle.addListener(EventType.CONNECTED, event);
+    assertEquals(kuzzle.getEventListeners().get(0).getType(), EventType.CONNECTED);
   }
 
   @Test
@@ -150,18 +150,18 @@ public class KuzzleTest {
 
   @Test(expected = IndexOutOfBoundsException.class)
   public void testRemoveAllListeners() throws Exception {
-    kuzzle.addListener(EventType.SUBSCRIBED, null);
-    assertEquals(kuzzle.getEventListeners().get(0).getType(), EventType.SUBSCRIBED);
+    kuzzle.addListener(EventType.CONNECTED, null);
+    assertEquals(kuzzle.getEventListeners().get(0).getType(), EventType.CONNECTED);
     kuzzle.removeAllListeners();
     kuzzle.getEventListeners().get(0);
   }
 
   @Test
   public void testRemoveAllListenersType() throws Exception {
-    kuzzle.addListener(EventType.SUBSCRIBED, null);
-    kuzzle.addListener(EventType.UNSUBSCRIBED, null);
+    kuzzle.addListener(EventType.CONNECTED, null);
+    kuzzle.addListener(EventType.DISCONNECTED, null);
     assertEquals(kuzzle.getEventListeners().size(), 2);
-    kuzzle.removeAllListeners(EventType.SUBSCRIBED);
+    kuzzle.removeAllListeners(EventType.CONNECTED);
     assertEquals(kuzzle.getEventListeners().size(), 1);
   }
 
@@ -174,12 +174,12 @@ public class KuzzleTest {
       public void trigger(String id, JSONObject result) {
       }
     };
-    String id = spy.addListener(EventType.UNSUBSCRIBED, event);
-    String id2 = spy.addListener(EventType.SUBSCRIBED, event);
-    assertEquals(spy.getEventListeners().get(0).getType(), EventType.UNSUBSCRIBED);
-    assertEquals(spy.getEventListeners().get(1).getType(), EventType.SUBSCRIBED);
-    spy.removeListener(EventType.SUBSCRIBED, id2);
-    spy.removeListener(EventType.UNSUBSCRIBED, id);
+    String id = spy.addListener(EventType.DISCONNECTED, event);
+    String id2 = spy.addListener(EventType.CONNECTED, event);
+    assertEquals(spy.getEventListeners().get(0).getType(), EventType.DISCONNECTED);
+    assertEquals(spy.getEventListeners().get(1).getType(), EventType.CONNECTED);
+    spy.removeListener(EventType.CONNECTED, id2);
+    spy.removeListener(EventType.DISCONNECTED, id);
     assertEquals(spy.getEventListeners().size(), 0);
   }
 
@@ -609,6 +609,7 @@ public class KuzzleTest {
       public Object answer(InvocationOnMock invocation) throws Throwable {
         JSONObject args = new JSONObject();
         args.put("roomId", "42");
+        args.put("channel", "channel");
         ((ResponseListener) invocation.getArguments()[5]).onSuccess(args);
         return null;
       }
@@ -851,6 +852,7 @@ public class KuzzleTest {
         //Mock response
         JSONObject result = new JSONObject();
         result.put("roomId", "42");
+        result.put("channel", "channel");
         //Call callback with response
         ((ResponseListener) invocation.getArguments()[5]).onSuccess(result);
         return null;

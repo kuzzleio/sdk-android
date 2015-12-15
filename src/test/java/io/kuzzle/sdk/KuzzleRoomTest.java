@@ -8,20 +8,17 @@ import org.mockito.stubbing.Answer;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.core.KuzzleRoom;
 import io.kuzzle.sdk.core.KuzzleRoomOptions;
-import io.kuzzle.sdk.enums.EventType;
-import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.exceptions.KuzzleException;
-import io.kuzzle.sdk.listeners.IEventListener;
 import io.kuzzle.sdk.listeners.ResponseListener;
-import io.kuzzle.sdk.util.Event;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -30,9 +27,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -146,7 +143,7 @@ public class KuzzleRoomTest {
         //Mock response
         JSONObject result = new JSONObject();
         result.put("roomId", "42");
-        result.put("roomName", "room");
+        result.put("channel", "channel");
         //Call callback with response
         ((ResponseListener) invocation.getArguments()[5]).onSuccess(result);
         ((ResponseListener) invocation.getArguments()[5]).onError(new JSONObject());
@@ -207,36 +204,6 @@ public class KuzzleRoomTest {
     assertEquals(room.isSubscribeToSelf(), true);
   }
 
-  @Test
-  public void setListeningToConnectionsThroughConstructor() throws JSONException, KuzzleException, IOException {
-    Kuzzle k = mock(Kuzzle.class);
-    Socket s = mock(Socket.class);
-    when(k.getSocket()).thenReturn(s);
-    JSONObject meta = new JSONObject();
-    meta.put("foo", "bar");
-    KuzzleRoomOptions options = new KuzzleRoomOptions();
-    options.setListeningToConnections(false);
-    KuzzleRoom room = new KuzzleRoom(new KuzzleDataCollection(k, "test"), options);
-    assertEquals(room.isListeningToConnections(), false);
-    room.setListeningToConnections(true);
-    assertEquals(room.isListeningToConnections(), true);
-  }
-
-  @Test
-  public void setListeningToDisconnectionsThroughConstructor() throws JSONException, KuzzleException, IOException {
-    Kuzzle k = mock(Kuzzle.class);
-    Socket s = mock(Socket.class);
-    when(k.getSocket()).thenReturn(s);
-    JSONObject meta = new JSONObject();
-    meta.put("foo", "bar");
-    KuzzleRoomOptions options = new KuzzleRoomOptions();
-    options.setListeningToDisconnections(false);
-    KuzzleRoom room = new KuzzleRoom(new KuzzleDataCollection(k, "test"), options);
-    assertEquals(room.isListeningToDisconnections(), false);
-    room.setListeningToDisconnections(true);
-    assertEquals(room.isListeningToDisconnections(), true);
-  }
-
   @Test(expected = NullPointerException.class)
   public void testCallAfterRenewWithNoResponse() throws Exception {
     Kuzzle k = mock(Kuzzle.class);
@@ -245,123 +212,57 @@ public class KuzzleRoomTest {
     renew.callAfterRenew(null, null);
   }
 
+  @Test(expected = NullPointerException.class)
+  public void testCallAfterRenewException() throws KuzzleException {
+    Kuzzle k = mock(Kuzzle.class);
+    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test"));
+    renew.callAfterRenew(null, null);
+  }
+
+
   @Test
   public void testCallAfterRenewWithError() throws Exception {
     Kuzzle k = mock(Kuzzle.class);
     KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test"));
     JSONObject errorResponse = new JSONObject();
     errorResponse.put("error", "error");
-    errorResponse.put("result", new JSONObject());
-    // Should throw an exception
-    renew.callAfterRenew(null, errorResponse);
+    ResponseListener listener = mock(ResponseListener.class);
+    renew.callAfterRenew(listener, errorResponse);
+    verify(listener, atLeastOnce()).onError(any(JSONObject.class));
   }
 
   @Test
   public void testCallAfterRenew() throws Exception {
-    KuzzleOptions options = new KuzzleOptions();
-    options.setConnect(Mode.MANUAL);
-    Kuzzle kuzzle = new Kuzzle("http://localhost:7512", options);
-    Kuzzle k = spy(kuzzle);
-    KuzzleRoomOptions roomOptions = new KuzzleRoomOptions();
-    roomOptions.setListeningToConnections(true);
-    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test"), roomOptions);
-    renew.setListeningToConnections(true);
-
-    final JSONObject result = new JSONObject();
-    JSONObject action = new JSONObject();
-    k.addListener(EventType.SUBSCRIBED, new IEventListener() {
-      @Override
-      public void trigger(String subscriptionId, JSONObject result) {
-        try {
-          assertEquals(result.getString("action"), "on");
-        } catch (JSONException e) {
-          e.printStackTrace();
-        }
-      }
-    });
-    action.put("action", "on");
-    result.put("result", action);
-    renew.callAfterRenew(listener, result);
-    action.put("action", "off");
-    renew.callAfterRenew(listener, result);
-    action.put("action", "unknown");
-    renew.callAfterRenew(new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject args) {
-        try {
-          assertEquals(args.get("action"), "unknown");
-        } catch (JSONException e) {
-          e.printStackTrace();
-        }
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    }, result);
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void testTriggerEventsNullResponse() throws Exception {
     Kuzzle k = mock(Kuzzle.class);
-    KuzzleRoomExtend trigger = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test"));
-    trigger.triggerEvents(true, EventType.SUBSCRIBED, null, null, null);
+    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test"));
+    JSONObject errorResponse = new JSONObject();
+    JSONObject result = new JSONObject();
+    result.put("requestId", "42");
+    Map<String, Date> m = new HashMap();
+    m.put("24", new Date());
+    when(k.getRequestHistory()).thenReturn(m);
+    errorResponse.put("result", result);
+    ResponseListener listener = mock(ResponseListener.class);
+    renew.callAfterRenew(listener, errorResponse);
+    verify(listener, atLeastOnce()).onSuccess(any(JSONObject.class));
   }
 
   @Test
-  public void testTriggerSUBSCRIBEDEvents() throws Exception {
+  public void testCallAfterRenewWithSubscribeToSelf() throws Exception {
     Kuzzle k = mock(Kuzzle.class);
-
-    // Mocking getEventListeners
-    List<Event> listeners = new ArrayList<>();
-    Event mockEvent = mock(Event.class);
-    when(mockEvent.getType()).thenReturn(EventType.SUBSCRIBED);
-    listeners.add(mockEvent);
-    when(k.getEventListeners()).thenReturn(listeners);
-
-    KuzzleRoomExtend trigger = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test"));
-
+    KuzzleRoomOptions options = new KuzzleRoomOptions();
+    options.setSubscribeToSelf(true);
+    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test"), options);
+    JSONObject errorResponse = new JSONObject();
     JSONObject result = new JSONObject();
-    JSONObject responseObject = new JSONObject();
-    responseObject.put("result", result);
-    trigger.triggerEvents(true, EventType.SUBSCRIBED, new JSONObject(), new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject args) {
-        // Test callback
-        try {
-          assertNotNull(((JSONObject) args).get("count").toString());
-        } catch (JSONException e) {
-          e.printStackTrace();
-        }
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    }, responseObject);
-    verify(mockEvent, times(1)).trigger(any(String.class), any(JSONObject.class));
-  }
-
-  @Test
-  public void testTriggerUNSUBSCRIBEDEvents() throws Exception {
-    Kuzzle k = mock(Kuzzle.class);
-
-    // Mocking getEventListeners
-    List<Event> listeners = new ArrayList<>();
-    Event mockEvent = mock(Event.class);
-    when(mockEvent.getType()).thenReturn(EventType.UNSUBSCRIBED);
-    listeners.add(mockEvent);
-    when(k.getEventListeners()).thenReturn(listeners);
-
-    KuzzleRoomExtend trigger = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test"));
-
-    JSONObject result = new JSONObject();
-    JSONObject responseObject = new JSONObject();
-    responseObject.put("result", result);
-    trigger.triggerEvents(true, EventType.UNSUBSCRIBED, responseObject, null, responseObject);
-    verify(mockEvent, times(1)).trigger(any(String.class), any(JSONObject.class));
+    result.put("requestId", "42");
+    Map<String, Date> m = new HashMap();
+    m.put("42", new Date());
+    when(k.getRequestHistory()).thenReturn(m);
+    errorResponse.put("result", result);
+    ResponseListener listener = mock(ResponseListener.class);
+    renew.callAfterRenew(listener, errorResponse);
+    verify(listener, atLeastOnce()).onSuccess(any(JSONObject.class));
   }
 
   @Test
@@ -377,7 +278,7 @@ public class KuzzleRoomTest {
         //Mock response
         JSONObject result = new JSONObject();
         result.put("roomId", "42");
-        result.put("roomName", "room");
+        result.put("channel", "channel");
         //Call callback with response
         ((ResponseListener) invocation.getArguments()[5]).onSuccess(result);
         ((ResponseListener) invocation.getArguments()[5]).onError(new JSONObject());
@@ -439,9 +340,6 @@ public class KuzzleRoomTest {
       super.callAfterRenew(cb, args);
     }
 
-    public void triggerEvents(boolean listening, EventType globalEvent, JSONObject args2, ResponseListener cb, Object args) throws Exception {
-      super.triggerEvents(listening, globalEvent, args2, cb, args);
-    }
   }
 
 

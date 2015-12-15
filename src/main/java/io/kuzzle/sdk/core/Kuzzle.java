@@ -38,6 +38,8 @@ import io.socket.engineio.client.EngineIOException;
  */
 public class Kuzzle {
 
+  private final int MAX_EMIT_TIMEOUT = 10;
+
   private List<Event> eventListeners = new ArrayList<Event>();
   private Socket socket;
   private Map<String, KuzzleDataCollection> collections = new HashMap<String, KuzzleDataCollection>();
@@ -53,7 +55,6 @@ public class Kuzzle {
   private boolean autoResubscribe = true;
   private boolean autoQueue = false;
   private boolean autoReplay = false;
-  private Map<String, Date> requestHistory = new HashMap<String, Date>();
   public QueueFilter queueFilter = new QueueFilter() {
     @Override
     public boolean filter(JSONObject object) {
@@ -62,6 +63,8 @@ public class Kuzzle {
   };
   private long replayInterval = 10;
   private boolean queuing = false;
+
+  private Map<String, Date> requestHistory = new HashMap<String, Date>();
 
   private KuzzleQueue<KuzzleQueryObject> offlineQueue = new KuzzleQueue<KuzzleQueryObject>();
   private int queueTTL;
@@ -193,6 +196,15 @@ public class Kuzzle {
         } catch (JSONException e) {
           e.printStackTrace();
         }
+        for (Event e : Kuzzle.this.eventListeners) {
+          if (e.getType() == EventType.CONNECTED) {
+            try {
+              e.trigger(null, null);
+            } catch (Exception e1) {
+              e1.printStackTrace();
+            }
+          }
+        }
         if (listener != null) {
           try {
             listener.onSuccess(null);
@@ -206,6 +218,15 @@ public class Kuzzle {
       @Override
       public void call(Object... args) {
         Kuzzle.this.state = States.ERROR;
+        for (Event e : Kuzzle.this.eventListeners) {
+          if (e.getType() == EventType.ERROR) {
+            try {
+              e.trigger(null, null);
+            } catch (Exception e1) {
+              e1.printStackTrace();
+            }
+          }
+        }
         if (listener != null) {
           JSONObject error = new JSONObject();
           try {
@@ -714,7 +735,7 @@ public class Kuzzle {
     Date now = new Date();
     Calendar c = Calendar.getInstance();
     c.setTime(now);
-    c.add(Calendar.SECOND, -10);
+    c.add(Calendar.SECOND, -MAX_EMIT_TIMEOUT);
 
     if (listener != null) {
       socket.once(request.get("requestId").toString(), new Emitter.Listener() {
@@ -736,11 +757,11 @@ public class Kuzzle {
     }
     socket.emit("kuzzle", request);
     // Track requests made to allow KuzzleRoom.subscribeToSelf to work
-    this.requestHistory.put(request.getString("requestId"), now);
-    // Clean history from requests made more than 10s ago
-    for (Iterator ite = requestHistory.entrySet().iterator(); ite.hasNext();) {
-      Map.Entry item = (Map.Entry) ite.next();
-      if (((Date)item.getValue()).before(c.getTime())) {
+    this.requestHistory.put(request.getString("requestId"), new Date());
+    Iterator ite = requestHistory.keySet().iterator();
+
+    while (ite.hasNext()) {
+      if (this.requestHistory.get(ite.next()).before(c.getTime())) {
         ite.remove();
       }
     }
@@ -954,5 +975,9 @@ public class Kuzzle {
 
   public Map<String, KuzzleRoom> getSubscriptions() {
     return subscriptions;
+  }
+
+  public Map<String, Date> getRequestHistory() {
+    return requestHistory;
   }
 }

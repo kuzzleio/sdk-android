@@ -495,9 +495,9 @@ public class KuzzleDataCollection {
    * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection publishDocument(KuzzleDocument document, KuzzleOptions options) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataCollection publishMessage(KuzzleDocument document, KuzzleOptions options) throws JSONException, IOException, KuzzleException {
     this.kuzzle.addHeaders(document, this.getHeaders());
-    this.kuzzle.query(this.collection, "write", "create", document, options, null);
+    this.kuzzle.query(this.collection, "write", "publish", document, options, null);
     return this;
   }
 
@@ -510,8 +510,8 @@ public class KuzzleDataCollection {
    * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection publishDocument(KuzzleDocument document) throws JSONException, IOException, KuzzleException {
-    return this.publishDocument(document, null);
+  public KuzzleDataCollection publishMessage(KuzzleDocument document) throws JSONException, IOException, KuzzleException {
+    return this.publishMessage(document, null);
   }
 
   /**
