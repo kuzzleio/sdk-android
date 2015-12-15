@@ -167,7 +167,7 @@ public class KuzzleDocumentTest {
   @Test
   public void testPublish() throws IOException, JSONException, KuzzleException {
     doc.publish();
-    verify(k, times(1)).query(eq("test"), eq("write"), eq("create"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    verify(k, times(1)).query(eq("test"), eq("write"), eq("publish"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
   }
 
   @Test

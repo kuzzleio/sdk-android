@@ -254,8 +254,7 @@ public class KuzzleDocument extends JSONObject {
    * @throws KuzzleException the kuzzle exception
    */
   public KuzzleDocument publish(KuzzleOptions options) throws JSONException, IOException, KuzzleException {
-    put("persist", false);
-    kuzzle.query(this.collection, "write", "create", this, options, null);
+    kuzzle.query(this.collection, "write", "publish", this, options, null);
     return this;
   }
 

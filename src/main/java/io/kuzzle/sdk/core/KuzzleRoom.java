@@ -5,13 +5,13 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.UUID;
 
-import io.kuzzle.sdk.enums.EventType;
+import io.kuzzle.sdk.enums.Scope;
+import io.kuzzle.sdk.enums.State;
+import io.kuzzle.sdk.enums.Users;
 import io.kuzzle.sdk.exceptions.KuzzleException;
 import io.kuzzle.sdk.listeners.ResponseListener;
-import io.kuzzle.sdk.util.Event;
 import io.socket.emitter.Emitter;
 
 /**
@@ -24,12 +24,14 @@ public class KuzzleRoom {
   private KuzzleDataCollection  dataCollection;
   private JSONObject filters;
   private JSONObject headers;
-  private boolean listeningToConnections;
-  private boolean listeningToDisconnections;
   private JSONObject metadata;
   private boolean subscribeToSelf;
   private String roomId;
   private Kuzzle kuzzle;
+  private String  channel;
+  private Scope scope;
+  private State state;
+  private Users users;
 
   /**
    * Instantiates a new Kuzzle room.
@@ -61,10 +63,11 @@ public class KuzzleRoom {
     this.kuzzle = kuzzleDataCollection.getKuzzle();
     this.collection = kuzzleDataCollection.getCollection();
     this.headers = kuzzleDataCollection.getHeaders();
-    this.listeningToConnections = (options != null ? options.isListeningToConnections() : false);
-    this.listeningToDisconnections = (options != null ? options.isListeningToDisconnections() : false);
     this.subscribeToSelf = (options != null ? options.isSubscribeToSelf() : true);
     this.metadata = (options != null ? options.getMetadata() : new JSONObject());
+    this.scope = (options != null ? options.getScope() : Scope.ALL);
+    this.state = (options != null ? options.getState() : State.DONE);
+    this.users = (options != null ? options.getUsers() : Users.NONE);
   }
 
   /**
@@ -86,40 +89,6 @@ public class KuzzleRoom {
   }
 
   /**
-   * Trigger events.
-   *
-   * @param listening   the listening
-   * @param globalEvent the global event
-   * @param args2       the args 2
-   * @param cb          the cb
-   * @param args        the args
-   * @throws Exception the exception
-   */
-  protected void triggerEvents(boolean listening, EventType globalEvent, JSONObject args2, ResponseListener cb, Object... args) throws JSONException {
-    JSONObject response = (JSONObject) args2;
-    if (response == null || !response.isNull("error")) {
-      if (listening && cb != null) {
-        cb.onSuccess(response);
-      }
-      if (response == null)
-        cb.onError(response.getJSONObject("error"));
-    } else {
-      JSONObject result = (JSONObject) ((JSONObject) args[0]).get("result");
-      result.put("count", args2);
-      if (listening && cb != null) {
-        cb.onSuccess(result);
-      }
-
-      for (Event e : KuzzleRoom.this.kuzzle.getEventListeners()) {
-        if (e.getType() == EventType.SUBSCRIBED && globalEvent == EventType.SUBSCRIBED)
-          e.trigger(KuzzleRoom.this.roomId, result);
-        else if (e.getType() == EventType.UNSUBSCRIBED && globalEvent == EventType.UNSUBSCRIBED)
-          e.trigger(KuzzleRoom.this.roomId, result);
-      }
-    }
-  }
-
-  /**
    * Call after renew.
    *
    * @param cb   the cb
@@ -130,30 +99,25 @@ public class KuzzleRoom {
     if (args == null)
       throw new NullPointerException("Response is null");
     try {
-      JSONObject response = new JSONObject(args.toString());
-      JSONObject result = (JSONObject) response.get("result");
-      final EventType globalEvent;
-      final boolean listening;
-      if (result.get("action").toString().equals("on") || result.get("action").toString().equals("off")) {
-        if (result.get("action").toString().equals("on")) {
-          globalEvent = EventType.SUBSCRIBED;
-          listening = KuzzleRoom.this.listeningToConnections;
-        } else {
-          globalEvent = EventType.UNSUBSCRIBED;
-          listening = KuzzleRoom.this.listeningToDisconnections;
+      if (cb != null) {
+        if (!((JSONObject) args).isNull("error"))
+          cb.onError((JSONObject)args);
+        else {
+          String key = ((JSONObject) args).getJSONObject("result").getString("requestId");
+          if (KuzzleRoom.this.kuzzle.getRequestHistory().containsKey(key)) {
+            if (KuzzleRoom.this.subscribeToSelf) {
+              cb.onSuccess(((JSONObject) args).getJSONObject("result"));
+            }
+            KuzzleRoom.this.kuzzle.getRequestHistory().remove(key);
+          } else {
+            cb.onSuccess(((JSONObject) args).getJSONObject("result"));
+          }
         }
-        if (listening && cb != null)
-          cb.onSuccess(((JSONObject) args).getJSONObject("result"));
-        if (KuzzleRoom.this.eventExist(globalEvent)) {
-          triggerEvents(listening, globalEvent, new KuzzleDocument(dataCollection), cb, args);
-        }
-      } else {
-        if (cb != null)
-          cb.onSuccess(((JSONObject) args).getJSONObject("result"));
       }
     } catch (JSONException e) {
-      if (cb != null)
+      if (cb != null) {
         cb.onError((JSONObject) args);
+      }
     }
   }
 
@@ -171,30 +135,33 @@ public class KuzzleRoom {
   public KuzzleRoom renew(final JSONObject filters, final ResponseListener cb) throws JSONException, IOException, KuzzleException {
     this.filters = (filters == null ? new JSONObject() : filters);
     this.unsubscribe();
-    final JSONObject data = new JSONObject();
     final KuzzleOptions options = new KuzzleOptions();
+    final JSONObject subscribeQuery = new JSONObject();
+
+    subscribeQuery.put("body", this.filters);
+    subscribeQuery.put("scope", this.scope.toString().toLowerCase());
+    subscribeQuery.put("state", this.state.toString().toLowerCase());
+    subscribeQuery.put("users", this.users.toString().toLowerCase());
 
     this.kuzzle.addPendingSubscription(this.id, this);
-
     options.setMetadata(this.metadata);
-    data.put("body", this.filters);
-    this.kuzzle.addHeaders(data, this.headers);
+    this.kuzzle.addHeaders(subscribeQuery, this.headers);
 
-    this.kuzzle.query(this.collection, "subscribe", "on", data, options, new ResponseListener() {
+    this.kuzzle.query(this.collection, "subscribe", "on", subscribeQuery, options, new ResponseListener() {
       @Override
       public void onSuccess(JSONObject args) {
         KuzzleRoom.this.kuzzle.addSubscription(KuzzleRoom.this.id, KuzzleRoom.this);
         KuzzleRoom.this.kuzzle.deletePendingSubscription(KuzzleRoom.this.id);
-
         try {
-          KuzzleRoom.this.roomId = args.get("roomId").toString();
+          KuzzleRoom.this.channel = args.getString("channel");
+          KuzzleRoom.this.roomId = args.getString("roomId");
         } catch (JSONException e) {
           e.printStackTrace();
         }
-        KuzzleRoom.this.kuzzle.getSocket().on(KuzzleRoom.this.roomId, new Emitter.Listener() {
+        KuzzleRoom.this.kuzzle.getSocket().on(KuzzleRoom.this.channel, new Emitter.Listener() {
           @Override
           public void call(final Object... args) {
-              callAfterRenew(cb, args[0]);
+            callAfterRenew(cb, args[0]);
           }
         });
       }
@@ -207,17 +174,6 @@ public class KuzzleRoom {
       }
     });
     return this;
-  }
-
-  private boolean eventExist(EventType event) {
-    List<Event> eventList = kuzzle.getEventListeners();
-    if (eventList != null) {
-      for (Event e : kuzzle.getEventListeners()) {
-        if (e.getType() == event)
-          return true;
-      }
-    }
-    return false;
   }
 
   /**
@@ -239,7 +195,7 @@ public class KuzzleRoom {
       this.kuzzle.query(this.collection, "subscribe", "off", data, new ResponseListener() {
         @Override
         public void onSuccess(JSONObject object) {
-          KuzzleRoom.this.kuzzle.getSocket().off(String.valueOf(KuzzleRoom.this.roomId));
+          KuzzleRoom.this.kuzzle.getSocket().off(KuzzleRoom.this.channel);
           KuzzleRoom.this.roomId = null;
           if (listener != null)
             listener.onSuccess(object);
@@ -340,44 +296,6 @@ public class KuzzleRoom {
         }
       }
     }
-    return this;
-  }
-
-  /**
-   * Is listening to connections boolean.
-   *
-   * @return the boolean
-   */
-  public boolean isListeningToConnections() {
-    return listeningToConnections;
-  }
-
-  /**
-   * Sets listening to connections.
-   *
-   * @param listeningToConnections the listening to connections
-   */
-  public KuzzleRoom setListeningToConnections(boolean listeningToConnections) {
-    this.listeningToConnections = listeningToConnections;
-    return this;
-  }
-
-  /**
-   * Is listening to disconnections boolean.
-   *
-   * @return the boolean
-   */
-  public boolean isListeningToDisconnections() {
-    return listeningToDisconnections;
-  }
-
-  /**
-   * Sets listening to disconnections.
-   *
-   * @param listeningToDisconnections the listening to disconnections
-   */
-  public KuzzleRoom setListeningToDisconnections(boolean listeningToDisconnections) {
-    this.listeningToDisconnections = listeningToDisconnections;
     return this;
   }
 
