@@ -98,7 +98,7 @@ public class Kuzzle {
       this.autoQueue = this.autoReplay = this.autoResubscribe = true;
     }
     if (options == null || options.getConnect() == null || options.getConnect() == Mode.AUTO) {
-      connect(connectionCallback);
+      connect();
     } else {
       this.state = States.READY;
     }
@@ -132,7 +132,7 @@ public class Kuzzle {
    * @param options the options
    * @throws URISyntaxException the uri syntax exception
    */
-  public Kuzzle(String url, KuzzleOptions options) throws Exception {
+  public Kuzzle(String url, KuzzleOptions options) throws URISyntaxException {
     this(url, options, null);
   }
 
@@ -163,14 +163,13 @@ public class Kuzzle {
   /**
    * Connects to a Kuzzle instance using the provided URL.
    *
-   * @param listener
    * @return
    * @throws Exception
    */
-  public Kuzzle connect(final ResponseListener listener) {
+  public Kuzzle connect() {
     if (!this.isValidSate()) {
-      if (listener != null) {
-        listener.onError(null);
+      if (connectionCallback != null) {
+        connectionCallback.onSuccess(null);
         return this;
       }
     }
@@ -180,7 +179,7 @@ public class Kuzzle {
       public void call(Object... args) {
         Kuzzle.this.state = States.CONNECTED;
         try {
-          renewSubscriptions(listener);
+          renewSubscriptions(connectionCallback);
         } catch (Exception e) {
           e.printStackTrace();
         }
@@ -205,13 +204,6 @@ public class Kuzzle {
             }
           }
         }
-        if (listener != null) {
-          try {
-            listener.onSuccess(null);
-          } catch (Exception e) {
-            e.printStackTrace();
-          }
-        }
       }
     });
     socket.once(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
@@ -227,12 +219,12 @@ public class Kuzzle {
             }
           }
         }
-        if (listener != null) {
+        if (connectionCallback != null) {
           JSONObject error = new JSONObject();
           try {
             error.put("message", ((EngineIOException)args[0]).getMessage());
             error.put("code", ((EngineIOException)args[0]).code);
-            listener.onSuccess(error);
+            connectionCallback.onSuccess(error);
           } catch (ClassCastException e) {
             e.printStackTrace();
           } catch (JSONException e) {
@@ -270,7 +262,7 @@ public class Kuzzle {
         Kuzzle.this.state = States.CONNECTED;
         if (Kuzzle.this.autoResubscribe) {
           try {
-            renewSubscriptions(listener);
+            renewSubscriptions(connectionCallback);
           } catch (Exception e) {
             e.printStackTrace();
           }
