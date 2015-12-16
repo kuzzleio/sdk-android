@@ -37,7 +37,6 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -80,7 +79,7 @@ public class KuzzleTest {
       }
     });
     kuzzle.setSocket(s);
-    kuzzle.connect(null);
+    kuzzle.connect();
     verify(s).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
   }
 
@@ -415,7 +414,7 @@ public class KuzzleTest {
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
     kuzzle.setAutoReconnect(true);
-    kuzzle.connect(null);
+    kuzzle.connect();
 
     KuzzleQueryObject o = new KuzzleQueryObject();
     o.setTimestamp(new Date());
@@ -438,7 +437,7 @@ public class KuzzleTest {
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
-    kuzzle.connect(null);
+    kuzzle.connect();
     kuzzle.setAutoReplay(false);
     kuzzle.replayQueue();
     verify(s, atLeastOnce()).emit(eq("kuzzle"), eq(query));
@@ -465,7 +464,7 @@ public class KuzzleTest {
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
     kuzzle.setAutoReconnect(true);
-    kuzzle.connect(null);
+    kuzzle.connect();
 
     kuzzle.query("test", "test", "test", new JSONObject(), new ResponseListener() {
       @Override
@@ -511,7 +510,7 @@ public class KuzzleTest {
     query.put("requestId", "42");
     kuzzle = new Kuzzle("http://localhost:7512", options);
     kuzzle.setSocket(s);
-    kuzzle.connect(null);
+    kuzzle.connect();
     kuzzle.query("test", "test", "test", query, null, new ResponseListener() {
       @Override
       public void onSuccess(JSONObject object) {
@@ -565,22 +564,12 @@ public class KuzzleTest {
       }
     }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
     kuzzle.setAutoReconnect(true);
-    kuzzle.connect(new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
+    kuzzle.connect();
     kuzzle.setOfflineQueue(o);
 
     IEventListener listener = mock(IEventListener.class);
     kuzzle.addListener(EventType.RECONNECTED, listener);
-    kuzzle.connect(null);
+    kuzzle.connect();
     verify(listener, times(1)).trigger(any(String.class), any(JSONObject.class));
   }
 
@@ -592,29 +581,6 @@ public class KuzzleTest {
     options.setConnect(Mode.MANUAL);
     options.setAutoReconnect(true);
     options.setOfflineMode(Mode.AUTO);
-
-    kuzzle = new Kuzzle("http://localhost:7512", options);
-    kuzzle.setSocket(s);
-    final Kuzzle kuzzleSpy = spy(kuzzle);
-    doAnswer(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((Emitter.Listener) invocation.getArguments()[1]).call(new JSONObject());
-        return s;
-      }
-    }).when(s).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
-
-    doAnswer(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        JSONObject args = new JSONObject();
-        args.put("roomId", "42");
-        args.put("channel", "channel");
-        ((ResponseListener) invocation.getArguments()[5]).onSuccess(args);
-        return null;
-      }
-    }).when(kuzzleSpy).query(any(String.class), eq("subscribe"), eq("on"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
-
     ResponseListener listener = new ResponseListener() {
       @Override
       public void onSuccess(JSONObject object) {
@@ -627,13 +593,12 @@ public class KuzzleTest {
       }
     };
     ResponseListener spyListener = spy(listener);
-    kuzzleSpy.connect(spyListener);
-    verify(spyListener, times(1)).onSuccess(any(JSONObject.class));
-    KuzzleDataCollection collection = new KuzzleDataCollection(kuzzleSpy, "test");
-    KuzzleDataCollection collection2 = new KuzzleDataCollection(kuzzleSpy, "test2");
-    collection.subscribe();
-    collection2.subscribe();
-    reset(s);
+    kuzzle = new Kuzzle("http://localhost:7512", options, spyListener);
+    kuzzle.setSocket(s);
+    final Kuzzle kuzzleSpy = spy(kuzzle);
+    kuzzleSpy.addSubscription("42", new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "test")));
+    kuzzleSpy.addSubscription("43", new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "test2")));
+
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -650,9 +615,9 @@ public class KuzzleTest {
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
-    kuzzleSpy.connect(null);
-    verify(kuzzleSpy, times(4)).query(any(String.class), eq("subscribe"), eq("on"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
-    verify(s, times(2)).emit(eq("kuzzle"), any(JSONObject.class));
+    kuzzleSpy.connect();
+    verify(kuzzleSpy, times(2)).query(any(String.class), eq("subscribe"), eq("on"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    assertEquals(kuzzleSpy.getSubscriptions().size(), 2);
   }
 
   @Test
@@ -667,14 +632,12 @@ public class KuzzleTest {
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
-    kuzzleSpy.connect(null);
+    kuzzleSpy.connect();
     verify(kuzzleSpy, times(1)).logout();
   }
 
   @Test
   public void testConnectNotValid() throws Exception {
-    Kuzzle kuzzleSpy = spy(kuzzle);
-    when(kuzzleSpy.isValidSate()).thenReturn(false);
     ResponseListener listener = new ResponseListener() {
       @Override
       public void onSuccess(JSONObject object) {
@@ -687,22 +650,18 @@ public class KuzzleTest {
       }
     };
     ResponseListener spy = spy(listener);
-    kuzzleSpy.connect(spy);
-    verify(spy, times(1)).onError(any(JSONObject.class));
+    KuzzleOptions options = new KuzzleOptions();
+    options.setConnect(Mode.MANUAL);
+    kuzzle = new Kuzzle("http://localhost:7512", spy);
+    kuzzle.setSocket(s);
+    Kuzzle kuzzleSpy = spy(kuzzle);
+    when(kuzzleSpy.isValidSate()).thenReturn(false);
+    kuzzleSpy.connect();
+    verify(spy, times(1)).onSuccess(any(JSONObject.class));
   }
 
   @Test
   public void testOnConnectError() throws Exception {
-    Kuzzle kuzzleSpy = spy(kuzzle);
-    doAnswer(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        EngineIOException engineIOException = new EngineIOException("foo");
-        engineIOException.code = "42";
-        ((Emitter.Listener) invocation.getArguments()[1]).call(engineIOException);
-        return s;
-      }
-    }).when(s).once(eq(Socket.EVENT_CONNECT_ERROR), any(Emitter.Listener.class));
     ResponseListener listener = new ResponseListener() {
       @Override
       public void onSuccess(JSONObject object) {
@@ -719,7 +678,21 @@ public class KuzzleTest {
       }
     };
     ResponseListener listenerSpy = spy(listener);
-    kuzzleSpy.connect(listenerSpy);
+    KuzzleOptions options = new KuzzleOptions();
+    options.setConnect(Mode.MANUAL);
+    kuzzle = new Kuzzle("http://localhost:7512", options, listenerSpy);
+    kuzzle.setSocket(s);
+    Kuzzle kuzzleSpy = spy(kuzzle);
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        EngineIOException engineIOException = new EngineIOException("foo");
+        engineIOException.code = "42";
+        ((Emitter.Listener) invocation.getArguments()[1]).call(engineIOException);
+        return s;
+      }
+    }).when(s).once(eq(Socket.EVENT_CONNECT_ERROR), any(Emitter.Listener.class));
+    kuzzleSpy.connect();
     verify(listenerSpy, times(1)).onSuccess(any(JSONObject.class));
   }
 
@@ -804,7 +777,7 @@ public class KuzzleTest {
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
-    kuzzle.connect(null);
+    kuzzle.connect();
     kuzzle.startQueuing();
     JSONObject query = new JSONObject();
     query.put("requestId", "42");
@@ -829,7 +802,7 @@ public class KuzzleTest {
     KuzzleOptions options = new KuzzleOptions();
     options.setAutoQueue(true);
     kuzzle = new Kuzzle("http://localhost:7512", options);
-    kuzzle.connect(null);
+    kuzzle.connect();
     kuzzle.listCollections(options);
     assertEquals(kuzzle.getOfflineQueue().size(), 1);
     kuzzle.flushQueue();
