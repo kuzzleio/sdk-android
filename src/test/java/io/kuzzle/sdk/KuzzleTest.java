@@ -45,7 +45,7 @@ import static org.mockito.Mockito.when;
 public class KuzzleTest {
 
   private Kuzzle kuzzle;
-  private Socket  s;
+  private Socket s;
 
   @Before
   public void setUp() throws Exception {
@@ -104,6 +104,7 @@ public class KuzzleTest {
 
       }
     });
+    assertEquals(options.getIndex(), "mainindex");
     assertNotNull(kuzzle);
   }
 
@@ -835,6 +836,39 @@ public class KuzzleTest {
     assertEquals(kuzzleSpy.getSubscriptions().size(), 1);
     room.unsubscribe();
     assertEquals(kuzzleSpy.getSubscriptions().size(), 0);
+  }
+
+  @Test
+  public void testDefaultIndex() throws Exception {
+    KuzzleOptions options = new KuzzleOptions();
+    options.setQueuable(false);
+    options.setConnect(Mode.MANUAL);
+    kuzzle = new Kuzzle("http://localhost:7512", options);
+    kuzzle.setSocket(s);
+
+    JSONObject jsonObj = new JSONObject();
+    jsonObj.put("requestId", "42");
+
+    kuzzle.query("collection", "controller", "action", jsonObj, options, null);
+    verify(s).emit(eq("kuzzle"), eq(jsonObj));
+    assertEquals(jsonObj.getString("index"), "mainindex");
+  }
+
+  @Test
+  public void testMultiIndex() throws Exception {
+    KuzzleOptions options = new KuzzleOptions();
+    options.setIndex("%test");
+    options.setQueuable(false);
+    options.setConnect(Mode.MANUAL);
+    kuzzle = new Kuzzle("http://localhost:7512", options);
+    kuzzle.setSocket(s);
+
+    JSONObject jsonObj = new JSONObject();
+    jsonObj.put("requestId", "42");
+
+    kuzzle.query("collection", "controller", "action", jsonObj, options, null);
+    verify(s).emit(eq("kuzzle"), eq(jsonObj));
+    assertEquals(jsonObj.getString("index"), "%test");
   }
 
 }
