@@ -19,6 +19,22 @@ public class KuzzleOptions {
   private boolean queuable = true;
   private int queueMaxSize = 500;
   private boolean autoQueue = false;
+  private String index = "mainindex";
+
+
+  /**
+   * @return the index
+   */
+  public String getIndex() {
+    return index;
+  }
+
+  /**
+   * @param index the index
+   */
+  public void setIndex(String index) {
+    this.index = index;
+  }
 
   /**
    * Is auto reconnect boolean.

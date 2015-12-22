@@ -63,6 +63,7 @@ public class Kuzzle {
   };
   private long replayInterval = 10;
   private boolean queuing = false;
+  private String index;
 
   private Map<String, Date> requestHistory = new HashMap<String, Date>();
 
@@ -91,6 +92,7 @@ public class Kuzzle {
     this.queueMaxSize = (options != null ? options.getQueueMaxSize() : 0);
     this.url = url;
     this.connectionCallback = connectionCallback;
+    this.index = (options != null ? options.getIndex() : "mainindex");
     if (socket == null) {
       socket = createSocket(this.url);
     }
@@ -555,6 +557,7 @@ public class Kuzzle {
       }
     }
     object.put("metadata", meta);
+    object.put("index", this.index);
 
     if (collection != null) {
       object.put("collection", collection);
