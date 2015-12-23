@@ -3,7 +3,6 @@ package io.kuzzle.sdk.core;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.UUID;
 
@@ -76,9 +75,8 @@ public class KuzzleRoom {
    * @param cb the cb
    * @return kuzzle room
    * @throws JSONException the json exception
-   * @throws IOException   the io exception
    */
-  public KuzzleRoom count(final ResponseListener cb) throws JSONException, IOException, KuzzleException {
+  public KuzzleRoom count(final ResponseListener cb) throws JSONException, KuzzleException {
     JSONObject body = new JSONObject();
     JSONObject data = new JSONObject();
     data.put("roomId", this.roomId);
@@ -93,7 +91,6 @@ public class KuzzleRoom {
    *
    * @param cb   the cb
    * @param args the args
-   * @throws Exception the exception
    */
   protected void callAfterRenew(final ResponseListener cb, final Object args) {
     if (args == null)
@@ -129,10 +126,9 @@ public class KuzzleRoom {
    * @param cb      the cb
    * @return kuzzle room
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleRoom renew(final JSONObject filters, final ResponseListener cb) throws JSONException, IOException, KuzzleException {
+  public KuzzleRoom renew(final JSONObject filters, final ResponseListener cb) throws JSONException, KuzzleException {
     this.filters = (filters == null ? new JSONObject() : filters);
     this.unsubscribe();
     final KuzzleOptions options = new KuzzleOptions();
@@ -182,9 +178,8 @@ public class KuzzleRoom {
    * @param listener the listener
    * @return the kuzzle room
    * @throws JSONException the json exception
-   * @throws IOException   the io exception
    */
-  public KuzzleRoom unsubscribe(final ResponseListener listener) throws JSONException, IOException, KuzzleException {
+  public KuzzleRoom unsubscribe(final ResponseListener listener) throws JSONException, KuzzleException {
     if (this.roomId != null) {
       JSONObject roomId = new JSONObject();
       roomId.put("roomId", this.roomId);
@@ -215,10 +210,9 @@ public class KuzzleRoom {
    * Cancels the current subscription.
    *
    * @return the kuzzle room
-   * @throws IOException   the io exception
    * @throws JSONException the json exception
    */
-  public KuzzleRoom unsubscribe() throws IOException, JSONException, KuzzleException {
+  public KuzzleRoom unsubscribe() throws JSONException, KuzzleException {
     return this.unsubscribe(null);
   }
 

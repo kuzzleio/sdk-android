@@ -4,7 +4,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.Iterator;
 
 import io.kuzzle.sdk.exceptions.KuzzleException;
@@ -18,6 +17,7 @@ public class KuzzleDocument extends JSONObject {
   private final KuzzleDataCollection  dataCollection;
   private final String  collection;
   private final Kuzzle  kuzzle;
+
   /**
    * Kuzzle handles documents either as realtime messages or as stored documents.
    * KuzzleDocument is the object representation of one of these documents.
@@ -85,10 +85,9 @@ public class KuzzleDocument extends JSONObject {
    *
    * @return kuzzle document
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDocument delete() throws JSONException, IOException, KuzzleException {
+  public KuzzleDocument delete() throws JSONException, KuzzleException {
     if (this.getId() == null)
       return this;
     this.kuzzle.addHeaders(this, this.getJSONObject("headers"));
@@ -114,10 +113,9 @@ public class KuzzleDocument extends JSONObject {
    *
    * @return the kuzzle document
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public KuzzleDocument refresh() throws KuzzleException, IOException, JSONException {
+  public KuzzleDocument refresh() throws KuzzleException, JSONException {
     return this.refresh(null);
   }
 
@@ -127,10 +125,9 @@ public class KuzzleDocument extends JSONObject {
    * @param cb the cb
    * @return kuzzle document
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDocument refresh(final ResponseListener cb) throws JSONException, IOException, KuzzleException {
+  public KuzzleDocument refresh(final ResponseListener cb) throws JSONException, KuzzleException {
 
     if (this.getId() == null) {
       throw new KuzzleException("KuzzleDocument.refresh: cannot retrieve a document if no id has been provided");
@@ -167,10 +164,9 @@ public class KuzzleDocument extends JSONObject {
    *
    * @return the kuzzle document
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDocument save() throws JSONException, IOException, KuzzleException {
+  public KuzzleDocument save() throws JSONException, KuzzleException {
     return save(null, null);
   }
 
@@ -182,10 +178,9 @@ public class KuzzleDocument extends JSONObject {
    * @param options the options
    * @return the kuzzle document
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public KuzzleDocument save(KuzzleOptions options) throws KuzzleException, IOException, JSONException {
+  public KuzzleDocument save(KuzzleOptions options) throws KuzzleException, JSONException {
     return this.save(options, null);
   }
 
@@ -196,11 +191,10 @@ public class KuzzleDocument extends JSONObject {
    *
    * @param listener the listener
    * @return the kuzzle document
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDocument save(ResponseListener listener) throws IOException, JSONException, KuzzleException {
+  public KuzzleDocument save(ResponseListener listener) throws JSONException, KuzzleException {
     return save(null, listener);
   }
 
@@ -213,10 +207,9 @@ public class KuzzleDocument extends JSONObject {
    * @param listener the listener
    * @return kuzzle document
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDocument save(final KuzzleOptions options, final ResponseListener listener) throws JSONException, IOException, KuzzleException {
+  public KuzzleDocument save(final KuzzleOptions options, final ResponseListener listener) throws JSONException, KuzzleException {
     this.kuzzle.addHeaders(this, getJSONObject("headers"));
 
     ResponseListener queryCB = new ResponseListener() {
@@ -250,10 +243,9 @@ public class KuzzleDocument extends JSONObject {
    * @param options the options
    * @return kuzzle document
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDocument publish(KuzzleOptions options) throws JSONException, IOException, KuzzleException {
+  public KuzzleDocument publish(KuzzleOptions options) throws JSONException, KuzzleException {
     kuzzle.query(this.collection, "write", "publish", this, options, null);
     return this;
   }
@@ -262,11 +254,11 @@ public class KuzzleDocument extends JSONObject {
    * Publish kuzzle document.
    *
    * @return the kuzzle document
-   * @throws IOException     the io exception
+   
    * @throws JSONException   the json exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDocument publish() throws IOException, JSONException, KuzzleException {
+  public KuzzleDocument publish() throws JSONException, KuzzleException {
     return this.publish(null);
   }
 
@@ -322,9 +314,9 @@ public class KuzzleDocument extends JSONObject {
    * @return the kuzzle document
    * @throws KuzzleException the kuzzle exception
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
+   
    */
-  public KuzzleDocument subscribe() throws KuzzleException, JSONException, IOException {
+  public KuzzleDocument subscribe() throws KuzzleException, JSONException {
     return this.subscribe(null, null);
   }
 
@@ -336,9 +328,9 @@ public class KuzzleDocument extends JSONObject {
    * @return the kuzzle document
    * @throws KuzzleException the kuzzle exception
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
+   
    */
-  public KuzzleDocument subscribe(KuzzleRoomOptions options) throws KuzzleException, JSONException, IOException {
+  public KuzzleDocument subscribe(KuzzleRoomOptions options) throws KuzzleException, JSONException {
     return this.subscribe(options, null);
   }
 
@@ -350,9 +342,9 @@ public class KuzzleDocument extends JSONObject {
    * @return the kuzzle document
    * @throws KuzzleException the kuzzle exception
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
+   
    */
-  public KuzzleDocument subscribe(ResponseListener listener) throws KuzzleException, JSONException, IOException {
+  public KuzzleDocument subscribe(ResponseListener listener) throws KuzzleException, JSONException {
     return this.subscribe(null, listener);
   }
 
@@ -365,9 +357,9 @@ public class KuzzleDocument extends JSONObject {
    * @return kuzzle document
    * @throws KuzzleException the kuzzle exception
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
+   
    */
-  public KuzzleDocument subscribe(KuzzleRoomOptions options, ResponseListener listener) throws KuzzleException, JSONException, IOException {
+  public KuzzleDocument subscribe(KuzzleRoomOptions options, ResponseListener listener) throws KuzzleException, JSONException {
     if (this.getId() == null) {
       throw new KuzzleException("KuzzleDocument.subscribe: cannot subscribe to a document if no ID has been provided");
     }
@@ -401,6 +393,21 @@ public class KuzzleDocument extends JSONObject {
       this.put("body", new JSONObject());
     }
     return this.getJSONObject("body");
+  }
+
+
+  /**
+   * Gets content from body
+   *
+   * @param key the key
+   * @return the content
+   * @throws JSONException the json exception
+   */
+  public Object getContent(String key) throws JSONException {
+    if (!getJSONObject("body").isNull(key)) {
+      return this.getJSONObject("body").get(key);
+    }
+    return null;
   }
 
   /**

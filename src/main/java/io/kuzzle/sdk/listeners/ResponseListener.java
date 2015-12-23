@@ -10,7 +10,6 @@ public interface ResponseListener {
    * On success.
    *
    * @param object the object
-   * @throws Exception the exception
    */
   void onSuccess(JSONObject object);
 
@@ -18,7 +17,6 @@ public interface ResponseListener {
    * On error.
    *
    * @param error the error
-   * @throws Exception the exception
    */
   void onError(JSONObject error);
 }
