@@ -1,5 +1,9 @@
 apply plugin: 'com.android.library'
 apply plugin: 'jacoco-android'
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+version = "1.0.4"
 
 buildscript {
     repositories {
@@ -9,6 +13,8 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:2.0.0-alpha1'
         classpath 'com.dicedmelon.gradle:jacoco-android:0.1.0'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
     }
 }
 
@@ -19,7 +25,7 @@ android {
         minSdkVersion 10
         targetSdkVersion 10
         versionCode 1
-        versionName "1.0.4"
+        versionName version
     }
     buildTypes {
         release {
@@ -53,4 +59,70 @@ dependencies {
     // for not mocking JSONObject
     testCompile files('libs-test/json-20140107.jar')
     androidTestCompile 'junit:junit:4.12'
+}
+
+ext {
+    bintrayRepo = 'maven'
+    bintrayName = 'kuzzle-sdk-android'
+
+    publishedGroupId = 'io.kuzzle'
+    libraryName = 'kuzzle-sdk-android'
+    artifact = 'sdk-android'
+
+    libraryDescription = 'Kuzzle Android SKD aar'
+    libraryVersion = '1.0.4'
+
+    developerId = 'kblondel'
+    developerName = 'Kevin Blondel'
+    developerEmail = 'kblondel@kaliop.com'
+
+    apply from: 'https://raw.githubusercontent.com/attwellBrian/JCenter/master/installv1.gradle'
+
+    version = libraryVersion
+
+    task sourcesJar(type: Jar) {
+        from android.sourceSets.main.java.srcDirs
+        classifier = 'sources'
+    }
+
+    task javadoc(type: Javadoc) {
+        source = android.sourceSets.main.java.srcDirs
+        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+    artifacts {
+        archives javadocJar
+        archives sourcesJar
+    }
+
+    bintray {
+
+        user = System.getenv("bintray.user")
+        key = System.getenv("bintray.apikey")
+
+        configurations = ['archives']
+        pkg {
+            repo = bintrayRepo
+            name = bintrayName
+            desc = libraryDescription
+            publish = true
+            publicDownloadNumbers = true
+            version {
+                desc = libraryDescription
+                // Optional. The passphrase for GPG signing'
+                // gpg {
+                //    sign = true //Determines whether to GPG sign the files. The default is false
+                //    passphrase = properties.getProperty("bintray.gpg.password")
+                //}
+            }
+        }
+    }
+
+    afterEvaluate {
+        javadoc.classpath += project.android.libraryVariants.toList().first().javaCompile.classpath
+    }
 }

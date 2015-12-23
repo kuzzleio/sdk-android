@@ -4,8 +4,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-
 import io.kuzzle.sdk.exceptions.KuzzleException;
 import io.kuzzle.sdk.listeners.ResponseListener;
 
@@ -41,9 +39,8 @@ public class KuzzleDataCollection {
    * @return the kuzzle data collection
    * @throws KuzzleException the kuzzle exception
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    */
-  public KuzzleDataCollection advancedSearch(JSONObject filter) throws KuzzleException, JSONException, IOException {
+  public KuzzleDataCollection advancedSearch(JSONObject filter) throws KuzzleException, JSONException {
     return this.advancedSearch(filter, null, null);
   }
 
@@ -58,9 +55,8 @@ public class KuzzleDataCollection {
    * @return the kuzzle data collection
    * @throws KuzzleException the kuzzle exception
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    */
-  public KuzzleDataCollection advancedSearch(JSONObject filter, KuzzleOptions options) throws KuzzleException, JSONException, IOException {
+  public KuzzleDataCollection advancedSearch(JSONObject filter, KuzzleOptions options) throws KuzzleException, JSONException {
     return this.advancedSearch(filter, options, null);
   }
 
@@ -75,9 +71,8 @@ public class KuzzleDataCollection {
    * @return the kuzzle data collection
    * @throws KuzzleException the kuzzle exception
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    */
-  public KuzzleDataCollection advancedSearch(JSONObject filter, ResponseListener listener) throws KuzzleException, JSONException, IOException {
+  public KuzzleDataCollection advancedSearch(JSONObject filter, ResponseListener listener) throws KuzzleException, JSONException {
     return this.advancedSearch(filter, null, listener);
   }
 
@@ -93,9 +88,8 @@ public class KuzzleDataCollection {
    * @return KuzzleDataCollection object
    * @throws KuzzleException the kuzzle exception
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    */
-  public KuzzleDataCollection advancedSearch(JSONObject filters, final KuzzleOptions options, final ResponseListener listener) throws KuzzleException, JSONException, IOException {
+  public KuzzleDataCollection advancedSearch(JSONObject filters, final KuzzleOptions options, final ResponseListener listener) throws KuzzleException, JSONException {
     this.kuzzle.isValid();
     JSONObject data = new JSONObject();
     if (filters != null) {
@@ -138,7 +132,7 @@ public class KuzzleDataCollection {
 
   /**
    * Returns the number of documents matching the provided set of filters.
-   * <p/>
+   
    * There is a small delay between documents creation and their existence in our advanced search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
@@ -146,16 +140,15 @@ public class KuzzleDataCollection {
    * @param filters the filters
    * @return the kuzzle data collection
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public KuzzleDataCollection count(JSONObject filters) throws KuzzleException, IOException, JSONException {
+  public KuzzleDataCollection count(JSONObject filters) throws KuzzleException, JSONException {
     return this.count(filters, null, null);
   }
 
   /**
    * Returns the number of documents matching the provided set of filters.
-   * <p/>
+   
    * There is a small delay between documents creation and their existence in our advanced search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
@@ -164,16 +157,15 @@ public class KuzzleDataCollection {
    * @param options the options
    * @return the kuzzle data collection
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public KuzzleDataCollection count(JSONObject filters, KuzzleOptions options) throws KuzzleException, IOException, JSONException {
+  public KuzzleDataCollection count(JSONObject filters, KuzzleOptions options) throws KuzzleException, JSONException {
     return this.count(filters, options, null);
   }
 
   /**
    * Returns the number of documents matching the provided set of filters.
-   * <p/>
+   
    * There is a small delay between documents creation and their existence in our advanced search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
@@ -182,16 +174,15 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public KuzzleDataCollection count(JSONObject filters, ResponseListener listener) throws KuzzleException, IOException, JSONException {
+  public KuzzleDataCollection count(JSONObject filters, ResponseListener listener) throws KuzzleException, JSONException {
     return this.count(filters, null, listener);
   }
 
   /**
    * Returns the number of documents matching the provided set of filters.
-   * <p/>
+   
    * There is a small delay between documents creation and their existence in our advanced search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
@@ -201,10 +192,9 @@ public class KuzzleDataCollection {
    * @param cb      the cb
    * @return KuzzleDataCollection kuzzle data collection
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection count(JSONObject filters, KuzzleOptions options, ResponseListener cb) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataCollection count(JSONObject filters, KuzzleOptions options, ResponseListener cb) throws JSONException, KuzzleException {
     JSONObject data = new JSONObject();
     this.kuzzle.addHeaders(data, this.getHeaders());
     data.put("body", filters);
@@ -215,17 +205,16 @@ public class KuzzleDataCollection {
 
   /**
    * Create a new empty data collection, with no associated mapping.
-   * <p/>
+   
    * Kuzzle automatically creates data collections when storing documents, but there are cases where we want to create and prepare data collections before storing documents in it.
    *
    * @param options  the options
    * @param listener the listener
    * @return the kuzzle data collection
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection create(KuzzleOptions options, ResponseListener listener) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataCollection create(KuzzleOptions options, ResponseListener listener) throws JSONException, KuzzleException {
     JSONObject data = new JSONObject();
     this.kuzzle.addHeaders(data, this.getHeaders());
     this.kuzzle.query(this.collection, "write", "createCollection", data, options, listener);
@@ -238,10 +227,9 @@ public class KuzzleDataCollection {
    * @param document the document
    * @return kuzzle data collection
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection createDocument(KuzzleDocument document) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataCollection createDocument(KuzzleDocument document) throws JSONException, KuzzleException {
     return this.createDocument(document, null, null);
   }
 
@@ -252,14 +240,13 @@ public class KuzzleDataCollection {
    * @param options  the options
    * @return kuzzle data collection
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection createDocument(KuzzleDocument document, KuzzleOptions options) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataCollection createDocument(KuzzleDocument document, KuzzleOptions options) throws JSONException, KuzzleException {
     return this.createDocument(document, options, null);
   }
 
-  public KuzzleDataCollection createDocument(KuzzleDocument document, ResponseListener listener) throws KuzzleException, IOException, JSONException {
+  public KuzzleDataCollection createDocument(KuzzleDocument document, ResponseListener listener) throws KuzzleException, JSONException {
     return this.createDocument(document, null ,listener);
   }
 
@@ -271,10 +258,9 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection createDocument(KuzzleDocument document, KuzzleOptions options, ResponseListener listener) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataCollection createDocument(KuzzleDocument document, KuzzleOptions options, ResponseListener listener) throws JSONException, KuzzleException {
     document.put("persist", true);
     String create = "create";
     if (options != null && options.isUpdateIfExists())
@@ -289,10 +275,9 @@ public class KuzzleDataCollection {
    *
    * @return the kuzzle data collection
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection delete() throws JSONException, IOException, KuzzleException {
+  public KuzzleDataCollection delete() throws JSONException, KuzzleException {
     return this.delete(null, null);
   }
 
@@ -302,10 +287,9 @@ public class KuzzleDataCollection {
    * @param options the options
    * @return the kuzzle data collection
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection delete(KuzzleOptions options) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataCollection delete(KuzzleOptions options) throws JSONException, KuzzleException {
     return this.delete(options, null);
   }
 
@@ -315,10 +299,9 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection delete(ResponseListener listener) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataCollection delete(ResponseListener listener) throws JSONException, KuzzleException {
     return this.delete(null, listener);
   }
 
@@ -329,10 +312,9 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection delete(KuzzleOptions options, ResponseListener listener) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataCollection delete(KuzzleOptions options, ResponseListener listener) throws JSONException, KuzzleException {
     JSONObject data = new JSONObject();
 
     this.kuzzle.addHeaders(data, this.getHeaders());
@@ -342,7 +324,7 @@ public class KuzzleDataCollection {
 
   /**
    * Delete a persistent document.
-   * <p/>
+   
    * There is a small delay between documents creation and their existence in our advanced search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
@@ -350,10 +332,9 @@ public class KuzzleDataCollection {
    * @param documentId the document id
    * @return KuzzleDataCollection kuzzle data collection
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection deleteDocument(String documentId) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataCollection deleteDocument(String documentId) throws JSONException, KuzzleException {
     JSONObject data = new JSONObject();
     this.kuzzle.addHeaders(data, this.getHeaders());
     data.put("_id", documentId);
@@ -363,7 +344,7 @@ public class KuzzleDataCollection {
 
   /**
    * Delete a persistent document.
-   * <p/>
+   
    * There is a small delay between documents creation and their existence in our advanced search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
@@ -371,10 +352,9 @@ public class KuzzleDataCollection {
    * @param filters the filters
    * @return kuzzle data collection
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection deleteDocument(JSONObject filters) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataCollection deleteDocument(JSONObject filters) throws JSONException, KuzzleException {
     JSONObject data = new JSONObject();
     this.kuzzle.addHeaders(data, this.getHeaders());
     data.put("body", filters);
@@ -382,7 +362,7 @@ public class KuzzleDataCollection {
     return this;
   }
 
-  public KuzzleDataCollection fetchDocument(String documentId, ResponseListener listener) throws KuzzleException, IOException, JSONException {
+  public KuzzleDataCollection fetchDocument(String documentId, ResponseListener listener) throws KuzzleException, JSONException {
     return this.fetchDocument(documentId, null, listener);
   }
 
@@ -394,10 +374,9 @@ public class KuzzleDataCollection {
    * @param cb         the cb
    * @return KuzzleDataCollection kuzzle data collection
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection fetchDocument(String documentId, KuzzleOptions options, ResponseListener cb) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataCollection fetchDocument(String documentId, KuzzleOptions options, ResponseListener cb) throws JSONException, KuzzleException {
     JSONObject data = new JSONObject();
     this.kuzzle.addHeaders(data, this.getHeaders());
     data.put("_id", documentId);
@@ -411,10 +390,9 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public KuzzleDataCollection fetchAllDocuments(ResponseListener listener) throws KuzzleException, IOException, JSONException {
+  public KuzzleDataCollection fetchAllDocuments(ResponseListener listener) throws KuzzleException, JSONException {
     return this.fetchAllDocuments(null, listener);
   }
 
@@ -425,10 +403,9 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection fetchAllDocuments(KuzzleOptions options, ResponseListener listener) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataCollection fetchAllDocuments(KuzzleOptions options, ResponseListener listener) throws JSONException, KuzzleException {
     return this.advancedSearch(null, options, listener);
   }
 
@@ -438,9 +415,8 @@ public class KuzzleDataCollection {
    * @return the mapping
    * @throws JSONException   the json exception
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    */
-  public KuzzleDataCollection getMapping() throws JSONException, KuzzleException, IOException {
+  public KuzzleDataCollection getMapping() throws JSONException, KuzzleException {
     return this.getMapping(null, null);
   }
 
@@ -451,9 +427,8 @@ public class KuzzleDataCollection {
    * @return the mapping
    * @throws JSONException   the json exception
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    */
-  public KuzzleDataCollection getMapping(KuzzleOptions options) throws JSONException, KuzzleException, IOException {
+  public KuzzleDataCollection getMapping(KuzzleOptions options) throws JSONException, KuzzleException {
     return this.getMapping(options, null);
   }
 
@@ -464,9 +439,8 @@ public class KuzzleDataCollection {
    * @return the mapping
    * @throws JSONException   the json exception
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    */
-  public KuzzleDataCollection getMapping(ResponseListener listener) throws JSONException, KuzzleException, IOException {
+  public KuzzleDataCollection getMapping(ResponseListener listener) throws JSONException, KuzzleException {
     return this.getMapping(null, listener);
   }
 
@@ -477,10 +451,9 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the mapping
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public KuzzleDataCollection getMapping(KuzzleOptions options, ResponseListener listener) throws KuzzleException, IOException, JSONException {
+  public KuzzleDataCollection getMapping(KuzzleOptions options, ResponseListener listener) throws KuzzleException, JSONException {
     new KuzzleDataMapping(this).refresh(options, listener);
     return this;
   }
@@ -492,10 +465,9 @@ public class KuzzleDataCollection {
    * @param options  the options
    * @return the kuzzle data collection
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection publishMessage(KuzzleDocument document, KuzzleOptions options) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataCollection publishMessage(KuzzleDocument document, KuzzleOptions options) throws JSONException, KuzzleException {
     this.kuzzle.addHeaders(document, this.getHeaders());
     this.kuzzle.query(this.collection, "write", "publish", document, options, null);
     return this;
@@ -507,10 +479,9 @@ public class KuzzleDataCollection {
    * @param document the document
    * @return kuzzle data collection
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection publishMessage(KuzzleDocument document) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataCollection publishMessage(KuzzleDocument document) throws JSONException, KuzzleException {
     return this.publishMessage(document, null);
   }
 
@@ -521,9 +492,8 @@ public class KuzzleDataCollection {
    * @return the kuzzle data collection
    * @throws JSONException   the json exception
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    */
-  public KuzzleDataCollection putMapping(KuzzleDataMapping mapping) throws JSONException, KuzzleException, IOException {
+  public KuzzleDataCollection putMapping(KuzzleDataMapping mapping) throws JSONException, KuzzleException {
     return this.putMapping(mapping, null, null);
   }
 
@@ -535,9 +505,8 @@ public class KuzzleDataCollection {
    * @return the kuzzle data collection
    * @throws JSONException   the json exception
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    */
-  public KuzzleDataCollection putMapping(KuzzleDataMapping mapping, KuzzleOptions options) throws JSONException, KuzzleException, IOException {
+  public KuzzleDataCollection putMapping(KuzzleDataMapping mapping, KuzzleOptions options) throws JSONException, KuzzleException {
     return this.putMapping(mapping, options, null);
   }
 
@@ -549,9 +518,8 @@ public class KuzzleDataCollection {
    * @return the kuzzle data collection
    * @throws JSONException   the json exception
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    */
-  public KuzzleDataCollection putMapping(KuzzleDataMapping mapping, ResponseListener listener) throws JSONException, KuzzleException, IOException {
+  public KuzzleDataCollection putMapping(KuzzleDataMapping mapping, ResponseListener listener) throws JSONException, KuzzleException {
     return this.putMapping(mapping, null, listener);
   }
 
@@ -563,10 +531,9 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public KuzzleDataCollection putMapping(KuzzleDataMapping mapping, KuzzleOptions options, ResponseListener listener) throws KuzzleException, IOException, JSONException {
+  public KuzzleDataCollection putMapping(KuzzleDataMapping mapping, KuzzleOptions options, ResponseListener listener) throws KuzzleException, JSONException {
     mapping.apply(options, listener);
     return this;
   }
@@ -578,10 +545,9 @@ public class KuzzleDataCollection {
    * @param content    the content
    * @return KuzzleDataCollection kuzzle data collection
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection replaceDocument(String documentId, KuzzleDocument content) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataCollection replaceDocument(String documentId, KuzzleDocument content) throws JSONException, KuzzleException {
     content.setId(documentId);
     this.kuzzle.addHeaders(content, this.getHeaders());
     this.kuzzle.query(this.collection, "write", "createOrUpdate", content);
@@ -621,9 +587,8 @@ public class KuzzleDataCollection {
    * @return the kuzzle room
    * @throws JSONException   the json exception
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    */
-  public KuzzleRoom subscribe(JSONObject filter, KuzzleRoomOptions options) throws JSONException, KuzzleException, IOException {
+  public KuzzleRoom subscribe(JSONObject filter, KuzzleRoomOptions options) throws JSONException, KuzzleException {
     return this.subscribe(filter, options, null);
   }
 
@@ -635,9 +600,8 @@ public class KuzzleDataCollection {
    * @return the kuzzle room
    * @throws JSONException   the json exception
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    */
-  public KuzzleRoom subscribe(KuzzleRoomOptions options) throws JSONException, KuzzleException, IOException {
+  public KuzzleRoom subscribe(KuzzleRoomOptions options) throws JSONException, KuzzleException {
     return this.subscribe(null, options, null);
   }
 
@@ -650,9 +614,8 @@ public class KuzzleDataCollection {
    * @return the kuzzle room
    * @throws JSONException   the json exception
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    */
-  public KuzzleRoom subscribe(JSONObject filter, ResponseListener callback) throws JSONException, KuzzleException, IOException {
+  public KuzzleRoom subscribe(JSONObject filter, ResponseListener callback) throws JSONException, KuzzleException {
     return this.subscribe(filter, null, callback);
   }
 
@@ -664,9 +627,8 @@ public class KuzzleDataCollection {
    * @return the kuzzle room
    * @throws JSONException   the json exception
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    */
-  public KuzzleRoom subscribe(JSONObject filter) throws JSONException, KuzzleException, IOException {
+  public KuzzleRoom subscribe(JSONObject filter) throws JSONException, KuzzleException {
     return this.subscribe(filter, null, null);
   }
 
@@ -677,9 +639,8 @@ public class KuzzleDataCollection {
    * @return the kuzzle room
    * @throws JSONException   the json exception
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    */
-  public KuzzleRoom subscribe() throws JSONException, KuzzleException, IOException {
+  public KuzzleRoom subscribe() throws JSONException, KuzzleException {
     return this.subscribe(null, null, null);
   }
 
@@ -692,11 +653,10 @@ public class KuzzleDataCollection {
    * @param cb      the cb
    * @return kuzzle room
    * @throws NullPointerException the null pointer exception
-   * @throws IOException          the io exception
    * @throws JSONException        the json exception
    * @throws KuzzleException      the kuzzle exception
    */
-  public KuzzleRoom subscribe(JSONObject filters, KuzzleRoomOptions options, ResponseListener cb) throws NullPointerException, IOException, JSONException, KuzzleException {
+  public KuzzleRoom subscribe(JSONObject filters, KuzzleRoomOptions options, ResponseListener cb) throws NullPointerException, JSONException, KuzzleException {
     this.kuzzle.isValid();
     KuzzleRoom room = new KuzzleRoom(this, options);
     return room.renew(filters, cb);
@@ -704,61 +664,57 @@ public class KuzzleDataCollection {
 
   /**
    * Truncate the data collection, removing all stored documents but keeping all associated mappings.
-   * <p/>
+   
    * This method is a lot faster than removing all documents using a query.
    *
    * @return the kuzzle data collection
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public KuzzleDataCollection truncate() throws KuzzleException, IOException, JSONException {
+  public KuzzleDataCollection truncate() throws KuzzleException, JSONException {
     return this.truncate(null, null);
   }
 
   /**
    * Truncate the data collection, removing all stored documents but keeping all associated mappings.
-   * <p/>
+   
    * This method is a lot faster than removing all documents using a query.
    *
    * @param options the options
    * @return the kuzzle data collection
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public KuzzleDataCollection truncate(KuzzleOptions options) throws KuzzleException, IOException, JSONException {
+  public KuzzleDataCollection truncate(KuzzleOptions options) throws KuzzleException, JSONException {
     return this.truncate(options, null);
   }
 
   /**
    * Truncate the data collection, removing all stored documents but keeping all associated mappings.
-   * <p/>
+   
    * This method is a lot faster than removing all documents using a query.
    *
    * @param listener the listener
    * @return the kuzzle data collection
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public KuzzleDataCollection truncate(ResponseListener listener) throws KuzzleException, IOException, JSONException {
+  public KuzzleDataCollection truncate(ResponseListener listener) throws KuzzleException, JSONException {
     return this.truncate(null, listener);
   }
 
   /**
    * Truncate the data collection, removing all stored documents but keeping all associated mappings.
-   * <p/>
+   
    * This method is a lot faster than removing all documents using a query.
    *
    * @param options  the options
    * @param listener the listener
    * @return the kuzzle data collection
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection truncate(KuzzleOptions options, ResponseListener listener) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataCollection truncate(KuzzleOptions options, ResponseListener listener) throws JSONException, KuzzleException {
     JSONObject  data = new JSONObject();
     this.kuzzle.addHeaders(data, this.kuzzle.getHeaders());
     this.kuzzle.query(this.collection, "admin", "truncateCollection", data, options, listener);
@@ -772,10 +728,9 @@ public class KuzzleDataCollection {
    * @param content    the content
    * @return the kuzzle data collection
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public KuzzleDataCollection updateDocument(String documentId, KuzzleDocument content) throws KuzzleException, IOException, JSONException {
+  public KuzzleDataCollection updateDocument(String documentId, KuzzleDocument content) throws KuzzleException, JSONException {
     return this.updateDocument(documentId, content, null, null);
   }
 
@@ -787,10 +742,9 @@ public class KuzzleDataCollection {
    * @param options    the options
    * @return the kuzzle data collection
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public KuzzleDataCollection updateDocument(String documentId, KuzzleDocument content, KuzzleOptions options) throws KuzzleException, IOException, JSONException {
+  public KuzzleDataCollection updateDocument(String documentId, KuzzleDocument content, KuzzleOptions options) throws KuzzleException, JSONException {
     return this.updateDocument(documentId, content, options, null);
   }
 
@@ -802,10 +756,9 @@ public class KuzzleDataCollection {
    * @param listener   the listener
    * @return the kuzzle data collection
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public KuzzleDataCollection updateDocument(String documentId, KuzzleDocument content, ResponseListener listener) throws KuzzleException, IOException, JSONException {
+  public KuzzleDataCollection updateDocument(String documentId, KuzzleDocument content, ResponseListener listener) throws KuzzleException, JSONException {
     return this.updateDocument(documentId, content, null, listener);
   }
 
@@ -818,10 +771,9 @@ public class KuzzleDataCollection {
    * @param listener   the listener
    * @return kuzzle data collection
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection updateDocument(String documentId, KuzzleDocument content, KuzzleOptions options, final ResponseListener listener) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataCollection updateDocument(String documentId, KuzzleDocument content, KuzzleOptions options, final ResponseListener listener) throws JSONException, KuzzleException {
     JSONObject data = new JSONObject();
     this.kuzzle.addHeaders(data, this.kuzzle.getHeaders());
     data.put("_id", documentId);

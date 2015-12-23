@@ -3,7 +3,6 @@ package io.kuzzle.sdk.core;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -141,7 +140,7 @@ public class Kuzzle {
   /**
    * Adds a listener to a Kuzzle global event. When an event is fired, listeners are called in the order of their
    * insertion.
-   * <p/>
+   
    * The ID returned by this function is required to remove this listener at a later time.
    *
    * @param eventType     - name of the global event to subscribe to
@@ -166,7 +165,6 @@ public class Kuzzle {
    * Connects to a Kuzzle instance using the provided URL.
    *
    * @return
-   * @throws Exception
    */
   public Kuzzle connect() {
     if (!this.isValidSate()) {
@@ -327,10 +325,9 @@ public class Kuzzle {
    * @param listener the listener
    * @return the all statistics
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public Kuzzle getAllStatistics(final ResponseListener listener) throws KuzzleException, IOException, JSONException {
+  public Kuzzle getAllStatistics(final ResponseListener listener) throws KuzzleException, JSONException {
     this.isValid();
 
     this.query(null, "admin", "getAllStats", null, new ResponseListener() {
@@ -358,10 +355,9 @@ public class Kuzzle {
    * @param listener the listener
    * @return statistics statistics
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public Kuzzle getStatistics(final ResponseListener listener) throws KuzzleException, IOException, JSONException {
+  public Kuzzle getStatistics(final ResponseListener listener) throws KuzzleException, JSONException {
     return this.getStatistics(null, listener);
   }
 
@@ -373,10 +369,9 @@ public class Kuzzle {
    * @param listener the listener
    * @return statistics statistics
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public Kuzzle getStatistics(String since, final ResponseListener listener) throws KuzzleException, IOException, JSONException {
+  public Kuzzle getStatistics(String since, final ResponseListener listener) throws KuzzleException, JSONException {
     this.isValid();
     JSONObject body = new JSONObject();
     JSONObject data = new JSONObject();
@@ -405,9 +400,8 @@ public class Kuzzle {
    * @return
    * @throws JSONException
    * @throws KuzzleException
-   * @throws IOException
    */
-  public Kuzzle listCollections() throws JSONException, KuzzleException, IOException {
+  public Kuzzle listCollections() throws JSONException, KuzzleException {
     return this.listCollections(null, null);
   }
 
@@ -418,9 +412,8 @@ public class Kuzzle {
    * @return
    * @throws JSONException
    * @throws KuzzleException
-   * @throws IOException
    */
-  public Kuzzle listCollections(KuzzleOptions options) throws JSONException, KuzzleException, IOException {
+  public Kuzzle listCollections(KuzzleOptions options) throws JSONException, KuzzleException {
     return this.listCollections(options, null);
   }
 
@@ -431,9 +424,8 @@ public class Kuzzle {
    * @return
    * @throws JSONException
    * @throws KuzzleException
-   * @throws IOException
    */
-  public Kuzzle listCollections(ResponseListener listener) throws JSONException, KuzzleException, IOException {
+  public Kuzzle listCollections(ResponseListener listener) throws JSONException, KuzzleException {
     return this.listCollections(null, listener);
   }
 
@@ -444,10 +436,9 @@ public class Kuzzle {
    * @param listener
    * @return
    * @throws KuzzleException
-   * @throws IOException
    * @throws JSONException
    */
-  public Kuzzle listCollections(KuzzleOptions options, ResponseListener listener) throws KuzzleException, IOException, JSONException {
+  public Kuzzle listCollections(KuzzleOptions options, ResponseListener listener) throws KuzzleException, JSONException {
     return this.query(null, "read", "listCollections", null, options, listener);
   }
 
@@ -470,7 +461,7 @@ public class Kuzzle {
    * @return {integer}
    * @throws KuzzleException the kuzzle exception
    */
-  public Kuzzle now(ResponseListener cb) throws KuzzleException, IOException, JSONException {
+  public Kuzzle now(ResponseListener cb) throws KuzzleException, JSONException {
     this.isValid();
 
     this.query(null, "read", "now", null, null, cb);
@@ -486,14 +477,13 @@ public class Kuzzle {
    * @param query      the query
    * @return the kuzzle
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public Kuzzle query(final String collection, final String controller, final String action, final JSONObject query) throws JSONException, IOException, KuzzleException {
+  public Kuzzle query(final String collection, final String controller, final String action, final JSONObject query) throws JSONException, KuzzleException {
     return this.query(collection, controller, action, query, null, null);
   }
 
-  public Kuzzle query(final String collection, final String controller, final String action, final JSONObject query, KuzzleOptions options) throws KuzzleException, IOException, JSONException {
+  public Kuzzle query(final String collection, final String controller, final String action, final JSONObject query, KuzzleOptions options) throws KuzzleException, JSONException {
     return this.query(collection, controller, action, query, options, null);
   }
 
@@ -507,10 +497,9 @@ public class Kuzzle {
    * @param listener   the listener
    * @return the kuzzle
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public Kuzzle query(final String collection, final String controller, final String action, final JSONObject query, ResponseListener listener) throws JSONException, IOException, KuzzleException {
+  public Kuzzle query(final String collection, final String controller, final String action, final JSONObject query, ResponseListener listener) throws JSONException, KuzzleException {
     return this.query(collection, controller, action, query, null, listener);
   }
 
@@ -526,10 +515,9 @@ public class Kuzzle {
    * @param cb         the cb
    * @return the kuzzle
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public Kuzzle query(final String collection, final String controller, final String action, final JSONObject query, KuzzleOptions options, final ResponseListener cb) throws JSONException, IOException, KuzzleException {
+  public Kuzzle query(final String collection, final String controller, final String action, final JSONObject query, KuzzleOptions options, final ResponseListener cb) throws JSONException, KuzzleException {
     this.isValid();
     JSONObject object = query != null ? query : new JSONObject();
     if (object.isNull("requestId"))
@@ -736,17 +724,17 @@ public class Kuzzle {
       socket.once(request.get("requestId").toString(), new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-          if (listener != null) {
-            try {
-              if (!((JSONObject) args[0]).isNull("error")) {
-                listener.onError((JSONObject) ((JSONObject) args[0]).get("error"));
-              } else {
-                listener.onSuccess((JSONObject) ((JSONObject) args[0]).get("result"));
-              }
-            } catch (Exception e) {
-              e.printStackTrace();
+        if (listener != null) {
+          try {
+            if (!((JSONObject) args[0]).isNull("error")) {
+              listener.onError((JSONObject) ((JSONObject) args[0]).get("error"));
+            } else {
+              listener.onSuccess((JSONObject) ((JSONObject) args[0]).get("result"));
             }
+          } catch (Exception e) {
+            e.printStackTrace();
           }
+        }
         }
       });
     }

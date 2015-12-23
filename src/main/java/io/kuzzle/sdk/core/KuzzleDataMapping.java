@@ -3,7 +3,6 @@ package io.kuzzle.sdk.core;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.Iterator;
 
 import io.kuzzle.sdk.exceptions.KuzzleException;
@@ -24,7 +23,7 @@ public class KuzzleDataMapping {
    * It means that, by default, you won't be able to exploit the full capabilities of our persistent data storage layer
    * (currently handled by ElasticSearch), and your searches may suffer from below-average performances, depending on
    * the amount of data you stored in a collection and the complexity of your database.
-   * <p/>
+   
    * The KuzzleDataMapping object allow to get the current mapping of a data collection and to modify it if needed.
    *
    * @param kuzzleDataCollection the kuzzle data collection
@@ -45,10 +44,9 @@ public class KuzzleDataMapping {
    *
    * @return the kuzzle data mapping
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public KuzzleDataMapping  apply() throws KuzzleException, IOException, JSONException {
+  public KuzzleDataMapping  apply() throws KuzzleException, JSONException {
     return this.apply(null, null);
   }
 
@@ -58,10 +56,9 @@ public class KuzzleDataMapping {
    * @param options the options
    * @return the kuzzle data mapping
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public KuzzleDataMapping  apply(KuzzleOptions options) throws KuzzleException, IOException, JSONException {
+  public KuzzleDataMapping  apply(KuzzleOptions options) throws KuzzleException, JSONException {
     return this.apply(options, null);
   }
 
@@ -71,10 +68,9 @@ public class KuzzleDataMapping {
    * @param listener the listener
    * @return the kuzzle data mapping
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public KuzzleDataMapping  apply(ResponseListener listener) throws KuzzleException, IOException, JSONException {
+  public KuzzleDataMapping  apply(ResponseListener listener) throws KuzzleException, JSONException {
     return this.apply(null, listener);
   }
 
@@ -85,10 +81,9 @@ public class KuzzleDataMapping {
    * @param cb      the cb
    * @return the kuzzle data mapping
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataMapping apply(KuzzleOptions options, ResponseListener cb) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataMapping apply(KuzzleOptions options, ResponseListener cb) throws JSONException, KuzzleException {
     JSONObject data = new JSONObject();
     JSONObject properties = new JSONObject();
     properties.put("properties", this.mapping);
@@ -103,56 +98,52 @@ public class KuzzleDataMapping {
    *
    * @return the kuzzle data mapping
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public KuzzleDataMapping refresh() throws KuzzleException, IOException, JSONException {
+  public KuzzleDataMapping refresh() throws KuzzleException, JSONException {
     return this.refresh(null, null);
   }
 
   /**
    * Replaces the current content with the mapping stored in Kuzzle
-   * <p/>
+   
    * Calling this function will discard any uncommited changes. You can commit changes by calling the "apply" function
    *
    * @param options the options
    * @return the kuzzle data mapping
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataMapping refresh(KuzzleOptions options) throws IOException, JSONException, KuzzleException {
+  public KuzzleDataMapping refresh(KuzzleOptions options) throws JSONException, KuzzleException {
     return refresh(options, null);
   }
 
   /**
    * Replaces the current content with the mapping stored in Kuzzle
-   * <p/>
+   
    * Calling this function will discard any uncommited changes. You can commit changes by calling the "apply" function
    *
    * @param listener the listener
    * @return the kuzzle data mapping
    * @throws KuzzleException the kuzzle exception
-   * @throws IOException     the io exception
    * @throws JSONException   the json exception
    */
-  public KuzzleDataMapping refresh(ResponseListener listener) throws KuzzleException, IOException, JSONException {
+  public KuzzleDataMapping refresh(ResponseListener listener) throws KuzzleException, JSONException {
     return refresh(null, listener);
   }
 
   /**
    * Replaces the current content with the mapping stored in Kuzzle
-   * <p/>
+   
    * Calling this function will discard any uncommited changes. You can commit changes by calling the "apply" function
    *
    * @param options the options
    * @param cb      the cb
    * @return the kuzzle data mapping
    * @throws JSONException   the json exception
-   * @throws IOException     the io exception
    * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataMapping refresh(KuzzleOptions options, final ResponseListener cb) throws JSONException, IOException, KuzzleException {
+  public KuzzleDataMapping refresh(KuzzleOptions options, final ResponseListener cb) throws JSONException, KuzzleException {
     JSONObject data = new JSONObject();
     this.kuzzle.addHeaders(data, this.headers);
     this.kuzzle.query(this.collection, "admin", "getMapping", data, options, new ResponseListener() {
@@ -181,7 +172,7 @@ public class KuzzleDataMapping {
 
   /**
    * Adds or updates a field mapping.
-   * <p/>
+   
    * Changes made by this function won't be applied until you call the apply method
    *
    * @param field the field
