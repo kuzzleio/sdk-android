@@ -1,7 +1,5 @@
 package io.kuzzle.sdk.core;
 
-import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -740,7 +738,6 @@ public class Kuzzle {
         }
       });
     }
-    Log.e("kuzzle", request.toString());
     socket.emit("kuzzle", request);
     // Track requests made to allow KuzzleRoom.subscribeToSelf to work
     this.requestHistory.put(request.getString("requestId"), new Date());

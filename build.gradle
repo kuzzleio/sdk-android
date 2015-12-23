@@ -65,7 +65,7 @@ ext {
     bintrayRepo = 'maven'
     bintrayName = 'kuzzle-sdk-android'
 
-    publishedGroupId = 'io.kuzzle.kuzzle-sdk-android'
+    publishedGroupId = 'io.kuzzle'
     libraryName = 'kuzzle-sdk-android'
     artifact = 'sdk-android'
 
