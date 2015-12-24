@@ -15,45 +15,50 @@ The complete SDK documentation is available [here](http://kuzzleio.github.io/sdk
 
 ## Basic usage
 
-    Kuzzle kuzzle = new Kuzzle("http://host.url", new ResponseListener() {
-    @Override
-    public void onSuccess(JSONObject object) {
-        // Handle success
-        JSONObject doc = new JSONObject();
-        doc.put("name", "bar");
-        kuzzle.dataCollectionFactory("foo")
-              .createDocument(doc);
-    }
+```java
+Kuzzle kuzzle = new Kuzzle("http://host.url", new ResponseListener() {
+@Override
+public void onSuccess(JSONObject object) {
+    // Handle success
+    JSONObject doc = new JSONObject();
+    doc.put("name", "bar");
+    kuzzle.dataCollectionFactory("foo")
+          .createDocument(doc);
+}
     
-    @Override
-    public void onError(JSONObject error) {
-        // Handle error
-    }
-    });
+@Override
+public void onError(JSONObject error) {
+    // Handle error
+}
+});
+```
 
 ## With KuzzleDocument
 
 KuzzleDocument is an encapsulation of a JSONObject.
 
-    KuzzleDataCollection myCollection = new KuzzleDataCollection(kuzzle, "myNewCollection");
-    KuzzleDocument myDocument = new KuzzleDocument(myCollection);
-    // Add properties to the body
-    myDocument.setContent("foo", "bar");
-    // Persist the document
-    myDocument.save();
-    // Send it on real time (non persistent)
-    myDocument.publish();
+```java
+KuzzleDataCollection myCollection = new KuzzleDataCollection(kuzzle, "myNewCollection");
+KuzzleDocument myDocument = new KuzzleDocument(myCollection);
+// Add properties to the body
+myDocument.setContent("foo", "bar");
+// Persist the document
+myDocument.save();
+// Send it on real time (non persistent)
+myDocument.publish();
+```
     
 ## Adding metadata
 
 As stated [here](https://github.com/kuzzleio/kuzzle/blob/master/docs/API.WebSocket.md#sending-metadata) you can add metadata to a subscription.
 
-    KuzzleOptions options = new KuzzleOptions();
-    JSONObject metadata = new JSONObject();
-    metadata.put("foo", "bar");
-    options.setMetadata(metadata);
-    myCollection.subscribe(options);
-    
+```java
+KuzzleOptions options = new KuzzleOptions();
+JSONObject metadata = new JSONObject();
+metadata.put("foo", "bar");
+options.setMetadata(metadata);
+myCollection.subscribe(options);
+```
 
 ## Javadoc
 
