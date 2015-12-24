@@ -13,6 +13,17 @@ You can access the Kuzzle repository on [Github](https://github.com/kuzzleio/kuz
 
 The complete SDK documentation is available [here](http://kuzzleio.github.io/sdk-documentation)
 
+## Installation
+
+You can configure your android project to get the Kuzzle's android SDK from jcenter in your build.gradle:
+
+    buildscript {
+        repositories {
+            jcenter()
+        }
+    }
+    compile 'io.kuzzle:sdk-android:1.0.4'
+
 ## Basic usage
 
 ```java
