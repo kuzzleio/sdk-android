@@ -9,6 +9,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -51,7 +52,7 @@ public class KuzzleTest {
   public void setUp() throws Exception {
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", options);
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     s = mock(Socket.class);
     kuzzle.setSocket(s);
   }
@@ -69,7 +70,7 @@ public class KuzzleTest {
     }).when(s).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", options, new ResponseListener() {
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options, new ResponseListener() {
       @Override
       public void onSuccess(JSONObject object) {
       }
@@ -85,7 +86,12 @@ public class KuzzleTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testBadUriConnection() throws Exception {
-    kuzzle = new Kuzzle(null);
+    kuzzle = new Kuzzle(null, "testIndex");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testBadIndex() throws URISyntaxException {
+    kuzzle = new Kuzzle("http://localhost:7512", null);
   }
 
   @Test
@@ -93,18 +99,8 @@ public class KuzzleTest {
     assertNotNull(kuzzle);
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    assertEquals(options.getIndex(), "mainindex");
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex");
+    assertEquals(kuzzle.getIndex(), "testIndex");
     assertNotNull(kuzzle);
   }
 
@@ -213,7 +209,7 @@ public class KuzzleTest {
     KuzzleOptions options = new KuzzleOptions();
     options.setQueuable(false);
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", options);
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     kuzzle.setSocket(s);
     JSONObject meta = new JSONObject();
     meta.put("foo", "bar");
@@ -237,7 +233,7 @@ public class KuzzleTest {
     options.setMetadata(meta);
     options.setQueuable(false);
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", options);
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     kuzzle.setSocket(s);
     kuzzle.query("collection", "controller", "action", jsonObj, options);
     verify(s).emit(eq("kuzzle"), eq(jsonObj));
@@ -403,7 +399,7 @@ public class KuzzleTest {
     options.setConnect(Mode.MANUAL);
     options.setAutoReconnect(true);
     options.setOfflineMode(Mode.AUTO);
-    kuzzle = new Kuzzle("http://localhost:7512", options);
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     kuzzle.setSocket(s);
 
     doAnswer(new Answer() {
@@ -453,7 +449,7 @@ public class KuzzleTest {
     options.setConnect(Mode.MANUAL);
     options.setAutoReconnect(true);
     options.setOfflineMode(Mode.AUTO);
-    kuzzle = new Kuzzle("http://localhost:7512", options);
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     kuzzle.setSocket(s);
 
     doAnswer(new Answer() {
@@ -509,7 +505,7 @@ public class KuzzleTest {
     options.setConnect(Mode.MANUAL);
     JSONObject query = new JSONObject();
     query.put("requestId", "42");
-    kuzzle = new Kuzzle("http://localhost:7512", options);
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     kuzzle.setSocket(s);
     kuzzle.connect();
     kuzzle.query("test", "test", "test", query, null, new ResponseListener() {
@@ -546,7 +542,7 @@ public class KuzzleTest {
     JSONObject query = new JSONObject("{\"controller\":\"test3\",\"metadata\":{},\"requestId\":\"a476ae61-497e-4338-b4dd-751ac22c6b61\",\"action\":\"test3\",\"collection\":\"test3\"}");
     o.setQuery(query);
 
-    kuzzle = new Kuzzle("http://localhost:7512", options);
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     kuzzle.setSocket(s);
 
     doAnswer(new Answer() {
@@ -594,7 +590,7 @@ public class KuzzleTest {
       }
     };
     ResponseListener spyListener = spy(listener);
-    kuzzle = new Kuzzle("http://localhost:7512", options, spyListener);
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options, spyListener);
     kuzzle.setSocket(s);
     final Kuzzle kuzzleSpy = spy(kuzzle);
     kuzzleSpy.addSubscription("42", new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "test")));
@@ -653,7 +649,7 @@ public class KuzzleTest {
     ResponseListener spy = spy(listener);
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", spy);
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", spy);
     kuzzle.setSocket(s);
     Kuzzle kuzzleSpy = spy(kuzzle);
     when(kuzzleSpy.isValidSate()).thenReturn(false);
@@ -681,7 +677,7 @@ public class KuzzleTest {
     ResponseListener listenerSpy = spy(listener);
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", options, listenerSpy);
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options, listenerSpy);
     kuzzle.setSocket(s);
     Kuzzle kuzzleSpy = spy(kuzzle);
     doAnswer(new Answer() {
@@ -706,7 +702,7 @@ public class KuzzleTest {
     options.setAutoReconnect(true);
     options.setOfflineMode(Mode.AUTO);
 
-    kuzzle = new Kuzzle("http://localhost:7512", options);
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     KuzzleQueryObject o = new KuzzleQueryObject();
     o.setTimestamp(new Date());
     o.setAction("test");
@@ -728,7 +724,7 @@ public class KuzzleTest {
     options.setAutoReconnect(true);
     options.setOfflineMode(Mode.AUTO);
 
-    kuzzle = new Kuzzle("http://localhost:7512", options);
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     Kuzzle kuzzleSpy = spy(kuzzle);
     kuzzleSpy.listCollections();
     kuzzleSpy.listCollections(options);
@@ -767,7 +763,7 @@ public class KuzzleTest {
     options.setConnect(Mode.MANUAL);
     options.setAutoReconnect(false);
     options.setOfflineMode(Mode.AUTO);
-    kuzzle = new Kuzzle("http://localhost:7512", options);
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     kuzzle.setSocket(s);
 
     doAnswer(new Answer() {
@@ -802,7 +798,7 @@ public class KuzzleTest {
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
     KuzzleOptions options = new KuzzleOptions();
     options.setAutoQueue(true);
-    kuzzle = new Kuzzle("http://localhost:7512", options);
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     kuzzle.connect();
     kuzzle.listCollections(options);
     assertEquals(kuzzle.getOfflineQueue().size(), 1);
@@ -843,7 +839,7 @@ public class KuzzleTest {
     KuzzleOptions options = new KuzzleOptions();
     options.setQueuable(false);
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", options);
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     kuzzle.setSocket(s);
 
     JSONObject jsonObj = new JSONObject();
@@ -851,16 +847,15 @@ public class KuzzleTest {
 
     kuzzle.query("collection", "controller", "action", jsonObj, options, null);
     verify(s).emit(eq("kuzzle"), eq(jsonObj));
-    assertEquals(jsonObj.getString("index"), "mainindex");
+    assertEquals(jsonObj.getString("index"), "testIndex");
   }
 
   @Test
   public void testMultiIndex() throws Exception {
     KuzzleOptions options = new KuzzleOptions();
-    options.setIndex("%test");
     options.setQueuable(false);
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", options);
+    kuzzle = new Kuzzle("http://localhost:7512", "%index", options);
     kuzzle.setSocket(s);
 
     JSONObject jsonObj = new JSONObject();
@@ -868,7 +863,7 @@ public class KuzzleTest {
 
     kuzzle.query("collection", "controller", "action", jsonObj, options, null);
     verify(s).emit(eq("kuzzle"), eq(jsonObj));
-    assertEquals(jsonObj.getString("index"), "%test");
+    assertEquals(jsonObj.getString("index"), "%index");
   }
 
 }

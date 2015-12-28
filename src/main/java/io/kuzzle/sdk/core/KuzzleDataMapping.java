@@ -150,11 +150,13 @@ public class KuzzleDataMapping {
       @Override
       public void onSuccess(JSONObject args) {
         try {
-          JSONObject mappings = args.getJSONObject("mainindex").getJSONObject("mappings");
-          if (!mappings.isNull(KuzzleDataMapping.this.collection))
-            KuzzleDataMapping.this.mapping = mappings.getJSONObject(KuzzleDataMapping.this.collection);
-          if (cb != null)
-            cb.onSuccess(mappings);
+          if (!args.isNull(KuzzleDataMapping.this.kuzzle.getIndex())) {
+            JSONObject mappings = args.getJSONObject(KuzzleDataMapping.this.kuzzle.getIndex()).getJSONObject("mappings");
+            if (!mappings.isNull(KuzzleDataMapping.this.collection))
+              KuzzleDataMapping.this.mapping = mappings.getJSONObject(KuzzleDataMapping.this.collection);
+            if (cb != null)
+              cb.onSuccess(mappings);
+          }
         } catch (JSONException e) {
           e.printStackTrace();
         }
