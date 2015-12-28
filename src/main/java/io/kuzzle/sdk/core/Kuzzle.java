@@ -65,7 +65,7 @@ public class Kuzzle {
   };
   private long replayInterval = 10;
   private boolean queuing = false;
-  private String index;
+  private final String index;
 
   private Map<String, Date> requestHistory = new HashMap<String, Date>();
 
@@ -1062,7 +1062,7 @@ public class Kuzzle {
    *
    * @return the index
    */
-  public final String getIndex() {
+  public String getIndex() {
     return this.index;
   }
 }

@@ -25,6 +25,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class KuzzleDataMappingTest {
 
@@ -80,7 +81,7 @@ public class KuzzleDataMappingTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        JSONObject response = new JSONObject("{\"mainindex\": {\"mappings\": {" +
+        JSONObject response = new JSONObject("{\"index\": {\"mappings\": {" +
             "        \"test\": {" +
             "          \"properties\": {" +
             "            \"available\": {" +
@@ -102,7 +103,7 @@ public class KuzzleDataMappingTest {
         return null;
       }
     }).when(k).query(eq("test"), eq("admin"), eq("getMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
-
+    when(k.getIndex()).thenReturn("index");
     dataMapping.refresh();
     dataMapping.refresh(new KuzzleOptions());
     dataMapping.refresh(new ResponseListener() {
