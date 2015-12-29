@@ -101,8 +101,8 @@ ext {
 
     bintray {
 
-        user = System.getenv("bintray.user")
-        key = System.getenv("bintray.apikey")
+        user = System.getenv("bintray_user")
+        key = System.getenv("bintray_apikey")
 
         configurations = ['archives']
         pkg {

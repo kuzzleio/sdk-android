@@ -88,7 +88,7 @@ public class Kuzzle {
     if (index == null || index.isEmpty())
       throw new IllegalArgumentException("Index is missing");
 
-    this.autoReconnect = (options != null ? options.isAutoReconnect() : true);
+    this.autoReconnect = (options != null ? options.isAutoReconnect() : false);
     this.headers = (options != null && options.getHeaders() != null ? options.getHeaders() : new JSONObject());
     this.metadata = (options != null && options.getMetadata() != null ? options.getMetadata() : new JSONObject());
     this.reconnectionDelay = (options != null ? options.getReconnectionDelay() : 1000);
@@ -149,7 +149,6 @@ public class Kuzzle {
   /**
    * Adds a listener to a Kuzzle global event. When an event is fired, listeners are called in the order of their
    * insertion.
-   * <p/>
    * The ID returned by this function is required to remove this listener at a later time.
    *
    * @param eventType     - name of the global event to subscribe to
@@ -183,122 +182,127 @@ public class Kuzzle {
       }
     }
     Kuzzle.this.state = States.CONNECTING;
-    socket.once(Socket.EVENT_CONNECT, new Emitter.Listener() {
-      @Override
-      public void call(Object... args) {
-        Kuzzle.this.state = States.CONNECTED;
-        try {
-          renewSubscriptions(connectionCallback);
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-        if (Kuzzle.this.connectionCallback != null) {
-          try {
-            Kuzzle.this.connectionCallback.onSuccess(null);
-          } catch (Exception e) {
-            e.printStackTrace();
-          }
-        }
-        try {
-          Kuzzle.this.dequeue();
-        } catch (JSONException e) {
-          e.printStackTrace();
-        }
-        for (Event e : Kuzzle.this.eventListeners) {
-          if (e.getType() == EventType.CONNECTED) {
-            try {
-              e.trigger(null, null);
-            } catch (Exception e1) {
-              e1.printStackTrace();
-            }
-          }
-        }
-      }
-    });
-    socket.once(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
-      @Override
-      public void call(Object... args) {
-        Kuzzle.this.state = States.ERROR;
-        for (Event e : Kuzzle.this.eventListeners) {
-          if (e.getType() == EventType.ERROR) {
-            try {
-              e.trigger(null, null);
-            } catch (Exception e1) {
-              e1.printStackTrace();
-            }
-          }
-        }
-        if (connectionCallback != null) {
-          JSONObject error = new JSONObject();
-          try {
-            error.put("message", ((EngineIOException)args[0]).getMessage());
-            error.put("code", ((EngineIOException)args[0]).code);
-            connectionCallback.onSuccess(error);
-          } catch (ClassCastException e) {
-            e.printStackTrace();
-          } catch (JSONException e) {
-            e.printStackTrace();
-          } catch (Exception e) {
-            e.printStackTrace();
-          }
-        }
-      }
-    });
-    socket.once(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
-      @Override
-      public void call(Object... args) {
-        Kuzzle.this.state = States.OFFLINE;
-        if (Kuzzle.this.autoReconnect) {
-          logout();
-        }
-        if (Kuzzle.this.autoQueue) {
-          queuing = true;
-        }
-        for (Event e : eventListeners) {
-          if (e.getType() == EventType.DISCONNECTED) {
-            try {
-              e.trigger(null, null);
-            } catch (Exception e1) {
-              e1.printStackTrace();
-            }
-          }
-        }
-      }
-    });
-    socket.once(Socket.EVENT_RECONNECT, new Emitter.Listener() {
-      @Override
-      public void call(Object... args) {
-        Kuzzle.this.state = States.CONNECTED;
-        if (Kuzzle.this.autoResubscribe) {
+    if (socket != null)
+      socket.once(Socket.EVENT_CONNECT, new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+          Kuzzle.this.state = States.CONNECTED;
           try {
             renewSubscriptions(connectionCallback);
           } catch (Exception e) {
             e.printStackTrace();
           }
-        }
-        //replay queued requests
-        if (Kuzzle.this.autoReplay) {
-          Kuzzle.this.cleanQueue();
+          if (Kuzzle.this.connectionCallback != null) {
+            try {
+              Kuzzle.this.connectionCallback.onSuccess(null);
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
+          }
           try {
             Kuzzle.this.dequeue();
           } catch (JSONException e) {
             e.printStackTrace();
           }
-        }
-
-        // alert listeners
-        for (Event e : Kuzzle.this.eventListeners) {
-          if (e.getType() == EventType.RECONNECTED) {
-            try {
-              e.trigger(null, null);
-            } catch (Exception e1) {
-              e1.printStackTrace();
+          for (Event e : Kuzzle.this.eventListeners) {
+            if (e.getType() == EventType.CONNECTED) {
+              try {
+                e.trigger(null, null);
+              } catch (Exception e1) {
+                e1.printStackTrace();
+              }
             }
           }
         }
-      }
-    });
-    socket.connect();
+      });
+    if (socket != null)
+      socket.once(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+          Kuzzle.this.state = States.ERROR;
+          for (Event e : Kuzzle.this.eventListeners) {
+            if (e.getType() == EventType.ERROR) {
+              try {
+                e.trigger(null, null);
+              } catch (Exception e1) {
+                e1.printStackTrace();
+              }
+            }
+          }
+          if (connectionCallback != null) {
+            JSONObject error = new JSONObject();
+            try {
+              error.put("message", ((EngineIOException)args[0]).getMessage());
+              error.put("code", ((EngineIOException)args[0]).code);
+              connectionCallback.onSuccess(error);
+            } catch (ClassCastException e) {
+              e.printStackTrace();
+            } catch (JSONException e) {
+              e.printStackTrace();
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
+          }
+        }
+      });
+    if (socket != null)
+      socket.once(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+          Kuzzle.this.state = States.OFFLINE;
+          if (!Kuzzle.this.autoReconnect) {
+            logout();
+          }
+          if (Kuzzle.this.autoQueue) {
+            queuing = true;
+          }
+          for (Event e : eventListeners) {
+            if (e.getType() == EventType.DISCONNECTED) {
+              try {
+                e.trigger(null, null);
+              } catch (Exception e1) {
+                e1.printStackTrace();
+              }
+            }
+          }
+        }
+      });
+    if (socket != null)
+      socket.once(Socket.EVENT_RECONNECT, new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+          Kuzzle.this.state = States.CONNECTED;
+          if (Kuzzle.this.autoResubscribe) {
+            try {
+              renewSubscriptions(connectionCallback);
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
+          }
+          //replay queued requests
+          if (Kuzzle.this.autoReplay) {
+            Kuzzle.this.cleanQueue();
+            try {
+              Kuzzle.this.dequeue();
+            } catch (JSONException e) {
+              e.printStackTrace();
+            }
+          }
+
+          // alert listeners
+          for (Event e : Kuzzle.this.eventListeners) {
+            if (e.getType() == EventType.RECONNECTED) {
+              try {
+                e.trigger(null, null);
+              } catch (Exception e1) {
+                e1.printStackTrace();
+              }
+            }
+          }
+        }
+      });
+    if (socket != null)
+      socket.connect();
     return this;
   }
 

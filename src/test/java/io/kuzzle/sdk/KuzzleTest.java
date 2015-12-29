@@ -397,20 +397,17 @@ public class KuzzleTest {
     options.setAutoReplay(true);
     options.setReplayInterval(1);
     options.setConnect(Mode.MANUAL);
-    options.setAutoReconnect(true);
     options.setOfflineMode(Mode.AUTO);
     kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     kuzzle.setSocket(s);
-
+    kuzzle.setAutoReconnect(true);
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        kuzzle.setAutoReconnect(false);
         ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
-    kuzzle.setAutoReconnect(true);
     kuzzle.connect();
 
     KuzzleQueryObject o = new KuzzleQueryObject();
@@ -447,22 +444,19 @@ public class KuzzleTest {
     options.setQueueMaxSize(1);
     options.setAutoReplay(true);
     options.setConnect(Mode.MANUAL);
-    options.setAutoReconnect(true);
     options.setOfflineMode(Mode.AUTO);
     kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     kuzzle.setSocket(s);
-
+    kuzzle.setAutoReconnect(true);
+    kuzzle.setAutoQueue(true);
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        kuzzle.setAutoReconnect(false);
         ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
-    kuzzle.setAutoReconnect(true);
     kuzzle.connect();
-
     kuzzle.query("test", "test", "test", new JSONObject(), new ResponseListener() {
       @Override
       public void onSuccess(JSONObject object) {
@@ -533,7 +527,6 @@ public class KuzzleTest {
     options.setReplayInterval(1);
     options.setAutoReplay(true);
     options.setConnect(Mode.MANUAL);
-    options.setAutoReconnect(true);
     options.setOfflineMode(Mode.AUTO);
 
     KuzzleQueryObject o = new KuzzleQueryObject();
@@ -544,11 +537,11 @@ public class KuzzleTest {
 
     kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     kuzzle.setSocket(s);
+    kuzzle.setAutoReconnect(true);
 
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        kuzzle.setAutoReconnect(false);
         ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
         return s;
       }
@@ -593,13 +586,12 @@ public class KuzzleTest {
     kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options, spyListener);
     kuzzle.setSocket(s);
     final Kuzzle kuzzleSpy = spy(kuzzle);
+    kuzzleSpy.setAutoReconnect(true);
     kuzzleSpy.addSubscription("42", new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "test")));
     kuzzleSpy.addSubscription("43", new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "test2")));
-
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        kuzzleSpy.setAutoReconnect(false);
         ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
         return s;
       }
@@ -619,7 +611,7 @@ public class KuzzleTest {
 
   @Test
   public void testAutoReconnect() throws Exception {
-    kuzzle.setAutoReconnect(true);
+    kuzzle.setAutoReconnect(false);
     final Kuzzle  kuzzleSpy = spy(kuzzle);
     doAnswer(new Answer() {
       @Override
@@ -761,15 +753,14 @@ public class KuzzleTest {
     options.setQueueTTL(10000);
     options.setReplayInterval(1);
     options.setConnect(Mode.MANUAL);
-    options.setAutoReconnect(false);
     options.setOfflineMode(Mode.AUTO);
     kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     kuzzle.setSocket(s);
+    kuzzle.setAutoReconnect(true);
 
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        kuzzle.setAutoReconnect(false);
         ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
         return s;
       }
@@ -782,6 +773,7 @@ public class KuzzleTest {
     assertEquals(kuzzle.getOfflineQueue().size(), 1);
     kuzzle.flushQueue();
     kuzzle.stopQueing();
+    assertEquals(kuzzle.getOfflineQueue().size(), 0);
     kuzzle.query("test", "test", "test", query, null, null);
     assertEquals(kuzzle.getOfflineQueue().size(), 0);
   }
@@ -797,7 +789,6 @@ public class KuzzleTest {
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
     KuzzleOptions options = new KuzzleOptions();
-    options.setAutoQueue(true);
     kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     kuzzle.connect();
     kuzzle.listCollections(options);
