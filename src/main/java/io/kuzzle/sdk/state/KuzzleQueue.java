@@ -1,7 +1,11 @@
 package io.kuzzle.sdk.state;
 
+import android.util.Log;
+
 import java.util.ArrayDeque;
 import java.util.Queue;
+
+import io.kuzzle.sdk.util.KuzzleQueryObject;
 
 /**
  * The type KuzzleQueue.
@@ -19,6 +23,7 @@ public class KuzzleQueue<T> {
    */
   public synchronized void addToQueue(T object) {
     _queue.add(object);
+    Log.e("cabble", ((KuzzleQueryObject)object).getQuery() + " Added to queue. queue: " + _queue.size());
   }
 
   /**

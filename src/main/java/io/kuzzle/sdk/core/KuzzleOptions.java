@@ -18,6 +18,7 @@ public class KuzzleOptions {
   private int replayInterval = 10;
   private boolean queuable = true;
   private int queueMaxSize = 500;
+  private boolean autoResubscribe;
 
   /**
    * Is auto reconnect boolean.
@@ -155,4 +156,11 @@ public class KuzzleOptions {
     this.replayInterval = replayInterval;
   }
 
+  public boolean isAutoResubscribe() {
+    return autoResubscribe;
+  }
+
+  public void setAutoResubscribe(boolean autoResubscribe) {
+    this.autoResubscribe = autoResubscribe;
+  }
 }
