@@ -95,6 +95,7 @@ public class Kuzzle {
     this.queueTTL = (options != null ? options.getQueueTTL() : 0);
     this.autoReplay = (options != null ? options.isAutoReplay() : false);
     this.queueMaxSize = (options != null ? options.getQueueMaxSize() : 0);
+    this.autoResubscribe = (options != null ? options.isAutoResubscribe() : true);
     this.url = url;
     this.connectionCallback = connectionCallback;
     this.index = index;
@@ -187,17 +188,8 @@ public class Kuzzle {
         @Override
         public void call(Object... args) {
           Kuzzle.this.state = States.CONNECTED;
-          try {
-            renewSubscriptions(connectionCallback);
-          } catch (Exception e) {
-            e.printStackTrace();
-          }
           if (Kuzzle.this.connectionCallback != null) {
-            try {
-              Kuzzle.this.connectionCallback.onSuccess(null);
-            } catch (Exception e) {
-              e.printStackTrace();
-            }
+            Kuzzle.this.connectionCallback.onSuccess(null);
           }
           try {
             Kuzzle.this.dequeue();
@@ -206,11 +198,7 @@ public class Kuzzle {
           }
           for (Event e : Kuzzle.this.eventListeners) {
             if (e.getType() == EventType.CONNECTED) {
-              try {
-                e.trigger(null, null);
-              } catch (Exception e1) {
-                e1.printStackTrace();
-              }
+              e.trigger(null, null);
             }
           }
         }
@@ -222,11 +210,7 @@ public class Kuzzle {
           Kuzzle.this.state = States.ERROR;
           for (Event e : Kuzzle.this.eventListeners) {
             if (e.getType() == EventType.ERROR) {
-              try {
-                e.trigger(null, null);
-              } catch (Exception e1) {
-                e1.printStackTrace();
-              }
+              e.trigger(null, null);
             }
           }
           if (connectionCallback != null) {
@@ -234,14 +218,10 @@ public class Kuzzle {
             try {
               error.put("message", ((EngineIOException)args[0]).getMessage());
               error.put("code", ((EngineIOException)args[0]).code);
-              connectionCallback.onSuccess(error);
-            } catch (ClassCastException e) {
-              e.printStackTrace();
             } catch (JSONException e) {
               e.printStackTrace();
-            } catch (Exception e) {
-              e.printStackTrace();
             }
+            connectionCallback.onSuccess(error);
           }
         }
       });
@@ -258,11 +238,7 @@ public class Kuzzle {
           }
           for (Event e : eventListeners) {
             if (e.getType() == EventType.DISCONNECTED) {
-              try {
-                e.trigger(null, null);
-              } catch (Exception e1) {
-                e1.printStackTrace();
-              }
+              e.trigger(null, null);
             }
           }
         }
@@ -273,6 +249,7 @@ public class Kuzzle {
         public void call(Object... args) {
           Kuzzle.this.state = States.CONNECTED;
           if (Kuzzle.this.autoResubscribe) {
+            // Resubscribe
             try {
               renewSubscriptions(connectionCallback);
             } catch (Exception e) {
@@ -292,11 +269,7 @@ public class Kuzzle {
           // alert listeners
           for (Event e : Kuzzle.this.eventListeners) {
             if (e.getType() == EventType.RECONNECTED) {
-              try {
-                e.trigger(null, null);
-              } catch (Exception e1) {
-                e1.printStackTrace();
-              }
+              e.trigger(null, null);
             }
           }
         }
@@ -640,7 +613,7 @@ public class Kuzzle {
     return this;
   }
 
-  private void renewSubscriptions(final ResponseListener listener) throws Exception {
+  private void renewSubscriptions(final ResponseListener listener) throws JSONException, KuzzleException {
     Iterator ite = subscriptions.entrySet().iterator();
     while (ite.hasNext()) {
       Map.Entry e = (Map.Entry) ite.next();
@@ -1015,7 +988,7 @@ public class Kuzzle {
    */
   private void  dequeue() throws JSONException {
     if (this.offlineQueue.getQueue().size() > 0) {
-      this.emitRequest(((KuzzleQueryObject)this.offlineQueue.getQueue().peek()).getQuery(), ((KuzzleQueryObject)this.offlineQueue.getQueue().peek()).getCb());
+      this.emitRequest(((KuzzleQueryObject)this.offlineQueue.getQueue().peek()).getQuery(), ((KuzzleQueryObject)this.offlineQueue.getQueue().poll()).getCb());
       Timer timer = new Timer(UUID.randomUUID().toString());
       timer.schedule(new TimerTask() {
         @Override
