@@ -1,7 +1,5 @@
 package io.kuzzle.sdk.core;
 
-import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -990,7 +988,6 @@ public class Kuzzle {
    */
   private void  dequeue() throws JSONException {
     if (this.offlineQueue.getQueue().size() > 0) {
-      Log.e("kuzzle", "dequeuing: " + ((KuzzleQueryObject) this.offlineQueue.getQueue().peek()).getQuery());
       this.emitRequest(((KuzzleQueryObject)this.offlineQueue.getQueue().peek()).getQuery(), ((KuzzleQueryObject)this.offlineQueue.getQueue().poll()).getCb());
       Timer timer = new Timer(UUID.randomUUID().toString());
       timer.schedule(new TimerTask() {
