@@ -9,7 +9,6 @@ import java.util.UUID;
 import io.kuzzle.sdk.enums.Scope;
 import io.kuzzle.sdk.enums.State;
 import io.kuzzle.sdk.enums.Users;
-import io.kuzzle.sdk.exceptions.KuzzleException;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.socket.emitter.Emitter;
 
@@ -37,7 +36,7 @@ public class KuzzleRoom {
    *
    * @param kuzzleDataCollection the kuzzle data collection
    */
-  public KuzzleRoom(KuzzleDataCollection kuzzleDataCollection) throws KuzzleException {
+  public KuzzleRoom(KuzzleDataCollection kuzzleDataCollection) {
     this(kuzzleDataCollection, null);
   }
 
@@ -50,9 +49,8 @@ public class KuzzleRoom {
    *
    * @param kuzzleDataCollection the kuzzle data collection
    * @param options              the options
-   * @throws NullPointerException the null pointer exception
    */
-  public KuzzleRoom(final KuzzleDataCollection kuzzleDataCollection, final KuzzleRoomOptions options) throws NullPointerException, KuzzleException {
+  public KuzzleRoom(final KuzzleDataCollection kuzzleDataCollection, final KuzzleRoomOptions options) {
     if (kuzzleDataCollection == null) {
       throw new IllegalArgumentException("KuzzleRoom: missing dataCollection");
     }
@@ -74,15 +72,18 @@ public class KuzzleRoom {
    *
    * @param cb the cb
    * @return kuzzle room
-   * @throws JSONException the json exception
    */
-  public KuzzleRoom count(final ResponseListener cb) throws JSONException, KuzzleException {
+  public KuzzleRoom count(final ResponseListener cb) {
     JSONObject body = new JSONObject();
     JSONObject data = new JSONObject();
-    data.put("roomId", this.roomId);
-    body.put("body", data);
-    this.kuzzle.addHeaders(body, this.headers);
-    this.kuzzle.query(this.collection, "subscribe", "count", body, cb);
+    try {
+      data.put("roomId", this.roomId);
+      body.put("body", data);
+      this.kuzzle.addHeaders(body, this.headers);
+      this.kuzzle.query(this.collection, "subscribe", "count", body, cb);
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
     return this;
   }
 
@@ -125,50 +126,52 @@ public class KuzzleRoom {
    * @param filters the filters
    * @param cb      the cb
    * @return kuzzle room
-   * @throws JSONException   the json exception
-   * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleRoom renew(final JSONObject filters, final ResponseListener cb) throws JSONException, KuzzleException {
+  public KuzzleRoom renew(final JSONObject filters, final ResponseListener cb) {
     this.filters = (filters == null ? new JSONObject() : filters);
-    this.unsubscribe();
     final KuzzleOptions options = new KuzzleOptions();
     final JSONObject subscribeQuery = new JSONObject();
 
-    subscribeQuery.put("body", this.filters);
-    subscribeQuery.put("scope", this.scope.toString().toLowerCase());
-    subscribeQuery.put("state", this.state.toString().toLowerCase());
-    subscribeQuery.put("users", this.users.toString().toLowerCase());
+    try {
+      this.unsubscribe();
+      subscribeQuery.put("body", this.filters);
+      subscribeQuery.put("scope", this.scope.toString().toLowerCase());
+      subscribeQuery.put("state", this.state.toString().toLowerCase());
+      subscribeQuery.put("users", this.users.toString().toLowerCase());
 
-    this.kuzzle.addPendingSubscription(this.id, this);
-    options.setMetadata(this.metadata);
-    this.kuzzle.addHeaders(subscribeQuery, this.headers);
+      this.kuzzle.addPendingSubscription(this.id, this);
+      options.setMetadata(this.metadata);
+      this.kuzzle.addHeaders(subscribeQuery, this.headers);
 
-    this.kuzzle.query(this.collection, "subscribe", "on", subscribeQuery, options, new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject args) {
-        KuzzleRoom.this.kuzzle.addSubscription(KuzzleRoom.this.id, KuzzleRoom.this);
-        KuzzleRoom.this.kuzzle.deletePendingSubscription(KuzzleRoom.this.id);
-        try {
-          KuzzleRoom.this.channel = args.getString("channel");
-          KuzzleRoom.this.roomId = args.getString("roomId");
-        } catch (JSONException e) {
-          e.printStackTrace();
-        }
-        KuzzleRoom.this.kuzzle.getSocket().on(KuzzleRoom.this.channel, new Emitter.Listener() {
-          @Override
-          public void call(final Object... args) {
-            callAfterRenew(cb, args[0]);
+      this.kuzzle.query(this.collection, "subscribe", "on", subscribeQuery, options, new ResponseListener() {
+        @Override
+        public void onSuccess(JSONObject args) {
+          KuzzleRoom.this.kuzzle.addSubscription(KuzzleRoom.this.id, KuzzleRoom.this);
+          KuzzleRoom.this.kuzzle.deletePendingSubscription(KuzzleRoom.this.id);
+          try {
+            KuzzleRoom.this.channel = args.getString("channel");
+            KuzzleRoom.this.roomId = args.getString("roomId");
+          } catch (JSONException e) {
+            e.printStackTrace();
           }
-        });
-      }
-
-      @Override
-      public void onError(JSONObject arg) {
-        if (cb != null) {
-          cb.onError(arg);
+          KuzzleRoom.this.kuzzle.getSocket().on(KuzzleRoom.this.channel, new Emitter.Listener() {
+            @Override
+            public void call(final Object... args) {
+              callAfterRenew(cb, args[0]);
+            }
+          });
         }
-      }
-    });
+
+        @Override
+        public void onError(JSONObject arg) {
+          if (cb != null) {
+            cb.onError(arg);
+          }
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
     return this;
   }
 
@@ -177,31 +180,34 @@ public class KuzzleRoom {
    *
    * @param listener the listener
    * @return the kuzzle room
-   * @throws JSONException the json exception
    */
-  public KuzzleRoom unsubscribe(final ResponseListener listener) throws JSONException, KuzzleException {
+  public KuzzleRoom unsubscribe(final ResponseListener listener) {
     if (this.roomId != null) {
       JSONObject roomId = new JSONObject();
-      roomId.put("roomId", this.roomId);
       JSONObject data = new JSONObject();
-      this.kuzzle.addHeaders(data, this.headers);
-      data.put("body", roomId);
-      this.kuzzle.deleteSubscription(this.id);
-      this.kuzzle.query(this.collection, "subscribe", "off", data, new ResponseListener() {
-        @Override
-        public void onSuccess(JSONObject object) {
-          KuzzleRoom.this.kuzzle.getSocket().off(KuzzleRoom.this.channel);
-          KuzzleRoom.this.roomId = null;
-          if (listener != null)
-            listener.onSuccess(object);
-        }
+      try {
+        roomId.put("roomId", this.roomId);
+        this.kuzzle.addHeaders(data, this.headers);
+        data.put("body", roomId);
+        this.kuzzle.deleteSubscription(this.id);
+        this.kuzzle.query(this.collection, "subscribe", "off", data, new ResponseListener() {
+          @Override
+          public void onSuccess(JSONObject object) {
+            KuzzleRoom.this.kuzzle.getSocket().off(KuzzleRoom.this.channel);
+            KuzzleRoom.this.roomId = null;
+            if (listener != null)
+              listener.onSuccess(object);
+          }
 
-        @Override
-        public void onError(JSONObject error) {
-          if (listener != null)
-            listener.onError(error);
-        }
-      });
+          @Override
+          public void onError(JSONObject error) {
+            if (listener != null)
+              listener.onError(error);
+          }
+        });
+      } catch (JSONException e) {
+        throw new RuntimeException(e);
+      }
     }
     return this;
   }
@@ -210,9 +216,8 @@ public class KuzzleRoom {
    * Cancels the current subscription.
    *
    * @return the kuzzle room
-   * @throws JSONException the json exception
    */
-  public KuzzleRoom unsubscribe() throws JSONException, KuzzleException {
+  public KuzzleRoom unsubscribe() {
     return this.unsubscribe(null);
   }
 
@@ -260,9 +265,8 @@ public class KuzzleRoom {
    *
    * @param content the headers
    * @return the headers
-   * @throws JSONException the json exception
    */
-  public KuzzleRoom setHeaders(JSONObject content) throws JSONException {
+  public KuzzleRoom setHeaders(JSONObject content) {
     return this.setHeaders(content, false);
   }
 
@@ -274,9 +278,8 @@ public class KuzzleRoom {
    * @param content - new headers content
    * @param replace - default: false = append the content. If true: replace the current headers with tj
    * @return the headers
-   * @throws JSONException the json exception
    */
-  public KuzzleRoom setHeaders(JSONObject content, boolean replace) throws JSONException {
+  public KuzzleRoom setHeaders(JSONObject content, boolean replace) {
     if (this.headers == null) {
       this.headers = new JSONObject();
     }
@@ -284,9 +287,13 @@ public class KuzzleRoom {
       this.headers = content;
     } else {
       if (content != null) {
-        for (Iterator ite = content.keys(); ite.hasNext(); ) {
-          String key = (String) ite.next();
-          this.headers.put(key, content.get(key));
+        try {
+          for (Iterator ite = content.keys(); ite.hasNext(); ) {
+            String key = (String) ite.next();
+            this.headers.put(key, content.get(key));
+          }
+        } catch (JSONException e) {
+          throw new RuntimeException(e);
         }
       }
     }

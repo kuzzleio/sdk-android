@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.HashMap;
@@ -17,7 +16,6 @@ import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.core.KuzzleRoom;
 import io.kuzzle.sdk.core.KuzzleRoomOptions;
-import io.kuzzle.sdk.exceptions.KuzzleException;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -49,13 +47,13 @@ public class KuzzleRoomTest {
   };
 
   @Test(expected = IllegalArgumentException.class)
-  public void testConstructorWithNullCollection() throws IOException, JSONException, KuzzleException {
+  public void testConstructorWithNullCollection() {
     // Should throw an exception
     new KuzzleRoom(null);
   }
 
   @Test
-  public void testCollection() throws KuzzleException {
+  public void testCollection() {
     Kuzzle k = mock(Kuzzle.class);
     KuzzleDataCollection collection = new KuzzleDataCollection(k, "test");
     KuzzleRoom room = new KuzzleRoom(collection);
@@ -63,7 +61,7 @@ public class KuzzleRoomTest {
   }
 
   @Test
-  public void testCount() throws IOException, JSONException, KuzzleException {
+  public void testCount() throws JSONException {
     Kuzzle k = mock(Kuzzle.class);
     JSONObject o = mock(JSONObject.class);
     when(o.put(any(String.class), any(Object.class))).thenReturn(new JSONObject());
@@ -74,7 +72,7 @@ public class KuzzleRoomTest {
   }
 
   @Test
-  public void testRenewWithError() throws KuzzleException, IOException, JSONException, URISyntaxException {
+  public void testRenewWithError() throws URISyntaxException, JSONException {
     Kuzzle k = mock(Kuzzle.class);
     // Mocking getSocket()
     when(k.getSocket()).thenReturn(IO.socket("http://localhost:7515"));
@@ -103,7 +101,7 @@ public class KuzzleRoomTest {
     });
   }
 
-  private void stubRoom(Kuzzle k) throws IOException, JSONException, KuzzleException {
+  private void stubRoom(Kuzzle k) throws JSONException {
     // stub to call the query()'s callback from KuzzleRoom.renew method
     doAnswer(new Answer() {
       @Override
@@ -120,7 +118,7 @@ public class KuzzleRoomTest {
   }
 
   @Test
-  public void testRenew() throws IOException, JSONException, KuzzleException, URISyntaxException {
+  public void testRenew() throws JSONException {
     Kuzzle k = mock(Kuzzle.class);
     Socket s = mock(Socket.class);
     when(k.getSocket()).thenReturn(s);
@@ -157,7 +155,7 @@ public class KuzzleRoomTest {
   }
 
   @Test
-  public void testFilters() throws KuzzleException, JSONException, IOException {
+  public void testFilters() throws JSONException {
     Kuzzle k = mock(Kuzzle.class);
     Socket s = mock(Socket.class);
     when(k.getSocket()).thenReturn(s);
@@ -173,7 +171,7 @@ public class KuzzleRoomTest {
   }
 
   @Test
-  public void setMetadataThroughConstructor() throws JSONException, KuzzleException, IOException {
+  public void setMetadataThroughConstructor() throws JSONException {
     Kuzzle k = mock(Kuzzle.class);
     Socket s = mock(Socket.class);
     when(k.getSocket()).thenReturn(s);
@@ -190,7 +188,7 @@ public class KuzzleRoomTest {
   }
 
   @Test
-  public void setSubscribeToSelfThroughConstructor() throws JSONException, KuzzleException, IOException {
+  public void setSubscribeToSelfThroughConstructor() throws JSONException {
     Kuzzle k = mock(Kuzzle.class);
     Socket s = mock(Socket.class);
     when(k.getSocket()).thenReturn(s);
@@ -205,7 +203,7 @@ public class KuzzleRoomTest {
   }
 
   @Test(expected = NullPointerException.class)
-  public void testCallAfterRenewWithNoResponse() throws Exception {
+  public void testCallAfterRenewWithNoResponse() {
     Kuzzle k = mock(Kuzzle.class);
     KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test"));
     // Should throw an exception
@@ -213,7 +211,7 @@ public class KuzzleRoomTest {
   }
 
   @Test(expected = NullPointerException.class)
-  public void testCallAfterRenewException() throws KuzzleException {
+  public void testCallAfterRenewException() {
     Kuzzle k = mock(Kuzzle.class);
     KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test"));
     renew.callAfterRenew(null, null);
@@ -221,7 +219,7 @@ public class KuzzleRoomTest {
 
 
   @Test
-  public void testCallAfterRenewWithError() throws Exception {
+  public void testCallAfterRenewWithError() throws JSONException {
     Kuzzle k = mock(Kuzzle.class);
     KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test"));
     JSONObject errorResponse = new JSONObject();
@@ -232,7 +230,7 @@ public class KuzzleRoomTest {
   }
 
   @Test
-  public void testCallAfterRenew() throws Exception {
+  public void testCallAfterRenew() throws JSONException {
     Kuzzle k = mock(Kuzzle.class);
     KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test"));
     JSONObject errorResponse = new JSONObject();
@@ -248,7 +246,7 @@ public class KuzzleRoomTest {
   }
 
   @Test
-  public void testCallAfterRenewWithSubscribeToSelf() throws Exception {
+  public void testCallAfterRenewWithSubscribeToSelf() throws JSONException {
     Kuzzle k = mock(Kuzzle.class);
     KuzzleRoomOptions options = new KuzzleRoomOptions();
     options.setSubscribeToSelf(true);
@@ -266,7 +264,7 @@ public class KuzzleRoomTest {
   }
 
   @Test
-  public void testUnsubscribe() throws JSONException, IOException, KuzzleException, URISyntaxException {
+  public void testUnsubscribe() throws JSONException {
     Kuzzle k = mock(Kuzzle.class);
     Socket s = mock(Socket.class);
     // Mocking getSocket()
@@ -300,7 +298,7 @@ public class KuzzleRoomTest {
   }
 
   @Test
-  public void testSetHeaders() throws JSONException, KuzzleException {
+  public void testSetHeaders() throws JSONException {
     Kuzzle k = mock(Kuzzle.class);
     KuzzleRoom room = new KuzzleRoom(new KuzzleDataCollection(k, "test"));
     JSONObject headers = new JSONObject();
@@ -314,7 +312,7 @@ public class KuzzleRoomTest {
   }
 
   @Test
-  public void testGetHeaders() throws JSONException, IOException, KuzzleException {
+  public void testGetHeaders() throws JSONException {
     Kuzzle k = mock(Kuzzle.class);
     KuzzleRoom room = new KuzzleRoom(new KuzzleDataCollection(k, "test"));
     room.setHeaders(null);
@@ -328,11 +326,11 @@ public class KuzzleRoomTest {
   // Class for testing protected callAfterRenew and triggerEvents
   public class KuzzleRoomExtend extends KuzzleRoom {
 
-    public KuzzleRoomExtend(KuzzleDataCollection kuzzleDataCollection) throws KuzzleException {
+    public KuzzleRoomExtend(KuzzleDataCollection kuzzleDataCollection) {
       super(kuzzleDataCollection);
     }
 
-    public KuzzleRoomExtend(KuzzleDataCollection kuzzleDataCollection, KuzzleRoomOptions options) throws KuzzleException {
+    public KuzzleRoomExtend(KuzzleDataCollection kuzzleDataCollection, KuzzleRoomOptions options) {
       super(kuzzleDataCollection, options);
     }
 

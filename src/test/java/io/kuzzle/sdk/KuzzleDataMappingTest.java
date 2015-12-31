@@ -7,13 +7,10 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import java.io.IOException;
-
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleDataMapping;
 import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.exceptions.KuzzleException;
 import io.kuzzle.sdk.listeners.ResponseListener;
 
 import static org.junit.Assert.assertEquals;
@@ -48,7 +45,7 @@ public class KuzzleDataMappingTest {
   }
 
   @Test
-  public void testApply() throws IOException, JSONException, KuzzleException {
+  public void testApply() throws JSONException {
     dataMapping.apply();
     dataMapping.apply(new KuzzleOptions());
     dataMapping.apply(new ResponseListener() {
@@ -77,7 +74,7 @@ public class KuzzleDataMappingTest {
   }
 
   @Test
-  public void testRefresh() throws IOException, JSONException, KuzzleException {
+  public void testRefresh() throws JSONException {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -146,7 +143,7 @@ public class KuzzleDataMappingTest {
   }
 
   @Test
-  public void testSetHeaders() throws JSONException, KuzzleException {
+  public void testSetHeaders() throws JSONException {
     JSONObject headers = new JSONObject();
     headers.put("foo", "bar");
     dataMapping.setHeaders(headers, true);
@@ -158,7 +155,7 @@ public class KuzzleDataMappingTest {
   }
 
   @Test
-  public void testGetHeaders() throws JSONException, IOException, KuzzleException {
+  public void testGetHeaders() throws JSONException {
     dataMapping.setHeaders(null);
     assertNotNull(dataMapping.getHeaders());
     JSONObject headers = new JSONObject();
