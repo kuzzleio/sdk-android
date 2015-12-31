@@ -27,7 +27,7 @@ You can configure your android project to get the Kuzzle's android SDK from jcen
 ## Basic usage
 
 ```java
-Kuzzle kuzzle = new Kuzzle("http://host.url", new ResponseListener() {
+Kuzzle kuzzle = new Kuzzle("http://host.url", "index",new ResponseListener() {
 @Override
 public void onSuccess(JSONObject object) {
     // Handle success
