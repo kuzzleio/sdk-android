@@ -243,6 +243,7 @@ public class KuzzleRoom {
    * Sets filters.
    *
    * @param filters the filters
+   * @return the filters
    */
   public KuzzleRoom setFilters(JSONObject filters) {
     this.filters = filters;
@@ -313,6 +314,7 @@ public class KuzzleRoom {
    * Sets metadata.
    *
    * @param metadata the metadata
+   * @return the metadata
    */
   public KuzzleRoom setMetadata(JSONObject metadata) {
     this.metadata = metadata;
@@ -332,6 +334,7 @@ public class KuzzleRoom {
    * Sets subscribe to self.
    *
    * @param subscribeToSelf the subscribe to self
+   * @return the subscribe to self
    */
   public KuzzleRoom setSubscribeToSelf(boolean subscribeToSelf) {
     this.subscribeToSelf = subscribeToSelf;
@@ -340,7 +343,8 @@ public class KuzzleRoom {
 
   /**
    * Get roomId
-   * @return roomId
+   *
+   * @return roomId room id
    */
   public String getRoomId() {
     return this.roomId;

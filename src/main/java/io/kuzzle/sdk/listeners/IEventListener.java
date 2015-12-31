@@ -10,6 +10,8 @@ public interface IEventListener {
   /**
    * Trigger.
    *
+   * @param id     the id
+   * @param object the object
    */
   void trigger(final String id, final JSONObject object);
 
