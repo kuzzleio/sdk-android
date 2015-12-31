@@ -125,7 +125,7 @@ public class KuzzleDataCollection {
 
   /**
    * Returns the number of documents matching the provided set of filters.
-   * <p/>
+   * 
    * There is a small delay between documents creation and their existence in our advanced search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
@@ -139,7 +139,7 @@ public class KuzzleDataCollection {
 
   /**
    * Returns the number of documents matching the provided set of filters.
-   * <p/>
+   * 
    * There is a small delay between documents creation and their existence in our advanced search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
@@ -154,7 +154,7 @@ public class KuzzleDataCollection {
 
   /**
    * Returns the number of documents matching the provided set of filters.
-   * <p/>
+   * 
    * There is a small delay between documents creation and their existence in our advanced search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
@@ -169,7 +169,7 @@ public class KuzzleDataCollection {
 
   /**
    * Returns the number of documents matching the provided set of filters.
-   * <p/>
+   * 
    * There is a small delay between documents creation and their existence in our advanced search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
@@ -194,7 +194,7 @@ public class KuzzleDataCollection {
 
   /**
    * Create a new empty data collection, with no associated mapping.
-   * <p/>
+   * 
    * Kuzzle automatically creates data collections when storing documents, but there are cases where we want to create and prepare data collections before storing documents in it.
    *
    * @param options  the options
@@ -227,6 +227,7 @@ public class KuzzleDataCollection {
    *
    * @param document the document
    * @param options  the options
+   * @return the kuzzle data collection
    */
   public KuzzleDataCollection createDocument(KuzzleDocument document, KuzzleOptions options) {
     return this.createDocument(document, options, null);
@@ -314,7 +315,7 @@ public class KuzzleDataCollection {
 
   /**
    * Delete a persistent document.
-   * <p/>
+   * 
    * There is a small delay between documents creation and their existence in our advanced search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
@@ -336,7 +337,7 @@ public class KuzzleDataCollection {
 
   /**
    * Delete a persistent document.
-   * <p/>
+   * 
    * There is a small delay between documents creation and their existence in our advanced search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
@@ -634,7 +635,7 @@ public class KuzzleDataCollection {
 
   /**
    * Truncate the data collection, removing all stored documents but keeping all associated mappings.
-   * <p/>
+   * 
    * This method is a lot faster than removing all documents using a query.
    *
    * @return the kuzzle data collection
@@ -645,7 +646,7 @@ public class KuzzleDataCollection {
 
   /**
    * Truncate the data collection, removing all stored documents but keeping all associated mappings.
-   * <p/>
+   * 
    * This method is a lot faster than removing all documents using a query.
    *
    * @param options the options
@@ -657,7 +658,7 @@ public class KuzzleDataCollection {
 
   /**
    * Truncate the data collection, removing all stored documents but keeping all associated mappings.
-   * <p/>
+   * 
    * This method is a lot faster than removing all documents using a query.
    *
    * @param listener the listener
@@ -669,7 +670,7 @@ public class KuzzleDataCollection {
 
   /**
    * Truncate the data collection, removing all stored documents but keeping all associated mappings.
-   * <p/>
+   * 
    * This method is a lot faster than removing all documents using a query.
    *
    * @param options  the options

@@ -623,6 +623,7 @@ public class Kuzzle {
    *
    * @param content the headers
    * @return the headers
+   * @throws JSONException the json exception
    */
   public Kuzzle setHeaders(JSONObject content) throws JSONException {
     return this.setHeaders(content, false);
@@ -745,7 +746,6 @@ public class Kuzzle {
 
   /**
    * Helper function ensuring that this Kuzzle object is still valid before performing a query
-   *
    */
   public void isValid() {
     if (this.state == States.LOGGED_OFF) {
@@ -758,6 +758,7 @@ public class Kuzzle {
    *
    * @param query   the query
    * @param headers the headers
+   * @throws JSONException the json exception
    */
   public void addHeaders(JSONObject query, JSONObject headers) throws JSONException {
     for (Iterator iterator = headers.keys(); iterator.hasNext(); ) {
