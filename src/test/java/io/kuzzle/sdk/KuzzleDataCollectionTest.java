@@ -7,16 +7,12 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleDataMapping;
 import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.core.KuzzleRoomOptions;
-import io.kuzzle.sdk.exceptions.KuzzleException;
 import io.kuzzle.sdk.listeners.ResponseListener;
 
 import static org.junit.Assert.assertEquals;
@@ -41,7 +37,7 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testAdvancedSearch() throws URISyntaxException, IOException, JSONException, KuzzleException {
+  public void testAdvancedSearch() throws JSONException {
     JSONObject filters = new JSONObject();
     doAnswer(new Answer() {
       @Override
@@ -85,7 +81,7 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testCount() throws IOException, JSONException, KuzzleException {
+  public void testCount() throws JSONException {
     JSONObject filters = new JSONObject();
     collection.count(filters);
     collection.count(filters, new KuzzleOptions());
@@ -115,7 +111,7 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testCreate() throws KuzzleException, IOException, JSONException {
+  public void testCreate() throws JSONException {
     collection.create(null, new ResponseListener() {
       @Override
       public void onSuccess(JSONObject object) {
@@ -127,11 +123,11 @@ public class KuzzleDataCollectionTest {
 
       }
     });
-    verify(k, times(1)).query(eq("test"), eq("write"), eq("createCollection"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));;
+    verify(k, times(1)).query(eq("test"), eq("write"), eq("createCollection"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
   }
 
   @Test
-  public void testCreateDocument() throws JSONException, IOException, KuzzleException {
+  public void testCreateDocument() throws JSONException {
     KuzzleDocument doc = new KuzzleDocument(collection);
     doc.setContent("foo", "bar");
     collection.createDocument(doc);
@@ -150,7 +146,7 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testCreateDocumentWithOptions() throws JSONException, IOException, KuzzleException {
+  public void testCreateDocumentWithOptions() throws JSONException {
     KuzzleDocument doc = new KuzzleDocument(collection);
     doc.setContent("foo", "bar");
     KuzzleOptions options = new KuzzleOptions();
@@ -161,7 +157,7 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testDelete() throws KuzzleException, IOException, JSONException {
+  public void testDelete() throws JSONException {
     collection.delete();
     collection.delete(new KuzzleOptions());
     collection.delete(new KuzzleOptions(), new ResponseListener() {
@@ -191,14 +187,14 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testDeleteDocument() throws IOException, JSONException, KuzzleException {
+  public void testDeleteDocument() throws JSONException {
     collection.deleteDocument("42");
     collection.deleteDocument(new JSONObject());
     verify(k, times(2)).query(eq("test"), eq("write"), eq("delete"), any(JSONObject.class));
   }
 
   @Test
-  public void testFetchDocument() throws IOException, JSONException, KuzzleException {
+  public void testFetchDocument() throws JSONException {
     collection.fetchDocument("42", new ResponseListener() {
       @Override
       public void onSuccess(JSONObject object) {
@@ -225,7 +221,7 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testFetchAllDocuments() throws KuzzleException, IOException, JSONException {
+  public void testFetchAllDocuments() throws JSONException {
     collection.fetchAllDocuments(new KuzzleOptions(), new ResponseListener() {
       @Override
       public void onSuccess(JSONObject object) {
@@ -252,7 +248,7 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testGetMapping() throws KuzzleException, IOException, JSONException {
+  public void testGetMapping() throws JSONException {
     collection.getMapping();
     collection.getMapping(new KuzzleOptions());
     collection.getMapping(new ResponseListener() {
@@ -281,7 +277,7 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testPublishMessage() throws JSONException, IOException, KuzzleException {
+  public void testPublishMessage() throws JSONException {
     KuzzleDocument doc = new KuzzleDocument(collection);
     doc.setContent("foo", "bar");
     collection.publishMessage(doc);
@@ -290,7 +286,7 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void putMapping() throws KuzzleException, IOException, JSONException {
+  public void putMapping() throws JSONException {
     KuzzleDataMapping mapping = new KuzzleDataMapping(collection);
     collection.putMapping(mapping);
     collection.putMapping(mapping, new KuzzleOptions());
@@ -320,7 +316,7 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testReplaceDocument() throws IOException, JSONException, KuzzleException {
+  public void testReplaceDocument() throws JSONException {
     KuzzleDocument doc = new KuzzleDocument(collection);
     doc.setContent("foo", "bar");
     collection.replaceDocument("42", doc);
@@ -345,7 +341,7 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testSubscribe() throws JSONException, KuzzleException, IOException {
+  public void testSubscribe() throws JSONException {
     collection.subscribe(new JSONObject(), new KuzzleRoomOptions(), new ResponseListener() {
       @Override
       public void onSuccess(JSONObject object) {
@@ -376,7 +372,7 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testTruncate() throws KuzzleException, IOException, JSONException {
+  public void testTruncate() throws JSONException {
     collection.truncate();
     collection.truncate(new KuzzleOptions());
     collection.truncate(new ResponseListener() {
@@ -405,7 +401,7 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testUpdateDocument() throws IOException, JSONException, KuzzleException {
+  public void testUpdateDocument() throws JSONException {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {

@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
@@ -15,7 +14,6 @@ import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.core.KuzzleRoomOptions;
-import io.kuzzle.sdk.exceptions.KuzzleException;
 import io.kuzzle.sdk.listeners.ResponseListener;
 
 import static org.junit.Assert.assertEquals;
@@ -36,20 +34,20 @@ public class KuzzleDocumentTest {
   private KuzzleDocument doc;
 
   @Before
-  public void setUp() throws JSONException, URISyntaxException {
+  public void setUp() throws URISyntaxException {
     k = mock(Kuzzle.class);
     when(k.getHeaders()).thenReturn(new JSONObject());
     doc = new KuzzleDocument(new KuzzleDataCollection(k, "test"));
   }
 
   @Test
-  public void testConstructor() throws JSONException {
+  public void testConstructor() {
     doc = new KuzzleDocument(new KuzzleDataCollection(k, "test"), "42");
     assertEquals(doc.getId(), "42");
   }
 
   @Test
-  public void testCollection() throws KuzzleException, JSONException {
+  public void testCollection() {
     Kuzzle k = mock(Kuzzle.class);
     KuzzleDataCollection collection = new KuzzleDataCollection(k, "test");
     KuzzleDocument doc = new KuzzleDocument(collection);
@@ -67,7 +65,7 @@ public class KuzzleDocumentTest {
   }
 
   @Test
-  public void testSave() throws KuzzleException, JSONException, IOException {
+  public void testSave() throws JSONException {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -101,7 +99,7 @@ public class KuzzleDocumentTest {
   }
 
   @Test
-  public void testDelete() throws URISyntaxException, IOException, JSONException, KuzzleException {
+  public void testDelete() throws JSONException {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -122,13 +120,13 @@ public class KuzzleDocumentTest {
     verify(k, times(1)).query(eq("test"), eq("write"), eq("delete"), any(JSONObject.class), any(ResponseListener.class));
   }
 
-  @Test(expected = KuzzleException.class)
-  public void testRefreshWithoutId() throws KuzzleException, IOException, JSONException {
+  @Test(expected = RuntimeException.class)
+  public void testRefreshWithoutId() {
     doc.refresh(null);
   }
 
   @Test
-  public void testRefresh() throws IOException, JSONException, KuzzleException {
+  public void testRefresh() throws JSONException {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -165,7 +163,7 @@ public class KuzzleDocumentTest {
   }
 
   @Test
-  public void testPublish() throws IOException, JSONException, KuzzleException {
+  public void testPublish() throws JSONException {
     doc.publish();
     verify(k, times(1)).query(eq("test"), eq("write"), eq("publish"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
   }
@@ -184,13 +182,13 @@ public class KuzzleDocumentTest {
     assertTrue(doc.getContent().isNull("test"));
   }
 
-  @Test(expected = KuzzleException.class)
-  public void testSubscribeNullId() throws KuzzleException, JSONException, IOException {
+  @Test(expected = RuntimeException.class)
+  public void testSubscribeNullId() {
     doc.subscribe();
   }
 
   @Test
-  public void testSubscribe() throws KuzzleException, IOException, JSONException {
+  public void testSubscribe() throws JSONException {
     doc.setId("42");
     doc.subscribe();
     doc.subscribe(new KuzzleRoomOptions());
@@ -220,7 +218,7 @@ public class KuzzleDocumentTest {
   }
 
   @Test
-  public void testGetContent() throws JSONException, IOException, KuzzleException {
+  public void testGetContent() throws JSONException {
     doc.setContent(null);
     assertNotNull(doc.getContent());
     doc.setContent("foo", "bar");
@@ -240,7 +238,7 @@ public class KuzzleDocumentTest {
   }
 
   @Test
-  public void testGetHeaders() throws JSONException, IOException, KuzzleException {
+  public void testGetHeaders() throws JSONException {
     doc.setHeaders(null);
     assertNotNull(doc.getHeaders());
     JSONObject headers = new JSONObject();
@@ -250,7 +248,7 @@ public class KuzzleDocumentTest {
   }
 
   @Test
-  public void testGetVersion() throws JSONException, IOException, KuzzleException {
+  public void testGetVersion() throws JSONException {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -268,11 +266,7 @@ public class KuzzleDocumentTest {
     doc.save(new ResponseListener() {
       @Override
       public void onSuccess(JSONObject object) {
-        try {
-          assertEquals(doc.getVersion(), "42");
-        } catch (JSONException e) {
-          e.printStackTrace();
-        }
+        assertEquals(doc.getVersion(), "42");
       }
 
       @Override
@@ -280,6 +274,7 @@ public class KuzzleDocumentTest {
 
       }
     });
+    verify(k, times(1)).query(eq("test"), eq("write"), eq("createOrUpdate"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
   }
 
 }

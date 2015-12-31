@@ -19,7 +19,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import io.kuzzle.sdk.enums.EventType;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.exceptions.KuzzleException;
 import io.kuzzle.sdk.listeners.IEventListener;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.state.KuzzleQueue;
@@ -155,9 +154,8 @@ public class Kuzzle {
    * @param eventType     - name of the global event to subscribe to
    * @param eventListener the event listener
    * @return {string} Unique listener ID
-   * @throws KuzzleException the kuzzle exception
    */
-  public String addListener(final EventType eventType, final IEventListener eventListener) throws KuzzleException {
+  public String addListener(final EventType eventType, final IEventListener eventListener) {
     this.isValid();
 
     Event e = new Event(eventType) {
@@ -191,11 +189,7 @@ public class Kuzzle {
           if (Kuzzle.this.connectionCallback != null) {
             Kuzzle.this.connectionCallback.onSuccess(null);
           }
-          try {
-            Kuzzle.this.dequeue();
-          } catch (JSONException e) {
-            e.printStackTrace();
-          }
+          Kuzzle.this.dequeue();
           for (Event e : Kuzzle.this.eventListeners) {
             if (e.getType() == EventType.CONNECTED) {
               e.trigger(null, null);
@@ -259,11 +253,7 @@ public class Kuzzle {
           //replay queued requests
           if (Kuzzle.this.autoReplay) {
             Kuzzle.this.cleanQueue();
-            try {
-              Kuzzle.this.dequeue();
-            } catch (JSONException e) {
-              e.printStackTrace();
-            }
+            Kuzzle.this.dequeue();
           }
 
           // alert listeners
@@ -284,9 +274,8 @@ public class Kuzzle {
    *
    * @param collection - The name of the data collection you want to manipulate
    * @return {object} A KuzzleDataCollection instance
-   * @throws KuzzleException the kuzzle exception
    */
-  public KuzzleDataCollection dataCollectionFactory(String collection) throws KuzzleException {
+  public KuzzleDataCollection dataCollectionFactory(String collection) {
     this.isValid();
     if (!this.collections.containsKey(collection)) {
       this.collections.put(collection, new KuzzleDataCollection(this, collection));
@@ -310,27 +299,28 @@ public class Kuzzle {
    *
    * @param listener the listener
    * @return the all statistics
-   * @throws KuzzleException the kuzzle exception
-   * @throws JSONException   the json exception
    */
-  public Kuzzle getAllStatistics(final ResponseListener listener) throws KuzzleException, JSONException {
+  public Kuzzle getAllStatistics(final ResponseListener listener) {
     this.isValid();
-
-    this.query(null, "admin", "getAllStats", null, new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-        if (listener != null) {
-          listener.onSuccess(object);
+    try {
+      this.query(null, "admin", "getAllStats", null, new ResponseListener() {
+        @Override
+        public void onSuccess(JSONObject object) {
+          if (listener != null) {
+            listener.onSuccess(object);
+          }
         }
-      }
 
-      @Override
-      public void onError(JSONObject error) {
-        if (listener != null) {
-          listener.onError(error);
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
         }
-      }
-    });
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
     return this;
   }
 
@@ -340,10 +330,8 @@ public class Kuzzle {
    *
    * @param listener the listener
    * @return statistics statistics
-   * @throws KuzzleException the kuzzle exception
-   * @throws JSONException   the json exception
    */
-  public Kuzzle getStatistics(final ResponseListener listener) throws KuzzleException, JSONException {
+  public Kuzzle getStatistics(final ResponseListener listener) {
     return this.getStatistics(null, listener);
   }
 
@@ -354,29 +342,31 @@ public class Kuzzle {
    * @param since    the timestamp
    * @param listener the listener
    * @return statistics statistics
-   * @throws KuzzleException the kuzzle exception
-   * @throws JSONException   the json exception
    */
-  public Kuzzle getStatistics(String since, final ResponseListener listener) throws KuzzleException, JSONException {
+  public Kuzzle getStatistics(String since, final ResponseListener listener) {
     this.isValid();
     JSONObject body = new JSONObject();
     JSONObject data = new JSONObject();
-    data.put("since", since);
-    body.put("body", data);
-    this.query(null, "admin", "getStats", body, new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-        if (listener != null) {
-          listener.onSuccess(object);
+    try {
+      data.put("since", since);
+      body.put("body", data);
+      this.query(null, "admin", "getStats", body, new ResponseListener() {
+        @Override
+        public void onSuccess(JSONObject object) {
+          if (listener != null) {
+            listener.onSuccess(object);
+          }
         }
-      }
 
-      @Override
-      public void onError(JSONObject error) {
-        if (listener != null)
-          listener.onError(error);
-      }
-    });
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null)
+            listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
     return this;
   }
 
@@ -384,10 +374,8 @@ public class Kuzzle {
    * Returns the list of known persisted data collections.
    *
    * @return kuzzle kuzzle
-   * @throws JSONException   the json exception
-   * @throws KuzzleException the kuzzle exception
    */
-  public Kuzzle listCollections() throws JSONException, KuzzleException {
+  public Kuzzle listCollections() {
     return this.listCollections(null, null);
   }
 
@@ -396,10 +384,8 @@ public class Kuzzle {
    *
    * @param options the options
    * @return kuzzle kuzzle
-   * @throws JSONException   the json exception
-   * @throws KuzzleException the kuzzle exception
    */
-  public Kuzzle listCollections(KuzzleOptions options) throws JSONException, KuzzleException {
+  public Kuzzle listCollections(KuzzleOptions options) {
     return this.listCollections(options, null);
   }
 
@@ -408,10 +394,8 @@ public class Kuzzle {
    *
    * @param listener the listener
    * @return kuzzle kuzzle
-   * @throws JSONException   the json exception
-   * @throws KuzzleException the kuzzle exception
    */
-  public Kuzzle listCollections(ResponseListener listener) throws JSONException, KuzzleException {
+  public Kuzzle listCollections(ResponseListener listener) {
     return this.listCollections(null, listener);
   }
 
@@ -421,11 +405,13 @@ public class Kuzzle {
    * @param options  the options
    * @param listener the listener
    * @return kuzzle kuzzle
-   * @throws KuzzleException the kuzzle exception
-   * @throws JSONException   the json exception
    */
-  public Kuzzle listCollections(KuzzleOptions options, ResponseListener listener) throws KuzzleException, JSONException {
-    return this.query(null, "read", "listCollections", null, options, listener);
+  public Kuzzle listCollections(KuzzleOptions options, ResponseListener listener) {
+    try {
+      return this.query(null, "read", "listCollections", null, options, listener);
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
@@ -444,14 +430,15 @@ public class Kuzzle {
    * Returns the current Kuzzle UTC timestamp
    *
    * @param cb - Handles the query response
-   * @return {integer}
-   * @throws KuzzleException the kuzzle exception
-   * @throws JSONException   the json exception
+   * @return kuzzle timestamp
    */
-  public Kuzzle now(ResponseListener cb) throws KuzzleException, JSONException {
+  public Kuzzle now(ResponseListener cb) {
     this.isValid();
-
-    this.query(null, "read", "now", null, null, cb);
+    try {
+      this.query(null, "read", "now", null, null, cb);
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
     return this;
   }
 
@@ -463,10 +450,9 @@ public class Kuzzle {
    * @param action     the action
    * @param query      the query
    * @return the kuzzle
-   * @throws JSONException   the json exception
-   * @throws KuzzleException the kuzzle exception
+   * @throws JSONException the json exception
    */
-  public Kuzzle query(final String collection, final String controller, final String action, final JSONObject query) throws JSONException, KuzzleException {
+  public Kuzzle query(final String collection, final String controller, final String action, final JSONObject query) throws JSONException {
     return this.query(collection, controller, action, query, null, null);
   }
 
@@ -479,10 +465,9 @@ public class Kuzzle {
    * @param query      the query
    * @param options    the options
    * @return the kuzzle
-   * @throws KuzzleException the kuzzle exception
-   * @throws JSONException   the json exception
+   * @throws JSONException the json exception
    */
-  public Kuzzle query(final String collection, final String controller, final String action, final JSONObject query, KuzzleOptions options) throws KuzzleException, JSONException {
+  public Kuzzle query(final String collection, final String controller, final String action, final JSONObject query, KuzzleOptions options) throws JSONException {
     return this.query(collection, controller, action, query, options, null);
   }
 
@@ -495,10 +480,9 @@ public class Kuzzle {
    * @param query      the query
    * @param listener   the listener
    * @return the kuzzle
-   * @throws JSONException   the json exception
-   * @throws KuzzleException the kuzzle exception
+   * @throws JSONException the json exception
    */
-  public Kuzzle query(final String collection, final String controller, final String action, final JSONObject query, ResponseListener listener) throws JSONException, KuzzleException {
+  public Kuzzle query(final String collection, final String controller, final String action, final JSONObject query, ResponseListener listener) throws JSONException {
     return this.query(collection, controller, action, query, null, listener);
   }
 
@@ -513,10 +497,9 @@ public class Kuzzle {
    * @param options    the options
    * @param cb         the cb
    * @return the kuzzle
-   * @throws JSONException   the json exception
-   * @throws KuzzleException the kuzzle exception
+   * @throws JSONException the json exception
    */
-  public Kuzzle query(final String collection, final String controller, final String action, final JSONObject query, KuzzleOptions options, final ResponseListener cb) throws JSONException, KuzzleException {
+  public Kuzzle query(final String collection, final String controller, final String action, final JSONObject query, KuzzleOptions options, final ResponseListener cb) throws JSONException {
     this.isValid();
     JSONObject object = query != null ? query : new JSONObject();
     if (object.isNull("requestId"))
@@ -594,12 +577,10 @@ public class Kuzzle {
   /**
    * Removes a listener from an event.
    *
-   * @param eventType  the event type
    * @param listenerId the listener id
    * @return the kuzzle
-   * @throws KuzzleException the kuzzle exception
    */
-  public Kuzzle removeListener(EventType eventType, String listenerId) throws KuzzleException {
+  public Kuzzle removeListener(String listenerId) {
     this.isValid();
 
     int i = 0;
@@ -613,7 +594,7 @@ public class Kuzzle {
     return this;
   }
 
-  private void renewSubscriptions(final ResponseListener listener) throws JSONException, KuzzleException {
+  private void renewSubscriptions(final ResponseListener listener) {
     Iterator ite = subscriptions.entrySet().iterator();
     while (ite.hasNext()) {
       Map.Entry e = (Map.Entry) ite.next();
@@ -626,9 +607,8 @@ public class Kuzzle {
    * Works only if the SDK is not in a disconnected state, and if the autoReplay option is set to false.
    *
    * @return kuzzle kuzzle
-   * @throws JSONException the json exception
    */
-  public Kuzzle replayQueue() throws JSONException {
+  public Kuzzle replayQueue() {
     if (this.state != States.OFFLINE && !this.autoReplay) {
       this.cleanQueue();
       this.dequeue();
@@ -643,7 +623,6 @@ public class Kuzzle {
    *
    * @param content the headers
    * @return the headers
-   * @throws JSONException the json exception
    */
   public Kuzzle setHeaders(JSONObject content) throws JSONException {
     return this.setHeaders(content, false);
@@ -657,9 +636,8 @@ public class Kuzzle {
    * @param content - new headers content
    * @param replace - default: false = append the content. If true: replace the current headers with tj
    * @return the headers
-   * @throws JSONException the json exception
    */
-  public Kuzzle setHeaders(JSONObject content, boolean replace) throws JSONException {
+  public Kuzzle setHeaders(JSONObject content, boolean replace) {
     if (this.headers == null) {
       this.headers = new JSONObject();
     }
@@ -667,9 +645,13 @@ public class Kuzzle {
       this.headers = content;
     } else {
       if (content != null) {
-        for (Iterator ite = content.keys(); ite.hasNext(); ) {
-          String key = (String) ite.next();
-          this.headers.put(key, content.get(key));
+        try {
+          for (Iterator ite = content.keys(); ite.hasNext(); ) {
+            String key = (String) ite.next();
+            this.headers.put(key, content.get(key));
+          }
+        } catch (JSONException e) {
+          throw new RuntimeException(e);
         }
       }
     }
@@ -764,11 +746,10 @@ public class Kuzzle {
   /**
    * Helper function ensuring that this Kuzzle object is still valid before performing a query
    *
-   * @throws KuzzleException the kuzzle exception
    */
-  public void isValid() throws KuzzleException {
+  public void isValid() {
     if (this.state == States.LOGGED_OFF) {
-      throw new KuzzleException("This Kuzzle object has been invalidated. Did you try to access it after a logout call?");
+      throw new RuntimeException("This Kuzzle object has been invalidated. Did you try to access it after a logout call?");
     }
   }
 
@@ -777,7 +758,6 @@ public class Kuzzle {
    *
    * @param query   the query
    * @param headers the headers
-   * @throws JSONException the json exception
    */
   public void addHeaders(JSONObject query, JSONObject headers) throws JSONException {
     for (Iterator iterator = headers.keys(); iterator.hasNext(); ) {
@@ -986,18 +966,18 @@ public class Kuzzle {
   /**
    * Play all queued requests, in order.
    */
-  private void  dequeue() throws JSONException {
+  private void  dequeue() {
     if (this.offlineQueue.getQueue().size() > 0) {
-      this.emitRequest(((KuzzleQueryObject)this.offlineQueue.getQueue().peek()).getQuery(), ((KuzzleQueryObject)this.offlineQueue.getQueue().poll()).getCb());
+      try {
+        this.emitRequest(((KuzzleQueryObject) this.offlineQueue.getQueue().peek()).getQuery(), ((KuzzleQueryObject) this.offlineQueue.getQueue().poll()).getCb());
+      } catch (JSONException e) {
+        throw new RuntimeException(e);
+      }
       Timer timer = new Timer(UUID.randomUUID().toString());
       timer.schedule(new TimerTask() {
         @Override
         public void run() {
-          try {
-            dequeue();
-          } catch (JSONException e) {
-            e.printStackTrace();
-          }
+          dequeue();
         }
       }, Math.max(0, this.replayInterval));
     } else {
