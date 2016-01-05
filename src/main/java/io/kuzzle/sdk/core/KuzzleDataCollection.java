@@ -194,7 +194,6 @@ public class KuzzleDataCollection {
 
   /**
    * Create a new empty data collection, with no associated mapping.
-   * 
    * Kuzzle automatically creates data collections when storing documents, but there are cases where we want to create and prepare data collections before storing documents in it.
    *
    * @param options  the options
@@ -210,6 +209,39 @@ public class KuzzleDataCollection {
       throw new RuntimeException(e);
     }
     return this;
+  }
+
+  /**
+   * Create a new empty data collection, with no associated mapping.
+   * Kuzzle automatically creates data collections when storing documents, but there are cases where we want to create and prepare data collections before storing documents in it.
+   *
+   * @param options the options
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection create(KuzzleOptions options) {
+    return this.create(options, null);
+  }
+
+  /**
+   * Create a new empty data collection, with no associated mapping.
+   * Kuzzle automatically creates data collections when storing documents, but there are cases where we want to create and prepare data collections before storing documents in it.
+   *
+   * @param listener the listener
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection create(ResponseListener listener) {
+    return this.create(null, listener);
+  }
+
+  /**
+   * Create a new empty data collection, with no associated mapping.
+   * Kuzzle automatically creates data collections when storing documents, but there are cases where we want to create and prepare data collections before storing documents in it.
+
+   *
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection create() {
+    return this.create(null, null);
   }
 
   /**

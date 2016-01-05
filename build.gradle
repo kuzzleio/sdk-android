@@ -3,7 +3,7 @@ apply plugin: 'jacoco-android'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
-version = "1.1.2"
+version = "1.1.3"
 
 buildscript {
     repositories {
@@ -11,7 +11,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.0.0-alpha1'
+        classpath 'com.android.tools.build:gradle:+'
         classpath 'com.dicedmelon.gradle:jacoco-android:0.1.0'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
@@ -70,15 +70,12 @@ ext {
     artifact = 'sdk-android'
 
     libraryDescription = 'Kuzzle Android SKD aar'
-    libraryVersion = version
 
     developerId = 'kblondel'
     developerName = 'Kevin Blondel'
     developerEmail = 'kblondel@kaliop.com'
 
     apply from: 'https://raw.githubusercontent.com/attwellBrian/JCenter/master/installv1.gradle'
-
-    version = libraryVersion
 
     task sourcesJar(type: Jar) {
         from android.sourceSets.main.java.srcDirs

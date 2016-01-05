@@ -112,7 +112,7 @@ public class KuzzleDataCollectionTest {
 
   @Test
   public void testCreate() throws JSONException {
-    collection.create(null, new ResponseListener() {
+    ResponseListener listener = new ResponseListener() {
       @Override
       public void onSuccess(JSONObject object) {
 
@@ -122,8 +122,12 @@ public class KuzzleDataCollectionTest {
       public void onError(JSONObject error) {
 
       }
-    });
-    verify(k, times(1)).query(eq("test"), eq("write"), eq("createCollection"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    };
+    collection.create(new KuzzleOptions(), listener);
+    collection.create(listener);
+    collection.create(new KuzzleOptions());
+    collection.create();
+    verify(k, times(4)).query(eq("test"), eq("write"), eq("createCollection"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
   }
 
   @Test
