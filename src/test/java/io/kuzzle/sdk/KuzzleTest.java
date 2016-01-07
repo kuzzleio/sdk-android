@@ -93,18 +93,21 @@ public class KuzzleTest {
   }
 
   @Test
-  public void testKuzzleConstructor() throws URISyntaxException {
+  public void testKuzzleConstructor() throws URISyntaxException, JSONException {
     assertNotNull(kuzzle);
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
     kuzzle = new Kuzzle("http://localhost:7512", "testIndex");
+    Kuzzle kuzzleSpy = spy(kuzzle);
     assertEquals(kuzzle.getIndex(), "testIndex");
     assertNotNull(kuzzle);
+    verify(kuzzleSpy, never()).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+
   }
 
   @Test(expected = RuntimeException.class)
   public void testIsValid() throws Exception {
-    kuzzle.logout();
+    kuzzle.disconnect();
     kuzzle.isValid();
   }
 
@@ -113,7 +116,7 @@ public class KuzzleTest {
     assertEquals(kuzzle.getEventListeners(), new ArrayList<IEventListener>());
     IEventListener event = new IEventListener() {
       @Override
-      public void trigger(String id, JSONObject result) {
+      public void trigger(Object... args) {
       }
     };
     List<IEventListener> listenerList = new ArrayList<>();
@@ -129,9 +132,9 @@ public class KuzzleTest {
   }
 
   @Test
-  public void testLogout() {
+  public void testDisconnect() {
     assertNotNull(kuzzle.getSocket());
-    kuzzle.logout();
+    kuzzle.disconnect();
     assertNull(kuzzle.getSocket());
   }
 
@@ -165,7 +168,7 @@ public class KuzzleTest {
     Kuzzle spy = spy(kuzzle);
     IEventListener event = new IEventListener() {
       @Override
-      public void trigger(String id, JSONObject result) {
+      public void trigger(Object... args) {
       }
     };
     String id = spy.addListener(EventType.DISCONNECTED, event);
@@ -481,7 +484,7 @@ public class KuzzleTest {
         JSONObject result = new JSONObject();
         result.put("result", new JSONObject());
         ((Emitter.Listener) invocation.getArguments()[1]).call(result);
-        result.put("error", new JSONObject());
+        result.put("error", new JSONObject().put("message", new String()));
         ((Emitter.Listener) invocation.getArguments()[1]).call(result);
         return s;
       }
@@ -558,7 +561,7 @@ public class KuzzleTest {
     IEventListener listener = mock(IEventListener.class);
     kuzzle.addListener(EventType.RECONNECTED, listener);
     kuzzle.connect();
-    verify(listener, times(1)).trigger(any(String.class), any(JSONObject.class));
+    verify(listener, times(1)).trigger();
   }
 
   @Test
@@ -620,7 +623,7 @@ public class KuzzleTest {
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
     kuzzleSpy.connect();
-    verify(kuzzleSpy, times(1)).logout();
+    verify(kuzzleSpy, times(1)).disconnect();
   }
 
   @Test
@@ -642,9 +645,9 @@ public class KuzzleTest {
     kuzzle = new Kuzzle("http://localhost:7512", "testIndex", spy);
     kuzzle.setSocket(s);
     Kuzzle kuzzleSpy = spy(kuzzle);
-    when(kuzzleSpy.isValidSate()).thenReturn(false);
+    when(kuzzleSpy.isValidState()).thenReturn(false);
     kuzzleSpy.connect();
-    verify(spy, times(1)).onSuccess(any(JSONObject.class));
+    verify(spy, atLeastOnce()).onSuccess(any(JSONObject.class));
   }
 
   @Test
@@ -718,30 +721,8 @@ public class KuzzleTest {
     Kuzzle kuzzleSpy = spy(kuzzle);
     kuzzleSpy.listCollections();
     kuzzleSpy.listCollections(options);
-    kuzzleSpy.listCollections(new ResponseListener() {
-
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    kuzzleSpy.listCollections(options, new ResponseListener() {
-
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
+    kuzzleSpy.listCollections(mock(ResponseListener.class));
+    kuzzleSpy.listCollections(options, mock(ResponseListener.class));
     verify(kuzzleSpy, times(4)).query(any(String.class), eq("read"), eq("listCollections"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
   }
 
@@ -853,6 +834,127 @@ public class KuzzleTest {
     kuzzle.query("collection", "controller", "action", jsonObj, options, null);
     verify(s).emit(eq("kuzzle"), eq(jsonObj));
     assertEquals(jsonObj.getString("index"), "%index");
+  }
+
+  @Test
+  public void testLoginWithConstructor() throws URISyntaxException, JSONException {
+    KuzzleOptions options = new KuzzleOptions();
+    options.setLoginStrategy("local");
+    options.setLoginUsername("username");
+    options.setLoginPassword("password");
+    options.setLoginExpiresIn(30000);
+    options.setConnect(Mode.MANUAL);
+    options.setQueuable(false);
+    kuzzle = new Kuzzle("http://localhost:7512", "index", options);
+    kuzzle.setSocket(s);
+    Kuzzle kuzzleSpy = spy(kuzzle);
+    kuzzleSpy.setSocket(s);
+
+    final JSONObject mockResponse = new JSONObject();
+    mockResponse.put("requestId", "42");
+    mockResponse.put("jwt", "jwtToken");
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((ResponseListener) invocation.getArguments()[5]).onSuccess(mockResponse);
+        ((ResponseListener) invocation.getArguments()[5]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzleSpy).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((Emitter.Listener) invocation.getArguments()[1]).call();
+        return s;
+      }
+    }).when(s).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
+    kuzzleSpy.connect();
+    verify(kuzzleSpy, times(1)).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    // check if token
+    kuzzle.query("collection", "controller", "action", mockResponse, options, mock(ResponseListener.class));
+    verify(s).emit(eq("kuzzle"), eq(mockResponse));
+  }
+
+  @Test
+  public void testLogin() throws JSONException {
+    Kuzzle kuzzleSpy = spy(kuzzle);
+    kuzzleSpy.setSocket(s);
+    ResponseListener listenerSpy = spy(new ResponseListener() {
+      @Override
+      public void onSuccess(JSONObject object) {
+
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+
+      }
+    });
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((ResponseListener) invocation.getArguments()[5]).onSuccess(mock(JSONObject.class));
+        ((ResponseListener) invocation.getArguments()[5]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzleSpy).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    kuzzleSpy.login("local", "username", "password");
+    kuzzleSpy.login("local", "username", "password", 42);
+    kuzzleSpy.login("local", "username", "password", 42, new KuzzleOptions());
+    kuzzleSpy.login("local", "username", "password", 42, new KuzzleOptions(), mock(ResponseListener.class));
+    kuzzleSpy.login("local", "username", "password", 42, listenerSpy);
+    kuzzleSpy.login("local", "username", "password", new KuzzleOptions());
+    verify(kuzzleSpy, times(6)).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    verify(listenerSpy, atLeastOnce()).onSuccess(any(JSONObject.class));
+  }
+
+  @Test
+  public void testLogout() throws URISyntaxException, JSONException {
+    KuzzleOptions options = new KuzzleOptions();
+    options.setLoginStrategy("local");
+    options.setLoginUsername("username");
+    options.setLoginPassword("password");
+    options.setLoginExpiresIn(30000);
+    options.setConnect(Mode.MANUAL);
+    options.setQueuable(false);
+    kuzzle = new Kuzzle("http://localhost:7512", "index", options);
+    kuzzle.setSocket(s);
+    Kuzzle kuzzleSpy = spy(kuzzle);
+    kuzzleSpy.setSocket(s);
+
+    final JSONObject response = new JSONObject();
+    response.put("jwt", "jwtToken");
+    response.put("requestId", "42");
+
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((ResponseListener) invocation.getArguments()[5]).onSuccess(response);
+        ((ResponseListener) invocation.getArguments()[5]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzleSpy).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+
+    kuzzleSpy.login("local", "username", "password");
+
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((ResponseListener) invocation.getArguments()[5]).onSuccess(null);
+        ((ResponseListener) invocation.getArguments()[5]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzleSpy).query(any(String.class), eq("auth"), eq("logout"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+
+    kuzzleSpy.logout();
+    kuzzleSpy.logout(mock(ResponseListener.class));
+    kuzzleSpy.logout(mock(KuzzleOptions.class));
+    kuzzleSpy.logout(mock(KuzzleOptions.class), mock(ResponseListener.class));
+    verify(kuzzleSpy, times(1)).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    verify(kuzzleSpy, times(4)).query(any(String.class), eq("auth"), eq("logout"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    response.remove("jwt");
+    kuzzle.query("collection", "controller", "action", response, options, mock(ResponseListener.class));
+    verify(s).emit(eq("kuzzle"), eq(response));
   }
 
 }

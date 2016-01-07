@@ -1,7 +1,5 @@
 package io.kuzzle.sdk.util;
 
-import org.json.JSONObject;
-
 import java.util.UUID;
 
 import io.kuzzle.sdk.enums.EventType;
@@ -28,7 +26,7 @@ public abstract class Event implements IEventListener {
     this.type = type;
   }
 
-  public abstract void trigger(final String id, final JSONObject object);
+  public abstract void trigger(Object... args);
 
   /**
    * Gets id.
