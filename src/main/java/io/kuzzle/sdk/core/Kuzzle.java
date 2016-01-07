@@ -187,7 +187,7 @@ public class Kuzzle {
    * @return kuzzle kuzzle
    */
   public Kuzzle connect() {
-    if (!this.isValidSate()) {
+    if (!this.isValidState()) {
       if (connectionCallback != null) {
         connectionCallback.onSuccess(null);
         return this;
@@ -793,7 +793,7 @@ public class Kuzzle {
    *
    * @return the boolean
    */
-  public boolean isValidSate() {
+  public boolean isValidState() {
     switch (this.state) {
       case INITIALIZING:
       case READY:

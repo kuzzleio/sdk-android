@@ -645,9 +645,9 @@ public class KuzzleTest {
     kuzzle = new Kuzzle("http://localhost:7512", "testIndex", spy);
     kuzzle.setSocket(s);
     Kuzzle kuzzleSpy = spy(kuzzle);
-    when(kuzzleSpy.isValidSate()).thenReturn(false);
+    when(kuzzleSpy.isValidState()).thenReturn(false);
     kuzzleSpy.connect();
-    verify(spy, times(1)).onSuccess(any(JSONObject.class));
+    verify(spy, atLeastOnce()).onSuccess(any(JSONObject.class));
   }
 
   @Test
