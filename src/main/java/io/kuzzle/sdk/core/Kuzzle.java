@@ -72,6 +72,14 @@ public class Kuzzle {
   private int queueTTL;
   private int queueMaxSize;
 
+  // Auth related
+  private String  loginStrategy;
+  private String  loginUsername;
+  private String  loginPassword;
+  // in second
+  private int loginExpiresIn = 0;
+  private String jwtToken;
+
   /**
    * Kuzzle object constructor.
    *
@@ -95,6 +103,11 @@ public class Kuzzle {
     this.autoReplay = (options != null ? options.isAutoReplay() : false);
     this.queueMaxSize = (options != null ? options.getQueueMaxSize() : 0);
     this.autoResubscribe = (options != null ? options.isAutoResubscribe() : true);
+    // login related
+    this.loginStrategy = (options != null ? options.getLoginStrategy() : null);
+    this.loginUsername = (options != null ? options.getLoginUsername() : null);
+    this.loginPassword = (options != null ? options.getLoginPassword() : null);
+    this.loginExpiresIn = (options != null ? options.getLoginExpiresIn() : -1);
     this.url = url;
     this.connectionCallback = connectionCallback;
     this.index = index;
@@ -160,8 +173,8 @@ public class Kuzzle {
 
     Event e = new Event(eventType) {
       @Override
-      public void trigger(String subscriptionId, JSONObject result) {
-        eventListener.trigger(subscriptionId, result);
+      public void trigger(Object... args) {
+        eventListener.trigger(args);
       }
     };
     eventListeners.add(e);
@@ -186,13 +199,16 @@ public class Kuzzle {
         @Override
         public void call(Object... args) {
           Kuzzle.this.state = States.CONNECTED;
+          if (loginStrategy != null && loginUsername != null && loginPassword != null) {
+            Kuzzle.this.login(loginStrategy, loginUsername, loginPassword, loginExpiresIn);
+          }
           if (Kuzzle.this.connectionCallback != null) {
             Kuzzle.this.connectionCallback.onSuccess(null);
           }
           Kuzzle.this.dequeue();
           for (Event e : Kuzzle.this.eventListeners) {
             if (e.getType() == EventType.CONNECTED) {
-              e.trigger(null, null);
+              e.trigger();
             }
           }
         }
@@ -204,7 +220,7 @@ public class Kuzzle {
           Kuzzle.this.state = States.ERROR;
           for (Event e : Kuzzle.this.eventListeners) {
             if (e.getType() == EventType.ERROR) {
-              e.trigger(null, null);
+              e.trigger(args);
             }
           }
           if (connectionCallback != null) {
@@ -225,14 +241,14 @@ public class Kuzzle {
         public void call(Object... args) {
           Kuzzle.this.state = States.OFFLINE;
           if (!Kuzzle.this.autoReconnect) {
-            logout();
+            disconnect();
           }
           if (Kuzzle.this.autoQueue) {
             queuing = true;
           }
           for (Event e : eventListeners) {
             if (e.getType() == EventType.DISCONNECTED) {
-              e.trigger(null, null);
+              e.trigger();
             }
           }
         }
@@ -259,7 +275,7 @@ public class Kuzzle {
           // alert listeners
           for (Event e : Kuzzle.this.eventListeners) {
             if (e.getType() == EventType.RECONNECTED) {
-              e.trigger(null, null);
+              e.trigger();
             }
           }
         }
@@ -414,16 +430,105 @@ public class Kuzzle {
     }
   }
 
+  public Kuzzle login(final String strategy, final String username, final String password) {
+    return this.login(strategy, username, password, -1, null, null);
+  }
+
+  public Kuzzle login(final String strategy, final String username, final String password, final int expiresIn) {
+    return this.login(strategy, username, password, expiresIn, null, null);
+  }
+
+  public Kuzzle login(final String strategy, final String username, final String password, final int expiresIn, ResponseListener listener) {
+    return this.login(strategy, username, password, expiresIn, null, listener);
+  }
+
+  public Kuzzle login(final String strategy, final String username, final String password, final KuzzleOptions options) {
+    return this.login(strategy, username, password, -1, options, null);
+  }
+
+  public Kuzzle login(final String strategy, final String username, final String password, final int expiresIn, final KuzzleOptions options) {
+    return this.login(strategy, username, password, expiresIn, options, null);
+  }
+
+  public Kuzzle login(final String strategy, final String username, final String password, int expiresIn, final KuzzleOptions options, final ResponseListener listener) {
+    JSONObject query = new JSONObject();
+    try {
+      query.put("strategy", strategy);
+      query.put("username", username);
+      query.put("password", password);
+      if (expiresIn >= 0) {
+        query.put("expiresIn", expiresIn);
+      }
+      return this.query(null, "auth", "login", query, options, new ResponseListener() {
+        @Override
+        public void onSuccess(JSONObject object) {
+          try {
+            Kuzzle.this.jwtToken = object.getString("jwt");
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+          if (listener != null) {
+            listener.onSuccess(object);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   /**
    * Disconnects from Kuzzle and invalidate this instance.
    * Does not fire a disconnected event.
    */
-  public void logout() {
+  public void disconnect() {
     if (this.socket != null)
       this.socket.close();
     this.socket = null;
     this.collections.clear();
-    this.state = States.LOGGED_OFF;
+    this.state = States.DISCONNECTED;
+  }
+
+  public Kuzzle logout() {
+    return this.logout(null, null);
+  }
+
+  public Kuzzle logout(final KuzzleOptions options) {
+    return this.logout(options, null);
+  }
+
+  public Kuzzle logout(final ResponseListener listener) {
+    return this.logout(null, listener);
+  }
+
+  public Kuzzle logout(final KuzzleOptions options, final ResponseListener listener) {
+    try {
+      return this.query(null, "auth", "logout", new JSONObject(), options, new ResponseListener() {
+        @Override
+        public void onSuccess(JSONObject object) {
+          Kuzzle.this.jwtToken = null;
+          if (listener != null) {
+            listener.onSuccess(object);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
@@ -692,7 +797,7 @@ public class Kuzzle {
     switch (this.state) {
       case INITIALIZING:
       case READY:
-      case LOGGED_OFF:
+      case DISCONNECTED:
       case ERROR:
       case OFFLINE:
         return true;
@@ -713,24 +818,33 @@ public class Kuzzle {
     Calendar c = Calendar.getInstance();
     c.setTime(now);
     c.add(Calendar.SECOND, -MAX_EMIT_TIMEOUT);
-
-    if (listener != null) {
-      socket.once(request.get("requestId").toString(), new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-          if (listener != null) {
-            try {
-              if (!((JSONObject) args[0]).isNull("error")) {
-                listener.onError((JSONObject) ((JSONObject) args[0]).get("error"));
-              } else {
-                listener.onSuccess((JSONObject) ((JSONObject) args[0]).get("result"));
+    socket.once(request.get("requestId").toString(), new Emitter.Listener() {
+      @Override
+      public void call(Object... args) {
+        try {
+          // checking token expiration
+          if (!((JSONObject) args[0]).isNull("error") && ((JSONObject) args[0]).getJSONObject("error").getString("message").equals("Token expired")) {
+            for (Event e : Kuzzle.this.eventListeners) {
+              if (e.getType() == EventType.JWT_TOKEN_EXPIRED) {
+                e.trigger(request, listener);
               }
-            } catch (Exception e) {
-              e.printStackTrace();
             }
           }
+          if (listener != null) {
+            if (!((JSONObject) args[0]).isNull("error")) {
+              listener.onError((JSONObject) ((JSONObject) args[0]).get("error"));
+            } else {
+              listener.onSuccess((JSONObject) ((JSONObject) args[0]).get("result"));
+            }
+          }
+        } catch (JSONException e) {
+          e.printStackTrace();
         }
-      });
+      }
+    });
+    // Set JWT token if defined
+    if (this.jwtToken != null) {
+      request.put("headers", new JSONObject().put("authorization", "Bearer " + this.jwtToken));
     }
     socket.emit("kuzzle", request);
     // Track requests made to allow KuzzleRoom.subscribeToSelf to work
@@ -748,8 +862,8 @@ public class Kuzzle {
    * Helper function ensuring that this Kuzzle object is still valid before performing a query
    */
   public void isValid() {
-    if (this.state == States.LOGGED_OFF) {
-      throw new RuntimeException("This Kuzzle object has been invalidated. Did you try to access it after a logout call?");
+    if (this.state == States.DISCONNECTED) {
+      throw new RuntimeException("This Kuzzle object has been invalidated. Did you try to access it after a disconnect call?");
     }
   }
 

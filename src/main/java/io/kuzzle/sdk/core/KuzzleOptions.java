@@ -20,6 +20,13 @@ public class KuzzleOptions {
   private int queueMaxSize = 500;
   private boolean autoResubscribe;
 
+  // Auth related
+  private String  loginStrategy;
+  private String  loginUsername;
+  private String  loginPassword;
+  // in second
+  private int loginExpiresIn = 0;
+
   /**
    * Is auto reconnect boolean.
    *
@@ -162,5 +169,37 @@ public class KuzzleOptions {
 
   public void setAutoResubscribe(boolean autoResubscribe) {
     this.autoResubscribe = autoResubscribe;
+  }
+
+  public String getLoginStrategy() {
+    return loginStrategy;
+  }
+
+  public void setLoginStrategy(String loginStrategy) {
+    this.loginStrategy = loginStrategy;
+  }
+
+  public String getLoginUsername() {
+    return loginUsername;
+  }
+
+  public void setLoginUsername(String loginUsername) {
+    this.loginUsername = loginUsername;
+  }
+
+  public String getLoginPassword() {
+    return loginPassword;
+  }
+
+  public void setLoginPassword(String loginPassword) {
+    this.loginPassword = loginPassword;
+  }
+
+  public int getLoginExpiresIn() {
+    return loginExpiresIn;
+  }
+
+  public void setLoginExpiresIn(int loginExpiresIn) {
+    this.loginExpiresIn = loginExpiresIn;
   }
 }

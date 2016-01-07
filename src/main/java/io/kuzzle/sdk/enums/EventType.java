@@ -7,5 +7,6 @@ public enum EventType {
   DISCONNECTED,
   RECONNECTED,
   CONNECTED,
-  ERROR
+  ERROR,
+  JWT_TOKEN_EXPIRED
 }

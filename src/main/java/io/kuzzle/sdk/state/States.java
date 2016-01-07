@@ -9,7 +9,7 @@ public enum States {
   CONNECTED,
   INITIALIZING,
   READY,
-  LOGGED_OFF,
+  LOGGED_OUT,
   ERROR,
   OFFLINE
 }
