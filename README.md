@@ -61,7 +61,7 @@ myDocument.publish();
     
 ## Adding metadata
 
-As stated [here](https://github.com/kuzzleio/kuzzle/blob/master/docs/API.WebSocket.md#sending-metadata) you can add metadata to a subscription.
+As stated [here](http://kuzzleio.github.io/kuzzle-api-documentation/#sending-metadata) you can add metadata to a subscription.
 
 ```java
 KuzzleOptions options = new KuzzleOptions();
