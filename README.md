@@ -1,5 +1,5 @@
 [![Build Status](https://api.travis-ci.org/kuzzleio/sdk-android.svg?branch=master)](https://travis-ci.org/kuzzleio/sdk-android) [![codecov.io](http://codecov.io/github/kuzzleio/sdk-android/coverage.svg?branch=master)](http://codecov.io/github/kuzzleio/sdk-android?branch=master)
-
+[ ![Download](https://api.bintray.com/packages/kblondel/maven/kuzzle-sdk-android/images/download.svg) ](https://bintray.com/kblondel/maven/kuzzle-sdk-android/_latestVersion)
 [![Join the chat at https://gitter.im/kuzzleio/kuzzle](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/kuzzleio/kuzzle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## About Kuzzle
@@ -22,7 +22,7 @@ You can configure your android project to get the Kuzzle's android SDK from jcen
             jcenter()
         }
     }
-    compile 'io.kuzzle:sdk-android:1.1.2'
+    compile 'io.kuzzle:sdk-android:1.1.4'
 
 ## Basic usage
 
@@ -61,7 +61,7 @@ myDocument.publish();
     
 ## Adding metadata
 
-As stated [here](https://github.com/kuzzleio/kuzzle/blob/master/docs/API.WebSocket.md#sending-metadata) you can add metadata to a subscription.
+As stated [here](http://kuzzleio.github.io/kuzzle-api-documentation/#sending-metadata) you can add metadata to a subscription.
 
 ```java
 KuzzleOptions options = new KuzzleOptions();
