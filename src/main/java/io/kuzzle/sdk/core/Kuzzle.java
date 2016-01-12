@@ -1,8 +1,19 @@
 package io.kuzzle.sdk.core;
 
+import android.util.Log;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -79,6 +90,9 @@ public class Kuzzle {
   // in second
   private int loginExpiresIn = 0;
   private String jwtToken;
+
+  // Listener which is called when an OAuth login is done
+  private ResponseListener loginCallback;
 
   /**
    * Kuzzle object constructor.
@@ -430,45 +444,118 @@ public class Kuzzle {
     }
   }
 
+
+  /**
+   * Log a user according to the strategy and credentials.
+   * @param strategy
+   * @param username
+   * @param password
+   * @return
+   */
   public Kuzzle login(final String strategy, final String username, final String password) {
-    return this.login(strategy, username, password, -1, null, null);
+    return this.login(strategy, username, password, -1, null, null, null);
   }
 
+  /**
+   * Log a user according to the strategy and credentials.
+   * @param strategy
+   * @param username
+   * @param password
+   * @param expiresIn
+   * @return
+   */
   public Kuzzle login(final String strategy, final String username, final String password, final int expiresIn) {
-    return this.login(strategy, username, password, expiresIn, null, null);
+    return this.login(strategy, username, password, expiresIn, null, null, null);
   }
 
+  /**
+   * Log a user according to the strategy and credentials.
+   * @param strategy
+   * @param username
+   * @param password
+   * @param expiresIn
+   * @param listener
+   * @return
+   */
   public Kuzzle login(final String strategy, final String username, final String password, final int expiresIn, ResponseListener listener) {
-    return this.login(strategy, username, password, expiresIn, null, listener);
+    return this.login(strategy, username, password, expiresIn, null, listener, null);
   }
 
+  /**
+   * Log a user according to the strategy and credentials.
+   * @param strategy
+   * @param username
+   * @param password
+   * @param expiresIn
+   * @param listener callback called when strategy's redirectUri is received
+   * @param loggedCallback Last collback called when user is logged
+   * @return
+   */
+  public Kuzzle login(final String strategy, final String username, final String password, final int expiresIn, ResponseListener listener, final ResponseListener loggedCallback) {
+    return this.login(strategy, username, password, expiresIn, null, listener, loggedCallback);
+  }
+
+  /**
+   * Log a user according to the strategy and credentials.
+   * @param strategy
+   * @param username
+   * @param password
+   * @param options
+   * @return
+   */
   public Kuzzle login(final String strategy, final String username, final String password, final KuzzleOptions options) {
-    return this.login(strategy, username, password, -1, options, null);
+    return this.login(strategy, username, password, -1, options, null, null);
   }
 
+  /**
+   * Log a user according to the strategy and credentials.
+   * @param strategy
+   * @param username
+   * @param password
+   * @param expiresIn
+   * @param options
+   * @return
+   */
   public Kuzzle login(final String strategy, final String username, final String password, final int expiresIn, final KuzzleOptions options) {
-    return this.login(strategy, username, password, expiresIn, options, null);
+    return this.login(strategy, username, password, expiresIn, options, null, null);
   }
 
-  public Kuzzle login(final String strategy, final String username, final String password, int expiresIn, final KuzzleOptions options, final ResponseListener listener) {
+  /**
+   * Log a user according to the strategy and credentials.
+   * @param strategy
+   * @param username
+   * @param password
+   * @param expiresIn
+   * @param options
+   * @param listener callback called when strategy's redirectUri is received
+   * @param loggedCallback Last collback called when user is logged
+   * @return
+   */
+  public Kuzzle login(final String strategy, final String username, final String password, int expiresIn, final KuzzleOptions options, final ResponseListener listener, final ResponseListener loggedCallback) {
     JSONObject query = new JSONObject();
+    JSONObject body = new JSONObject();
     try {
-      query.put("strategy", strategy);
-      query.put("username", username);
-      query.put("password", password);
+      body.put("strategy", strategy);
+      body.put("username", username);
+      body.put("password", password);
       if (expiresIn >= 0) {
-        query.put("expiresIn", expiresIn);
+        body.put("expiresIn", expiresIn);
       }
+      query.put("body", body);
+      loginCallback = loggedCallback;
       return this.query(null, "auth", "login", query, options, new ResponseListener() {
         @Override
         public void onSuccess(JSONObject object) {
           try {
-            Kuzzle.this.jwtToken = object.getString("jwt");
+            Log.e("kuzzle token", object.toString());
+            if (!object.isNull("jwt")) {
+              Kuzzle.this.jwtToken = object.getString("jwt");
+            }
+            if (listener != null) {
+              listener.onSuccess(object);
+            }
           } catch (JSONException e) {
             throw new RuntimeException(e);
-          }
-          if (listener != null) {
-            listener.onSuccess(object);
           }
         }
 
@@ -482,6 +569,60 @@ public class Kuzzle {
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * WebViewClient to forward kuzzle's jwt token after an OAuth authentication
+   */
+  private class KuzzleWebViewClient extends WebViewClient {
+    @Override
+    public boolean shouldOverrideUrlLoading(WebView view, final String url) {
+      if (url.contains("code")) {
+        new Thread(new Runnable() {
+          @Override
+          public void run() {
+            try {
+              HttpURLConnection conn = (HttpURLConnection)  URI.create(url).toURL().openConnection();
+              conn.setRequestMethod("GET");
+              conn.setUseCaches(false);
+
+              BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+              StringBuilder sb = new StringBuilder();
+              String line;
+              while ((line = br.readLine()) != null) {
+                sb.append(line);
+              }
+              br.close();
+
+              JSONObject response = new JSONObject(sb.toString());
+              if (response.isNull("error")) {
+                JSONObject result = response.getJSONObject("result");
+                Kuzzle.this.jwtToken = result.getString("jwt");
+                if (loginCallback != null) {
+                  loginCallback.onSuccess(result);
+                }
+              } else {
+                if (loginCallback != null) {
+                  loginCallback.onError(response.getJSONObject("error"));
+                }
+              }
+            } catch (JSONException e) {
+              e.printStackTrace();
+            } catch (ProtocolException e) {
+              e.printStackTrace();
+            } catch (MalformedURLException e) {
+              e.printStackTrace();
+            } catch (IOException e) {
+              e.printStackTrace();
+            }
+          }
+        }).start();
+      }
+      return true;
+    }
+  }
+  public KuzzleWebViewClient getKuzzleWebViewClient() {
+    return new KuzzleWebViewClient();
   }
 
   /**
