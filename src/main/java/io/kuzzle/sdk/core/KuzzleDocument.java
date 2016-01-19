@@ -1,12 +1,16 @@
 package io.kuzzle.sdk.core;
 
+import android.support.annotation.NonNull;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Iterator;
 
-import io.kuzzle.sdk.listeners.ResponseListener;
+import io.kuzzle.sdk.listeners.KuzzResponseListener;
+import io.kuzzle.sdk.listeners.OnQueryDoneListener;
+import io.kuzzle.sdk.responses.KuzzNotificationResponse;
 
 /**
  * The type Kuzzle document.
@@ -25,7 +29,7 @@ public class KuzzleDocument extends JSONObject {
    * @param id                   the id
    * @param content              the content
    */
-  public KuzzleDocument(KuzzleDataCollection kuzzleDataCollection, final String id, JSONObject content) {
+  public KuzzleDocument(final KuzzleDataCollection kuzzleDataCollection, final String id, final JSONObject content) {
     this.dataCollection = kuzzleDataCollection;
     this.collection = kuzzleDataCollection.getCollection();
     this.kuzzle = kuzzleDataCollection.getKuzzle();
@@ -38,7 +42,11 @@ public class KuzzleDocument extends JSONObject {
       if (content != null) {
         for (Iterator iterator = content.keys(); iterator.hasNext(); ) {
           String key = (String) iterator.next();
-          put(key, content.get(key));
+          if (!key.equals("_source")) {
+            put(key, content.get(key));
+          } else {
+            put("body", content.get(key));
+          }
         }
       }
     } catch (JSONException e) {
@@ -52,7 +60,7 @@ public class KuzzleDocument extends JSONObject {
    *
    * @param kuzzleDataCollection the kuzzle data collection
    */
-  public KuzzleDocument(KuzzleDataCollection kuzzleDataCollection) {
+  public KuzzleDocument(final KuzzleDataCollection kuzzleDataCollection) {
     this(kuzzleDataCollection, null, null);
   }
 
@@ -64,7 +72,7 @@ public class KuzzleDocument extends JSONObject {
    * @param kuzzleDataCollection the kuzzle data collection
    * @param id                   the id
    */
-  public KuzzleDocument(KuzzleDataCollection kuzzleDataCollection, final String id) {
+  public KuzzleDocument(final KuzzleDataCollection kuzzleDataCollection, final String id) {
     this(kuzzleDataCollection, id, null);
   }
 
@@ -75,32 +83,65 @@ public class KuzzleDocument extends JSONObject {
    * @param kuzzleDataCollection the kuzzle data collection
    * @param content              the content
    */
-  public KuzzleDocument(KuzzleDataCollection kuzzleDataCollection, JSONObject content) {
+  public KuzzleDocument(final KuzzleDataCollection kuzzleDataCollection, final JSONObject content) {
     this(kuzzleDataCollection, null, content);
+  }
+
+  /**
+   * Delete kuzzle document.
+   *
+   * @param options the options
+   * @return the kuzzle document
+   */
+  public KuzzleDocument delete(final KuzzleOptions options) {
+    return this.delete(options, null);
+  }
+
+  /**
+   * Delete kuzzle document.
+   *
+   * @param listener the listener
+   * @return the kuzzle document
+   */
+  public KuzzleDocument delete(final KuzzResponseListener<KuzzleDocument> listener) {
+    return this.delete(null, listener);
+  }
+
+  /**
+   * Delete kuzzle document.
+   *
+   * @return the kuzzle document
+   */
+  public KuzzleDocument delete() {
+    return this.delete(null, null);
   }
 
   /**
    * Deletes this document in Kuzzle.
    *
+   * @param options  the options
+   * @param listener the listener
    * @return kuzzle document
    */
-  public KuzzleDocument delete() {
+  public KuzzleDocument delete(final KuzzleOptions options, final KuzzResponseListener<KuzzleDocument> listener) {
     try {
       if (this.getId() == null)
         return this;
       this.kuzzle.addHeaders(this, this.getJSONObject("headers"));
-      this.kuzzle.query(this.collection, "write", "delete", this, new ResponseListener() {
+      this.kuzzle.query(this.collection, "write", "delete", this, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject object) {
-          try {
-            put("_id", null);
-          } catch (JSONException e) {
-            e.printStackTrace();
+          setId(null);
+          if (listener != null) {
+            listener.onSuccess(KuzzleDocument.this);
           }
         }
 
         @Override
         public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
         }
       });
     } catch (JSONException e) {
@@ -115,39 +156,62 @@ public class KuzzleDocument extends JSONObject {
    * @return the kuzzle document
    */
   public KuzzleDocument refresh() {
-    return this.refresh(null);
+    return this.refresh(null, null);
+  }
+
+  /**
+   * Refresh kuzzle document.
+   *
+   * @param options the options
+   * @return the kuzzle document
+   */
+  public KuzzleDocument refresh(final KuzzleOptions options) {
+    return this.refresh(options, null);
+  }
+
+  /**
+   * Refresh kuzzle document.
+   *
+   * @param listener the listener
+   * @return the kuzzle document
+   */
+  public KuzzleDocument refresh(final KuzzResponseListener<KuzzleDocument> listener) {
+    return this.refresh(null, listener);
   }
 
   /**
    * Replaces the current content with the last version of this document stored in Kuzzle.
    *
-   * @param cb the cb
+   * @param options  the options
+   * @param listener the listener
    * @return kuzzle document
    */
-  public KuzzleDocument refresh(final ResponseListener cb) {
+  public KuzzleDocument refresh(final KuzzleOptions options, final KuzzResponseListener<KuzzleDocument> listener) {
     if (this.getId() == null) {
       throw new RuntimeException("KuzzleDocument.refresh: cannot retrieve a document if no id has been provided");
     }
     try {
       JSONObject content = new JSONObject();
       content.put("_id", this.getId());
-      this.kuzzle.query(this.collection, "read", "get", content, new ResponseListener() {
+      this.kuzzle.query(this.collection, "read", "get", content, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject args) {
           try {
             KuzzleDocument.this.put("body", args.getJSONObject("_source"));
             KuzzleDocument.this.put("_version", args.get("_version"));
-            if (cb != null)
-              cb.onSuccess(KuzzleDocument.this);
+            if (listener != null) {
+              listener.onSuccess(KuzzleDocument.this);
+            }
           } catch (JSONException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
           }
         }
 
         @Override
         public void onError(JSONObject arg) {
-          if (cb != null)
-            cb.onError(arg);
+          if (listener != null) {
+            listener.onError(arg);
+          }
         }
       });
     } catch (JSONException e) {
@@ -175,7 +239,7 @@ public class KuzzleDocument extends JSONObject {
    * @param options the options
    * @return the kuzzle document
    */
-  public KuzzleDocument save(KuzzleOptions options) {
+  public KuzzleDocument save(final KuzzleOptions options) {
     return this.save(options, null);
   }
 
@@ -187,7 +251,7 @@ public class KuzzleDocument extends JSONObject {
    * @param listener the listener
    * @return the kuzzle document
    */
-  public KuzzleDocument save(ResponseListener listener) {
+  public KuzzleDocument save(final KuzzResponseListener<KuzzleDocument> listener) {
     return save(null, listener);
   }
 
@@ -200,36 +264,36 @@ public class KuzzleDocument extends JSONObject {
    * @param listener the listener
    * @return kuzzle document
    */
-  public KuzzleDocument save(final KuzzleOptions options, final ResponseListener listener) {
+  public KuzzleDocument save(final KuzzleOptions options, final KuzzResponseListener<KuzzleDocument> listener) {
     try {
       this.kuzzle.addHeaders(this, getJSONObject("headers"));
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
 
-    ResponseListener queryCB = new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject args) {
-        try {
-          put("_id", args.getString("_id"));
-          put("_version", args.getString("_version"));
-          if (listener != null) {
-            listener.onSuccess(KuzzleDocument.this);
-          }
-        } catch (JSONException e) {
-          e.printStackTrace();
-        }
-      }
-
-      @Override
-      public void onError(JSONObject args) {
-        if (listener != null)
-          listener.onError(args);
-      }
-    };
     try {
       this.put("persist", true);
-      kuzzle.query(this.collection, "write", "createOrUpdate", this, options, queryCB);
+      kuzzle.query(this.collection, "write", "createOrUpdate", this, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            put("_id", response.getJSONObject("result").getString("_id"));
+            put("_version", response.getJSONObject("result").getString("_version"));
+            if (listener != null) {
+              listener.onSuccess(KuzzleDocument.this);
+            }
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
+        }
+      });
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
@@ -242,7 +306,7 @@ public class KuzzleDocument extends JSONObject {
    * @param options the options
    * @return kuzzle document
    */
-  public KuzzleDocument publish(KuzzleOptions options) {
+  public KuzzleDocument publish(final KuzzleOptions options) {
     try {
       kuzzle.query(this.collection, "write", "publish", this, options, null);
     } catch (JSONException e) {
@@ -267,7 +331,7 @@ public class KuzzleDocument extends JSONObject {
    * @param replace the replace
    * @return content content
    */
-  public KuzzleDocument setContent(JSONObject data, boolean replace) {
+  public KuzzleDocument setContent(final JSONObject data, final boolean replace) {
     try {
       if (replace) {
         put("body", data);
@@ -290,7 +354,10 @@ public class KuzzleDocument extends JSONObject {
    * @param value the value
    * @return the content
    */
-  public KuzzleDocument setContent(String key, Object value) {
+  public KuzzleDocument setContent(@NonNull final String key, final Object value) {
+    if (key == null) {
+      throw new IllegalArgumentException("KuzzleDocument.setContent: key required");
+    }
     try {
       getJSONObject("body").put(key, value);
     } catch (JSONException e) {
@@ -305,7 +372,7 @@ public class KuzzleDocument extends JSONObject {
    * @param data the data
    * @return the content
    */
-  public KuzzleDocument setContent(JSONObject data) {
+  public KuzzleDocument setContent(final JSONObject data) {
     try {
       put("body", data);
     } catch (JSONException e) {
@@ -318,34 +385,10 @@ public class KuzzleDocument extends JSONObject {
    * Listens to changes occuring on this document.
    * Throws an error if this document has not yet been created in Kuzzle.
    *
-   * @return the kuzzle document
-   
-   */
-  public KuzzleDocument subscribe() {
-    return this.subscribe(null, null);
-  }
-
-  /**
-   * Listens to changes occuring on this document.
-   * Throws an error if this document has not yet been created in Kuzzle.
-   *
-   * @param options the options
-   * @return the kuzzle document
-   
-   */
-  public KuzzleDocument subscribe(KuzzleRoomOptions options) {
-    return this.subscribe(options, null);
-  }
-
-  /**
-   * Listens to changes occuring on this document.
-   * Throws an error if this document has not yet been created in Kuzzle.
-   *
    * @param listener the listener
    * @return the kuzzle document
-   
    */
-  public KuzzleDocument subscribe(ResponseListener listener) {
+  public KuzzleDocument subscribe(@NonNull final KuzzResponseListener<KuzzNotificationResponse> listener) {
     return this.subscribe(null, listener);
   }
 
@@ -356,9 +399,8 @@ public class KuzzleDocument extends JSONObject {
    * @param options  the options
    * @param listener the listener
    * @return kuzzle document
-   
    */
-  public KuzzleDocument subscribe(KuzzleRoomOptions options, ResponseListener listener) {
+  public KuzzleDocument subscribe(final KuzzleRoomOptions options,  @NonNull final KuzzResponseListener<KuzzNotificationResponse> listener) {
     if (this.getId() == null) {
       throw new RuntimeException("KuzzleDocument.subscribe: cannot subscribe to a document if no ID has been provided");
     }
@@ -408,7 +450,7 @@ public class KuzzleDocument extends JSONObject {
    * @param key the key
    * @return the content
    */
-  public Object getContent(String key) {
+  public Object getContent(final String key) {
     try {
       if (!getJSONObject("body").isNull(key)) {
         return this.getJSONObject("body").get(key);
@@ -427,7 +469,7 @@ public class KuzzleDocument extends JSONObject {
    * @param content the headers
    * @return the headers
    */
-  public KuzzleDocument setHeaders(JSONObject content) {
+  public KuzzleDocument setHeaders(final JSONObject content) {
     return this.setHeaders(content, false);
   }
 
@@ -440,7 +482,7 @@ public class KuzzleDocument extends JSONObject {
    * @param replace - default: false = append the content. If true: replace the current headers with tj
    * @return the headers
    */
-  public KuzzleDocument setHeaders(JSONObject content, boolean replace) {
+  public KuzzleDocument setHeaders(final JSONObject content, final boolean replace) {
     try {
       if (replace) {
         this.put("headers", content);

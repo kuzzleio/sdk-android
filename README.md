@@ -55,7 +55,7 @@ KuzzleDocument myDocument = new KuzzleDocument(myCollection);
 myDocument.setContent("foo", "bar");
 // Persist the document
 myDocument.save();
-// Send it on real time (non persistent)
+// Send it on real time (not persistent)
 myDocument.publish();
 ```
     
@@ -70,6 +70,24 @@ metadata.put("foo", "bar");
 options.setMetadata(metadata);
 myCollection.subscribe(options);
 ```
+
+# Login
+
+## Prerequisite
+
+To login using kuzzle you need at least one authentication plugin. You can refer [here](https://github.com/kuzzleio/kuzzle-plugin-auth-passport-local) for a local authentication plugin
+or [here](https://github.com/kuzzleio/kuzzle-plugin-auth-github) to refer to an OAuth plugin with github.
+
+## Login with local strategy
+
+If you have the kuzzle-plugin-auth-passport-local installed you can login using either the Kuzzle's constructor or the login method.
+
+```java
+KuzzleOptions options = new KuzzleOptions();
+kuzzle = new Kuzzle("http://localhost:7512", "index", options);
+```
+
+## Login with an OAuth strategy
 
 ## Javadoc
 

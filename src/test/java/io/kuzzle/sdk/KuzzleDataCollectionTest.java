@@ -13,7 +13,9 @@ import io.kuzzle.sdk.core.KuzzleDataMapping;
 import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.core.KuzzleRoomOptions;
-import io.kuzzle.sdk.listeners.ResponseListener;
+import io.kuzzle.sdk.listeners.KuzzResponseListener;
+import io.kuzzle.sdk.listeners.OnQueryDoneListener;
+import io.kuzzle.sdk.responses.KuzzSearchResponse;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -42,92 +44,88 @@ public class KuzzleDataCollectionTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        JSONObject response = new JSONObject("{\"took\":1,\"timed_out\":false,\"_shards\":{\"total\":5,\"successful\":5,\"failed\":0},\"hits\":{\"total\":4,\"max_score\":1,\"hits\":[{\"_index\":\"mainindex\",\"_type\":\"collection_test\",\"_id\":\"AVE_WabrHN-wg-mnha2s\",\"_score\":1,\"_source\":{\"foo\":\"bar\"}},{\"_index\":\"mainindex\",\"_type\":\"collection_test\",\"_id\":\"AVE_U7iFHN-wg-mnha2o\",\"_score\":1,\"_source\":{\"foo\":\"bar\"}},{\"_index\":\"mainindex\",\"_type\":\"collection_test\",\"_id\":\"AVE_Vqd9HN-wg-mnha2r\",\"_score\":1,\"_source\":{\"foo\":\"bar\"}}]},\"requestId\":\"b3cea072-e3a2-495e-9e79-bc97267d9b9f\",\"controller\":\"read\",\"action\":\"search\",\"collection\":\"collection_test\",\"metadata\":{},\"_source\":{}}");
-        ((ResponseListener) invocation.getArguments()[5]).onSuccess(response);
-        ((ResponseListener) invocation.getArguments()[5]).onError(new JSONObject());
+        JSONObject response = new JSONObject("{\"result\": {\n" +
+            "    \"_shards\": {\n" +
+            "      \"failed\": 0,\n" +
+            "      \"successful\": 5,\n" +
+            "      \"total\": 5\n" +
+            "    },\n" +
+            "    \"hits\": [\n" +
+            "      {\n" +
+            "        \"_id\": \"AVJAwyDMZAGQHg9Dhfw2\",\n" +
+            "        \"_index\": \"cabble\",\n" +
+            "        \"_score\": 1,\n" +
+            "        \"_source\": {\n" +
+            "          \"pos\": {\n" +
+            "            \"lat\": 43.6073821,\n" +
+            "            \"lon\": 3.9130721\n" +
+            "          },\n" +
+            "          \"sibling\": \"none\",\n" +
+            "          \"status\": \"idle\",\n" +
+            "          \"type\": \"customer\"\n" +
+            "        },\n" +
+            "        \"_type\": \"users\"\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"_id\": \"AVJAwyOvZAGQHg9Dhfw3\",\n" +
+            "        \"_index\": \"cabble\",\n" +
+            "        \"_score\": 1,\n" +
+            "        \"_source\": {\n" +
+            "          \"pos\": {\n" +
+            "            \"lat\": 43.6073683,\n" +
+            "            \"lon\": 3.8999983\n" +
+            "          },\n" +
+            "          \"sibling\": \"none\",\n" +
+            "          \"status\": \"idle\",\n" +
+            "          \"type\": \"cab\"\n" +
+            "        },\n" +
+            "        \"_type\": \"users\"\n" +
+            "      }\n" +
+            "    ],\n" +
+            "    \"max_score\": 1,\n" +
+            "    \"timed_out\": false,\n" +
+            "    \"took\": 307,\n" +
+            "    \"total\": 2\n" +
+            "  }" +
+            "}");
+
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(response);
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(new JSONObject());
         return null;
       }
-    }).when(k).query(eq("test"), eq("read"), eq("search"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    }).when(k).query(eq("test"), eq("read"), eq("search"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    collection.advancedSearch(filters, null, new ResponseListener() {
+    collection.advancedSearch(filters, null, new KuzzResponseListener<KuzzSearchResponse>() {
       @Override
-      public void onSuccess(JSONObject object) {
-        try {
-          assertEquals(object.getInt("total"), 3);
-          assertEquals(object.getJSONArray("documents").getJSONObject(1).getJSONObject("body").getString("foo"), "bar");
-        } catch (JSONException e) {
-          e.printStackTrace();
-        }
+      public void onSuccess(KuzzSearchResponse result) {
+        assertEquals(result.getTotal(), 2);
+        assertEquals(result.getDocuments().get(1).getContent("sibling"), "none");
       }
 
       @Override
       public void onError(JSONObject error) {
       }
     });
-    collection.advancedSearch(filters);
-    collection.advancedSearch(filters, new KuzzleOptions());
-    collection.advancedSearch(filters, new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    verify(k, times(4)).query(eq("test"), eq("read"), eq("search"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    collection.advancedSearch(filters, mock(KuzzResponseListener.class));
+    verify(k, times(2)).query(eq("test"), eq("read"), eq("search"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
   public void testCount() throws JSONException {
     JSONObject filters = new JSONObject();
-    collection.count(filters);
-    collection.count(filters, new KuzzleOptions());
-    collection.count(filters, new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    collection.count(filters, new KuzzleOptions(), new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    verify(k, times(4)).query(eq("test"), eq("read"), eq("count"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    collection.count(filters, mock(KuzzResponseListener.class));
+    collection.count(filters, new KuzzleOptions(), mock(KuzzResponseListener.class));
+    verify(k, times(2)).query(eq("test"), eq("read"), eq("count"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
   public void testCreate() throws JSONException {
-    ResponseListener listener = new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    };
+    KuzzResponseListener listener = mock(KuzzResponseListener.class);
     collection.create(new KuzzleOptions(), listener);
     collection.create(listener);
     collection.create(new KuzzleOptions());
     collection.create();
-    verify(k, times(4)).query(eq("test"), eq("write"), eq("createCollection"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    verify(k, times(4)).query(eq("test"), eq("write"), eq("createCollection"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
@@ -135,18 +133,8 @@ public class KuzzleDataCollectionTest {
     KuzzleDocument doc = new KuzzleDocument(collection);
     doc.setContent("foo", "bar");
     collection.createDocument(doc);
-    collection.createDocument(doc, new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    verify(k, times(2)).query(eq("test"), eq("write"), eq("create"), eq(doc), any(KuzzleOptions.class), any(ResponseListener.class));
+    collection.createDocument(doc, mock(KuzzResponseListener.class));
+    verify(k, times(2)).query(eq("test"), eq("write"), eq("create"), eq(doc), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
@@ -156,128 +144,45 @@ public class KuzzleDataCollectionTest {
     KuzzleOptions options = new KuzzleOptions();
     options.setUpdateIfExists(true);
     collection.createDocument(doc, options);
-
-    verify(k, times(1)).query(eq("test"), eq("write"), eq("createOrUpdate"), eq(doc), any(KuzzleOptions.class), any(ResponseListener.class));
+    verify(k, times(1)).query(eq("test"), eq("write"), eq("createOrUpdate"), eq(doc), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
   public void testDelete() throws JSONException {
     collection.delete();
     collection.delete(new KuzzleOptions());
-    collection.delete(new KuzzleOptions(), new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    collection.delete(new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    verify(k, times(4)).query(eq("test"), eq("admin"), eq("deleteCollection"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    collection.delete(new KuzzleOptions(), mock(KuzzResponseListener.class));
+    collection.delete(mock(KuzzResponseListener.class));
+    verify(k, times(4)).query(eq("test"), eq("admin"), eq("deleteCollection"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
   public void testDeleteDocument() throws JSONException {
     collection.deleteDocument("42");
     collection.deleteDocument(new JSONObject());
-    verify(k, times(2)).query(eq("test"), eq("write"), eq("delete"), any(JSONObject.class));
+    verify(k, times(1)).query(eq("test"), eq("write"), eq("delete"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(k, times(1)).query(eq("test"), eq("write"), eq("deleteByQuery"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
   public void testFetchDocument() throws JSONException {
-    collection.fetchDocument("42", new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    collection.fetchDocument("42", new KuzzleOptions(), new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    verify(k, times(2)).query(eq("test"), eq("read"), eq("get"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    collection.fetchDocument("42", mock(KuzzResponseListener.class));
+    collection.fetchDocument("42", new KuzzleOptions(), mock(KuzzResponseListener.class));
+    verify(k, times(2)).query(eq("test"), eq("read"), eq("get"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
   public void testFetchAllDocuments() throws JSONException {
-    collection.fetchAllDocuments(new KuzzleOptions(), new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    collection.fetchAllDocuments(new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    verify(k, times(2)).query(eq("test"), eq("read"), eq("search"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    collection.fetchAllDocuments(new KuzzleOptions(), mock(KuzzResponseListener.class));
+    collection.fetchAllDocuments(mock(KuzzResponseListener.class));
+    verify(k, times(2)).query(eq("test"), eq("read"), eq("search"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
   public void testGetMapping() throws JSONException {
-    collection.getMapping();
-    collection.getMapping(new KuzzleOptions());
-    collection.getMapping(new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    collection.getMapping(new KuzzleOptions(), new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    verify(k, times(4)).query(eq("test"), eq("admin"), eq("getMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    collection.getMapping(mock(KuzzleOptions.class), mock(KuzzResponseListener.class));
+    collection.getMapping(mock(KuzzResponseListener.class));
+    verify(k, times(2)).query(eq("test"), eq("admin"), eq("getMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
@@ -286,7 +191,7 @@ public class KuzzleDataCollectionTest {
     doc.setContent("foo", "bar");
     collection.publishMessage(doc);
     collection.publishMessage(doc, new KuzzleOptions());
-    verify(k, times(2)).query(eq("test"), eq("write"), eq("publish"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    verify(k, times(2)).query(eq("test"), eq("write"), eq("publish"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
@@ -294,29 +199,9 @@ public class KuzzleDataCollectionTest {
     KuzzleDataMapping mapping = new KuzzleDataMapping(collection);
     collection.putMapping(mapping);
     collection.putMapping(mapping, new KuzzleOptions());
-    collection.putMapping(mapping, new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    collection.putMapping(mapping, new KuzzleOptions(), new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    verify(k, times(4)).query(eq("test"), eq("admin"), eq("putMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    collection.putMapping(mapping, mock(KuzzResponseListener.class));
+    collection.putMapping(mapping, new KuzzleOptions(), mock(KuzzResponseListener.class));
+    verify(k, times(4)).query(eq("test"), eq("admin"), eq("putMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
@@ -324,7 +209,7 @@ public class KuzzleDataCollectionTest {
     KuzzleDocument doc = new KuzzleDocument(collection);
     doc.setContent("foo", "bar");
     collection.replaceDocument("42", doc);
-    verify(k, times(1)).query(eq("test"), eq("write"), eq("createOrUpdate"), any(JSONObject.class));
+    verify(k, times(1)).query(eq("test"), eq("write"), eq("createOrUpdate"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
@@ -346,62 +231,18 @@ public class KuzzleDataCollectionTest {
 
   @Test
   public void testSubscribe() throws JSONException {
-    collection.subscribe(new JSONObject(), new KuzzleRoomOptions(), new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    collection.subscribe(new JSONObject(), new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    collection.subscribe(new JSONObject());
-    collection.subscribe(new JSONObject(), new KuzzleRoomOptions());
-    collection.subscribe(new KuzzleRoomOptions());
-    collection.subscribe();
-    verify(k, times(6)).query(eq("test"), eq("subscribe"), eq("on"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    collection.subscribe(new JSONObject(), new KuzzleRoomOptions(), mock(KuzzResponseListener.class));
+    collection.subscribe(new JSONObject(), mock(KuzzResponseListener.class));
+    verify(k, times(2)).query(eq("test"), eq("subscribe"), eq("on"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
   public void testTruncate() throws JSONException {
     collection.truncate();
     collection.truncate(new KuzzleOptions());
-    collection.truncate(new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    collection.truncate(new KuzzleOptions(), new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    verify(k, times(4)).query(eq("test"), eq("admin"), eq("truncateCollection"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    collection.truncate(mock(KuzzResponseListener.class));
+    collection.truncate(new KuzzleOptions(), mock(KuzzResponseListener.class));
+    verify(k, times(4)).query(eq("test"), eq("admin"), eq("truncateCollection"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
@@ -411,25 +252,22 @@ public class KuzzleDataCollectionTest {
       public Object answer(InvocationOnMock invocation) throws Throwable {
         JSONObject response = new JSONObject();
         response.put("_id", "42");
+        response.put("result", new JSONObject());
         if (invocation.getArguments()[5] != null) {
-          ((ResponseListener) invocation.getArguments()[5]).onSuccess(response);
-          ((ResponseListener) invocation.getArguments()[5]).onError(new JSONObject());
+          ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(response);
+          ((OnQueryDoneListener) invocation.getArguments()[5]).onError(new JSONObject());
         }
         return null;
       }
-    }).when(k).query(eq("test"), eq("write"), eq("update"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    }).when(k).query(eq("test"), eq("write"), eq("update"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
     KuzzleDocument doc = new KuzzleDocument(collection);
     collection.updateDocument("42", doc);
     collection.updateDocument("42", doc, new KuzzleOptions());
-    collection.updateDocument("42", doc, new ResponseListener() {
+    collection.updateDocument("42", doc, new KuzzResponseListener<KuzzleDocument>() {
       @Override
-      public void onSuccess(JSONObject object) {
-        try {
-          assertEquals(object.getString("_id"), "42");
-        } catch (JSONException e) {
-          e.printStackTrace();
-        }
+      public void onSuccess(KuzzleDocument document) {
+        assertEquals(document.getId(), "42");
       }
 
       @Override
@@ -437,14 +275,10 @@ public class KuzzleDataCollectionTest {
 
       }
     });
-    collection.updateDocument("42", doc, new KuzzleOptions(), new ResponseListener() {
+    collection.updateDocument("42", doc, new KuzzleOptions(), new KuzzResponseListener<KuzzleDocument>() {
       @Override
-      public void onSuccess(JSONObject object) {
-        try {
-          assertEquals(object.getString("_id"), "42");
-        } catch (JSONException e) {
-          e.printStackTrace();
-        }
+      public void onSuccess(KuzzleDocument document) {
+        assertEquals(document.getId(), "42");
       }
 
       @Override
@@ -452,7 +286,7 @@ public class KuzzleDataCollectionTest {
 
       }
     });
-    verify(k, times(4)).query(eq("test"), eq("write"), eq("update"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    verify(k, times(4)).query(eq("test"), eq("write"), eq("update"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
 }
