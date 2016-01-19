@@ -5,7 +5,8 @@ import org.json.JSONObject;
 
 import java.util.Iterator;
 
-import io.kuzzle.sdk.listeners.ResponseListener;
+import io.kuzzle.sdk.listeners.KuzzResponseListener;
+import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
 /**
  * The type Kuzzle data mapping.
@@ -22,12 +23,11 @@ public class KuzzleDataMapping {
    * It means that, by default, you won't be able to exploit the full capabilities of our persistent data storage layer
    * (currently handled by ElasticSearch), and your searches may suffer from below-average performances, depending on
    * the amount of data you stored in a collection and the complexity of your database.
-   * 
    * The KuzzleDataMapping object allow to get the current mapping of a data collection and to modify it if needed.
    *
    * @param kuzzleDataCollection the kuzzle data collection
    */
-  public KuzzleDataMapping(KuzzleDataCollection kuzzleDataCollection) {
+  public KuzzleDataMapping(final KuzzleDataCollection kuzzleDataCollection) {
     this(kuzzleDataCollection, null);
   }
 
@@ -37,7 +37,7 @@ public class KuzzleDataMapping {
    * @param kuzzleDataCollection the kuzzle data collection
    * @param mapping              the mapping
    */
-  public KuzzleDataMapping(KuzzleDataCollection kuzzleDataCollection, JSONObject mapping) {
+  public KuzzleDataMapping(final KuzzleDataCollection kuzzleDataCollection, final JSONObject mapping) {
     this.headers = kuzzleDataCollection.getHeaders();
     this.kuzzle = kuzzleDataCollection.getKuzzle();
     this.collection = kuzzleDataCollection.getCollection();
@@ -59,7 +59,7 @@ public class KuzzleDataMapping {
    * @param options the options
    * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping  apply(KuzzleOptions options) {
+  public KuzzleDataMapping  apply(final KuzzleOptions options) {
     return this.apply(options, null);
   }
 
@@ -69,25 +69,44 @@ public class KuzzleDataMapping {
    * @param listener the listener
    * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping  apply(ResponseListener listener) {
+  public KuzzleDataMapping  apply(final KuzzResponseListener<KuzzleDataMapping> listener) {
     return this.apply(null, listener);
   }
 
   /**
    * Applies the new mapping to the data collection.
    *
-   * @param options the options
-   * @param cb      the cb
+   * @param options  the options
+   * @param listener the cb
    * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping apply(KuzzleOptions options, ResponseListener cb) {
+  public KuzzleDataMapping apply(final KuzzleOptions options, final KuzzResponseListener<KuzzleDataMapping> listener) {
     JSONObject data = new JSONObject();
-    JSONObject properties = new JSONObject();
+    final JSONObject properties = new JSONObject();
     try {
       properties.put("properties", this.mapping);
       data.put("body", properties);
       this.kuzzle.addHeaders(data, this.headers);
-      this.kuzzle.query(this.collection, "admin", "putMapping", data, options, cb);
+      this.kuzzle.query(this.collection, "admin", "putMapping", data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            KuzzleDataMapping.this.mapping = properties.getJSONObject("properties");
+            if (listener != null) {
+              listener.onSuccess(KuzzleDataMapping.this);
+            }
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
+        }
+      });
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
@@ -105,42 +124,39 @@ public class KuzzleDataMapping {
 
   /**
    * Replaces the current content with the mapping stored in Kuzzle
-   * 
    * Calling this function will discard any uncommited changes. You can commit changes by calling the "apply" function
    *
    * @param options the options
    * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping refresh(KuzzleOptions options) {
+  public KuzzleDataMapping refresh(final KuzzleOptions options) {
     return refresh(options, null);
   }
 
   /**
    * Replaces the current content with the mapping stored in Kuzzle
-   * 
    * Calling this function will discard any uncommited changes. You can commit changes by calling the "apply" function
    *
    * @param listener the listener
    * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping refresh(ResponseListener listener) {
+  public KuzzleDataMapping refresh(final KuzzResponseListener<KuzzleDataMapping> listener) {
     return refresh(null, listener);
   }
 
   /**
    * Replaces the current content with the mapping stored in Kuzzle
-   * 
    * Calling this function will discard any uncommited changes. You can commit changes by calling the "apply" function
    *
-   * @param options the options
-   * @param cb      the cb
+   * @param options  the options
+   * @param listener the listener
    * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping refresh(KuzzleOptions options, final ResponseListener cb) {
+  public KuzzleDataMapping refresh(final KuzzleOptions options, final KuzzResponseListener<KuzzleDataMapping> listener) {
     JSONObject data = new JSONObject();
     try {
       this.kuzzle.addHeaders(data, this.headers);
-      this.kuzzle.query(this.collection, "admin", "getMapping", data, options, new ResponseListener() {
+      this.kuzzle.query(this.collection, "admin", "getMapping", data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject args) {
           try {
@@ -148,18 +164,18 @@ public class KuzzleDataMapping {
               JSONObject mappings = args.getJSONObject(KuzzleDataMapping.this.kuzzle.getIndex()).getJSONObject("mappings");
               if (!mappings.isNull(KuzzleDataMapping.this.collection))
                 KuzzleDataMapping.this.mapping = mappings.getJSONObject(KuzzleDataMapping.this.collection);
-              if (cb != null)
-                cb.onSuccess(mappings);
+              if (listener != null)
+                listener.onSuccess(KuzzleDataMapping.this);
             }
           } catch (JSONException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
           }
         }
 
         @Override
         public void onError(JSONObject object) {
-          if (cb != null)
-            cb.onError(object);
+          if (listener != null)
+            listener.onError(object);
         }
       });
     } catch (JSONException e) {
@@ -170,13 +186,12 @@ public class KuzzleDataMapping {
 
   /**
    * Adds or updates a field mapping.
-   * 
    * Changes made by this function won't be applied until you call the apply method
    *
    * @param field the field
    * @return kuzzle data mapping
    */
-  public KuzzleDataMapping remove(String field) {
+  public KuzzleDataMapping remove(final String field) {
     if (!KuzzleDataMapping.this.mapping.isNull(field))
       KuzzleDataMapping.this.mapping.remove(field);
     return this;
@@ -189,7 +204,7 @@ public class KuzzleDataMapping {
    * @param mapping the mapping
    * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping set(String field, JSONObject mapping) {
+  public KuzzleDataMapping set(final String field, final JSONObject mapping) {
     try {
       this.mapping.put(field, mapping);
     } catch (JSONException e) {
@@ -215,7 +230,7 @@ public class KuzzleDataMapping {
    * @param content the headers
    * @return the headers
    */
-  public KuzzleDataMapping setHeaders(JSONObject content) {
+  public KuzzleDataMapping setHeaders(final JSONObject content) {
     return this.setHeaders(content, false);
   }
 
@@ -228,7 +243,7 @@ public class KuzzleDataMapping {
    * @param replace - default: false = append the content. If true: replace the current headers with tj
    * @return the headers
    */
-  public KuzzleDataMapping setHeaders(JSONObject content, boolean replace) {
+  public KuzzleDataMapping setHeaders(final JSONObject content, final boolean replace) {
     if (this.headers == null) {
       this.headers = new JSONObject();
     }

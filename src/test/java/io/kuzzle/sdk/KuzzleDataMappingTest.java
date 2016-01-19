@@ -11,7 +11,8 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleDataMapping;
 import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.listeners.ResponseListener;
+import io.kuzzle.sdk.listeners.KuzzResponseListener;
+import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -19,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -33,6 +35,7 @@ public class KuzzleDataMappingTest {
   @Before
   public void setUp() {
     k = mock(Kuzzle.class);
+    when(k.getIndex()).thenReturn("index");
     dataCollection = new KuzzleDataCollection(k, "test");
     dataMapping = new KuzzleDataMapping(dataCollection);
   }
@@ -44,33 +47,88 @@ public class KuzzleDataMappingTest {
     dataMapping = new KuzzleDataMapping(dataCollection, mapping);
   }
 
+  @Test(expected = RuntimeException.class)
+  public void testApplyQueryException() throws JSONException {
+    doThrow(JSONException.class).when(k).query(any(String.class), eq("admin"), eq("putMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    dataMapping.apply();
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testApplyException() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(mock(JSONObject.class));
+        return null;
+      }
+    }).when(k).query(any(String.class), eq("admin"), eq("putMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    KuzzResponseListener mockListener = mock(KuzzResponseListener.class);
+    doThrow(JSONException.class).when(mockListener).onSuccess(any(KuzzleDataMapping.class));
+    dataMapping.apply(mockListener);
+  }
+
   @Test
   public void testApply() throws JSONException {
+    final JSONObject mockResponse = new JSONObject("{\n" +
+        "    properties: {\n" +
+        "      field1: {type: \"field type\"},\n" +
+        "      field2: {type: \"field type\"},\n" +
+        "      fieldn: {type: \"field type\"}\n" +
+        "    }\n" +
+        "  }");
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(mockResponse);
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(null);
+        return null;
+      }
+    }).when(k).query(any(String.class), eq("admin"), eq("putMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     dataMapping.apply();
     dataMapping.apply(new KuzzleOptions());
-    dataMapping.apply(new ResponseListener() {
+    dataMapping.apply(mock(KuzzResponseListener.class));
+    dataMapping.apply(new KuzzleOptions(), mock(KuzzResponseListener.class));
+    verify(k, times(4)).query(eq("test"), eq("admin"), eq("putMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testException() throws JSONException {
+    doThrow(JSONException.class).when(k).query(any(String.class), eq("admin"), eq("getMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    dataMapping.refresh();
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testRefreshException() throws JSONException {
+    doAnswer(new Answer() {
       @Override
-      public void onSuccess(JSONObject object) {
-
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(new JSONObject("{\"index\": {\n" +
+            "      \"mappings\": {\n" +
+            "        \"users\": {\n" +
+            "          \"properties\": {\n" +
+            "            \"pos\": {\n" +
+            "              \"type\": \"geo_point\"\n" +
+            "            },\n" +
+            "            \"sibling\": {\n" +
+            "              \"type\": \"string\"\n" +
+            "            },\n" +
+            "            \"status\": {\n" +
+            "              \"type\": \"string\"\n" +
+            "            },\n" +
+            "            \"type\": {\n" +
+            "              \"type\": \"string\"\n" +
+            "            }\n" +
+            "          }\n" +
+            "        }\n" +
+            "      }\n" +
+            "    }" +
+            "}"));
+        return null;
       }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    dataMapping.apply(new KuzzleOptions(), new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    verify(k, times(4)).query(eq("test"), eq("admin"), eq("putMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    }).when(k).query(any(String.class), eq("admin"), eq("getMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    KuzzResponseListener mockListener = mock(KuzzResponseListener.class);
+    doThrow(JSONException.class).when(mockListener).onSuccess(any(KuzzleDataMapping.class));
+    dataMapping.refresh(mockListener);
   }
 
   @Test
@@ -95,41 +153,17 @@ public class KuzzleDataMappingTest {
             "            }" +
             "          }" +
             "        }}}}");
-        ((ResponseListener) invocation.getArguments()[5]).onSuccess(response);
-        ((ResponseListener) invocation.getArguments()[5]).onError(null);
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(response);
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(null);
         return null;
       }
-    }).when(k).query(eq("test"), eq("admin"), eq("getMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    }).when(k).query(eq("test"), eq("admin"), eq("getMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     when(k.getIndex()).thenReturn("index");
     dataMapping.refresh();
     dataMapping.refresh(new KuzzleOptions());
-    dataMapping.refresh(new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-        try {
-          assertEquals(object.getJSONObject("test").getJSONObject("properties").getJSONObject("foo").getString("type"), "string");
-        } catch (JSONException e) {
-          e.printStackTrace();
-        }
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    dataMapping.refresh(new KuzzleOptions(), new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    verify(k, times(4)).query(eq("test"), eq("admin"), eq("getMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    dataMapping.refresh(mock(KuzzResponseListener.class));
+    dataMapping.refresh(new KuzzleOptions(), mock(KuzzResponseListener.class));
+    verify(k, times(4)).query(eq("test"), eq("admin"), eq("getMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test

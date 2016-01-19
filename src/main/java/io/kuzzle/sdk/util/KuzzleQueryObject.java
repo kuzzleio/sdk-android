@@ -5,7 +5,7 @@ import org.json.JSONObject;
 import java.util.Date;
 
 import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.listeners.ResponseListener;
+import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
 /**
  * The type Query object.
@@ -15,7 +15,7 @@ public class KuzzleQueryObject {
   private JSONObject query;
   private String action;
   private KuzzleOptions options;
-  private ResponseListener cb;
+  private OnQueryDoneListener cb;
   private Date  timestamp;
 
   /**
@@ -23,7 +23,7 @@ public class KuzzleQueryObject {
    *
    * @return the cb
    */
-  public ResponseListener getCb() {
+  public OnQueryDoneListener getCb() {
     return cb;
   }
 
@@ -32,7 +32,7 @@ public class KuzzleQueryObject {
    *
    * @param cb the cb
    */
-  public void setCb(ResponseListener cb) {
+  public void setCb(OnQueryDoneListener cb) {
     this.cb = cb;
   }
 

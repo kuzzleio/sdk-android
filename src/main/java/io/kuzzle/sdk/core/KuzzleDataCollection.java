@@ -1,10 +1,18 @@
 package io.kuzzle.sdk.core;
 
+import android.support.annotation.NonNull;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import io.kuzzle.sdk.listeners.ResponseListener;
+import java.util.ArrayList;
+import java.util.List;
+
+import io.kuzzle.sdk.listeners.KuzzResponseListener;
+import io.kuzzle.sdk.listeners.OnQueryDoneListener;
+import io.kuzzle.sdk.responses.KuzzNotificationResponse;
+import io.kuzzle.sdk.responses.KuzzSearchResponse;
 
 /**
  * The type Kuzzle data collection.
@@ -32,38 +40,11 @@ public class KuzzleDataCollection {
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function.
    *
-   * @param filter the filter
-   * @return the kuzzle data collection
-   */
-  public KuzzleDataCollection advancedSearch(JSONObject filter) {
-    return this.advancedSearch(filter, null, null);
-  }
-
-  /**
-   * Executes an advanced search on the data collection.
-   * /!\ There is a small delay between documents creation and their existence in our advanced search layer,
-   * usually a couple of seconds.
-   * That means that a document that was just been created won’t be returned by this function.
-   *
-   * @param filter  the filter
-   * @param options the options
-   * @return the kuzzle data collection
-   */
-  public KuzzleDataCollection advancedSearch(JSONObject filter, KuzzleOptions options) {
-    return this.advancedSearch(filter, options, null);
-  }
-
-  /**
-   * Executes an advanced search on the data collection.
-   * /!\ There is a small delay between documents creation and their existence in our advanced search layer,
-   * usually a couple of seconds.
-   * That means that a document that was just been created won’t be returned by this function.
-   *
    * @param filter   the filter
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection advancedSearch(JSONObject filter, ResponseListener listener) {
+  public KuzzleDataCollection advancedSearch(final JSONObject filter, final KuzzResponseListener<KuzzSearchResponse> listener) {
     return this.advancedSearch(filter, null, listener);
   }
 
@@ -78,7 +59,10 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return KuzzleDataCollection object
    */
-  public KuzzleDataCollection advancedSearch(JSONObject filters, final KuzzleOptions options, final ResponseListener listener) {
+  public KuzzleDataCollection advancedSearch(final JSONObject filters, final KuzzleOptions options, @NonNull final KuzzResponseListener<KuzzSearchResponse> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("listener cannot be null");
+    }
     this.kuzzle.isValid();
     JSONObject data = new JSONObject();
     try {
@@ -87,26 +71,148 @@ public class KuzzleDataCollection {
       }
       this.kuzzle.addHeaders(data, this.getHeaders());
 
-      this.kuzzle.query(this.collection, "read", "search", data, options, new ResponseListener() {
+      this.kuzzle.query(this.collection, "read", "search", data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject object) {
           try {
-            JSONArray docs = new JSONArray();
-            JSONArray hits = object.getJSONObject("hits").getJSONArray("hits");
-            JSONObject result = new JSONObject();
+            JSONArray hits = object.getJSONObject("result").getJSONArray("hits");
+            List<KuzzleDocument> docs = new ArrayList<KuzzleDocument>();
             for (int i = 0; i < hits.length(); i++) {
-              KuzzleDocument doc = new KuzzleDocument(KuzzleDataCollection.this);
-              doc.setId(hits.getJSONObject(i).getString("_id"));
-              doc.setContent(hits.getJSONObject(i).getJSONObject("_source"));
-              docs.put(doc);
+              KuzzleDocument doc = new KuzzleDocument(KuzzleDataCollection.this, hits.getJSONObject(i));
+              docs.add(doc);
             }
-            result.put("documents", docs);
-            result.put("total", hits.length());
-            if (listener != null) {
-              listener.onSuccess(result);
-            }
+            KuzzSearchResponse response = new KuzzSearchResponse(docs, object.getJSONObject("result").getInt("total"));
+            listener.onSuccess(response);
           } catch (JSONException e) {
             e.printStackTrace();
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+    return this;
+  }
+
+  /**
+   * Count kuzzle data collection.
+   *
+   * @param filters  the filters
+   * @param listener the listener
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection count(final JSONObject filters, @NonNull final KuzzResponseListener<Integer> listener) {
+    return this.count(filters, null, listener);
+  }
+
+  /**
+   * Count kuzzle data collection.
+   *
+   * @param listener the listener
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection count(@NonNull final KuzzResponseListener<Integer> listener) {
+    return this.count(null, null, listener);
+  }
+
+  /**
+   * Returns the number of documents matching the provided set of filters.
+   * There is a small delay between documents creation and their existence in our advanced search layer,
+   * usually a couple of seconds.
+   * That means that a document that was just been created won’t be returned by this function
+   *
+   * @param filters  the filters
+   * @param options  the options
+   * @param listener the cb
+   * @return KuzzleDataCollection kuzzle data collection
+   */
+  public KuzzleDataCollection count(final JSONObject filters, final KuzzleOptions options, @NonNull final KuzzResponseListener<Integer> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("KuzzleDataCollection.count: listener required");
+    }
+    JSONObject data = new JSONObject();
+    try {
+      this.kuzzle.addHeaders(data, this.getHeaders());
+      data.put("body", filters);
+      this.kuzzle.query(this.collection, "read", "count", data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result").getInt("count"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+    return this;
+  }
+
+  /**
+   * Create a new empty data collection, with no associated mapping.
+   * Kuzzle automatically creates data collections when storing documents, but there are cases where we want to create and prepare data collections before storing documents in it.
+   *
+   * @param options the options
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection create(final KuzzleOptions options) {
+    return this.create(options, null);
+  }
+
+  /**
+   * Create a new empty data collection, with no associated mapping.
+   * Kuzzle automatically creates data collections when storing documents, but there are cases where we want to create and prepare data collections before storing documents in it.
+   *
+   * @param listener the listener
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection create(final KuzzResponseListener<JSONObject> listener) {
+    return this.create(null, listener);
+  }
+
+  /**
+   * Create a new empty data collection, with no associated mapping.
+   * Kuzzle automatically creates data collections when storing documents, but there are cases where we want to create and prepare data collections before storing documents in it.
+   *
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection create() {
+    return this.create(null, null);
+  }
+
+  /**
+   * Create a new empty data collection, with no associated mapping.
+   * Kuzzle automatically creates data collections when storing documents, but there are cases where we want to create and prepare data collections before storing documents in it.
+   *
+   * @param options  the options
+   * @param listener the listener
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection create(final KuzzleOptions options, final KuzzResponseListener<JSONObject> listener) {
+    JSONObject data = new JSONObject();
+    try {
+      this.kuzzle.addHeaders(data, this.getHeaders());
+      this.kuzzle.query(this.collection, "write", "createCollection", data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          if (listener != null) {
+            try {
+              listener.onSuccess(response.getJSONObject("result"));
+            } catch (JSONException e) {
+              throw new RuntimeException(e);
+            }
           }
         }
 
@@ -124,133 +230,12 @@ public class KuzzleDataCollection {
   }
 
   /**
-   * Returns the number of documents matching the provided set of filters.
-   * 
-   * There is a small delay between documents creation and their existence in our advanced search layer,
-   * usually a couple of seconds.
-   * That means that a document that was just been created won’t be returned by this function
-   *
-   * @param filters the filters
-   * @return the kuzzle data collection
-   */
-  public KuzzleDataCollection count(JSONObject filters) {
-    return this.count(filters, null, null);
-  }
-
-  /**
-   * Returns the number of documents matching the provided set of filters.
-   * 
-   * There is a small delay between documents creation and their existence in our advanced search layer,
-   * usually a couple of seconds.
-   * That means that a document that was just been created won’t be returned by this function
-   *
-   * @param filters the filters
-   * @param options the options
-   * @return the kuzzle data collection
-   */
-  public KuzzleDataCollection count(JSONObject filters, KuzzleOptions options) {
-    return this.count(filters, options, null);
-  }
-
-  /**
-   * Returns the number of documents matching the provided set of filters.
-   * 
-   * There is a small delay between documents creation and their existence in our advanced search layer,
-   * usually a couple of seconds.
-   * That means that a document that was just been created won’t be returned by this function
-   *
-   * @param filters  the filters
-   * @param listener the listener
-   * @return the kuzzle data collection
-   */
-  public KuzzleDataCollection count(JSONObject filters, ResponseListener listener) {
-    return this.count(filters, null, listener);
-  }
-
-  /**
-   * Returns the number of documents matching the provided set of filters.
-   * 
-   * There is a small delay between documents creation and their existence in our advanced search layer,
-   * usually a couple of seconds.
-   * That means that a document that was just been created won’t be returned by this function
-   *
-   * @param filters the filters
-   * @param options the options
-   * @param cb      the cb
-   * @return KuzzleDataCollection kuzzle data collection
-   */
-  public KuzzleDataCollection count(JSONObject filters, KuzzleOptions options, ResponseListener cb) {
-    JSONObject data = new JSONObject();
-    try {
-      this.kuzzle.addHeaders(data, this.getHeaders());
-      data.put("body", filters);
-      this.kuzzle.query(this.collection, "read", "count", data, options, cb);
-    } catch (JSONException e) {
-      throw new RuntimeException(e);
-    }
-    return this;
-  }
-
-
-  /**
-   * Create a new empty data collection, with no associated mapping.
-   * Kuzzle automatically creates data collections when storing documents, but there are cases where we want to create and prepare data collections before storing documents in it.
-   *
-   * @param options  the options
-   * @param listener the listener
-   * @return the kuzzle data collection
-   */
-  public KuzzleDataCollection create(KuzzleOptions options, ResponseListener listener) {
-    JSONObject data = new JSONObject();
-    try {
-      this.kuzzle.addHeaders(data, this.getHeaders());
-      this.kuzzle.query(this.collection, "write", "createCollection", data, options, listener);
-    } catch (JSONException e) {
-      throw new RuntimeException(e);
-    }
-    return this;
-  }
-
-  /**
-   * Create a new empty data collection, with no associated mapping.
-   * Kuzzle automatically creates data collections when storing documents, but there are cases where we want to create and prepare data collections before storing documents in it.
-   *
-   * @param options the options
-   * @return the kuzzle data collection
-   */
-  public KuzzleDataCollection create(KuzzleOptions options) {
-    return this.create(options, null);
-  }
-
-  /**
-   * Create a new empty data collection, with no associated mapping.
-   * Kuzzle automatically creates data collections when storing documents, but there are cases where we want to create and prepare data collections before storing documents in it.
-   *
-   * @param listener the listener
-   * @return the kuzzle data collection
-   */
-  public KuzzleDataCollection create(ResponseListener listener) {
-    return this.create(null, listener);
-  }
-
-  /**
-   * Create a new empty data collection, with no associated mapping.
-   * Kuzzle automatically creates data collections when storing documents, but there are cases where we want to create and prepare data collections before storing documents in it.
-
-   *
-   * @return the kuzzle data collection
-   */
-  public KuzzleDataCollection create() {
-    return this.create(null, null);
-  }
-
-  /**
    * Create a new document in Kuzzle
    *
    * @param document the document
    * @return kuzzle data collection
    */
-  public KuzzleDataCollection createDocument(KuzzleDocument document) {
+  public KuzzleDataCollection createDocument(final KuzzleDocument document) {
     return this.createDocument(document, null, null);
   }
 
@@ -261,7 +246,7 @@ public class KuzzleDataCollection {
    * @param options  the options
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection createDocument(KuzzleDocument document, KuzzleOptions options) {
+  public KuzzleDataCollection createDocument(final KuzzleDocument document, final KuzzleOptions options) {
     return this.createDocument(document, options, null);
   }
 
@@ -272,7 +257,7 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection createDocument(KuzzleDocument document, ResponseListener listener) {
+  public KuzzleDataCollection createDocument(final KuzzleDocument document, final KuzzResponseListener<KuzzleDocument> listener) {
     return this.createDocument(document, null ,listener);
   }
 
@@ -284,14 +269,32 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection createDocument(KuzzleDocument document, KuzzleOptions options, ResponseListener listener) {
+  public KuzzleDataCollection createDocument(final KuzzleDocument document, final KuzzleOptions options, final KuzzResponseListener<KuzzleDocument> listener) {
     String create = "create";
     if (options != null && options.isUpdateIfExists()) {
       create = "createOrUpdate";
     }
     try {
       document.put("persist", true);
-      this.kuzzle.query(this.collection, "write", create, document, options, listener);
+      this.kuzzle.query(this.collection, "write", create, document, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          if (listener != null) {
+            try {
+              listener.onSuccess(new KuzzleDocument(KuzzleDataCollection.this, response.getJSONObject("result")));
+            } catch (JSONException e) {
+              throw new RuntimeException();
+            }
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
+        }
+      });
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
@@ -313,7 +316,7 @@ public class KuzzleDataCollection {
    * @param options the options
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection delete(KuzzleOptions options) {
+  public KuzzleDataCollection delete(final KuzzleOptions options) {
     return this.delete(options, null);
   }
 
@@ -323,7 +326,7 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection delete(ResponseListener listener) {
+  public KuzzleDataCollection delete(final KuzzResponseListener<JSONObject> listener) {
     return this.delete(null, listener);
   }
 
@@ -334,11 +337,23 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection delete(KuzzleOptions options, ResponseListener listener) {
+  public KuzzleDataCollection delete(final KuzzleOptions options, final KuzzResponseListener<JSONObject> listener) {
     JSONObject data = new JSONObject();
     try {
       this.kuzzle.addHeaders(data, this.getHeaders());
-      this.kuzzle.query(this.collection, "admin", "deleteCollection", data, options, listener);
+      this.kuzzle.query(this.collection, "admin", "deleteCollection", data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          if (listener != null) {
+            listener.onSuccess(response);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+
+        }
+      });
     }  catch (JSONException e) {
       throw new RuntimeException(e);
     }
@@ -347,7 +362,6 @@ public class KuzzleDataCollection {
 
   /**
    * Delete a persistent document.
-   * 
    * There is a small delay between documents creation and their existence in our advanced search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
@@ -355,34 +369,172 @@ public class KuzzleDataCollection {
    * @param documentId the document id
    * @return KuzzleDataCollection kuzzle data collection
    */
-  public KuzzleDataCollection deleteDocument(String documentId) {
-    JSONObject data = new JSONObject();
-    try {
-      this.kuzzle.addHeaders(data, this.getHeaders());
-      data.put("_id", documentId);
-      this.kuzzle.query(this.collection, "write", "delete", data);
-    } catch (JSONException e) {
-      throw new RuntimeException(e);
+  public KuzzleDataCollection deleteDocument(@NonNull final String documentId) {
+    if (documentId == null) {
+      throw new IllegalArgumentException("KuzzleDataCollection.deleteDocument: documentId required");
     }
-    return this;
+    return this.deleteDocument(documentId, null, null, null, null);
+  }
+
+  /**
+   * Delete document kuzzle data collection.
+   *
+   * @param documentId the document id
+   * @param options    the options
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection deleteDocument(@NonNull final String documentId, KuzzleOptions options) {
+    if (documentId == null) {
+      throw new IllegalArgumentException("KuzzleDataCollection.deleteDocument: documentId required");
+    }
+    return this.deleteDocument(documentId, null, options, null, null);
   }
 
   /**
    * Delete a persistent document.
-   * 
+   * There is a small delay between documents creation and their existence in our advanced search layer,
+   * usually a couple of seconds.
+   * That means that a document that was just been created won’t be returned by this function
+   *
+   * @param documentId the document id
+   * @param listener   the listener
+   * @return KuzzleDataCollection kuzzle data collection
+   */
+  public KuzzleDataCollection deleteDocument(@NonNull final String documentId, final KuzzResponseListener<String> listener) {
+    if (documentId == null) {
+      throw new IllegalArgumentException("KuzzleDataCollection.deleteDocument: documentId required");
+    }
+    return this.deleteDocument(documentId, null, null, listener, null);
+  }
+
+  /**
+   * Delete document kuzzle data collection.
+   *
+   * @param documentId the document id
+   * @param options    the options
+   * @param listener   the listener
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection deleteDocument(@NonNull final String documentId, final KuzzleOptions options, final KuzzResponseListener<String> listener) {
+    if (documentId == null) {
+      throw new IllegalArgumentException("KuzzleDataCollection.deleteDocument: documentId required");
+    }
+    return this.deleteDocument(documentId, null, options, listener, null);
+  }
+
+  /**
+   * Delete a persistent document.
    * There is a small delay between documents creation and their existence in our advanced search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
    *
    * @param filters the filters
-   * @return kuzzle data collection
+   * @return KuzzleDataCollection kuzzle data collection
    */
-  public KuzzleDataCollection deleteDocument(JSONObject filters) {
+  public KuzzleDataCollection deleteDocument(@NonNull final JSONObject filters) {
+    if (filters == null) {
+      throw new IllegalArgumentException("KuzzleDataCollection.deleteDocument: filters required");
+    }
+    return this.deleteDocument(null, filters, null, null, null);
+  }
+
+  /**
+   * Delete document kuzzle data collection.
+   *
+   * @param filters the filters
+   * @param options the options
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection deleteDocument(@NonNull final JSONObject filters, final KuzzleOptions options) {
+    if (filters == null) {
+      throw new IllegalArgumentException("KuzzleDataCollection.deleteDocument: filters required");
+    }
+    return this.deleteDocument(null, filters, options, null, null);
+  }
+
+  /**
+   * Delete a persistent document.
+   * There is a small delay between documents creation and their existence in our advanced search layer,
+   * usually a couple of seconds.
+   * That means that a document that was just been created won’t be returned by this function
+   *
+   * @param filters  the filters
+   * @param listener the listener
+   * @return KuzzleDataCollection kuzzle data collection
+   */
+  public KuzzleDataCollection deleteDocument(@NonNull final JSONObject filters, final KuzzResponseListener<String[]> listener) {
+    if (filters == null) {
+      throw new IllegalArgumentException("KuzzleDataCollection.deleteDocument: filters required");
+    }
+    return this.deleteDocument(null, filters, null, null, listener);
+  }
+
+  /**
+   * Delete document kuzzle data collection.
+   *
+   * @param filters  the filters
+   * @param options  the options
+   * @param listener the listener
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection deleteDocument(@NonNull final JSONObject filters, final KuzzleOptions options, final KuzzResponseListener<String[]> listener) {
+    if (filters == null) {
+      throw new IllegalArgumentException("KuzzleDataCollection.deleteDocument: filters required");
+    }
+    return this.deleteDocument(null, filters, null, null, listener);
+  }
+
+  /**
+   * Delete a persistent document.
+   * There is a small delay between documents creation and their existence in our advanced search layer,
+   * usually a couple of seconds.
+   * That means that a document that was just been created won’t be returned by this function
+   *
+   * @param documentId the document id
+   * @param filter     the filter
+   * @return KuzzleDataCollection kuzzle data collection
+   */
+  private KuzzleDataCollection deleteDocument(final String documentId, final JSONObject filter, final KuzzleOptions options, final KuzzResponseListener<String> listener, final KuzzResponseListener<String[]> listener2) {
     JSONObject data = new JSONObject();
+    String action = "delete";
     try {
       this.kuzzle.addHeaders(data, this.getHeaders());
-      data.put("body", filters);
-      this.kuzzle.query(this.collection, "write", "delete", data);
+      if (documentId != null) {
+        data.put("_id", documentId);
+      }
+      if (filter != null) {
+        data.put("body", filter);
+        action = "deleteByQuery";
+      }
+      this.kuzzle.query(this.collection, "write", action, data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            if (listener != null) {
+                listener.onSuccess(response.getJSONObject("result").getString("_id"));
+            } else if (listener2 != null) {
+              JSONArray array = response.getJSONArray("result");
+              int length = response.getJSONArray("result").length();
+              String[] ids = new String[length];
+              for (int i = 0; i < length; i++) {
+                ids[i] = array.getString(i);
+              }
+              listener2.onSuccess(ids);
+            }
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          } else if (listener2 != null) {
+            listener2.onError(error);
+          }
+        }
+      });
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
@@ -396,7 +548,7 @@ public class KuzzleDataCollection {
    * @param listener   the listener
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection fetchDocument(String documentId, ResponseListener listener) {
+  public KuzzleDataCollection fetchDocument(@NonNull final String documentId, @NonNull final KuzzResponseListener<KuzzleDocument> listener) {
     return this.fetchDocument(documentId, null, listener);
   }
 
@@ -405,15 +557,35 @@ public class KuzzleDataCollection {
    *
    * @param documentId the document id
    * @param options    the options
-   * @param cb         the cb
+   * @param listener   the listener
    * @return KuzzleDataCollection kuzzle data collection
    */
-  public KuzzleDataCollection fetchDocument(String documentId, KuzzleOptions options, ResponseListener cb) {
+  public KuzzleDataCollection fetchDocument(@NonNull final String documentId, final KuzzleOptions options, final KuzzResponseListener<KuzzleDocument> listener) {
+    if (documentId == null) {
+      throw new IllegalArgumentException("KuzzleDataCollection.fetchDocument: documentId required");
+    }
+    if (listener == null) {
+      throw new IllegalArgumentException("KuzzleDataCollection.fetchDocument: listener required");
+    }
     JSONObject data = new JSONObject();
     try {
       this.kuzzle.addHeaders(data, this.getHeaders());
       data.put("_id", documentId);
-      this.kuzzle.query(this.collection, "read", "get", data, options, cb);
+      this.kuzzle.query(this.collection, "read", "get", data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(new KuzzleDocument(KuzzleDataCollection.this, response.getJSONObject("result")));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
@@ -426,7 +598,7 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection fetchAllDocuments(ResponseListener listener) {
+  public KuzzleDataCollection fetchAllDocuments(@NonNull final KuzzResponseListener<KuzzleDocument[]> listener) {
     return this.fetchAllDocuments(null, listener);
   }
 
@@ -437,27 +609,21 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection fetchAllDocuments(KuzzleOptions options, ResponseListener listener) {
-    return this.advancedSearch(null, options, listener);
-  }
+  public KuzzleDataCollection fetchAllDocuments(final KuzzleOptions options, @NonNull final KuzzResponseListener<KuzzleDocument[]> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("KuzzleDataCollection.fetchAllDocuments: listener required");
+    }
+    return this.advancedSearch(null, options, new KuzzResponseListener<KuzzSearchResponse>() {
+      @Override
+      public void onSuccess(KuzzSearchResponse response) {
+        listener.onSuccess((KuzzleDocument[]) response.getDocuments().toArray());
+      }
 
-  /**
-   * Instantiates a KuzzleDataMapping object containing the current mapping of this collection.
-   *
-   * @return the mapping
-   */
-  public KuzzleDataCollection getMapping() {
-    return this.getMapping(null, null);
-  }
-
-  /**
-   * Instantiates a KuzzleDataMapping object containing the current mapping of this collection.
-   *
-   * @param options the options
-   * @return the mapping
-   */
-  public KuzzleDataCollection getMapping(KuzzleOptions options) {
-    return this.getMapping(options, null);
+      @Override
+      public void onError(JSONObject error) {
+        listener.onError(error);
+      }
+    });
   }
 
   /**
@@ -466,7 +632,7 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the mapping
    */
-  public KuzzleDataCollection getMapping(ResponseListener listener) {
+  public KuzzleDataCollection getMapping(@NonNull final KuzzResponseListener<KuzzleDataMapping> listener) {
     return this.getMapping(null, listener);
   }
 
@@ -477,9 +643,22 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the mapping
    */
-  public KuzzleDataCollection getMapping(KuzzleOptions options, ResponseListener listener) {
+  public KuzzleDataCollection getMapping(final KuzzleOptions options, @NonNull final KuzzResponseListener<KuzzleDataMapping> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("KuzzleDataCollection.getMapping: listener required");
+    }
     new KuzzleDataMapping(this).refresh(options, listener);
     return this;
+  }
+
+  /**
+   * Publish a realtime message
+   *
+   * @param document the document
+   * @return kuzzle data collection
+   */
+  public KuzzleDataCollection publishMessage(final KuzzleDocument document) {
+    return this.publishMessage(document, null);
   }
 
   /**
@@ -489,7 +668,7 @@ public class KuzzleDataCollection {
    * @param options  the options
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection publishMessage(KuzzleDocument document, KuzzleOptions options) {
+  public KuzzleDataCollection publishMessage(@NonNull final KuzzleDocument document, final KuzzleOptions options) {
     try {
       this.kuzzle.addHeaders(document, this.getHeaders());
       this.kuzzle.query(this.collection, "write", "publish", document, options, null);
@@ -500,22 +679,12 @@ public class KuzzleDataCollection {
   }
 
   /**
-   * Publish a realtime message
-   *
-   * @param document the document
-   * @return kuzzle data collection
-   */
-  public KuzzleDataCollection publishMessage(KuzzleDocument document) {
-    return this.publishMessage(document, null);
-  }
-
-  /**
    * Put mapping kuzzle data collection.
    *
    * @param mapping the mapping
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection putMapping(KuzzleDataMapping mapping) {
+  public KuzzleDataCollection putMapping(final KuzzleDataMapping mapping) {
     return this.putMapping(mapping, null, null);
   }
 
@@ -526,7 +695,7 @@ public class KuzzleDataCollection {
    * @param options the options
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection putMapping(KuzzleDataMapping mapping, KuzzleOptions options) {
+  public KuzzleDataCollection putMapping(final KuzzleDataMapping mapping, KuzzleOptions options) {
     return this.putMapping(mapping, options, null);
   }
 
@@ -537,7 +706,7 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection putMapping(KuzzleDataMapping mapping, ResponseListener listener) {
+  public KuzzleDataCollection putMapping(final KuzzleDataMapping mapping, final KuzzResponseListener<KuzzleDataMapping> listener) {
     return this.putMapping(mapping, null, listener);
   }
 
@@ -549,7 +718,7 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection putMapping(KuzzleDataMapping mapping, KuzzleOptions options, ResponseListener listener) {
+  public KuzzleDataCollection putMapping(final KuzzleDataMapping mapping, final KuzzleOptions options, final KuzzResponseListener<KuzzleDataMapping> listener) {
     mapping.apply(options, listener);
     return this;
   }
@@ -559,13 +728,59 @@ public class KuzzleDataCollection {
    *
    * @param documentId the document id
    * @param content    the content
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection replaceDocument(@NonNull final String documentId, final KuzzleDocument content) {
+    return this.replaceDocument(documentId, content, null, null);
+  }
+
+  /**
+   * Replace document kuzzle data collection.
+   *
+   * @param documentId the document id
+   * @param options    the options
+   * @param content    the content
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection replaceDocument(@NonNull final String documentId, final KuzzleOptions options, final KuzzleDocument content) {
+    return this.replaceDocument(documentId, content, options, null);
+  }
+
+  /**
+   * Replace an existing document with a new one.
+   *
+   * @param documentId the document id
+   * @param content    the content
+   * @param options    the options
+   * @param listener   the listener
    * @return KuzzleDataCollection kuzzle data collection
    */
-  public KuzzleDataCollection replaceDocument(String documentId, KuzzleDocument content) {
+  public KuzzleDataCollection replaceDocument(@NonNull final String documentId, final KuzzleDocument content, final KuzzleOptions options, final KuzzResponseListener<KuzzleDocument> listener) {
+    if (documentId == null) {
+      throw new IllegalArgumentException("KuzzleDataCollection.replaceDocument: documentId required");
+    }
     content.setId(documentId);
     try {
       this.kuzzle.addHeaders(content, this.getHeaders());
-      this.kuzzle.query(this.collection, "write", "createOrUpdate", content);
+      this.kuzzle.query(this.collection, "write", "createOrUpdate", content, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          if (listener != null) {
+            try {
+              listener.onSuccess(new KuzzleDocument(KuzzleDataCollection.this, response.getJSONObject("result")));
+            } catch (JSONException e) {
+              throw new RuntimeException(e);
+            }
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
+        }
+      });
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
@@ -578,7 +793,7 @@ public class KuzzleDataCollection {
    * @param content the content
    * @return the headers
    */
-  public KuzzleDataCollection setHeaders(JSONObject content) {
+  public KuzzleDataCollection setHeaders(final JSONObject content) {
     return this.setHeaders(content, false);
   }
 
@@ -589,7 +804,7 @@ public class KuzzleDataCollection {
    * @param replace the replace
    * @return the headers
    */
-  public KuzzleDataCollection setHeaders(JSONObject content, boolean replace) {
+  public KuzzleDataCollection setHeaders(final JSONObject content, final boolean replace) {
     this.kuzzle.setHeaders(content, replace);
     return this;
   }
@@ -598,76 +813,46 @@ public class KuzzleDataCollection {
    * Subscribes to this data collection with a set of filters.
    * To subscribe to the entire data collection, simply provide an empty filter.
    *
-   * @param filter  the filter
-   * @param options KuzzleRoomOptions
+   * @param filters  the filters
+   * @param listener the listener
    * @return the kuzzle room
    */
-  public KuzzleRoom subscribe(JSONObject filter, KuzzleRoomOptions options) {
-    return this.subscribe(filter, options, null);
+  public KuzzleRoom subscribe(final JSONObject filters, @NonNull final KuzzResponseListener<KuzzNotificationResponse> listener) {
+    return this.subscribe(filters, null, listener);
   }
 
   /**
    * Subscribes to this data collection with a set of filters.
    * To subscribe to the entire data collection, simply provide an empty filter.
    *
-   * @param options KuzzleRoomOptions
+   * @param options  the options
+   * @param listener the listener
    * @return the kuzzle room
    */
-  public KuzzleRoom subscribe(KuzzleRoomOptions options) {
-    return this.subscribe(null, options, null);
+  public KuzzleRoom subscribe(final KuzzleRoomOptions options, @NonNull final KuzzResponseListener<KuzzNotificationResponse> listener) {
+    return this.subscribe(null, options, listener);
   }
 
   /**
    * Subscribes to this data collection with a set of filters.
    * To subscribe to the entire data collection, simply provide an empty filter.
    *
-   * @param filter   the filter
-   * @param callback the callback
-   * @return the kuzzle room
-   */
-  public KuzzleRoom subscribe(JSONObject filter, ResponseListener callback) {
-    return this.subscribe(filter, null, callback);
-  }
-
-  /**
-   * Subscribes to this data collection with a set of filters.
-   * To subscribe to the entire data collection, simply provide an empty filter.
-   *
-   * @param filter the filter
-   * @return the kuzzle room
-   */
-  public KuzzleRoom subscribe(JSONObject filter) {
-    return this.subscribe(filter, null, null);
-  }
-
-  /**
-   * Subscribes to this data collection with a set of filters.
-   * To subscribe to the entire data collection, simply provide an empty filter.
-   *
-   * @return the kuzzle room
-   */
-  public KuzzleRoom subscribe() {
-    return this.subscribe(null, null, null);
-  }
-
-  /**
-   * Subscribes to this data collection with a set of filters.
-   * To subscribe to the entire data collection, simply provide an empty filter.
-   *
-   * @param filters the filters
-   * @param options the options
-   * @param cb      the cb
+   * @param filters  the filters
+   * @param options  the options
+   * @param listener the listener
    * @return kuzzle room
    */
-  public KuzzleRoom subscribe(JSONObject filters, KuzzleRoomOptions options, ResponseListener cb) {
+  public KuzzleRoom subscribe(final JSONObject filters, final KuzzleRoomOptions options, @NonNull final KuzzResponseListener<KuzzNotificationResponse> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("KuzzleDataCollection.subscribe: listener required");
+    }
     this.kuzzle.isValid();
     KuzzleRoom room = new KuzzleRoom(this, options);
-    return room.renew(filters, cb);
+    return room.renew(filters, listener);
   }
 
   /**
    * Truncate the data collection, removing all stored documents but keeping all associated mappings.
-   * 
    * This method is a lot faster than removing all documents using a query.
    *
    * @return the kuzzle data collection
@@ -678,42 +863,57 @@ public class KuzzleDataCollection {
 
   /**
    * Truncate the data collection, removing all stored documents but keeping all associated mappings.
-   * 
    * This method is a lot faster than removing all documents using a query.
    *
    * @param options the options
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection truncate(KuzzleOptions options) {
+  public KuzzleDataCollection truncate(final KuzzleOptions options) {
     return this.truncate(options, null);
   }
 
   /**
    * Truncate the data collection, removing all stored documents but keeping all associated mappings.
-   * 
    * This method is a lot faster than removing all documents using a query.
    *
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection truncate(ResponseListener listener) {
+  public KuzzleDataCollection truncate(final KuzzResponseListener<Boolean> listener) {
     return this.truncate(null, listener);
   }
 
   /**
    * Truncate the data collection, removing all stored documents but keeping all associated mappings.
-   * 
    * This method is a lot faster than removing all documents using a query.
    *
    * @param options  the options
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection truncate(KuzzleOptions options, ResponseListener listener) {
+  public KuzzleDataCollection truncate(final KuzzleOptions options, final KuzzResponseListener<Boolean> listener) {
     JSONObject  data = new JSONObject();
     try {
       this.kuzzle.addHeaders(data, this.kuzzle.getHeaders());
-      this.kuzzle.query(this.collection, "admin", "truncateCollection", data, options, listener);
+      this.kuzzle.query(this.collection, "admin", "truncateCollection", data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          if (listener != null) {
+            try {
+              listener.onSuccess(response.getJSONObject("result").getBoolean("acknowledged"));
+            } catch (JSONException e) {
+              throw new RuntimeException(e);
+            }
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
+        }
+      });
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
@@ -727,7 +927,7 @@ public class KuzzleDataCollection {
    * @param content    the content
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection updateDocument(String documentId, KuzzleDocument content) {
+  public KuzzleDataCollection updateDocument(@NonNull final String documentId, @NonNull final KuzzleDocument content) {
     return this.updateDocument(documentId, content, null, null);
   }
 
@@ -739,7 +939,7 @@ public class KuzzleDataCollection {
    * @param options    the options
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection updateDocument(String documentId, KuzzleDocument content, KuzzleOptions options) {
+  public KuzzleDataCollection updateDocument(@NonNull final String documentId, @NonNull final KuzzleDocument content, final KuzzleOptions options) {
     return this.updateDocument(documentId, content, options, null);
   }
 
@@ -751,7 +951,7 @@ public class KuzzleDataCollection {
    * @param listener   the listener
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection updateDocument(String documentId, KuzzleDocument content, ResponseListener listener) {
+  public KuzzleDataCollection updateDocument(@NonNull final String documentId, @NonNull final KuzzleDocument content, final KuzzResponseListener<KuzzleDocument> listener) {
     return this.updateDocument(documentId, content, null, listener);
   }
 
@@ -764,27 +964,37 @@ public class KuzzleDataCollection {
    * @param listener   the listener
    * @return kuzzle data collection
    */
-  public KuzzleDataCollection updateDocument(String documentId, KuzzleDocument content, KuzzleOptions options, final ResponseListener listener) {
+  public KuzzleDataCollection updateDocument(@NonNull final String documentId, @NonNull final KuzzleDocument content, final KuzzleOptions options, final KuzzResponseListener<KuzzleDocument> listener) {
+    if (documentId == null) {
+      throw new IllegalArgumentException("KuzzleDataCollection.updateDocument: documentId required");
+    }
+    if (content == null) {
+      throw new IllegalArgumentException("KuzzleDataCollection.updateDocument: content required");
+    }
     JSONObject data = new JSONObject();
     try {
       this.kuzzle.addHeaders(data, this.kuzzle.getHeaders());
       data.put("_id", documentId);
       data.put("body", content.getContent());
-      if (listener == null) {
-        this.kuzzle.query(this.collection, "write", "update", data, options, null);
-      } else {
-        this.kuzzle.query(this.collection, "write", "update", data, options, new ResponseListener() {
-          @Override
-          public void onSuccess(JSONObject object) {
-            listener.onSuccess(object);
+      this.kuzzle.query(this.collection, "write", "update", data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          if (listener != null) {
+            try {
+              listener.onSuccess(new KuzzleDocument(KuzzleDataCollection.this, response.getString("_id"), response.getJSONObject("result")));
+            } catch (JSONException e) {
+              throw new RuntimeException(e);
+            }
           }
+        }
 
-          @Override
-          public void onError(JSONObject error) {
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
             listener.onError(error);
           }
-        });
-      }
+        }
+      });
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }

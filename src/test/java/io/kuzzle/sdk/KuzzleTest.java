@@ -12,7 +12,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleDataCollection;
@@ -21,7 +20,8 @@ import io.kuzzle.sdk.core.KuzzleRoom;
 import io.kuzzle.sdk.enums.EventType;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.IEventListener;
-import io.kuzzle.sdk.listeners.ResponseListener;
+import io.kuzzle.sdk.listeners.KuzzResponseListener;
+import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.util.KuzzleQueryObject;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -34,6 +34,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -45,6 +46,7 @@ public class KuzzleTest {
 
   private Kuzzle kuzzle;
   private Socket s;
+  private KuzzResponseListener  listener;
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -53,6 +55,17 @@ public class KuzzleTest {
     kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     s = mock(Socket.class);
     kuzzle.setSocket(s);
+    listener = new KuzzResponseListener<Object>() {
+      @Override
+      public void onSuccess(Object object) {
+
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+
+      }
+    };
   }
 
   @Test
@@ -68,15 +81,7 @@ public class KuzzleTest {
     }).when(s).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options, new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-      }
-    });
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options, mock(KuzzResponseListener.class));
     kuzzle.setSocket(s);
     kuzzle.connect();
     verify(s).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
@@ -94,15 +99,10 @@ public class KuzzleTest {
 
   @Test
   public void testKuzzleConstructor() throws URISyntaxException, JSONException {
-    assertNotNull(kuzzle);
-    KuzzleOptions options = new KuzzleOptions();
-    options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex");
-    Kuzzle kuzzleSpy = spy(kuzzle);
+    kuzzle = spy(kuzzle);
     assertEquals(kuzzle.getIndex(), "testIndex");
     assertNotNull(kuzzle);
-    verify(kuzzleSpy, never()).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
-
+    verify(kuzzle, never()).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test(expected = RuntimeException.class)
@@ -114,21 +114,14 @@ public class KuzzleTest {
   @Test
   public void testAddListener() {
     assertEquals(kuzzle.getEventListeners(), new ArrayList<IEventListener>());
-    IEventListener event = new IEventListener() {
-      @Override
-      public void trigger(Object... args) {
-      }
-    };
-    List<IEventListener> listenerList = new ArrayList<>();
-    listenerList.add(event);
-    kuzzle.addListener(EventType.CONNECTED, event);
+    kuzzle.addListener(EventType.CONNECTED, mock(IEventListener.class));
     assertEquals(kuzzle.getEventListeners().get(0).getType(), EventType.CONNECTED);
   }
 
   @Test
   public void testDataCollectionFactory() {
-    assertEquals(kuzzle.dataCollectionFactory("test").fetchDocument("test", null).getCollection(), "test");
-    assertEquals(kuzzle.dataCollectionFactory("test2").fetchDocument("test2", null).getCollection(), "test2");
+    assertEquals(kuzzle.dataCollectionFactory("test").fetchDocument("test", mock(KuzzResponseListener.class)).getCollection(), "test");
+    assertEquals(kuzzle.dataCollectionFactory("test2").fetchDocument("test2", mock(KuzzResponseListener.class)).getCollection(), "test2");
   }
 
   @Test
@@ -138,11 +131,47 @@ public class KuzzleTest {
     assertNull(kuzzle.getSocket());
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testNowIllegalListener() {
+    kuzzle = spy(kuzzle);
+    kuzzle.now(null);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testNowException() throws JSONException {
+    listener = spy(listener);
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(listener).onSuccess(any(JSONObject.class));
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener)invocation.getArguments()[5]).onSuccess(new JSONObject().put("result", new JSONObject().put("now", mock(JSONObject.class))));
+        return null;
+      }
+    }).when(kuzzle).query(any(String.class), eq("read"), eq("now"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.now(listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testNowQueryException() throws JSONException {
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(kuzzle).query(any(String.class), eq("read"), eq("now"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.now(listener);
+  }
+
   @Test
-  public void testNow() {
-    Kuzzle kuzzleSpy = spy(kuzzle);
-    kuzzleSpy.now(null);
-    verify(kuzzleSpy).now(any(ResponseListener.class));
+  public void testNow() throws JSONException {
+    kuzzle = spy(kuzzle);
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener)invocation.getArguments()[5]).onSuccess(new JSONObject().put("result", new JSONObject().put("now", 42424242)));
+        ((OnQueryDoneListener)invocation.getArguments()[5]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzle).query(any(String.class), eq("read"), eq("now"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.now(listener);
+    verify(kuzzle).query(any(String.class), eq("read"), eq("now"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test(expected = IndexOutOfBoundsException.class)
@@ -165,24 +194,14 @@ public class KuzzleTest {
   @Test
   public void testRemoveListener() {
     assertNotNull(kuzzle.getSocket());
-    Kuzzle spy = spy(kuzzle);
-    IEventListener event = new IEventListener() {
-      @Override
-      public void trigger(Object... args) {
-      }
-    };
-    String id = spy.addListener(EventType.DISCONNECTED, event);
-    String id2 = spy.addListener(EventType.CONNECTED, event);
-    assertEquals(spy.getEventListeners().get(0).getType(), EventType.DISCONNECTED);
-    assertEquals(spy.getEventListeners().get(1).getType(), EventType.CONNECTED);
-    spy.removeListener(id2);
-    spy.removeListener(id);
-    assertEquals(spy.getEventListeners().size(), 0);
-  }
-
-  @Test
-  public void testReplayQueue() {
-
+    kuzzle = spy(kuzzle);
+    String id = kuzzle.addListener(EventType.DISCONNECTED, mock(IEventListener.class));
+    String id2 = kuzzle.addListener(EventType.CONNECTED, mock(IEventListener.class));
+    assertEquals(kuzzle.getEventListeners().get(0).getType(), EventType.DISCONNECTED);
+    assertEquals(kuzzle.getEventListeners().get(1).getType(), EventType.CONNECTED);
+    kuzzle.removeListener(id2);
+    kuzzle.removeListener(id);
+    assertEquals(kuzzle.getEventListeners().size(), 0);
   }
 
   @Test
@@ -241,28 +260,76 @@ public class KuzzleTest {
     assertEquals(jsonObj.getJSONObject("metadata").getString("foo"), "bar");
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testGetAllStatisticsNoListener() {
+    kuzzle.getAllStatistics(null);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testGetAllStatisticsException() throws JSONException {
+    listener = spy(listener);
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(listener).onSuccess(any(JSONObject.class));
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener)invocation.getArguments()[5]).onSuccess(new JSONObject().put("result", new JSONObject().put("hits", mock(JSONObject.class))));
+        return null;
+      }
+    }).when(kuzzle).query(any(String.class), eq("admin"), eq("getAllStats"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.getAllStatistics(listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testGetAllStatisticsQueryException() throws JSONException {
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(kuzzle).query(any(String.class), eq("admin"), eq("getAllStats"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.getAllStatistics(listener);
+  }
+
   @Test
   public void testGetAllStatsSuccess() throws JSONException {
-    Kuzzle spy = spy(kuzzle);
+    kuzzle = spy(kuzzle);
 
-    final JSONObject response = new JSONObject("{\"statistics\":[{\"connections\":{},\"ongoingRequests\":{},\"completedRequests\":{},\"failedRequests\":{},\"timestamp\":\"2015-12-11T09:19:25.153Z\"},{\"connections\":{},\"ongoingRequests\":{},\"completedRequests\":{},\"failedRequests\":{},\"timestamp\":\"2015-12-11T09:19:35.155Z\"}],\"requestId\":\"aad7549d-6bd9-43da-a07f-773d36e4a9cd\",\"controller\":\"admin\",\"action\":\"getAllStats\",\"metadata\":{},\"_source\":{},\"state\":\"done\"}");
+    final JSONObject response = new JSONObject("{\n" +
+        "    \"total\": 25,\n" +
+        "    \"hits\": [\n" +
+        "      {\n" +
+        "        \"completedRequests\": {\n" +
+        "          \"websocket\": 148,\n" +
+        "          \"rest\": 24,\n" +
+        "          \"mq\": 78\n" +
+        "        },\n" +
+        "        \"failedRequests\": {\n" +
+        "          \"websocket\": 3\n" +
+        "        },\n" +
+        "        \"ongoingRequests\": {\n" +
+        "          \"mq\": 8,\n" +
+        "          \"rest\": 2\n" +
+        "        },\n" +
+        "        \"connections\": {\n" +
+        "          \"websocket\": 13\n" +
+        "        },\n" +
+        "        \"timestamp\": \"2016-01-13T13:46:19.917Z\"\n" +
+        "      }\n" +
+        "    ]\n" +
+        "  }\n");
 
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((ResponseListener) invocation.getArguments()[5]).onSuccess(response);
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(new JSONObject().put("result", response));
         return null;
       }
-    }).when(spy).query(any(String.class), eq("admin"), eq("getAllStats"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
-    spy.getAllStatistics(new ResponseListener() {
+    }).when(kuzzle).query(any(String.class), eq("admin"), eq("getAllStats"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.getAllStatistics(new KuzzResponseListener<JSONArray>() {
       @Override
-      public void onSuccess(JSONObject object) {
+      public void onSuccess(JSONArray result) {
         try {
-          JSONArray array = object.getJSONArray("statistics");
-          for (int i = 0; i < array.length(); i++) {
-            for (Iterator ite = array.getJSONObject(i).keys(); ite.hasNext(); ) {
+          for (int i = 0; i < result.length(); i++) {
+            for (Iterator ite = result.getJSONObject(i).keys(); ite.hasNext(); ) {
               String key = (String) ite.next();
-              assertEquals(array.getJSONObject(i).get(key), response.getJSONArray("statistics").getJSONObject(i).get(key));
+              assertEquals(result.getJSONObject(i).get(key), response.getJSONArray("hits").getJSONObject(i).get(key));
             }
           }
         } catch (JSONException e) {
@@ -275,25 +342,25 @@ public class KuzzleTest {
 
       }
     });
-    verify(spy, times(1)).query(any(String.class), eq("admin"), eq("getAllStats"), any(JSONObject.class), any(ResponseListener.class));
+    verify(kuzzle, times(1)).query(any(String.class), eq("admin"), eq("getAllStats"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
   public void testGetAllStatsError() throws JSONException {
-    Kuzzle spy = spy(kuzzle);
+    kuzzle = spy(kuzzle);
 
     final JSONObject responseError = new JSONObject();
     responseError.put("error", "rorre");
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((ResponseListener) invocation.getArguments()[5]).onError(responseError);
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(responseError);
         return null;
       }
-    }).when(spy).query(any(String.class), eq("admin"), eq("getAllStats"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
-    spy.getAllStatistics(new ResponseListener() {
+    }).when(kuzzle).query(any(String.class), eq("admin"), eq("getAllStats"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.getAllStatistics(new KuzzResponseListener<JSONArray>() {
       @Override
-      public void onSuccess(JSONObject object) {
+      public void onSuccess(JSONArray object) {
       }
 
       @Override
@@ -305,90 +372,140 @@ public class KuzzleTest {
         }
       }
     });
-    verify(spy, times(1)).query(any(String.class), eq("admin"), eq("getAllStats"), any(JSONObject.class), any(ResponseListener.class));
+    verify(kuzzle, times(1)).query(any(String.class), eq("admin"), eq("getAllStats"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
   public void testGetLastStatistic() throws JSONException {
-    Kuzzle spy = spy(kuzzle);
-    final JSONObject response = new JSONObject();
-    JSONObject stats = new JSONObject();
-    JSONObject frame = new JSONObject();
-
-    stats.put("connections", new JSONObject());
-    stats.put("ongoingRequests", new JSONObject());
-    stats.put("completedRequests", new JSONObject());
-    stats.put("failedRequests", new JSONObject());
-    frame.put("2015-11-16T13:36:45.558Z", stats);
-    response.put("statistics", frame);
-
-    final JSONObject responseCallback = new JSONObject();
-    String firstKey = response.getJSONObject("statistics").keys().next();
-    JSONObject oFrame = response.getJSONObject("statistics").getJSONObject(firstKey);
-    frame.put("timestamp", firstKey);
-    responseCallback.put("statistics", oFrame);
-
+    kuzzle = spy(kuzzle);
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((ResponseListener) invocation.getArguments()[5]).onSuccess(response);
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(new JSONObject("{ result: {\n" +
+            "    completedRequests: {\n" +
+            "      websocket: 148,\n" +
+            "      rest: 24,\n" +
+            "      mq: 78\n" +
+            "    },\n" +
+            "    failedRequests: {\n" +
+            "      websocket: 3\n" +
+            "    },\n" +
+            "    ongoingRequests: {\n" +
+            "      mq: 8,\n" +
+            "      rest: 2\n" +
+            "    },\n" +
+            "    connections: {\n" +
+            "      websocket: 13\n" +
+            "    },\n" +
+            "    \"timestamp\": \"2016-01-13T13:46:19.917Z\"\n" +
+            "  }" +
+            "}"));
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(spy).query(any(String.class), eq("admin"), eq("getStats"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
-    spy.getStatistics(null, new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-      }
+    }).when(kuzzle).query(any(String.class), eq("admin"), eq("getLastStats"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.getStatistics(mock(KuzzResponseListener.class));
+    verify(kuzzle, times(1)).query(any(String.class), eq("admin"), eq("getLastStats"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+  }
 
-      @Override
-      public void onError(JSONObject error) {
+  @Test(expected = IllegalArgumentException.class)
+  public void testGetStatisticsWithoutListener() {
+    kuzzle.getStatistics(null);
+  }
 
+  @Test(expected = RuntimeException.class)
+  public void testGetLastStatisticsException() throws JSONException {
+    listener = spy(listener);
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(listener).onSuccess(any(JSONObject.class));
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener)invocation.getArguments()[5]).onSuccess(new JSONObject().put("result", mock(JSONObject.class)));
+        return null;
       }
-    });
-    verify(spy, times(1)).query(any(String.class), eq("admin"), eq("getStats"), any(JSONObject.class), any(ResponseListener.class));
+    }).when(kuzzle).query(any(String.class), eq("admin"), eq("getLastStats"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.getStatistics(listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testGetLastStatisticsQueryException() throws JSONException {
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(kuzzle).query(any(String.class), eq("admin"), eq("getLastStats"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.getStatistics(listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testGetStatisticsException() throws JSONException {
+    listener = spy(listener);
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(listener).onSuccess(any(JSONArray.class));
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(new JSONObject().put("result", new JSONObject().put("hits", mock(JSONArray.class))));
+        return null;
+      }
+    }).when(kuzzle).query(any(String.class), eq("admin"), eq("getStats"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.getStatistics(new Date().toString(), listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testGetStatisticsQueryException() throws JSONException {
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(kuzzle).query(any(String.class), eq("admin"), eq("getStats"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.getStatistics(new Date().toString(), listener);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testGetStatsIllegalListener() {
+    kuzzle.getStatistics(new Date().toString(), null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testGetStatsIllegalTimestamp() {
+    kuzzle.getStatistics((String)null, mock(KuzzResponseListener.class));
   }
 
   @Test
-  public void testGetStatistic() throws JSONException {
-    Kuzzle spy = spy(kuzzle);
-    final JSONObject response = new JSONObject();
-    JSONObject stats = new JSONObject();
-    JSONObject frame = new JSONObject();
-
-    stats.put("connections", new JSONObject());
-    stats.put("ongoingRequests", new JSONObject());
-    stats.put("completedRequests", new JSONObject());
-    stats.put("failedRequests", new JSONObject());
-    frame.put("2015-11-16T13:36:45.558Z", stats);
-    response.put("statistics", frame);
-
-    final JSONObject responseCallback = new JSONObject();
-    String firstKey = response.getJSONObject("statistics").keys().next();
-    JSONObject oFrame = response.getJSONObject("statistics").getJSONObject(firstKey);
-    frame.put("timestamp", firstKey);
-    responseCallback.put("statistics", oFrame);
+  public void testGetStatistics() throws JSONException {
+    kuzzle = spy(kuzzle);
+    final JSONObject response = new JSONObject("{ result: {\n" +
+        "    total: 25,\n" +
+        "    hits: [\n" +
+        "      {\n" +
+        "        completedRequests: {\n" +
+        "          websocket: 148,\n" +
+        "          rest: 24,\n" +
+        "          mq: 78\n" +
+        "        },\n" +
+        "        failedRequests: {\n" +
+        "          websocket: 3\n" +
+        "        },\n" +
+        "        ongoingRequests: {\n" +
+        "          mq: 8,\n" +
+        "          rest: 2\n" +
+        "        },\n" +
+        "        connections: {\n" +
+        "          websocket: 13\n" +
+        "        },\n" +
+        "        \"timestamp\": \"2016-01-13T13:46:19.917Z\"\n" +
+        "      },\n" +
+        "      ...\n" +
+        "    ]\n" +
+        "  }" +
+        "}");
 
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((ResponseListener) invocation.getArguments()[5]).onSuccess(response);
-        ((ResponseListener) invocation.getArguments()[5]).onError(null);
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(response);
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(null);
         return null;
       }
-    }).when(spy).query(any(String.class), eq("admin"), eq("getStats"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
-    spy.getStatistics(null);
-    spy.getStatistics("2015-11-15T13:36:45.558Z", new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    verify(spy, times(2)).query(any(String.class), eq("admin"), eq("getStats"), any(JSONObject.class), any(ResponseListener.class));
+    }).when(kuzzle).query(any(String.class), eq("admin"), eq("getStats"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.getStatistics("2015-11-15T13:36:45.558Z", mock(KuzzResponseListener.class));
+    verify(kuzzle, times(1)).query(any(String.class), eq("admin"), eq("getStats"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
@@ -458,18 +575,8 @@ public class KuzzleTest {
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
     kuzzle.connect();
-    kuzzle.query("test", "test", "test", new JSONObject(), new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    kuzzle.query("test2", "test2", "test2", new JSONObject());
+    kuzzle.query("test", "test", "test", mock(JSONObject.class), mock(OnQueryDoneListener.class));
+    kuzzle.query("test2", "test2", "test2", mock(JSONObject.class));
     kuzzle.query("test3", "test3", "test3", new JSONObject());
     assertEquals(kuzzle.getOfflineQueue().size(), 1);
     assertEquals(kuzzle.getOfflineQueue().peek().getQuery().getString("controller"), "test3");
@@ -503,17 +610,7 @@ public class KuzzleTest {
     kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     kuzzle.setSocket(s);
     kuzzle.connect();
-    kuzzle.query("test", "test", "test", query, null, new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
+    kuzzle.query("test", "test", "test", query, null, mock(OnQueryDoneListener.class));
     verify(s, atLeastOnce()).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
     verify(s, atLeastOnce()).once(eq(Socket.EVENT_CONNECT_ERROR), any(Emitter.Listener.class));
     verify(s, atLeastOnce()).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
@@ -572,19 +669,7 @@ public class KuzzleTest {
     options.setConnect(Mode.MANUAL);
     options.setAutoReconnect(true);
     options.setOfflineMode(Mode.AUTO);
-    ResponseListener listener = new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    };
-    ResponseListener spyListener = spy(listener);
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options, spyListener);
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options, mock(KuzzResponseListener.class));
     kuzzle.setSocket(s);
     final Kuzzle kuzzleSpy = spy(kuzzle);
     kuzzleSpy.setAutoReconnect(true);
@@ -606,73 +691,47 @@ public class KuzzleTest {
       }
     }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
     kuzzleSpy.connect();
-    verify(kuzzleSpy, times(2)).query(any(String.class), eq("subscribe"), eq("on"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    verify(kuzzleSpy, times(2)).query(any(String.class), eq("subscribe"), eq("on"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(kuzzleSpy.getSubscriptions().size(), 2);
   }
 
   @Test
   public void testAutoReconnect() {
     kuzzle.setAutoReconnect(false);
-    final Kuzzle  kuzzleSpy = spy(kuzzle);
+    kuzzle = spy(kuzzle);
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
         ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
-        kuzzleSpy.setSocket(s);
+        kuzzle.setSocket(s);
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
-    kuzzleSpy.connect();
-    verify(kuzzleSpy, times(1)).disconnect();
+    kuzzle.connect();
+    verify(kuzzle, times(1)).disconnect();
   }
 
   @Test
   public void testConnectNotValid() throws URISyntaxException {
-    ResponseListener listener = new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    };
-    ResponseListener spy = spy(listener);
+    listener = spy(listener);
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", spy);
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", listener);
     kuzzle.setSocket(s);
-    Kuzzle kuzzleSpy = spy(kuzzle);
-    when(kuzzleSpy.isValidState()).thenReturn(false);
-    kuzzleSpy.connect();
-    verify(spy, atLeastOnce()).onSuccess(any(JSONObject.class));
+    kuzzle = spy(kuzzle);
+    when(kuzzle.isValidState()).thenReturn(false);
+    kuzzle.connect();
+    verify(listener, atLeastOnce()).onSuccess(any(JSONObject.class));
   }
 
   @Test
   public void testOnConnectError() throws URISyntaxException {
-    ResponseListener listener = new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-        try {
-          assertEquals(object.get("message"), "foo");
-        } catch (JSONException e) {
-          e.printStackTrace();
-        }
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    };
-    ResponseListener listenerSpy = spy(listener);
+    listener = spy(listener);
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options, listenerSpy);
+    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options, listener);
     kuzzle.setSocket(s);
-    Kuzzle kuzzleSpy = spy(kuzzle);
+    kuzzle = spy(kuzzle);
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -682,8 +741,8 @@ public class KuzzleTest {
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_CONNECT_ERROR), any(Emitter.Listener.class));
-    kuzzleSpy.connect();
-    verify(listenerSpy, times(1)).onSuccess(any(JSONObject.class));
+    kuzzle.connect();
+    verify(listener, times(1)).onError(any(JSONObject.class));
   }
 
   @Test
@@ -708,6 +767,33 @@ public class KuzzleTest {
     assertEquals(kuzzle.getOfflineQueue().size(), 0);
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testListCollectionsWithIllegalListener() {
+    kuzzle.listCollections(null);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testListCollectionException() throws JSONException {
+    listener = spy(listener);
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(listener).onSuccess(any(JSONArray.class));
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(new JSONObject().put("result", new JSONObject().put("collections", mock(JSONArray.class))));
+        return null;
+      }
+    }).when(kuzzle).query(any(String.class), eq("read"), eq("listCollections"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.listCollections(listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testListCollectionQueryException() throws JSONException {
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(kuzzle).query(any(String.class), eq("read"), eq("listCollections"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.listCollections(listener);
+  }
+
   @Test
   public void testListCollections() throws URISyntaxException, JSONException {
     KuzzleOptions options = new KuzzleOptions();
@@ -718,12 +804,19 @@ public class KuzzleTest {
     options.setOfflineMode(Mode.AUTO);
 
     kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
-    Kuzzle kuzzleSpy = spy(kuzzle);
-    kuzzleSpy.listCollections();
-    kuzzleSpy.listCollections(options);
-    kuzzleSpy.listCollections(mock(ResponseListener.class));
-    kuzzleSpy.listCollections(options, mock(ResponseListener.class));
-    verify(kuzzleSpy, times(4)).query(any(String.class), eq("read"), eq("listCollections"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    kuzzle = spy(kuzzle);
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(new JSONObject().put("result", new JSONObject().put("collections", mock(JSONArray.class))));
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzle).query(any(String.class), eq("read"), eq("listCollections"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+
+    kuzzle.listCollections(mock(KuzzResponseListener.class));
+    kuzzle.listCollections(options, mock(KuzzResponseListener.class));
+    verify(kuzzle, times(2)).query(any(String.class), eq("read"), eq("listCollections"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
@@ -770,20 +863,20 @@ public class KuzzleTest {
     KuzzleOptions options = new KuzzleOptions();
     kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     kuzzle.connect();
-    kuzzle.listCollections(options);
+    kuzzle.listCollections(mock(KuzzResponseListener.class));
     assertEquals(kuzzle.getOfflineQueue().size(), 1);
     kuzzle.flushQueue();
     options.setQueuable(false);
-    kuzzle.listCollections(options);
+    kuzzle.listCollections(options, mock(KuzzResponseListener.class));
     assertEquals(kuzzle.getOfflineQueue().size(), 0);
   }
 
   @Test
   public void testDeleteSubscription() throws JSONException {
     kuzzle.setHeaders(new JSONObject());
-    Kuzzle kuzzleSpy = spy(kuzzle);
+    kuzzle = spy(kuzzle);
     KuzzleDataCollection collection = mock(KuzzleDataCollection.class);
-    when(collection.getKuzzle()).thenReturn(kuzzleSpy);
+    when(collection.getKuzzle()).thenReturn(kuzzle);
     when(collection.getHeaders()).thenReturn(new JSONObject());
     KuzzleRoom room = new KuzzleRoom(collection);
     doAnswer(new Answer() {
@@ -794,14 +887,26 @@ public class KuzzleTest {
         result.put("roomId", "42");
         result.put("channel", "channel");
         //Call callback with response
-        ((ResponseListener) invocation.getArguments()[5]).onSuccess(result);
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(new JSONObject().put("result", result));
         return null;
       }
-    }).when(kuzzleSpy).query(any(String.class), eq("subscribe"), eq("on"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    }).when(kuzzle).query(any(String.class), eq("subscribe"), eq("on"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        //Mock response
+        JSONObject result = new JSONObject();
+        result.put("roomId", "42");
+        result.put("channel", "channel");
+        //Call callback with response
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(new JSONObject().put("result", result));
+        return null;
+      }
+    }).when(kuzzle).query(any(String.class), eq("subscribe"), eq("off"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     room.renew(new JSONObject(), null);
-    assertEquals(kuzzleSpy.getSubscriptions().size(), 1);
+    assertEquals(kuzzle.getSubscriptions().size(), 1);
     room.unsubscribe();
-    assertEquals(kuzzleSpy.getSubscriptions().size(), 0);
+    assertEquals(kuzzle.getSubscriptions().size(), 0);
   }
 
   @Test
@@ -847,8 +952,8 @@ public class KuzzleTest {
     options.setQueuable(false);
     kuzzle = new Kuzzle("http://localhost:7512", "index", options);
     kuzzle.setSocket(s);
-    Kuzzle kuzzleSpy = spy(kuzzle);
-    kuzzleSpy.setSocket(s);
+    kuzzle = spy(kuzzle);
+    kuzzle.setSocket(s);
 
     final JSONObject mockResponse = new JSONObject();
     mockResponse.put("requestId", "42");
@@ -856,11 +961,11 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((ResponseListener) invocation.getArguments()[5]).onSuccess(mockResponse);
-        ((ResponseListener) invocation.getArguments()[5]).onError(mock(JSONObject.class));
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(mockResponse);
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzleSpy).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    }).when(kuzzle).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -868,10 +973,10 @@ public class KuzzleTest {
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
-    kuzzleSpy.connect();
-    verify(kuzzleSpy, times(1)).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    kuzzle.connect();
+    verify(kuzzle, times(1)).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     // check if token
-    kuzzle.query("collection", "controller", "action", mockResponse, options, mock(ResponseListener.class));
+    kuzzle.query("collection", "controller", "action", mockResponse, options, mock(OnQueryDoneListener.class));
     verify(s).emit(eq("kuzzle"), eq(mockResponse));
   }
 
@@ -879,32 +984,23 @@ public class KuzzleTest {
   public void testLogin() throws JSONException {
     Kuzzle kuzzleSpy = spy(kuzzle);
     kuzzleSpy.setSocket(s);
-    ResponseListener listenerSpy = spy(new ResponseListener() {
-      @Override
-      public void onSuccess(JSONObject object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
+    KuzzResponseListener listenerSpy = spy(listener);
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((ResponseListener) invocation.getArguments()[5]).onSuccess(mock(JSONObject.class));
-        ((ResponseListener) invocation.getArguments()[5]).onError(mock(JSONObject.class));
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(new JSONObject().put("_type", "type"));
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzleSpy).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    }).when(kuzzleSpy).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     kuzzleSpy.login("local", "username", "password");
     kuzzleSpy.login("local", "username", "password", 42);
     kuzzleSpy.login("local", "username", "password", 42, new KuzzleOptions());
-    kuzzleSpy.login("local", "username", "password", 42, new KuzzleOptions(), mock(ResponseListener.class));
+    kuzzleSpy.login("local", "username", "password", 42, new KuzzleOptions(), listenerSpy);
     kuzzleSpy.login("local", "username", "password", 42, listenerSpy);
     kuzzleSpy.login("local", "username", "password", new KuzzleOptions());
-    verify(kuzzleSpy, times(6)).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    kuzzleSpy.login("local", "username", "password", new KuzzleOptions(), listenerSpy);
+    verify(kuzzleSpy, times(7)).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     verify(listenerSpy, atLeastOnce()).onSuccess(any(JSONObject.class));
   }
 
@@ -919,41 +1015,42 @@ public class KuzzleTest {
     options.setQueuable(false);
     kuzzle = new Kuzzle("http://localhost:7512", "index", options);
     kuzzle.setSocket(s);
-    Kuzzle kuzzleSpy = spy(kuzzle);
-    kuzzleSpy.setSocket(s);
+    kuzzle = spy(kuzzle);
+    kuzzle.setSocket(s);
 
     final JSONObject response = new JSONObject();
     response.put("jwt", "jwtToken");
     response.put("requestId", "42");
+    response.put("_type", "collection");
 
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((ResponseListener) invocation.getArguments()[5]).onSuccess(response);
-        ((ResponseListener) invocation.getArguments()[5]).onError(mock(JSONObject.class));
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(response);
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzleSpy).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    }).when(kuzzle).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    kuzzleSpy.login("local", "username", "password");
+    kuzzle.login("local", "username", "password");
 
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((ResponseListener) invocation.getArguments()[5]).onSuccess(null);
-        ((ResponseListener) invocation.getArguments()[5]).onError(mock(JSONObject.class));
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(response);
+        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzleSpy).query(any(String.class), eq("auth"), eq("logout"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    }).when(kuzzle).query(any(String.class), eq("auth"), eq("logout"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    kuzzleSpy.logout();
-    kuzzleSpy.logout(mock(ResponseListener.class));
-    kuzzleSpy.logout(mock(KuzzleOptions.class));
-    kuzzleSpy.logout(mock(KuzzleOptions.class), mock(ResponseListener.class));
-    verify(kuzzleSpy, times(1)).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
-    verify(kuzzleSpy, times(4)).query(any(String.class), eq("auth"), eq("logout"), any(JSONObject.class), any(KuzzleOptions.class), any(ResponseListener.class));
+    kuzzle.logout();
+    kuzzle.logout(mock(KuzzResponseListener.class));
+    kuzzle.logout(mock(KuzzleOptions.class));
+    kuzzle.logout(mock(KuzzleOptions.class), mock(KuzzResponseListener.class));
+    verify(kuzzle, times(1)).query(any(String.class), eq("auth"), eq("login"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(4)).query(any(String.class), eq("auth"), eq("logout"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     response.remove("jwt");
-    kuzzle.query("collection", "controller", "action", response, options, mock(ResponseListener.class));
+    kuzzle.query("collection", "controller", "action", response, options, mock(OnQueryDoneListener.class));
     verify(s).emit(eq("kuzzle"), eq(response));
   }
 

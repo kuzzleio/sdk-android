@@ -55,7 +55,7 @@ KuzzleDocument myDocument = new KuzzleDocument(myCollection);
 myDocument.setContent("foo", "bar");
 // Persist the document
 myDocument.save();
-// Send it on real time (non persistent)
+// Send it on real time (not persistent)
 myDocument.publish();
 ```
     

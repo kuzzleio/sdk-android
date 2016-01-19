@@ -5,13 +5,13 @@ import org.json.JSONObject;
 /**
  * The interface Response listener.
  */
-public interface ResponseListener {
+public interface KuzzResponseListener<T> {
   /**
    * On success.
    *
-   * @param object the object
+   * @param response the object
    */
-  void onSuccess(JSONObject object);
+  void onSuccess(T response);
 
   /**
    * On error.
