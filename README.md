@@ -22,19 +22,17 @@ You can configure your android project to get the Kuzzle's android SDK from jcen
             jcenter()
         }
     }
-    compile 'io.kuzzle:sdk-android:1.1.4'
+    compile 'io.kuzzle:sdk-android:1.2.0'
 
 ## Basic usage
 
 ```java
-Kuzzle kuzzle = new Kuzzle("http://host.url", "index",new ResponseListener() {
+Kuzzle kuzzle = new Kuzzle("http://host.url", "index", new ResponseListener<Void>() {
 @Override
-public void onSuccess(JSONObject object) {
+public void onSuccess(Void object) {
     // Handle success
-    JSONObject doc = new JSONObject();
-    doc.put("name", "bar");
-    kuzzle.dataCollectionFactory("foo")
-          .createDocument(doc);
+    KuzzleDocument doc = new KuzzleDocument(dataCollection);
+    doc.setContent("foo", "bar").save();
 }
     
 @Override
@@ -44,7 +42,7 @@ public void onError(JSONObject error) {
 });
 ```
 
-## With KuzzleDocument
+## KuzzleDocument
 
 KuzzleDocument is an encapsulation of a JSONObject.
 
