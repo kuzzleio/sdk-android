@@ -89,8 +89,8 @@ public class KuzzleDocumentTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(new JSONObject().put("result", new JSONObject().put("_id", "42").put("_version", "42")));
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(mock(JSONObject.class));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("_id", "42").put("_version", "42")));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
     }).when(k).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
@@ -108,11 +108,11 @@ public class KuzzleDocumentTest {
         response.put("_id", "id-42");
         response.put("_version", "42");
         response.put("result", response);
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(response);
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(null);
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(null);
         return null;
       }
-    }).when(k).query(eq(QueryArgsHelper.makeQueryArgs("write", "createOrUpdate")), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(k).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     doc.save();
     doc.save(new KuzzleOptions());
     doc.save(new KuzzleResponseListener<KuzzleDocument>() {
@@ -184,8 +184,8 @@ public class KuzzleDocumentTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(mock(JSONObject.class));
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(mock(JSONObject.class));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(mock(JSONObject.class));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
     }).when(k).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
@@ -209,11 +209,11 @@ public class KuzzleDocumentTest {
         source.put("foo", "bar");
         response.put("_source", source);
         response.put("_version", "42");
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(response);
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(null);
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(null);
         return null;
       }
-    }).when(k).query(eq(QueryArgsHelper.makeQueryArgs("read", "get")), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(k).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     doc.setId("42");
     doc.setContent("foo", "baz");
     doc.refresh(new KuzzleResponseListener<KuzzleDocument>() {
@@ -393,7 +393,7 @@ public class KuzzleDocumentTest {
         response.put("_source", source);
         response.put("_version", "42");
         response.put("_id", "id");
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(new JSONObject().put("result", response));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", response));
         return null;
       }
     }).when(k).query(eq(QueryArgsHelper.makeQueryArgs("write", "createOrUpdate")), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));

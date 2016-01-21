@@ -103,7 +103,7 @@ public class KuzzleTest {
     kuzzle = spy(kuzzle);
     assertEquals(kuzzle.getIndex(), "testIndex");
     assertNotNull(kuzzle);
-    verify(kuzzle, never()).query(eq(QueryArgsHelper.makeQueryArgs("auth", "login")), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, never()).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test(expected = RuntimeException.class)
@@ -146,7 +146,7 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener)invocation.getArguments()[5]).onSuccess(new JSONObject().put("result", new JSONObject().put("now", mock(JSONObject.class))));
+        ((OnQueryDoneListener)invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("now", mock(JSONObject.class))));
         return null;
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
@@ -166,11 +166,11 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener)invocation.getArguments()[5]).onSuccess(new JSONObject().put("result", new JSONObject().put("now", 42424242)));
-        ((OnQueryDoneListener)invocation.getArguments()[5]).onError(mock(JSONObject.class));
+        ((OnQueryDoneListener)invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("now", 42424242)));
+        ((OnQueryDoneListener)invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzle).query(eq(QueryArgsHelper.makeQueryArgs("read", "now")), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     kuzzle.now(listener);
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
@@ -277,7 +277,7 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener)invocation.getArguments()[5]).onSuccess(new JSONObject().put("result", new JSONObject().put("hits", mock(JSONObject.class))));
+        ((OnQueryDoneListener)invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("hits", mock(JSONObject.class))));
         return null;
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
@@ -321,6 +321,7 @@ public class KuzzleTest {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", response));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
@@ -359,7 +360,7 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(responseError);
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(responseError);
         return null;
       }
     }).when(kuzzle).query(eq(QueryArgsHelper.makeQueryArgs("admin", "getAllStats")), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
@@ -389,7 +390,7 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(new JSONObject("{ result: {\n" +
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject("{ result: {\n" +
             "    completedRequests: {\n" +
             "      websocket: 148,\n" +
             "      rest: 24,\n" +
@@ -408,10 +409,11 @@ public class KuzzleTest {
             "    \"timestamp\": \"2016-01-13T13:46:19.917Z\"\n" +
             "  }" +
             "}"));
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(mock(JSONObject.class));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", mock(JSONObject.class)));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzle).query(eq(QueryArgsHelper.makeQueryArgs("admin", "getLastStats")), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     kuzzle.getStatistics(mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
@@ -432,7 +434,7 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener)invocation.getArguments()[5]).onSuccess(new JSONObject().put("result", mock(JSONObject.class)));
+        ((OnQueryDoneListener)invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", mock(JSONObject.class)));
         return null;
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
@@ -454,7 +456,7 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(new JSONObject().put("result", new JSONObject().put("hits", mock(JSONArray.class))));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("hits", mock(JSONArray.class))));
         return null;
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
@@ -510,11 +512,11 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(response);
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(null);
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzle).query(eq(QueryArgsHelper.makeQueryArgs("admin", "getStats")), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     kuzzle.getStatistics("2015-11-15T13:36:45.558Z", mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
@@ -786,7 +788,7 @@ public class KuzzleTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testListCollectionsWithIllegalListener() {
-    kuzzle.listCollections(null);
+    kuzzle.listCollections("index", null);
   }
 
   @Test(expected = RuntimeException.class)
@@ -813,30 +815,67 @@ public class KuzzleTest {
 
   @Test
   public void testListCollections() throws URISyntaxException, JSONException {
-    KuzzleOptions options = new KuzzleOptions();
-    options.setQueueTTL(1);
-    options.setAutoReplay(true);
-    options.setConnect(Mode.MANUAL);
-    options.setAutoReconnect(true);
-    options.setOfflineMode(Mode.AUTO);
-
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
     kuzzle = spy(kuzzle);
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(new JSONObject().put("result", new JSONObject().put("collections", mock(JSONArray.class))));
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(mock(JSONObject.class));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("collections", mock(JSONArray.class))));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzle).query(eq(QueryArgsHelper.makeQueryArgs("read", "listCollections")), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    kuzzle.listCollections(mock(KuzzleResponseListener.class));
-    kuzzle.listCollections(options, mock(KuzzleResponseListener.class));
+    kuzzle.listCollections(listener);
+    kuzzle.listCollections(mock(KuzzleOptions.class), listener);
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     verify(kuzzle, times(2)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "admin");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "read");
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "listCollections");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testListIndexesWithIllegalListener() {
+    kuzzle.listIndexes(null);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testListIndexesException() throws JSONException {
+    listener = spy(listener);
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(listener).onSuccess(any(JSONArray.class));
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("hits", new JSONArray().put("foo"))));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.listIndexes(listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testListIndexesQueryException() throws JSONException {
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.listIndexes(listener);
+  }
+
+  @Test
+  public void testListIndexes() throws JSONException {
+    kuzzle = spy(kuzzle);
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("hits", new JSONArray().put("foo"))));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.listIndexes(listener);
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "read");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "listIndexes");
   }
 
   @Test
@@ -1000,8 +1039,8 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(new JSONObject().put("_type", "type"));
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(mock(JSONObject.class));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("_type", "type"));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
     }).when(kuzzle).query(eq(QueryArgsHelper.makeQueryArgs("auth", "login")), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
@@ -1016,6 +1055,28 @@ public class KuzzleTest {
     verify(kuzzle, times(7)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "auth");
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "login");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testLogoutException() throws JSONException {
+    listener = spy(listener);
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(listener).onSuccess(any(JSONArray.class));
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("hits", new JSONArray().put("foo"))));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.logout(listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testLogoutQueryException() throws JSONException {
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.logout(listener);
   }
 
   @Test
@@ -1035,7 +1096,6 @@ public class KuzzleTest {
     final JSONObject response = new JSONObject();
     response.put("jwt", "jwtToken");
     response.put("requestId", "42");
-    response.put("_type", "collection");
 
     doAnswer(new Answer() {
       @Override
@@ -1044,7 +1104,7 @@ public class KuzzleTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzle).query(eq(QueryArgsHelper.makeQueryArgs("auth", "login")), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
     kuzzle.login("local", "username", "password");
     kuzzle.logout();
@@ -1055,9 +1115,21 @@ public class KuzzleTest {
     verify(kuzzle, times(5)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "auth");
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "logout");
-    response.remove("jwt");
-    kuzzle.query(QueryArgsHelper.makeQueryArgs("controller", "action"), response, options, mock(OnQueryDoneListener.class));
-    verify(s).emit(eq("kuzzle"), eq(response));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testSetDefaultIndexIllegalIndex() {
+    kuzzle.setDefaultIndex(null);
+  }
+
+  @Test
+  public void testSetDefaultIndex() throws JSONException {
+    kuzzle.setDefaultIndex("test-index");
+    JSONObject jsonObj = new JSONObject();
+    jsonObj.put("requestId", "42");
+    kuzzle.query(QueryArgsHelper.makeQueryArgs("controller", "action"), jsonObj, mock(KuzzleOptions.class), null);
+    verify(s).emit(eq("kuzzle"), eq(jsonObj));
+    assertEquals(jsonObj.getString("index"), "test-index");
   }
 
 }

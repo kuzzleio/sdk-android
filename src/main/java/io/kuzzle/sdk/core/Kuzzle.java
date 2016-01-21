@@ -582,8 +582,9 @@ public class Kuzzle {
     }
     try {
       QueryArgs args = new QueryArgs();
-      args.controller = "admin";
+      args.controller = "read";
       args.action = "listCollections";
+      args.index = index;
       return this.query(args, null, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject collections) {
@@ -604,6 +605,44 @@ public class Kuzzle {
     }
   }
 
+  public Kuzzle listIndexes(@NonNull final KuzzleResponseListener<String[]> listener) {
+    return this.listIndexes(null, listener);
+  }
+
+  public Kuzzle listIndexes(final KuzzleOptions options, @NonNull final KuzzleResponseListener<String[]> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("Kuzzle.listIndexes: listener required");
+    }
+    QueryArgs args = new QueryArgs();
+    args.controller = "read";
+    args.action = "listIndexes";
+    try {
+      this.query(args, null, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            JSONArray array = response.getJSONObject("result").getJSONArray("hits");
+            int length = array.length();
+            String[] indexes = new String[length];
+            for (int i = 0; i < length; i++) {
+              indexes[i] = array.getString(i);
+            }
+            listener.onSuccess(indexes);
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+    return this;
+  }
 
   /**
    * Log a user according to the strategy and credentials.
@@ -640,7 +679,7 @@ public class Kuzzle {
    * @param listener  the listener
    * @return kuzzle kuzzle
    */
-  public Kuzzle login(final String strategy, final String username, final String password, final int expiresIn, KuzzleResponseListener listener) {
+  public Kuzzle login(final String strategy, final String username, final String password, final int expiresIn, KuzzleResponseListener<Void> listener) {
     return this.login(strategy, username, password, expiresIn, null, listener, null);
   }
 
@@ -655,7 +694,7 @@ public class Kuzzle {
    * @param loggedCallback Last collback called when user is logged
    * @return kuzzle kuzzle
    */
-  public Kuzzle login(final String strategy, final String username, final String password, final int expiresIn, KuzzleResponseListener listener, final OnKuzzleLoginDoneListener loggedCallback) {
+  public Kuzzle login(final String strategy, final String username, final String password, final int expiresIn, KuzzleResponseListener<Void> listener, final OnKuzzleLoginDoneListener loggedCallback) {
     return this.login(strategy, username, password, expiresIn, null, listener, loggedCallback);
   }
 
@@ -696,7 +735,7 @@ public class Kuzzle {
    * @param listener the listener
    * @return the kuzzle
    */
-  public Kuzzle login(final String strategy, final String username, final String password, final KuzzleOptions options, final KuzzleResponseListener listener) {
+  public Kuzzle login(final String strategy, final String username, final String password, final KuzzleOptions options, final KuzzleResponseListener<Void> listener) {
     return this.login(strategy, username, password, -1, options, listener, null);
   }
 
@@ -711,7 +750,7 @@ public class Kuzzle {
    * @param listener  the listener
    * @return the kuzzle
    */
-  public Kuzzle login(final String strategy, final String username, final String password, int expiresIn, final KuzzleOptions options, final KuzzleResponseListener listener) {
+  public Kuzzle login(final String strategy, final String username, final String password, int expiresIn, final KuzzleOptions options, final KuzzleResponseListener<Void> listener) {
     return this.login(strategy, username, password, expiresIn, options, listener, null);
   }
 
@@ -727,7 +766,7 @@ public class Kuzzle {
    * @param loggedCallback Last collback called when user is logged
    * @return kuzzle kuzzle
    */
-  public Kuzzle login(final String strategy, final String username, final String password, int expiresIn, final KuzzleOptions options, final KuzzleResponseListener listener, final OnKuzzleLoginDoneListener loggedCallback) {
+  public Kuzzle login(final String strategy, final String username, final String password, int expiresIn, final KuzzleOptions options, final KuzzleResponseListener<Void> listener, final OnKuzzleLoginDoneListener loggedCallback) {
     JSONObject query = new JSONObject();
     JSONObject body = new JSONObject();
     try {
@@ -750,7 +789,7 @@ public class Kuzzle {
               Kuzzle.this.jwtToken = object.getString("jwt");
             }
             if (listener != null) {
-              listener.onSuccess(new KuzzleDocument(dataCollectionFactory(object.getString("_type")), object));
+              listener.onSuccess(null);
             }
           } catch (JSONException e) {
             throw new RuntimeException(e);
@@ -866,7 +905,7 @@ public class Kuzzle {
    * @param listener the listener
    * @return the kuzzle
    */
-  public Kuzzle logout(final KuzzleResponseListener listener) {
+  public Kuzzle logout(final KuzzleResponseListener<Void> listener) {
     return this.logout(null, listener);
   }
 
@@ -877,7 +916,7 @@ public class Kuzzle {
    * @param listener the listener
    * @return the kuzzle
    */
-  public Kuzzle logout(final KuzzleOptions options, final KuzzleResponseListener listener) {
+  public Kuzzle logout(final KuzzleOptions options, final KuzzleResponseListener<Void> listener) {
     try {
       QueryArgs args = new QueryArgs();
       args.controller = "auth";
@@ -887,11 +926,7 @@ public class Kuzzle {
         public void onSuccess(JSONObject object) {
           Kuzzle.this.jwtToken = null;
           if (listener != null) {
-            try {
-              listener.onSuccess(new KuzzleDocument(dataCollectionFactory(object.getString("_type")), object));
-            } catch (JSONException e) {
-              throw new RuntimeException(e);
-            }
+            listener.onSuccess(null);
           }
         }
 
@@ -1039,6 +1074,9 @@ public class Kuzzle {
 
     if (queryArgs.collection != null) {
       object.put("collection", queryArgs.collection);
+    }
+    if (queryArgs.index != null) {
+      object.put("index", queryArgs.index);
     }
     this.addHeaders(object, this.headers);
 
@@ -1565,6 +1603,9 @@ public class Kuzzle {
    * @return the default index
    */
   public Kuzzle setDefaultIndex(@NonNull final String index) {
+    if (index == null || index.isEmpty()) {
+      throw new IllegalArgumentException("Kuzzle.setDefaultIndex: index required");
+    }
     this.index = index;
     return this;
   }
