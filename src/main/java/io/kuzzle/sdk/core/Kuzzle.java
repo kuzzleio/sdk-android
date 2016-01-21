@@ -529,6 +529,12 @@ public class Kuzzle {
     return this;
   }
 
+  /**
+   * Gets server info.
+   *
+   * @param listener the listener
+   * @return the server info
+   */
   public Kuzzle getServerInfo(@NonNull final KuzzleResponseListener<JSONObject> listener) {
     return this.getServerInfo(null, listener);
   }

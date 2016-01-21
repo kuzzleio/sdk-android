@@ -28,6 +28,7 @@ public class KuzzleDataCollection {
    * or like a room for pub/sub messages.
    *
    * @param kuzzle     the kuzzle
+   * @param index      the index
    * @param collection the collection
    */
   public KuzzleDataCollection(final Kuzzle kuzzle, @NonNull final String index, @NonNull final String collection) {
@@ -104,6 +105,15 @@ public class KuzzleDataCollection {
     return this;
   }
 
+  /**
+   * Make query args kuzzle . query args.
+   *
+   * @param action     the action
+   * @param controller the controller
+   * @param collection the collection
+   * @param index      the index
+   * @return the kuzzle . query args
+   */
   public Kuzzle.QueryArgs makeQueryArgs(final String action, final String controller, final String collection, final String index) {
     Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
     args.action = action;
@@ -113,6 +123,13 @@ public class KuzzleDataCollection {
     return args;
   }
 
+  /**
+   * Make query args kuzzle . query args.
+   *
+   * @param controller the controller
+   * @param action     the action
+   * @return the kuzzle . query args
+   */
   public Kuzzle.QueryArgs makeQueryArgs(final String controller, final String action) {
     Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
     args.action = action;
@@ -745,6 +762,14 @@ public class KuzzleDataCollection {
     return this.replaceDocument(documentId, content, null, null);
   }
 
+  /**
+   * Replace document kuzzle data collection.
+   *
+   * @param documentId the document id
+   * @param content    the content
+   * @param listener   the listener
+   * @return the kuzzle data collection
+   */
   public KuzzleDataCollection replaceDocument(@NonNull final String documentId, final KuzzleDocument content, final KuzzleResponseListener listener) {
     return this.replaceDocument(documentId, content, null, listener);
   }
