@@ -524,6 +524,51 @@ public class KuzzleTest {
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "getStats");
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testGetServerInfoIllegalListener() {
+    kuzzle.getServerInfo(null);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testGetServerInfoException() throws JSONException {
+    listener = spy(listener);
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(listener).onSuccess(any(JSONObject.class));
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener)invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", mock(JSONObject.class)));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.getServerInfo(listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testGetServerInfoQueryException() throws JSONException {
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.getServerInfo(listener);
+  }
+
+  @Test
+  public void testGetServerInfo() throws JSONException {
+    kuzzle = spy(kuzzle);
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener)invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("serverInfo", mock(JSONObject.class))));
+        ((OnQueryDoneListener)invocation.getArguments()[3]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.getServerInfo(listener);
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "read");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "serverInfo");
+  }
+
   @Test
   public void testDequeue() throws URISyntaxException, JSONException {
     KuzzleOptions options = new KuzzleOptions();
