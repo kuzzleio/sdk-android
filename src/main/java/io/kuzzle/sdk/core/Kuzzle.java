@@ -530,6 +530,52 @@ public class Kuzzle {
   }
 
   /**
+   * Gets server info.
+   *
+   * @param listener the listener
+   * @return the server info
+   */
+  public Kuzzle getServerInfo(@NonNull final KuzzleResponseListener<JSONObject> listener) {
+    return this.getServerInfo(null, listener);
+  }
+
+  /**
+   * Gets server info.
+   *
+   * @param options  the options
+   * @param listener the listener
+   * @return the server info
+   */
+  public Kuzzle getServerInfo(final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONObject> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("Kuzzle.getServerInfo: listener required");
+    }
+    QueryArgs args = new QueryArgs();
+    args.controller = "read";
+    args.action = "serverInfo";
+    try {
+      this.query(args, null, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result").getJSONObject("serverInfo"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+    return this;
+  }
+
+  /**
    * Returns the list of known persisted data collections.
    *
    * @param listener the listener
@@ -605,10 +651,23 @@ public class Kuzzle {
     }
   }
 
+  /**
+   * List indexes kuzzle.
+   *
+   * @param listener the listener
+   * @return the kuzzle
+   */
   public Kuzzle listIndexes(@NonNull final KuzzleResponseListener<String[]> listener) {
     return this.listIndexes(null, listener);
   }
 
+  /**
+   * List indexes kuzzle.
+   *
+   * @param options  the options
+   * @param listener the listener
+   * @return the kuzzle
+   */
   public Kuzzle listIndexes(final KuzzleOptions options, @NonNull final KuzzleResponseListener<String[]> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.listIndexes: listener required");
