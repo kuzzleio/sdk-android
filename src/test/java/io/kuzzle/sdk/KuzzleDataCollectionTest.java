@@ -1,9 +1,11 @@
 package io.kuzzle.sdk;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -13,15 +15,15 @@ import io.kuzzle.sdk.core.KuzzleDataMapping;
 import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.core.KuzzleRoomOptions;
-import io.kuzzle.sdk.listeners.KuzzResponseListener;
+import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.responses.KuzzSearchResponse;
+import io.kuzzle.sdk.responses.KuzzleDocumentList;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -29,13 +31,39 @@ import static org.mockito.Mockito.when;
 
 public class KuzzleDataCollectionTest {
 
-  private Kuzzle  k;
+  private Kuzzle kuzzle;
   private KuzzleDataCollection collection;
+  private KuzzleResponseListener listener;
 
   @Before
   public void setUp() {
-    k = mock(Kuzzle.class);
-    collection = new KuzzleDataCollection(k, "test");
+    kuzzle = mock(Kuzzle.class);
+    collection = new KuzzleDataCollection(kuzzle, "index", "test");
+    listener = mock(KuzzleResponseListener.class);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testAdvancedSearchIllegalListener() {
+    collection.advancedSearch(null, null, null);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testAdvancedSearchQueryException() throws JSONException {
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.advancedSearch(null, listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testAdvancedSearchException() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("count", 42)));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(listener).onSuccess(any(Integer.class));
+    collection.advancedSearch(null, listener);
   }
 
   @Test
@@ -89,15 +117,15 @@ public class KuzzleDataCollectionTest {
             "  }" +
             "}");
 
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(response);
-        ((OnQueryDoneListener) invocation.getArguments()[5]).onError(new JSONObject());
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject());
         return null;
       }
-    }).when(k).query(eq("test"), eq("read"), eq("search"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    collection.advancedSearch(filters, null, new KuzzResponseListener<KuzzSearchResponse>() {
+    collection.advancedSearch(filters, null, new KuzzleResponseListener<KuzzleDocumentList>() {
       @Override
-      public void onSuccess(KuzzSearchResponse result) {
+      public void onSuccess(KuzzleDocumentList result) {
         assertEquals(result.getTotal(), 2);
         assertEquals(result.getDocuments().get(1).getContent("sibling"), "none");
       }
@@ -106,35 +134,133 @@ public class KuzzleDataCollectionTest {
       public void onError(JSONObject error) {
       }
     });
-    collection.advancedSearch(filters, mock(KuzzResponseListener.class));
-    verify(k, times(2)).query(eq("test"), eq("read"), eq("search"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.advancedSearch(filters, mock(KuzzleResponseListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(2)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "read");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "search");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCountIllegalListener() {
+    collection.count(null);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testCountQueryException() throws JSONException {
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.count(listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testCountException() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("count", 42)));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(listener).onSuccess(any(Integer.class));
+    collection.count(listener);
   }
 
   @Test
   public void testCount() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener)invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("count", 42)));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     JSONObject filters = new JSONObject();
-    collection.count(filters, mock(KuzzResponseListener.class));
-    collection.count(filters, new KuzzleOptions(), mock(KuzzResponseListener.class));
-    verify(k, times(2)).query(eq("test"), eq("read"), eq("count"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.count(filters, listener);
+    collection.count(filters, new KuzzleOptions(), listener);
+    collection.count(listener);
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(3)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "read");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "count");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testCreateQueryException() throws JSONException {
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.create(listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testCreateException() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", mock(JSONObject.class)));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(listener).onSuccess(any(JSONObject.class));
+    collection.create(listener);
   }
 
   @Test
   public void testCreate() throws JSONException {
-    KuzzResponseListener listener = mock(KuzzResponseListener.class);
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", mock(JSONObject.class)));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     collection.create(new KuzzleOptions(), listener);
     collection.create(listener);
     collection.create(new KuzzleOptions());
     collection.create();
-    verify(k, times(4)).query(eq("test"), eq("write"), eq("createCollection"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(4)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "write");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "createCollection");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testCreateDocumentQueryException() throws JSONException {
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.createDocument(mock(KuzzleDocument.class), listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testCreateDocumentException() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject()));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(listener).onSuccess(any(JSONObject.class));
+    collection.createDocument(mock(KuzzleDocument.class), listener);
   }
 
   @Test
   public void testCreateDocument() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject()));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     KuzzleDocument doc = new KuzzleDocument(collection);
     doc.setContent("foo", "bar");
     collection.createDocument(doc);
-    collection.createDocument(doc, mock(KuzzResponseListener.class));
-    verify(k, times(2)).query(eq("test"), eq("write"), eq("create"), eq(doc), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.createDocument(doc, mock(KuzzleResponseListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(2)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "write");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "create");
   }
 
   @Test
@@ -144,45 +270,190 @@ public class KuzzleDataCollectionTest {
     KuzzleOptions options = new KuzzleOptions();
     options.setUpdateIfExists(true);
     collection.createDocument(doc, options);
-    verify(k, times(1)).query(eq("test"), eq("write"), eq("createOrUpdate"), eq(doc), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "write");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "createOrUpdate");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testDeleteQueryException() throws JSONException {
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.delete(listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testDeleteException() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("_id", "id-42")));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(listener).onSuccess(any(String.class));
+    collection.delete(listener);
   }
 
   @Test
   public void testDelete() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("_id", "id-42")));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     collection.delete();
     collection.delete(new KuzzleOptions());
-    collection.delete(new KuzzleOptions(), mock(KuzzResponseListener.class));
-    collection.delete(mock(KuzzResponseListener.class));
-    verify(k, times(4)).query(eq("test"), eq("admin"), eq("deleteCollection"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.delete(new KuzzleOptions(), listener);
+    collection.delete(listener);
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(4)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "admin");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "deleteCollection");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testDeleteDocumentIllegalId() {
+    collection.deleteDocument((String) null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testDeleteDocumentIllegalFilter() {
+    collection.deleteDocument((JSONObject) null);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testDeleteDocumentQueryException() throws JSONException {
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.deleteDocument("id", listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testDeleteDocumentException() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("_id", "id-42")));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(listener).onSuccess(any(String.class));
+    collection.deleteDocument("id", listener);
   }
 
   @Test
-  public void testDeleteDocument() throws JSONException {
+  public void testDeleteDocumentById() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("_id", "id-42")));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     collection.deleteDocument("42");
-    collection.deleteDocument(new JSONObject());
-    verify(k, times(1)).query(eq("test"), eq("write"), eq("delete"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    verify(k, times(1)).query(eq("test"), eq("write"), eq("deleteByQuery"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "write");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "delete");
+  }
+
+  @Test
+  public void testDeleteDocumentByFilter() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("hits", new JSONArray().put("val"))));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.deleteDocument(new JSONObject(), listener);
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "write");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "deleteByQuery");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testFetchDocumentIllegalDocumentId() {
+    collection.fetchDocument(null, listener);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testFetchDocumentIllegalListener() {
+    collection.fetchDocument("id", null);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testFetchDocumentQueryException() throws JSONException {
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.fetchDocument("id", listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testFetchDocumentException() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject()));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(listener).onSuccess(any(String.class));
+    collection.fetchDocument("id", listener);
   }
 
   @Test
   public void testFetchDocument() throws JSONException {
-    collection.fetchDocument("42", mock(KuzzResponseListener.class));
-    collection.fetchDocument("42", new KuzzleOptions(), mock(KuzzResponseListener.class));
-    verify(k, times(2)).query(eq("test"), eq("read"), eq("get"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject()));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.fetchDocument("42", mock(KuzzleResponseListener.class));
+    collection.fetchDocument("42", new KuzzleOptions(), mock(KuzzleResponseListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(2)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "read");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "get");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testFetchAllDocumentsIllegalListener() {
+    collection.fetchAllDocuments(null);
   }
 
   @Test
   public void testFetchAllDocuments() throws JSONException {
-    collection.fetchAllDocuments(new KuzzleOptions(), mock(KuzzResponseListener.class));
-    collection.fetchAllDocuments(mock(KuzzResponseListener.class));
-    verify(k, times(2)).query(eq("test"), eq("read"), eq("search"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.fetchAllDocuments(new KuzzleOptions(), mock(KuzzleResponseListener.class));
+    collection.fetchAllDocuments(mock(KuzzleResponseListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(2)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "read");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "search");
   }
 
   @Test
   public void testGetMapping() throws JSONException {
-    collection.getMapping(mock(KuzzleOptions.class), mock(KuzzResponseListener.class));
-    collection.getMapping(mock(KuzzResponseListener.class));
-    verify(k, times(2)).query(eq("test"), eq("admin"), eq("getMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.getMapping(mock(KuzzleOptions.class), mock(KuzzleResponseListener.class));
+    collection.getMapping(mock(KuzzleResponseListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(2)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "admin");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "getMapping");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testPublishMessageException() throws JSONException {
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.publishMessage(mock(KuzzleDocument.class), mock(KuzzleOptions.class));
   }
 
   @Test
@@ -191,31 +462,77 @@ public class KuzzleDataCollectionTest {
     doc.setContent("foo", "bar");
     collection.publishMessage(doc);
     collection.publishMessage(doc, new KuzzleOptions());
-    verify(k, times(2)).query(eq("test"), eq("write"), eq("publish"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(2)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "write");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "publish");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void getMappingIllegalListener() {
+    collection.getMapping(null);
   }
 
   @Test
-  public void putMapping() throws JSONException {
+  public void testPutMapping() throws JSONException {
     KuzzleDataMapping mapping = new KuzzleDataMapping(collection);
     collection.putMapping(mapping);
     collection.putMapping(mapping, new KuzzleOptions());
-    collection.putMapping(mapping, mock(KuzzResponseListener.class));
-    collection.putMapping(mapping, new KuzzleOptions(), mock(KuzzResponseListener.class));
-    verify(k, times(4)).query(eq("test"), eq("admin"), eq("putMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.putMapping(mapping, mock(KuzzleResponseListener.class));
+    collection.putMapping(mapping, new KuzzleOptions(), mock(KuzzleResponseListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(4)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "admin");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "putMapping");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testReplaceDocumentIllegalDocumentId() {
+    collection.replaceDocument(null, null);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testReplaceDocumentQueryException() throws JSONException {
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.replaceDocument("id", mock(KuzzleDocument.class), listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testReplaceDocumentException() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("_id", "id-42")));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(listener).onSuccess(any(String.class));
+    collection.replaceDocument("id", mock(KuzzleDocument.class), listener);
   }
 
   @Test
   public void testReplaceDocument() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("_id", "id-42")));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     KuzzleDocument doc = new KuzzleDocument(collection);
     doc.setContent("foo", "bar");
-    collection.replaceDocument("42", doc);
-    verify(k, times(1)).query(eq("test"), eq("write"), eq("createOrUpdate"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-  }
+    collection.replaceDocument("42", doc, listener);
+    collection.replaceDocument("42", mock(KuzzleOptions.class), mock(KuzzleDocument.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(2)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "write");
+   }
 
   @Test
   public void testSetHeaders() throws JSONException {
-    when(k.getHeaders()).thenCallRealMethod();
-    when(k.setHeaders(any(JSONObject.class), anyBoolean())).thenCallRealMethod();
+    when(kuzzle.getHeaders()).thenCallRealMethod();
+    when(kuzzle.setHeaders(any(JSONObject.class), anyBoolean())).thenCallRealMethod();
     JSONObject content = new JSONObject();
     content.put("foo", "bar");
     collection.setHeaders(content);
@@ -229,20 +546,88 @@ public class KuzzleDataCollectionTest {
     assertEquals(content.getString("bar"), "foo");
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testSubscribeIllegalListener() {
+    collection.subscribe(mock(JSONObject.class), null);
+  }
+
   @Test
   public void testSubscribe() throws JSONException {
-    collection.subscribe(new JSONObject(), new KuzzleRoomOptions(), mock(KuzzResponseListener.class));
-    collection.subscribe(new JSONObject(), mock(KuzzResponseListener.class));
-    verify(k, times(2)).query(eq("test"), eq("subscribe"), eq("on"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.subscribe(mock(JSONObject.class), new KuzzleRoomOptions(), listener);
+    collection.subscribe(mock(JSONObject.class), listener);
+    collection.subscribe(new KuzzleRoomOptions(), listener);
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(3)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "subscribe");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "on");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testTruncateQueryException() throws JSONException {
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.truncate(listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testTruncateException() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject()));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(listener).onSuccess(any(String.class));
+    collection.truncate(listener);
   }
 
   @Test
   public void testTruncate() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject()));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     collection.truncate();
     collection.truncate(new KuzzleOptions());
-    collection.truncate(mock(KuzzResponseListener.class));
-    collection.truncate(new KuzzleOptions(), mock(KuzzResponseListener.class));
-    verify(k, times(4)).query(eq("test"), eq("admin"), eq("truncateCollection"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.truncate(mock(KuzzleResponseListener.class));
+    collection.truncate(new KuzzleOptions(), mock(KuzzleResponseListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(4)).query((Kuzzle.QueryArgs)argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "admin");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "truncateCollection");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testUpdateDocumentIllegalDocumentId() {
+    collection.updateDocument(null, mock(KuzzleDocument.class));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testUpdateDocumentIllegalContent() {
+    collection.updateDocument("id", null);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testupdateDocumentQueryException() throws JSONException {
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    collection.updateDocument("id", mock(KuzzleDocument.class), listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testupdateDocumentException() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject()));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(listener).onSuccess(any(String.class));
+    collection.updateDocument("id", mock(KuzzleDocument.class), listener);
   }
 
   @Test
@@ -253,18 +638,18 @@ public class KuzzleDataCollectionTest {
         JSONObject response = new JSONObject();
         response.put("_id", "42");
         response.put("result", new JSONObject());
-        if (invocation.getArguments()[5] != null) {
-          ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(response);
-          ((OnQueryDoneListener) invocation.getArguments()[5]).onError(new JSONObject());
+        if (invocation.getArguments()[3] != null) {
+          ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
+          ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject());
         }
         return null;
       }
-    }).when(k).query(eq("test"), eq("write"), eq("update"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
     KuzzleDocument doc = new KuzzleDocument(collection);
     collection.updateDocument("42", doc);
     collection.updateDocument("42", doc, new KuzzleOptions());
-    collection.updateDocument("42", doc, new KuzzResponseListener<KuzzleDocument>() {
+    collection.updateDocument("42", doc, new KuzzleResponseListener<KuzzleDocument>() {
       @Override
       public void onSuccess(KuzzleDocument document) {
         assertEquals(document.getId(), "42");
@@ -275,7 +660,7 @@ public class KuzzleDataCollectionTest {
 
       }
     });
-    collection.updateDocument("42", doc, new KuzzleOptions(), new KuzzResponseListener<KuzzleDocument>() {
+    collection.updateDocument("42", doc, new KuzzleOptions(), new KuzzleResponseListener<KuzzleDocument>() {
       @Override
       public void onSuccess(KuzzleDocument document) {
         assertEquals(document.getId(), "42");
@@ -286,7 +671,10 @@ public class KuzzleDataCollectionTest {
 
       }
     });
-    verify(k, times(4)).query(eq("test"), eq("write"), eq("update"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(4)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "write");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "update");
   }
 
 }

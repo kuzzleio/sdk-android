@@ -4,6 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -11,7 +12,7 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleDataMapping;
 import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.listeners.KuzzResponseListener;
+import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
 import static org.junit.Assert.assertEquals;
@@ -36,7 +37,7 @@ public class KuzzleDataMappingTest {
   public void setUp() {
     k = mock(Kuzzle.class);
     when(k.getIndex()).thenReturn("index");
-    dataCollection = new KuzzleDataCollection(k, "test");
+    dataCollection = new KuzzleDataCollection(k, "index", "test");
     dataMapping = new KuzzleDataMapping(dataCollection);
   }
 
@@ -49,7 +50,7 @@ public class KuzzleDataMappingTest {
 
   @Test(expected = RuntimeException.class)
   public void testApplyQueryException() throws JSONException {
-    doThrow(JSONException.class).when(k).query(any(String.class), eq("admin"), eq("putMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(k).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     dataMapping.apply();
   }
 
@@ -61,8 +62,8 @@ public class KuzzleDataMappingTest {
         ((OnQueryDoneListener) invocation.getArguments()[5]).onSuccess(mock(JSONObject.class));
         return null;
       }
-    }).when(k).query(any(String.class), eq("admin"), eq("putMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    KuzzResponseListener mockListener = mock(KuzzResponseListener.class);
+    }).when(k).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    KuzzleResponseListener mockListener = mock(KuzzleResponseListener.class);
     doThrow(JSONException.class).when(mockListener).onSuccess(any(KuzzleDataMapping.class));
     dataMapping.apply(mockListener);
   }
@@ -83,17 +84,20 @@ public class KuzzleDataMappingTest {
         ((OnQueryDoneListener) invocation.getArguments()[5]).onError(null);
         return null;
       }
-    }).when(k).query(any(String.class), eq("admin"), eq("putMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(k).query(eq(QueryArgsHelper.makeQueryArgs("admin", "putMapping")), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     dataMapping.apply();
     dataMapping.apply(new KuzzleOptions());
-    dataMapping.apply(mock(KuzzResponseListener.class));
-    dataMapping.apply(new KuzzleOptions(), mock(KuzzResponseListener.class));
-    verify(k, times(4)).query(eq("test"), eq("admin"), eq("putMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    dataMapping.apply(mock(KuzzleResponseListener.class));
+    dataMapping.apply(new KuzzleOptions(), mock(KuzzleResponseListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(k, times(4)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "admin");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "putMapping");
   }
 
   @Test(expected = RuntimeException.class)
   public void testException() throws JSONException {
-    doThrow(JSONException.class).when(k).query(any(String.class), eq("admin"), eq("getMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(k).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     dataMapping.refresh();
   }
 
@@ -125,8 +129,8 @@ public class KuzzleDataMappingTest {
             "}"));
         return null;
       }
-    }).when(k).query(any(String.class), eq("admin"), eq("getMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    KuzzResponseListener mockListener = mock(KuzzResponseListener.class);
+    }).when(k).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    KuzzleResponseListener mockListener = mock(KuzzleResponseListener.class);
     doThrow(JSONException.class).when(mockListener).onSuccess(any(KuzzleDataMapping.class));
     dataMapping.refresh(mockListener);
   }
@@ -157,13 +161,16 @@ public class KuzzleDataMappingTest {
         ((OnQueryDoneListener) invocation.getArguments()[5]).onError(null);
         return null;
       }
-    }).when(k).query(eq("test"), eq("admin"), eq("getMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(k).query(eq(QueryArgsHelper.makeQueryArgs("admin", "getMapping")), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     when(k.getIndex()).thenReturn("index");
     dataMapping.refresh();
     dataMapping.refresh(new KuzzleOptions());
-    dataMapping.refresh(mock(KuzzResponseListener.class));
-    dataMapping.refresh(new KuzzleOptions(), mock(KuzzResponseListener.class));
-    verify(k, times(4)).query(eq("test"), eq("admin"), eq("getMapping"), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    dataMapping.refresh(mock(KuzzleResponseListener.class));
+    dataMapping.refresh(new KuzzleOptions(), mock(KuzzleResponseListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(k, times(4)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "admin");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "getMapping");
   }
 
   @Test

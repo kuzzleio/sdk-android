@@ -11,9 +11,9 @@ import java.util.UUID;
 import io.kuzzle.sdk.enums.Scope;
 import io.kuzzle.sdk.enums.State;
 import io.kuzzle.sdk.enums.Users;
-import io.kuzzle.sdk.listeners.KuzzResponseListener;
+import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.responses.KuzzNotificationResponse;
+import io.kuzzle.sdk.responses.KuzzleNotificationResponse;
 import io.socket.emitter.Emitter;
 
 /**
@@ -34,7 +34,7 @@ public class KuzzleRoom {
   private Scope scope;
   private State state;
   private Users users;
-  private KuzzResponseListener<KuzzNotificationResponse>  listener;
+  private KuzzleResponseListener<KuzzleNotificationResponse> listener;
 
   /**
    * Instantiates a new Kuzzle room.
@@ -78,14 +78,14 @@ public class KuzzleRoom {
    * @param listener the listener
    * @return kuzzle room
    */
-  public KuzzleRoom count(@NonNull final KuzzResponseListener<Integer> listener) {
+  public KuzzleRoom count(@NonNull final KuzzleResponseListener<Integer> listener) {
     JSONObject body = new JSONObject();
     JSONObject data = new JSONObject();
     try {
       data.put("roomId", this.roomId);
       body.put("body", data);
       this.kuzzle.addHeaders(body, this.headers);
-      this.kuzzle.query(this.collection, "subscribe", "count", body, new OnQueryDoneListener() {
+      this.kuzzle.query(this.dataCollection.makeQueryArgs("subscribe", "count"), body, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
           if (listener != null) {
@@ -116,7 +116,7 @@ public class KuzzleRoom {
    * @param listener the listener
    * @param args     the args
    */
-  protected void callAfterRenew(final KuzzResponseListener<KuzzNotificationResponse> listener, final Object args) {
+  protected void callAfterRenew(final KuzzleResponseListener<KuzzleNotificationResponse> listener, final Object args) {
     if (args == null) {
       throw new IllegalArgumentException("KuzzleRoom.renew: response required");
     }
@@ -129,11 +129,11 @@ public class KuzzleRoom {
           String key = ((JSONObject) args).getString("requestId");
           if (KuzzleRoom.this.kuzzle.getRequestHistory().containsKey(key)) {
             if (KuzzleRoom.this.subscribeToSelf) {
-              listener.onSuccess(new KuzzNotificationResponse(kuzzle, (JSONObject) args));
+              listener.onSuccess(new KuzzleNotificationResponse(kuzzle, (JSONObject) args));
             }
             KuzzleRoom.this.kuzzle.getRequestHistory().remove(key);
           } else {
-            listener.onSuccess(new KuzzNotificationResponse(kuzzle, (JSONObject) args));
+            listener.onSuccess(new KuzzleNotificationResponse(kuzzle, (JSONObject) args));
           }
         }
       }
@@ -156,7 +156,7 @@ public class KuzzleRoom {
    * @param listener the listener
    * @return kuzzle room
    */
-  public KuzzleRoom renew(final JSONObject filters, final KuzzResponseListener<KuzzNotificationResponse> listener) {
+  public KuzzleRoom renew(final JSONObject filters, final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
     this.filters = (filters == null ? new JSONObject() : filters);
     final KuzzleOptions options = new KuzzleOptions();
     final JSONObject subscribeQuery = new JSONObject();
@@ -172,7 +172,7 @@ public class KuzzleRoom {
       options.setMetadata(this.metadata);
       this.kuzzle.addHeaders(subscribeQuery, this.headers);
 
-      this.kuzzle.query(this.collection, "subscribe", "on", subscribeQuery, options, new OnQueryDoneListener() {
+      this.kuzzle.query(this.dataCollection.makeQueryArgs("subscribe", "on"), subscribeQuery, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject args) {
           KuzzleRoom.this.kuzzle.addSubscription(KuzzleRoom.this.id, KuzzleRoom.this);
@@ -220,7 +220,7 @@ public class KuzzleRoom {
    * @param listener the listener
    * @return the kuzzle room
    */
-  public KuzzleRoom unsubscribe(final KuzzResponseListener<String> listener) {
+  public KuzzleRoom unsubscribe(final KuzzleResponseListener<String> listener) {
     if (this.roomId != null) {
       JSONObject roomId = new JSONObject();
       JSONObject data = new JSONObject();
@@ -228,7 +228,7 @@ public class KuzzleRoom {
         roomId.put("roomId", this.roomId);
         this.kuzzle.addHeaders(data, this.headers);
         data.put("body", roomId);
-        this.kuzzle.query(this.collection, "subscribe", "off", data, new OnQueryDoneListener() {
+        this.kuzzle.query(this.dataCollection.makeQueryArgs("subscribe", "off"), data, new OnQueryDoneListener() {
           @Override
           public void onSuccess(JSONObject object) {
             KuzzleRoom.this.kuzzle.deleteSubscription(KuzzleRoom.this.id);
@@ -386,7 +386,7 @@ public class KuzzleRoom {
     return this.roomId;
   }
 
-  public KuzzResponseListener<KuzzNotificationResponse> getListener() {
+  public KuzzleResponseListener<KuzzleNotificationResponse> getListener() {
     return this.listener;
   }
 

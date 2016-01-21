@@ -2,7 +2,7 @@ package io.kuzzle.sdk.listeners;
 
 import org.json.JSONObject;
 
-public interface OnConnectionEvent {
-  void onSuccess(JSONObject success);
+public interface OnKuzzleLoginDoneListener {
+  void onSuccess(JSONObject result);
   void onError(JSONObject error);
 }
