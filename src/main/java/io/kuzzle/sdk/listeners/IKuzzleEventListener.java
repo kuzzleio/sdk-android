@@ -3,7 +3,7 @@ package io.kuzzle.sdk.listeners;
 /**
  * The interface Event listener.
  */
-public interface IEventListener {
+public interface IKuzzleEventListener {
 
   /**
    * Trigger.

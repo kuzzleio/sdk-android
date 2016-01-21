@@ -5,7 +5,7 @@ import org.json.JSONObject;
 
 import java.util.Iterator;
 
-import io.kuzzle.sdk.listeners.KuzzResponseListener;
+import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
 /**
@@ -17,6 +17,7 @@ public class KuzzleDataMapping {
   private JSONObject mapping;
   private Kuzzle kuzzle;
   private String collection;
+  private KuzzleDataCollection  dataCollection;
 
   /**
    * When creating a new data collection in the persistent data storage layer, Kuzzle uses a default mapping.
@@ -42,6 +43,7 @@ public class KuzzleDataMapping {
     this.kuzzle = kuzzleDataCollection.getKuzzle();
     this.collection = kuzzleDataCollection.getCollection();
     this.mapping = mapping == null ? new JSONObject() : mapping;
+    this.dataCollection = kuzzleDataCollection;
   }
 
   /**
@@ -69,7 +71,7 @@ public class KuzzleDataMapping {
    * @param listener the listener
    * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping  apply(final KuzzResponseListener<KuzzleDataMapping> listener) {
+  public KuzzleDataMapping  apply(final KuzzleResponseListener<KuzzleDataMapping> listener) {
     return this.apply(null, listener);
   }
 
@@ -80,14 +82,14 @@ public class KuzzleDataMapping {
    * @param listener the cb
    * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping apply(final KuzzleOptions options, final KuzzResponseListener<KuzzleDataMapping> listener) {
+  public KuzzleDataMapping apply(final KuzzleOptions options, final KuzzleResponseListener<KuzzleDataMapping> listener) {
     JSONObject data = new JSONObject();
     final JSONObject properties = new JSONObject();
     try {
       properties.put("properties", this.mapping);
       data.put("body", properties);
       this.kuzzle.addHeaders(data, this.headers);
-      this.kuzzle.query(this.collection, "admin", "putMapping", data, options, new OnQueryDoneListener() {
+      this.kuzzle.query(this.dataCollection.makeQueryArgs("admin", "putMapping"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
           try {
@@ -140,7 +142,7 @@ public class KuzzleDataMapping {
    * @param listener the listener
    * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping refresh(final KuzzResponseListener<KuzzleDataMapping> listener) {
+  public KuzzleDataMapping refresh(final KuzzleResponseListener<KuzzleDataMapping> listener) {
     return refresh(null, listener);
   }
 
@@ -152,11 +154,11 @@ public class KuzzleDataMapping {
    * @param listener the listener
    * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping refresh(final KuzzleOptions options, final KuzzResponseListener<KuzzleDataMapping> listener) {
+  public KuzzleDataMapping refresh(final KuzzleOptions options, final KuzzleResponseListener<KuzzleDataMapping> listener) {
     JSONObject data = new JSONObject();
     try {
       this.kuzzle.addHeaders(data, this.headers);
-      this.kuzzle.query(this.collection, "admin", "getMapping", data, options, new OnQueryDoneListener() {
+      this.kuzzle.query(this.dataCollection.makeQueryArgs("admin", "getMapping"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject args) {
           try {

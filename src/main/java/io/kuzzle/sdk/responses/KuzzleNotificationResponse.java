@@ -12,7 +12,7 @@ import io.kuzzle.sdk.enums.State;
 /**
  * Created by kblondel on 13/01/16.
  */
-public class KuzzNotificationResponse {
+public class KuzzleNotificationResponse {
   private int status;
   private JSONObject error;
   private String  index;
@@ -26,7 +26,7 @@ public class KuzzNotificationResponse {
   private KuzzleDocument document;
   private JSONObject  result;
 
-  public KuzzNotificationResponse(final Kuzzle kuzzle, final JSONObject object) {
+  public KuzzleNotificationResponse(final Kuzzle kuzzle, final JSONObject object) {
     try {
       this.status = object.getInt("status");
       this.error = (object.isNull("error") ? null : object.getJSONObject("error"));
@@ -40,7 +40,7 @@ public class KuzzNotificationResponse {
       this.requestId = object.getString("requestId");
       this.result = (object.isNull("result") ? null : object.getJSONObject("result"));
       if (!object.getJSONObject("result").isNull("_source")) {
-        this.document = new KuzzleDocument(new KuzzleDataCollection(kuzzle, this.collection), object.getJSONObject("result"));
+        this.document = new KuzzleDocument(new KuzzleDataCollection(kuzzle, this.index, this.collection), object.getJSONObject("result"));
         this.document.setId(this.result.getString("_id"));
       }
     } catch (JSONException e) {

@@ -30,14 +30,14 @@ public class KuzzleQueue<T> {
     return _queue.poll();
   }
 
-  private States _currentState = States.DISCONNECTED;
+  private KuzzleStates _currentState = KuzzleStates.DISCONNECTED;
 
   /**
    * Sets state.
    *
    * @param states the states
    */
-  public void setState(States states) {
+  public void setState(KuzzleStates states) {
     _currentState = states;
   }
 
@@ -46,7 +46,7 @@ public class KuzzleQueue<T> {
    *
    * @return the states
    */
-  public States state() {
+  public KuzzleStates state() {
     return _currentState;
   }
 

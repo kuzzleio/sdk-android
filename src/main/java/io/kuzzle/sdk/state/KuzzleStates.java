@@ -1,9 +1,9 @@
 package io.kuzzle.sdk.state;
 
 /**
- * The enum States.
+ * The enum KuzzleStates.
  */
-public enum States {
+public enum KuzzleStates {
   CONNECTING,
   DISCONNECTED,
   CONNECTED,
