@@ -21,6 +21,7 @@ public class KuzzleDataCollection {
 
   private final Kuzzle kuzzle;
   private final String collection;
+  private final String index;
 
   /**
    * A data collection is a set of data managed by Kuzzle. It acts like a data table for persistent documents,
@@ -29,9 +30,13 @@ public class KuzzleDataCollection {
    * @param kuzzle     the kuzzle
    * @param collection the collection
    */
-  public KuzzleDataCollection(final Kuzzle kuzzle, @NonNull final String index, final String collection) {
+  public KuzzleDataCollection(final Kuzzle kuzzle, @NonNull final String index, @NonNull final String collection) {
+    if (index == null || collection == null) {
+      throw new IllegalArgumentException("KuzzleDataCollection: index and collection required");
+    }
     this.kuzzle = kuzzle;
     this.collection = collection;
+    this.index = index;
   }
 
   /**
@@ -112,6 +117,8 @@ public class KuzzleDataCollection {
     Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
     args.action = action;
     args.controller = controller;
+    args.index = this.index;
+    args.collection = this.collection;
     return args;
   }
 
