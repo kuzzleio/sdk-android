@@ -14,12 +14,15 @@ import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleDataMapping;
 import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.KuzzleRoom;
 import io.kuzzle.sdk.core.KuzzleRoomOptions;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleDocumentList;
 
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.doAnswer;
@@ -276,6 +279,11 @@ public class KuzzleDataCollectionTest {
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "createOrUpdate");
   }
 
+  @Test
+  public void testDataMappingFactory() {
+    assertThat(collection.dataMappingFactory(new JSONObject()), instanceOf(KuzzleDataMapping.class));
+  }
+
   @Test(expected = RuntimeException.class)
   public void testDeleteQueryException() throws JSONException {
     doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
@@ -376,6 +384,14 @@ public class KuzzleDataCollectionTest {
     verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "write");
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "deleteByQuery");
+  }
+
+  @Test
+  public void testDocumentFactory() {
+    assertThat(collection.documentFactory(), instanceOf(KuzzleDocument.class));
+    assertThat(collection.documentFactory("id"), instanceOf(KuzzleDocument.class));
+    assertThat(collection.documentFactory("id", new JSONObject()), instanceOf(KuzzleDocument.class));
+    assertThat(collection.documentFactory(new JSONObject()), instanceOf(KuzzleDocument.class));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -528,6 +544,12 @@ public class KuzzleDataCollectionTest {
     verify(kuzzle, times(2)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "write");
    }
+
+  @Test
+  public void testRoomFactory() {
+    assertThat(collection.roomFactory(mock(KuzzleRoomOptions.class)), instanceOf(KuzzleRoom.class));
+    assertThat(collection.roomFactory(), instanceOf(KuzzleRoom.class));
+  }
 
   @Test
   public void testSetHeaders() throws JSONException {
