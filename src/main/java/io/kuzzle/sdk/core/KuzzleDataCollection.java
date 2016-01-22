@@ -342,6 +342,16 @@ public class KuzzleDataCollection {
   }
 
   /**
+   * Data mapping factory kuzzle data mapping.
+   *
+   * @param mapping the mapping
+   * @return the kuzzle data mapping
+   */
+  public KuzzleDataMapping dataMappingFactory(JSONObject mapping) {
+    return new KuzzleDataMapping(this, mapping);
+  }
+
+  /**
    * Delete kuzzle data collection.
    *
    * @return the kuzzle data collection
@@ -567,6 +577,22 @@ public class KuzzleDataCollection {
       throw new RuntimeException(e);
     }
     return this;
+  }
+
+  public KuzzleDocument documentFactory() {
+    return new KuzzleDocument(this);
+  }
+
+  public KuzzleDocument documentFactory(final String id) {
+    return new KuzzleDocument(this, id);
+  }
+
+  public KuzzleDocument documentFactory(final JSONObject content) {
+    return new KuzzleDocument(this, content);
+  }
+
+  public KuzzleDocument documentFactory(final String id, final JSONObject content) {
+    return new KuzzleDocument(this, id, content);
   }
 
   /**
