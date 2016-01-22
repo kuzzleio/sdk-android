@@ -853,6 +853,14 @@ public class KuzzleDataCollection {
     return this;
   }
 
+  public KuzzleRoom roomFactory() {
+    return this.roomFactory(null);
+  }
+
+  public KuzzleRoom roomFactory(KuzzleRoomOptions options) {
+    return new KuzzleRoom(this, options);
+  }
+
   /**
    * Sets headers.
    *

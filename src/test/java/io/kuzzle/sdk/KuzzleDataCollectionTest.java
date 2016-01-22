@@ -14,6 +14,7 @@ import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleDataMapping;
 import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.KuzzleRoom;
 import io.kuzzle.sdk.core.KuzzleRoomOptions;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
@@ -543,6 +544,12 @@ public class KuzzleDataCollectionTest {
     verify(kuzzle, times(2)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "write");
    }
+
+  @Test
+  public void testRoomFactory() {
+    assertThat(collection.roomFactory(mock(KuzzleRoomOptions.class)), instanceOf(KuzzleRoom.class));
+    assertThat(collection.roomFactory(), instanceOf(KuzzleRoom.class));
+  }
 
   @Test
   public void testSetHeaders() throws JSONException {
