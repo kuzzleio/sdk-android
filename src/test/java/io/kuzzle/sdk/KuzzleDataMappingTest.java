@@ -35,7 +35,7 @@ public class KuzzleDataMappingTest {
   @Before
   public void setUp() {
     k = mock(Kuzzle.class);
-    when(k.getIndex()).thenReturn("index");
+    when(k.getDefaultIndex()).thenReturn("index");
     dataCollection = new KuzzleDataCollection(k, "index", "test");
     dataMapping = new KuzzleDataMapping(dataCollection);
   }
@@ -161,7 +161,7 @@ public class KuzzleDataMappingTest {
         return null;
       }
     }).when(k).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    when(k.getIndex()).thenReturn("index");
+    when(k.getDefaultIndex()).thenReturn("index");
     dataMapping.refresh();
     dataMapping.refresh(new KuzzleOptions());
     dataMapping.refresh(mock(KuzzleResponseListener.class));

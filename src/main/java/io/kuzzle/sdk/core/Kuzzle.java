@@ -78,7 +78,7 @@ public class Kuzzle {
   };
   private long replayInterval = 10;
   private boolean queuing = false;
-  private String index;
+  private String defaultIndex;
 
   private Map<String, Date> requestHistory = new HashMap<String, Date>();
 
@@ -149,7 +149,7 @@ public class Kuzzle {
     this.loginExpiresIn = (options != null ? options.getLoginExpiresIn() : -1);
     this.url = url;
     this.connectionCallback = connectionCallback;
-    this.index = index;
+    this.defaultIndex = index;
     if (socket == null) {
       socket = createSocket(this.url);
     }
@@ -331,7 +331,7 @@ public class Kuzzle {
    * @return the kuzzle data collection
    */
   public KuzzleDataCollection dataCollectionFactory(final String collection) {
-    return this.dataCollectionFactory(this.index, collection);
+    return this.dataCollectionFactory(this.defaultIndex, collection);
   }
 
   /**
@@ -342,7 +342,7 @@ public class Kuzzle {
    * @return {object} A KuzzleDataCollection instance
    */
   public KuzzleDataCollection dataCollectionFactory(@NonNull final String index, final String collection) {
-    if (index == null && this.index == null) {
+    if (index == null && this.defaultIndex == null) {
       throw new IllegalArgumentException("KuzzleDataCollection: unable to create a new data collection object: no index specified");
     }
     this.isValid();
@@ -617,10 +617,10 @@ public class Kuzzle {
    */
   public Kuzzle listCollections(String index, final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONArray> listener) {
     if (index == null) {
-      if (this.index == null) {
+      if (this.defaultIndex == null) {
         throw new IllegalArgumentException("Kuzzle.listCollections: index required");
       } else {
-        index = this.index;
+        index = this.defaultIndex;
       }
     }
     if (listener == null) {
@@ -1129,7 +1129,7 @@ public class Kuzzle {
       }
     }
     object.put("metadata", meta);
-    object.put("index", this.index);
+    object.put("index", this.defaultIndex);
 
     if (queryArgs.collection != null) {
       object.put("collection", queryArgs.collection);
@@ -1651,8 +1651,8 @@ public class Kuzzle {
    *
    * @return the index
    */
-  public String getIndex() {
-    return this.index;
+  public String getDefaultIndex() {
+    return this.defaultIndex;
   }
 
   /**
@@ -1665,7 +1665,7 @@ public class Kuzzle {
     if (index == null || index.isEmpty()) {
       throw new IllegalArgumentException("Kuzzle.setDefaultIndex: index required");
     }
-    this.index = index;
+    this.defaultIndex = index;
     return this;
   }
 }
