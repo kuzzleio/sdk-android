@@ -162,8 +162,8 @@ public class KuzzleDataMapping {
         @Override
         public void onSuccess(JSONObject args) {
           try {
-            if (!args.isNull(KuzzleDataMapping.this.kuzzle.getIndex())) {
-              JSONObject mappings = args.getJSONObject(KuzzleDataMapping.this.kuzzle.getIndex()).getJSONObject("mappings");
+            if (!args.isNull(KuzzleDataMapping.this.kuzzle.getDefaultIndex())) {
+              JSONObject mappings = args.getJSONObject(KuzzleDataMapping.this.kuzzle.getDefaultIndex()).getJSONObject("mappings");
               if (!mappings.isNull(KuzzleDataMapping.this.collection))
                 KuzzleDataMapping.this.mapping = mappings.getJSONObject(KuzzleDataMapping.this.collection);
               if (listener != null)

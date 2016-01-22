@@ -101,7 +101,7 @@ public class KuzzleTest {
   @Test
   public void testKuzzleConstructor() throws URISyntaxException, JSONException {
     kuzzle = spy(kuzzle);
-    assertEquals(kuzzle.getIndex(), "testIndex");
+    assertEquals(kuzzle.getDefaultIndex(), "testIndex");
     assertNotNull(kuzzle);
     verify(kuzzle, never()).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
