@@ -2,6 +2,7 @@ package io.kuzzle.sdk.core;
 
 import org.json.JSONObject;
 
+import io.kuzzle.sdk.enums.KuzzleCollectionType;
 import io.kuzzle.sdk.enums.Mode;
 
 public class KuzzleOptions {
@@ -26,6 +27,9 @@ public class KuzzleOptions {
   private String  loginPassword;
   // in second
   private int loginExpiresIn = 0;
+
+  // Used for getting collections
+  private KuzzleCollectionType  collectionType = KuzzleCollectionType.ALL;
 
   /**
    * Is auto reconnect boolean.
@@ -201,5 +205,13 @@ public class KuzzleOptions {
 
   public void setLoginExpiresIn(int loginExpiresIn) {
     this.loginExpiresIn = loginExpiresIn;
+  }
+
+  public KuzzleCollectionType getCollectionType() {
+    return collectionType;
+  }
+
+  public void setCollectionType(KuzzleCollectionType type) {
+    this.collectionType = type;
   }
 }

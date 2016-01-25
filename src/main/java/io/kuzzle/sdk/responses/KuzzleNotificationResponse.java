@@ -9,9 +9,6 @@ import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.enums.Scope;
 import io.kuzzle.sdk.enums.State;
 
-/**
- * Created by kblondel on 13/01/16.
- */
 public class KuzzleNotificationResponse {
   private int status;
   private JSONObject error;
@@ -35,10 +32,10 @@ public class KuzzleNotificationResponse {
       this.controller = object.getString("controller");
       this.action = object.getString("action");
       this.state = State.valueOf(object.getString("state").toUpperCase());
-      this.scope = Scope.valueOf(object.getString("scope").toUpperCase());
       this.metadata = object.getJSONObject("metadata");
       this.requestId = object.getString("requestId");
       this.result = (object.isNull("result") ? null : object.getJSONObject("result"));
+      this.scope = (this.result.isNull("scope") ? null : Scope.valueOf(this.result.getString("scope").toUpperCase()));
       if (!object.getJSONObject("result").isNull("_source")) {
         this.document = new KuzzleDocument(new KuzzleDataCollection(kuzzle, this.index, this.collection), object.getJSONObject("result"));
         this.document.setId(this.result.getString("_id"));
