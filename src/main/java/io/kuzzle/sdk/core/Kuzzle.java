@@ -581,7 +581,7 @@ public class Kuzzle {
    * @param listener the listener
    * @return kuzzle kuzzle
    */
-  public Kuzzle listCollections(@NonNull final KuzzleResponseListener<JSONArray> listener) {
+  public Kuzzle listCollections(@NonNull final KuzzleResponseListener<JSONObject> listener) {
     return this.listCollections(null, null, listener);
   }
 
@@ -592,7 +592,7 @@ public class Kuzzle {
    * @param listener the listener
    * @return the kuzzle
    */
-  public Kuzzle listCollections(String index, @NonNull final KuzzleResponseListener<JSONArray> listener) {
+  public Kuzzle listCollections(String index, @NonNull final KuzzleResponseListener<JSONObject> listener) {
     return this.listCollections(index, null, listener);
   }
 
@@ -603,7 +603,7 @@ public class Kuzzle {
    * @param listener the listener
    * @return the kuzzle
    */
-  public Kuzzle listCollections(final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONArray> listener) {
+  public Kuzzle listCollections(KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONObject> listener) {
     return this.listCollections(null, options, listener);
   }
 
@@ -615,7 +615,7 @@ public class Kuzzle {
    * @param listener the listener
    * @return kuzzle kuzzle
    */
-  public Kuzzle listCollections(String index, final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONArray> listener) {
+  public Kuzzle listCollections(String index, KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONObject> listener) {
     if (index == null) {
       if (this.defaultIndex == null) {
         throw new IllegalArgumentException("Kuzzle.listCollections: index required");
@@ -631,11 +631,16 @@ public class Kuzzle {
       args.controller = "read";
       args.action = "listCollections";
       args.index = index;
-      return this.query(args, null, options, new OnQueryDoneListener() {
+      JSONObject query = new JSONObject();
+      if (options == null) {
+        options = new KuzzleOptions();
+      }
+      query.put("body", new JSONObject().put("type", options.getCollectionType()));
+      return this.query(args, query, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject collections) {
           try {
-            listener.onSuccess(collections.getJSONObject("result").getJSONArray("collections"));
+            listener.onSuccess(collections.getJSONObject("result").getJSONObject("collections"));
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
