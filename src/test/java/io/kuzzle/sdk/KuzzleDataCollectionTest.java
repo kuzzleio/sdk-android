@@ -490,16 +490,16 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testCreateOrReplaceMapping() throws JSONException {
+  public void testUpdateMapping() throws JSONException {
     KuzzleDataMapping mapping = new KuzzleDataMapping(collection);
-    collection.createOrReplaceMapping(mapping);
-    collection.createOrReplaceMapping(mapping, new KuzzleOptions());
-    collection.createOrReplaceMapping(mapping, mock(KuzzleResponseListener.class));
-    collection.createOrReplaceMapping(mapping, new KuzzleOptions(), mock(KuzzleResponseListener.class));
+    collection.updateMapping(mapping);
+    collection.updateMapping(mapping, new KuzzleOptions());
+    collection.updateMapping(mapping, mock(KuzzleResponseListener.class));
+    collection.updateMapping(mapping, new KuzzleOptions(), mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     verify(kuzzle, times(4)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "admin");
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "createOrReplaceMapping");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "updateMapping");
   }
 
   @Test(expected = IllegalArgumentException.class)
