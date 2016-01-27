@@ -850,6 +850,7 @@ public class Kuzzle {
         public void onSuccess(JSONObject object) {
           try {
             if (!object.isNull("jwt")) {
+              Kuzzle.this.renewSubscriptions();
               Kuzzle.this.jwtToken = object.getString("jwt");
             }
             if (listener != null) {
