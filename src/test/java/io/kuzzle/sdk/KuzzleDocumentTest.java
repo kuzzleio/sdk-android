@@ -133,7 +133,7 @@ public class KuzzleDocumentTest {
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     verify(k, times(3)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "write");
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "createOrUpdate");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "createOrReplace");
   }
 
   @Test(expected = RuntimeException.class)
@@ -396,13 +396,13 @@ public class KuzzleDocumentTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", response));
         return null;
       }
-    }).when(k).query(eq(QueryArgsHelper.makeQueryArgs("write", "createOrUpdate")), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(k).query(eq(QueryArgsHelper.makeQueryArgs("write", "createOrReplace")), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertNull(doc.getVersion());
     doc.save(mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     verify(k, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "write");
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "createOrUpdate");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "createOrReplace");
   }
 
   @Test(expected = RuntimeException.class)

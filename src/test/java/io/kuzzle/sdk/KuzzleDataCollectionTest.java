@@ -276,7 +276,7 @@ public class KuzzleDataCollectionTest {
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "write");
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "createOrUpdate");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "createOrReplace");
   }
 
   @Test
@@ -490,16 +490,16 @@ public class KuzzleDataCollectionTest {
   }
 
   @Test
-  public void testPutMapping() throws JSONException {
+  public void testCreateOrReplaceMapping() throws JSONException {
     KuzzleDataMapping mapping = new KuzzleDataMapping(collection);
-    collection.putMapping(mapping);
-    collection.putMapping(mapping, new KuzzleOptions());
-    collection.putMapping(mapping, mock(KuzzleResponseListener.class));
-    collection.putMapping(mapping, new KuzzleOptions(), mock(KuzzleResponseListener.class));
+    collection.createOrReplaceMapping(mapping);
+    collection.createOrReplaceMapping(mapping, new KuzzleOptions());
+    collection.createOrReplaceMapping(mapping, mock(KuzzleResponseListener.class));
+    collection.createOrReplaceMapping(mapping, new KuzzleOptions(), mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     verify(kuzzle, times(4)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "admin");
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "putMapping");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "createOrReplaceMapping");
   }
 
   @Test(expected = IllegalArgumentException.class)
