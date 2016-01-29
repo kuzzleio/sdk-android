@@ -1223,7 +1223,7 @@ public class Kuzzle {
     Iterator ite = subscriptions.entrySet().iterator();
     while (ite.hasNext()) {
       Map.Entry e = (Map.Entry) ite.next();
-      ((KuzzleRoom)e.getValue()).renew(null, ((KuzzleRoom)e.getValue()).getListener());
+      ((KuzzleRoom)e.getValue()).renew(((KuzzleRoom)e.getValue()).getFilters(), ((KuzzleRoom)e.getValue()).getListener());
     }
   }
 
