@@ -2,6 +2,11 @@
 [ ![Download](https://api.bintray.com/packages/kblondel/maven/kuzzle-sdk-android/images/download.svg) ](https://bintray.com/kblondel/maven/kuzzle-sdk-android/_latestVersion)
 [![Join the chat at https://gitter.im/kuzzleio/kuzzle](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/kuzzleio/kuzzle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+Official Kuzzle Android SDK 
+======
+
+This SDK version requires Kuzzle v0.12 or higher.
+
 ## About Kuzzle
 
 For UI and linked objects developers, Kuzzle is an open-source solution that handles all the data management (CRUD, real-time storage, search, high-level features, etc).
@@ -34,7 +39,7 @@ public void onSuccess(Void object) {
     KuzzleDocument doc = new KuzzleDocument(dataCollection);
     doc.setContent("foo", "bar").save();
 }
-    
+
 @Override
 public void onError(JSONObject error) {
     // Handle error
@@ -56,7 +61,7 @@ myDocument.save();
 // Send it on real time (not persistent)
 myDocument.publish();
 ```
-    
+
 ## Adding metadata
 
 As stated [here](http://kuzzleio.github.io/kuzzle-api-documentation/#sending-metadata) you can add metadata to a subscription.
