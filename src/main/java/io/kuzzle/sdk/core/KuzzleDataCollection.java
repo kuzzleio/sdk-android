@@ -312,7 +312,7 @@ public class KuzzleDataCollection {
   public KuzzleDataCollection createDocument(final KuzzleDocument document, final KuzzleOptions options, final KuzzleResponseListener<KuzzleDocument> listener) {
     String create = "create";
     if (options != null && options.isUpdateIfExists()) {
-      create = "createOrUpdate";
+      create = "createOrReplace";
     }
     try {
       document.put("persist", true);
@@ -738,8 +738,8 @@ public class KuzzleDataCollection {
    * @param mapping the mapping
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection putMapping(final KuzzleDataMapping mapping) {
-    return this.putMapping(mapping, null, null);
+  public KuzzleDataCollection updateMapping(final KuzzleDataMapping mapping) {
+    return this.updateMapping(mapping, null, null);
   }
 
   /**
@@ -749,8 +749,8 @@ public class KuzzleDataCollection {
    * @param options the options
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection putMapping(final KuzzleDataMapping mapping, KuzzleOptions options) {
-    return this.putMapping(mapping, options, null);
+  public KuzzleDataCollection updateMapping(final KuzzleDataMapping mapping, KuzzleOptions options) {
+    return this.updateMapping(mapping, options, null);
   }
 
   /**
@@ -760,8 +760,8 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection putMapping(final KuzzleDataMapping mapping, final KuzzleResponseListener<KuzzleDataMapping> listener) {
-    return this.putMapping(mapping, null, listener);
+  public KuzzleDataCollection updateMapping(final KuzzleDataMapping mapping, final KuzzleResponseListener<KuzzleDataMapping> listener) {
+    return this.updateMapping(mapping, null, listener);
   }
 
   /**
@@ -772,7 +772,7 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection putMapping(final KuzzleDataMapping mapping, final KuzzleOptions options, final KuzzleResponseListener<KuzzleDataMapping> listener) {
+  public KuzzleDataCollection updateMapping(final KuzzleDataMapping mapping, final KuzzleOptions options, final KuzzleResponseListener<KuzzleDataMapping> listener) {
     mapping.apply(options, listener);
     return this;
   }
@@ -828,7 +828,7 @@ public class KuzzleDataCollection {
     content.setId(documentId);
     try {
       this.kuzzle.addHeaders(content, this.getHeaders());
-      this.kuzzle.query(makeQueryArgs("write", "createOrUpdate"), content, options, new OnQueryDoneListener() {
+      this.kuzzle.query(makeQueryArgs("write", "createOrReplace"), content, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
           if (listener != null) {

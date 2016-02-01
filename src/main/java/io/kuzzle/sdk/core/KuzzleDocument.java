@@ -273,7 +273,7 @@ public class KuzzleDocument extends JSONObject {
 
     try {
       this.put("persist", true);
-      kuzzle.query(this.dataCollection.makeQueryArgs("write", "createOrUpdate"), this, options, new OnQueryDoneListener() {
+      kuzzle.query(this.dataCollection.makeQueryArgs("write", "createOrReplace"), this, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
           try {

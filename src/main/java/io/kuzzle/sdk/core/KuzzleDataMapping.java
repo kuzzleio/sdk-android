@@ -89,7 +89,7 @@ public class KuzzleDataMapping {
       properties.put("properties", this.mapping);
       data.put("body", properties);
       this.kuzzle.addHeaders(data, this.headers);
-      this.kuzzle.query(this.dataCollection.makeQueryArgs("admin", "putMapping"), data, options, new OnQueryDoneListener() {
+      this.kuzzle.query(this.dataCollection.makeQueryArgs("admin", "updateMapping"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
           try {
