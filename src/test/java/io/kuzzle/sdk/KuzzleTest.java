@@ -1177,4 +1177,81 @@ public class KuzzleTest {
     assertEquals(jsonObj.getString("index"), "test-index");
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testCheckTokenWithIllegalListener() {
+    kuzzle.checkToken("token", null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCheckTokenWithIllegalToken() {
+    kuzzle.checkToken(null, mock(KuzzleResponseListener.class));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCheckTokenWithEmptyToken() {
+    kuzzle.checkToken("", null);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testCheckTokenException() throws JSONException {
+    listener = spy(listener);
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(listener).onSuccess(any(JSONObject.class));
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("valid", true).put("expiresAt", new Date().getTime())));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.checkToken("token", listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testCheckTokenQueryException() throws JSONException {
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.checkToken("token", listener);
+  }
+
+  @Test
+  public void testCheckTokenValid() throws JSONException {
+    kuzzle = spy(kuzzle);
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("valid", true).put("expiresAt", new Date().getTime())));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+
+    kuzzle.checkToken("token-42", mock(KuzzleResponseListener.class));
+    kuzzle.checkToken("token-42", mock(KuzzleOptions.class), mock(KuzzleResponseListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(2)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "auth");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "checkToken");
+  }
+
+  @Test
+  public void testCheckTokenInvalid() throws JSONException {
+    kuzzle = spy(kuzzle);
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("valid", false).put("state", "error")));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+
+    kuzzle.checkToken("token-42", mock(KuzzleResponseListener.class));
+    kuzzle.checkToken("token-42", mock(KuzzleOptions.class), mock(KuzzleResponseListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(2)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "auth");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "checkToken");
+  }
+
 }

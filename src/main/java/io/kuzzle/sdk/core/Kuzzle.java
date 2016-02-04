@@ -1,6 +1,7 @@
 package io.kuzzle.sdk.core;
 
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -35,6 +36,7 @@ import io.kuzzle.sdk.listeners.IKuzzleEventListener;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnKuzzleLoginDoneListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
+import io.kuzzle.sdk.responses.KuzzleTokenValidity;
 import io.kuzzle.sdk.state.KuzzleQueue;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.sdk.util.Event;
@@ -218,6 +220,68 @@ public class Kuzzle {
     };
     eventListeners.add(e);
     return e.getId().toString();
+  }
+
+  /**
+   * Check token kuzzle.
+   *
+   * @param token    the token
+   * @param listener the listener
+   * @return the kuzzle
+   */
+  public Kuzzle checkToken(@NonNull final String token, @NonNull final KuzzleResponseListener<KuzzleTokenValidity> listener) {
+    return this.checkToken(token, null, listener);
+  }
+
+  /**
+   * Check token kuzzle.
+   *
+   * @param token    the token
+   * @param options  the options
+   * @param listener the listener
+   * @return the kuzzle
+   */
+  public Kuzzle checkToken(@NonNull final String token, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleTokenValidity> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("Kuzzle.checkToken: listener required");
+    }
+    if (token == null || token.isEmpty()) {
+      throw new IllegalArgumentException("Kuzzle.checkToken: token required");
+    }
+    try {
+      QueryArgs args = new QueryArgs();
+      args.controller = "auth";
+      args.action = "checkToken";
+      JSONObject request = new JSONObject();
+      request.put("body", new JSONObject().put("token", token));
+      this.query(args, request, options, new OnQueryDoneListener() {
+
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            KuzzleTokenValidity validity = new KuzzleTokenValidity();
+            JSONObject result = response.getJSONObject("result");
+            validity.setValid(result.getBoolean("valid"));
+            if (validity.isValid()) {
+              validity.setExpiresAt(new Date(result.getLong("expiresAt")));
+            } else {
+              validity.setState(result.getString("state"));
+            }
+            listener.onSuccess(validity);
+          } catch (JSONException e) {
+            throw new RuntimeException();
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+    return this;
   }
 
   /**
@@ -743,7 +807,7 @@ public class Kuzzle {
    * @param listener  the listener
    * @return kuzzle kuzzle
    */
-  public Kuzzle login(final String strategy, final String username, final String password, final int expiresIn, KuzzleResponseListener<Void> listener) {
+  public Kuzzle login(final String strategy, final String username, final String password, final int expiresIn, KuzzleResponseListener<JSONObject> listener) {
     return this.login(strategy, username, password, expiresIn, null, listener, null);
   }
 
@@ -758,7 +822,7 @@ public class Kuzzle {
    * @param loggedCallback Last collback called when user is logged
    * @return kuzzle kuzzle
    */
-  public Kuzzle login(final String strategy, final String username, final String password, final int expiresIn, KuzzleResponseListener<Void> listener, final OnKuzzleLoginDoneListener loggedCallback) {
+  public Kuzzle login(final String strategy, final String username, final String password, final int expiresIn, KuzzleResponseListener<JSONObject> listener, final OnKuzzleLoginDoneListener loggedCallback) {
     return this.login(strategy, username, password, expiresIn, null, listener, loggedCallback);
   }
 
@@ -799,7 +863,7 @@ public class Kuzzle {
    * @param listener the listener
    * @return the kuzzle
    */
-  public Kuzzle login(final String strategy, final String username, final String password, final KuzzleOptions options, final KuzzleResponseListener<Void> listener) {
+  public Kuzzle login(final String strategy, final String username, final String password, final KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener) {
     return this.login(strategy, username, password, -1, options, listener, null);
   }
 
@@ -814,7 +878,7 @@ public class Kuzzle {
    * @param listener  the listener
    * @return the kuzzle
    */
-  public Kuzzle login(final String strategy, final String username, final String password, int expiresIn, final KuzzleOptions options, final KuzzleResponseListener<Void> listener) {
+  public Kuzzle login(final String strategy, final String username, final String password, int expiresIn, final KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener) {
     return this.login(strategy, username, password, expiresIn, options, listener, null);
   }
 
@@ -830,7 +894,7 @@ public class Kuzzle {
    * @param loggedCallback Last collback called when user is logged
    * @return kuzzle kuzzle
    */
-  public Kuzzle login(final String strategy, final String username, final String password, int expiresIn, final KuzzleOptions options, final KuzzleResponseListener<Void> listener, final OnKuzzleLoginDoneListener loggedCallback) {
+  public Kuzzle login(final String strategy, final String username, final String password, int expiresIn, final KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener, final OnKuzzleLoginDoneListener loggedCallback) {
     JSONObject query = new JSONObject();
     JSONObject body = new JSONObject();
     try {
@@ -854,7 +918,7 @@ public class Kuzzle {
               Kuzzle.this.jwtToken = object.getString("jwt");
             }
             if (listener != null) {
-              listener.onSuccess(null);
+              listener.onSuccess(object);
             }
           } catch (JSONException e) {
             throw new RuntimeException(e);
@@ -879,7 +943,8 @@ public class Kuzzle {
   private class KuzzleWebViewClient extends WebViewClient {
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, final String url) {
-      if (url.contains("code")) {
+      Log.e("url", url);
+      if (url.contains("code=")) {
         new Thread(new Runnable() {
           @Override
           public void run() {
@@ -896,6 +961,7 @@ public class Kuzzle {
               }
               br.close();
 
+              Log.e("login", sb.toString());
               JSONObject response = new JSONObject(sb.toString());
               if (response.isNull("error")) {
                 JSONObject result = response.getJSONObject("result");
@@ -919,6 +985,8 @@ public class Kuzzle {
             }
           }
         }).start();
+      } else {
+        view.loadUrl(url);
       }
       return true;
     }
