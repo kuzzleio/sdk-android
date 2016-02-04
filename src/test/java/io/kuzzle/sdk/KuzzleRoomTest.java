@@ -18,6 +18,8 @@ import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.core.KuzzleRoom;
 import io.kuzzle.sdk.core.KuzzleRoomOptions;
+import io.kuzzle.sdk.enums.EventType;
+import io.kuzzle.sdk.listeners.IKuzzleEventListener;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.socket.client.IO;
@@ -32,6 +34,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -315,13 +318,31 @@ public class KuzzleRoomTest {
 
   @Test
   public void testGetHeaders() throws JSONException {
-    
     room.setHeaders(null);
     assertNotNull(room.getHeaders());
     JSONObject headers = new JSONObject();
     headers.put("foo", "bar");
     room.setHeaders(headers);
     assertEquals(room.getHeaders().getString("foo"), "bar");
+  }
+
+  @Test
+  public void testJwtTokenExpiredNotification() throws JSONException, URISyntaxException {
+    k = new Kuzzle("http://localhost:7512", "index");
+    IKuzzleEventListener listener = spy(new IKuzzleEventListener() {
+
+      @Override
+      public void trigger(Object... args) {
+
+      }
+    });
+    k.addListener(EventType.JWT_TOKEN_EXPIRED, listener);
+    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "index", "test"));
+    JSONObject mockResponse = new JSONObject().put("result", new JSONObject());
+    mockResponse.put("requestId", "42");
+    mockNotif.put("action", "jwtTokenExpired");
+    renew.callAfterRenew(mock(KuzzleResponseListener.class), mockNotif);
+    verify(listener, times(1)).trigger();
   }
 
   // Class for testing protected callAfterRenew and triggerEvents
