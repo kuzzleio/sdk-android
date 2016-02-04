@@ -27,7 +27,7 @@ You can configure your android project to get the Kuzzle's android SDK from jcen
             jcenter()
         }
     }
-    compile 'io.kuzzle:sdk-android:1.3.1'
+    compile 'io.kuzzle:sdk-android:1.3.2'
 
 ## Basic usage
 
