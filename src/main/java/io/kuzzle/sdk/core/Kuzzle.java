@@ -1742,4 +1742,14 @@ public class Kuzzle {
     this.defaultIndex = index;
     return this;
   }
+
+  public Kuzzle setJwtToken(final String jwtToken) {
+    this.jwtToken = jwtToken;
+    return this;
+  }
+
+  public String getJwtToken() {
+    return this.jwtToken;
+  }
+
 }

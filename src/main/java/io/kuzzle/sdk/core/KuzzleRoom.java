@@ -8,12 +8,14 @@ import org.json.JSONObject;
 import java.util.Iterator;
 import java.util.UUID;
 
+import io.kuzzle.sdk.enums.EventType;
 import io.kuzzle.sdk.enums.Scope;
 import io.kuzzle.sdk.enums.State;
 import io.kuzzle.sdk.enums.Users;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleNotificationResponse;
+import io.kuzzle.sdk.util.Event;
 import io.socket.emitter.Emitter;
 
 /**
@@ -127,6 +129,14 @@ public class KuzzleRoom {
           listener.onError((JSONObject) args);
         else {
           String key = ((JSONObject) args).getString("requestId");
+          if (((JSONObject) args).getString("action").equals("jwtTokenExpired")) {
+            KuzzleRoom.this.kuzzle.setJwtToken(null);
+            for (Event e : KuzzleRoom.this.kuzzle.getEventListeners()) {
+              if (e.getType() == EventType.JWT_TOKEN_EXPIRED) {
+                e.trigger();
+              }
+            }
+          }
           if (KuzzleRoom.this.kuzzle.getRequestHistory().containsKey(key)) {
             if (KuzzleRoom.this.subscribeToSelf) {
               listener.onSuccess(new KuzzleNotificationResponse(kuzzle, (JSONObject) args));
