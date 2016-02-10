@@ -220,8 +220,8 @@ public class KuzzleDocumentTest {
       @Override
       public void onSuccess(KuzzleDocument object) {
         try {
-          assertEquals(doc.getVersion(), "42");
-          assertEquals(doc.getContent().getString("foo"), "bar");
+          assertEquals("42", object.getVersion());
+          assertEquals("bar", object.getContent().getString("foo"));
         } catch (JSONException e) {
           e.printStackTrace();
         }

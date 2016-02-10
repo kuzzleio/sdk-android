@@ -31,6 +31,7 @@ public class KuzzleDataMappingTest {
   private Kuzzle k;
   private KuzzleDataCollection dataCollection;
   private KuzzleDataMapping dataMapping;
+  private String ok;
 
   @Before
   public void setUp() {

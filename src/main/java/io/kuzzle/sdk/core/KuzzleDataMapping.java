@@ -116,45 +116,38 @@ public class KuzzleDataMapping {
   }
 
   /**
-   * Refresh kuzzle data mapping.
+   * Gets a refreshed copy of the current object
    *
-   * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping refresh() {
-    return this.refresh(null, null);
+  public void refresh() {
+    this.refresh(null, null);
   }
 
   /**
-   * Replaces the current content with the mapping stored in Kuzzle
-   * Calling this function will discard any uncommited changes. You can commit changes by calling the "apply" function
+   * Gets a refreshed copy of the current object
    *
    * @param options the options
-   * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping refresh(final KuzzleOptions options) {
-    return refresh(options, null);
+  public void refresh(final KuzzleOptions options) {
+    refresh(options, null);
   }
 
   /**
-   * Replaces the current content with the mapping stored in Kuzzle
-   * Calling this function will discard any uncommited changes. You can commit changes by calling the "apply" function
+   * Gets a refreshed copy of the current object
    *
    * @param listener the listener
-   * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping refresh(final KuzzleResponseListener<KuzzleDataMapping> listener) {
-    return refresh(null, listener);
+  public void refresh(final KuzzleResponseListener<KuzzleDataMapping> listener) {
+    refresh(null, listener);
   }
 
   /**
-   * Replaces the current content with the mapping stored in Kuzzle
-   * Calling this function will discard any uncommited changes. You can commit changes by calling the "apply" function
+   * Gets a refreshed copy of the current object
    *
    * @param options  the options
    * @param listener the listener
-   * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping refresh(final KuzzleOptions options, final KuzzleResponseListener<KuzzleDataMapping> listener) {
+  public void refresh(final KuzzleOptions options, final KuzzleResponseListener<KuzzleDataMapping> listener) {
     JSONObject data = new JSONObject();
     try {
       this.kuzzle.addHeaders(data, this.headers);
@@ -162,12 +155,19 @@ public class KuzzleDataMapping {
         @Override
         public void onSuccess(JSONObject args) {
           try {
+            KuzzleDataMapping newMapping = new KuzzleDataMapping(KuzzleDataMapping.this.dataCollection);
+            newMapping.headers = KuzzleDataMapping.this.headers;
+            newMapping.kuzzle = KuzzleDataMapping.this.kuzzle;
+            newMapping.collection = KuzzleDataMapping.this.collection;
+            newMapping.dataCollection = KuzzleDataMapping.this.dataCollection;
+            newMapping.mapping = KuzzleDataMapping.this.mapping;
+
             if (!args.isNull(KuzzleDataMapping.this.kuzzle.getDefaultIndex())) {
               JSONObject mappings = args.getJSONObject(KuzzleDataMapping.this.kuzzle.getDefaultIndex()).getJSONObject("mappings");
               if (!mappings.isNull(KuzzleDataMapping.this.collection))
-                KuzzleDataMapping.this.mapping = mappings.getJSONObject(KuzzleDataMapping.this.collection);
+                newMapping.mapping = mappings.getJSONObject(KuzzleDataMapping.this.collection);
               if (listener != null)
-                listener.onSuccess(KuzzleDataMapping.this);
+                listener.onSuccess(newMapping);
             }
           } catch (JSONException e) {
             throw new RuntimeException(e);
@@ -183,7 +183,6 @@ public class KuzzleDataMapping {
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
-    return this;
   }
 
   /**
