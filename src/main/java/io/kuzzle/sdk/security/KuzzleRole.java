@@ -27,14 +27,14 @@ public class KuzzleRole extends AbstractKuzzleSecurityDocument {
    * @param listener - Optional callback listener
    * @throws JSONException
    */
-  public void save(final KuzzleOptions options, final KuzzleResponseListener listener) throws JSONException {
+  public void save(final KuzzleOptions options, final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
     JSONObject data = this.serialize();
 
     this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createOrReplaceRole"), data, options, new OnQueryDoneListener() {
       @Override
       public void onSuccess(JSONObject response) {
         if (listener != null) {
-          listener.onSuccess(this);
+          listener.onSuccess(KuzzleRole.this);
         }
       }
 
@@ -53,7 +53,7 @@ public class KuzzleRole extends AbstractKuzzleSecurityDocument {
    * @param listener - Optional callback listener
    * @throws JSONException
    */
-  public void save(final KuzzleResponseListener listener) throws JSONException {
+  public void save(final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
     this.save(null, listener);
   }
 

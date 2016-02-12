@@ -21,6 +21,10 @@ public class AbstractKuzzleSecurityDocument {
   public JSONObject content;
 
   public AbstractKuzzleSecurityDocument(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
+    if (id == null) {
+      throw new IllegalArgumentException("Cannot initialize with a null ID");
+    }
+
     this.kuzzle = kuzzle;
     this.kuzzleSecurity = kuzzle.security;
     this.id = id;

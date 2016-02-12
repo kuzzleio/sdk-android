@@ -12,7 +12,7 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
  * This class handles users management in Kuzzle
  */
 public class KuzzleUser extends AbstractKuzzleSecurityDocument {
-  KuzzleProfile profile = null;
+  public KuzzleProfile profile = null;
 
   public KuzzleUser(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
     super(kuzzle, id, null);
@@ -44,7 +44,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void hydrate(final KuzzleOptions options, @NonNull final KuzzleResponseListener listener) throws JSONException {
+  public void hydrate(final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     if (listener == null) {
       throw new IllegalArgumentException("KuzzleUser.hydrate: a callback listener is required");
     }
@@ -53,16 +53,17 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
       throw new IllegalArgumentException("KuzzleUser.hydrate: cannot save a user without a profile");
     }
 
-    JSONObject data = new JSONObject().put("_id", this.profile);
+    JSONObject data = new JSONObject().put("_id", this.profile.id);
 
     this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("getProfile"), data, options, new OnQueryDoneListener() {
       @Override
       public void onSuccess(JSONObject response) {
         try {
           JSONObject result = response.getJSONObject("result");
-          listener.onSuccess(new KuzzleUser(KuzzleUser.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
-        }
-        catch(JSONException e) {
+          KuzzleUser user = new KuzzleUser(KuzzleUser.this.kuzzle, KuzzleUser.this.id, null);
+          user.setProfile(new KuzzleProfile(KuzzleUser.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+          listener.onSuccess(user);
+        } catch (JSONException e) {
           throw new RuntimeException(e);
         }
       }
@@ -81,7 +82,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void hydrate(@NonNull final KuzzleResponseListener listener) throws JSONException {
+  public void hydrate(@NonNull final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     hydrate(null, listener);
   }
 
@@ -107,14 +108,8 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @param id - new profile ID
    * @return this
    */
-  public KuzzleUser setProfile(@NonNull final String id) {
-    try {
-      setProfile(new KuzzleProfile(this.kuzzle, id, null));
-    }
-    catch(JSONException e) {
-      throw new RuntimeException(e);
-    }
-
+  public KuzzleUser setProfile(@NonNull final String id) throws JSONException {
+    setProfile(new KuzzleProfile(this.kuzzle, id, null));
     return this;
   }
 
@@ -126,26 +121,59 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @return this
    * @throws JSONException
    */
-  public KuzzleUser save(final KuzzleOptions options, @NonNull final KuzzleResponseListener listener) throws JSONException {
-    if (listener == null) {
-      throw new IllegalArgumentException("KuzzleUser.save: a callback listener is required");
-    }
-
+  public KuzzleUser save(final KuzzleOptions options, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     JSONObject data = this.serialize();
 
-    this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createOrReplaceUser"), data, options, new OnQueryDoneListener() {
-      @Override
-      public void onSuccess(JSONObject response) {
-        listener.onSuccess(this);
-      }
+    if (listener != null) {
+      this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createOrReplaceUser"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          listener.onSuccess(KuzzleUser.this);
+        }
 
-      @Override
-      public void onError(JSONObject error) {
-        listener.onError(error);
-      }
-    });
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    }
+    else {
+      this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createOrReplaceUser"), data, options);
+    }
 
     return this;
+  }
+
+  /**
+   * Save this user in Kuzzle
+   *
+   * @param listener - Callback listener
+   * @return this
+   * @throws JSONException
+   */
+  public KuzzleUser save(final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
+    return save(null, listener);
+  }
+
+  /**
+   * Save this user in Kuzzle
+   *
+   * @param options - Optional arguments
+   * @return this
+   * @throws JSONException
+   */
+  public KuzzleUser save(final KuzzleOptions options) throws JSONException {
+    return save(options, null);
+  }
+
+  /**
+   * Save this user in Kuzzle
+   *
+   * @return this
+   * @throws JSONException
+   */
+  public KuzzleUser save() throws JSONException {
+    return save(null, null);
   }
 
   /**

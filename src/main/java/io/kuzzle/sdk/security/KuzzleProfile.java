@@ -18,7 +18,7 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
  * This class handles profiles management in Kuzzle
  */
 public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
-  ArrayDeque<KuzzleRole> roles;
+  private ArrayDeque<KuzzleRole> roles;
 
   public KuzzleProfile(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
     super(kuzzle, id, null);
@@ -57,7 +57,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @return this
    * @throws JSONException
    */
-  public KuzzleProfile save(final KuzzleOptions options, final KuzzleResponseListener listener) throws JSONException {
+  public KuzzleProfile save(final KuzzleOptions options, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     JSONObject data;
 
     if (this.roles.isEmpty()) {
@@ -66,21 +66,22 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
 
     data = this.serialize();
 
-    this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createOrReplaceProfile"), data, options, new OnQueryDoneListener() {
-      @Override
-      public void onSuccess(JSONObject response) {
-        if (listener != null) {
-          listener.onSuccess(this);
+    if (listener != null) {
+      this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createOrReplaceProfile"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          listener.onSuccess(KuzzleProfile.this);
         }
-      }
 
-      @Override
-      public void onError(JSONObject error) {
-        if (listener != null) {
+        @Override
+        public void onError(JSONObject error) {
           listener.onError(error);
         }
-      }
-    });
+      });
+    }
+    else {
+      this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createOrReplaceProfile"), data, options);
+    }
 
     return this;
   }
@@ -92,7 +93,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @return this
    * @throws JSONException
    */
-  public KuzzleProfile save(final KuzzleResponseListener listener) throws JSONException {
+  public KuzzleProfile save(final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     return this.save(null, listener);
   }
 
@@ -134,14 +135,8 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @param role - Name of the role to add to this profile
    * @return this
    */
-  public KuzzleProfile addRole(final String role) {
-    try {
-      this.roles.add(new KuzzleRole(this.kuzzle, role, null));
-    }
-    catch(JSONException e) {
-      throw new RuntimeException(e);
-    }
-
+  public KuzzleProfile addRole(final String role) throws JSONException {
+    this.roles.add(new KuzzleRole(this.kuzzle, role, null));
     return this;
   }
 
@@ -152,6 +147,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @return this
    */
   public KuzzleProfile setRoles(final KuzzleRole roles[]) {
+    this.roles.clear();
     this.roles.addAll(Arrays.asList(roles));
 
     return this;
@@ -164,6 +160,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @return this
    */
   public KuzzleProfile setRoles(final String roles[]) {
+    this.roles.clear();
     for(String role : roles) {
       try {
         this.roles.add(new KuzzleRole(this.kuzzle, role, null));
@@ -184,7 +181,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void hydrate(final KuzzleOptions options, @NonNull final KuzzleResponseListener listener) throws JSONException {
+  public void hydrate(final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     if (listener == null) {
       throw new IllegalArgumentException("KuzzleRole.hydrate: a callback listener is required");
     }
@@ -202,7 +199,15 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
       public void onSuccess(JSONObject response) {
         try {
           JSONObject result = response.getJSONObject("result");
-          listener.onSuccess(new KuzzleProfile(KuzzleProfile.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+          JSONArray hits = result.getJSONArray("hits");
+          KuzzleProfile profile = new KuzzleProfile(KuzzleProfile.this.kuzzle, KuzzleProfile.this.id, null);
+
+          for (int i = 0; i < hits.length(); i++) {
+            JSONObject role = hits.getJSONObject(i);
+            profile.addRole(new KuzzleRole(KuzzleProfile.this.kuzzle, role.getString("_id"), role.getJSONObject("_source")));
+          }
+
+          listener.onSuccess(profile);
         }
         catch (JSONException e) {
           throw new RuntimeException(e);
@@ -223,7 +228,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void hydrate(@NonNull final KuzzleResponseListener listener) throws JSONException {
+  public void hydrate(@NonNull final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     hydrate(null, listener);
   }
 
@@ -252,5 +257,14 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
       .put("body", content);
 
     return data;
+  }
+
+  /**
+   * Return the list of roles assigned to this profile
+   *
+   * @return an array of KuzzleRole objects
+   */
+  public KuzzleRole[] getRoles() {
+    return this.roles.toArray(new KuzzleRole[this.roles.size()]);
   }
 }

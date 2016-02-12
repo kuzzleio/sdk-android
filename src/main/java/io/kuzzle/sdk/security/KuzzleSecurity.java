@@ -41,7 +41,7 @@ public class KuzzleSecurity {
    * @param options - optional query arguments
    * @param listener - response callback
    */
-  public void getRole(@NonNull final String id, KuzzleOptions options, @NonNull final KuzzleResponseListener listener) {
+  public void getRole(@NonNull final String id, KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleRole> listener) {
     JSONObject data;
 
     if (id == null) {
@@ -82,7 +82,7 @@ public class KuzzleSecurity {
    * @param id - unique role ID
    * @param listener - response callback
    */
-  public void getRole(@NonNull final String id, @NonNull final KuzzleResponseListener listener) {
+  public void getRole(@NonNull final String id, @NonNull final KuzzleResponseListener<KuzzleRole> listener) {
     getRole(id, null, listener);
   }
 
@@ -99,7 +99,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void searchRoles(@NonNull final JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener listener) throws JSONException {
+  public void searchRoles(@NonNull final JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleSecurityDocumentList> listener) throws JSONException {
     if (filters == null) {
       throw new IllegalArgumentException("KuzzleSecurity.searchRoles: filters cannot be null");
     }
@@ -148,7 +148,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void searchRoles(@NonNull final JSONObject filters, @NonNull final KuzzleResponseListener listener) throws JSONException {
+  public void searchRoles(@NonNull final JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleSecurityDocumentList> listener) throws JSONException {
     searchRoles(filters, null, listener);
   }
 
@@ -166,7 +166,7 @@ public class KuzzleSecurity {
    * @param listener - callback listener
    * @throws JSONException
    */
-  public void createRole(@NonNull final String id, @NonNull final JSONObject content, KuzzleOptions options, final KuzzleResponseListener listener) throws JSONException {
+  public void createRole(@NonNull final String id, @NonNull final JSONObject content, KuzzleOptions options, final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
     String action = "createRole";
 
     if (id == null || content == null) {
@@ -216,7 +216,7 @@ public class KuzzleSecurity {
    * @param listener - callback listener
    * @throws JSONException
    */
-  public void createRole(@NonNull final String id, @NonNull final JSONObject content, final KuzzleResponseListener listener) throws JSONException {
+  public void createRole(@NonNull final String id, @NonNull final JSONObject content, final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
     createRole(id, content, null, listener);
   }
 
@@ -265,7 +265,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void deleteRole(@NonNull final String id, final KuzzleOptions options, final KuzzleResponseListener listener) throws JSONException {
+  public void deleteRole(@NonNull final String id, final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
     if (id == null) {
       throw new IllegalArgumentException("KuzzleSecurity.deleteRole: cannot delete role without an ID");
     }
@@ -290,6 +290,9 @@ public class KuzzleSecurity {
         }
       });
     }
+    else {
+      this.kuzzle.query(buildQueryArgs("deleteRole"), data, options);
+    }
   }
 
   /**
@@ -303,7 +306,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void deleteRole(@NonNull final String id, final KuzzleResponseListener listener) throws JSONException {
+  public void deleteRole(@NonNull final String id, final KuzzleResponseListener<String> listener) throws JSONException {
     deleteRole(id, null, listener);
   }
 
@@ -371,7 +374,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void getProfile(@NonNull final String id, final KuzzleOptions options, @NonNull final KuzzleResponseListener listener) throws JSONException {
+  public void getProfile(@NonNull final String id, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     if (id == null) {
       throw new IllegalArgumentException("KuzzleSecurity.getProfile: cannot get 'null' profile");
     }
@@ -388,7 +391,7 @@ public class KuzzleSecurity {
       public void onSuccess(JSONObject response) {
         try {
           JSONObject result = response.getJSONObject("result");
-          listener.onSuccess(new KuzzleRole(KuzzleSecurity.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+          listener.onSuccess(new KuzzleProfile(KuzzleSecurity.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
         } catch (JSONException e) {
           throw new RuntimeException(e);
         }
@@ -412,7 +415,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void getProfile(@NonNull final String id, @NonNull final KuzzleResponseListener listener) throws JSONException {
+  public void getProfile(@NonNull final String id, @NonNull final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     getProfile(id, null, listener);
   }
 
@@ -433,7 +436,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void searchProfiles(@NonNull JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener listener) throws JSONException {
+  public void searchProfiles(@NonNull JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleSecurityDocumentList> listener) throws JSONException {
     if (filters == null) {
       throw new IllegalArgumentException("KuzzleSecurity.searchProfiles: cannot perform a search on null filters");
     }
@@ -487,7 +490,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void searchProfiles(@NonNull JSONObject filters, @NonNull final KuzzleResponseListener listener) throws JSONException {
+  public void searchProfiles(@NonNull JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleSecurityDocumentList> listener) throws JSONException {
     searchProfiles(filters, null, listener);
   }
 
@@ -505,7 +508,7 @@ public class KuzzleSecurity {
    * @param listener - Callback lisener
    * @throws JSONException
    */
-  public void createProfile(@NonNull final String id, @NonNull final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener listener) throws JSONException {
+  public void createProfile(@NonNull final String id, @NonNull final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     String action = "createProfile";
 
     if (id == null || content == null) {
@@ -572,7 +575,7 @@ public class KuzzleSecurity {
    * @param listener - Callback lisener
    * @throws JSONException
    */
-  public void createProfile(@NonNull final String id, @NonNull final JSONObject content, final KuzzleResponseListener listener) throws JSONException {
+  public void createProfile(@NonNull final String id, @NonNull final JSONObject content, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     createProfile(id, content, null, listener);
   }
 
@@ -604,7 +607,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void deleteProfile(@NonNull final String id, final KuzzleOptions options, final KuzzleResponseListener listener) throws JSONException {
+  public void deleteProfile(@NonNull final String id, final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
     if (id == null) {
       throw new IllegalArgumentException("KuzzleSecurity.deleteProfile: cannot delete a profile with ID null");
     }
@@ -645,7 +648,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void deleteProfile(@NonNull final String id, final KuzzleResponseListener listener) throws JSONException {
+  public void deleteProfile(@NonNull final String id, final KuzzleResponseListener<String> listener) throws JSONException {
     deleteProfile(id, null, listener);
   }
 
@@ -713,7 +716,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void getUser(@NonNull final String id, final KuzzleOptions options, @NonNull final KuzzleResponseListener listener) throws JSONException {
+  public void getUser(@NonNull final String id, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     if (id == null) {
       throw new IllegalArgumentException("KuzzleSecurity.getUser: cannot get user with ID null");
     }
@@ -754,7 +757,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void getUser(@NonNull final String id, @NonNull final KuzzleResponseListener listener) throws JSONException {
+  public void getUser(@NonNull final String id, @NonNull final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     getUser(id, null, listener);
   }
 
@@ -775,7 +778,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void searchUsers(@NonNull JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener listener) throws JSONException {
+  public void searchUsers(@NonNull JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleSecurityDocumentList> listener) throws JSONException {
     boolean hydrate = options != null ? options.isHydrated() : true;
 
     if (filters == null) {
@@ -832,7 +835,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void searchUsers(@NonNull JSONObject filters, @NonNull final KuzzleResponseListener listener) throws JSONException {
+  public void searchUsers(@NonNull JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleSecurityDocumentList> listener) throws JSONException {
     searchUsers(filters, null, listener);
   }
 
@@ -850,7 +853,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void createUser(@NonNull final String id, @NonNull final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener listener) throws JSONException {
+  public void createUser(@NonNull final String id, @NonNull final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     String action = options != null && options.isUpdateIfExists() ? "createOrReplaceUser" : "createUser";
     if (id == null || content == null) {
       throw new IllegalArgumentException("KuzzleSecurity.createUser: cannot create a user with a null ID or content");
@@ -912,7 +915,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void createUser(@NonNull final String id, @NonNull final JSONObject content, final KuzzleResponseListener listener) throws JSONException {
+  public void createUser(@NonNull final String id, @NonNull final JSONObject content, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     createUser(id, content, null, listener);
   }
 
@@ -944,7 +947,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void deleteUser(@NonNull final String id, final KuzzleOptions options, final KuzzleResponseListener listener) throws JSONException {
+  public void deleteUser(@NonNull final String id, final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
     if (id == null) {
       throw new IllegalArgumentException("KuzzleSecurity.deleteUser: cannot delete user with ID null");
     }
@@ -1000,7 +1003,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException
    */
-  public void deleteUser(@NonNull final String id, final KuzzleResponseListener listener) throws JSONException {
+  public void deleteUser(@NonNull final String id, final KuzzleResponseListener<String> listener) throws JSONException {
     deleteUser(id, null, listener);
   }
 
