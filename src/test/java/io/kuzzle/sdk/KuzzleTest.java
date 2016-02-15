@@ -1038,45 +1038,6 @@ public class KuzzleTest {
   }
 
   @Test
-  public void testLoginWithConstructor() throws URISyntaxException, JSONException {
-    KuzzleOptions options = new KuzzleOptions();
-    options.setLoginStrategy("local");
-    options.setLoginUsername("username");
-    options.setLoginPassword("password");
-    options.setLoginExpiresIn(30000);
-    options.setConnect(Mode.MANUAL);
-    options.setQueuable(false);
-    kuzzle = new Kuzzle("http://localhost:7512", "index", options);
-    kuzzle.setSocket(s);
-    kuzzle = spy(kuzzle);
-    kuzzle.setSocket(s);
-
-    final JSONObject mockResponse = new JSONObject();
-    mockResponse.put("requestId", "42");
-    mockResponse.put("jwt", "jwtToken");
-    doAnswer(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(mockResponse);
-        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
-        return null;
-      }
-    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    doAnswer(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((Emitter.Listener) invocation.getArguments()[1]).call();
-        return s;
-      }
-    }).when(s).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
-    kuzzle.connect();
-    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "auth");
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "login");
-  }
-
-  @Test
   public void testLogin() throws JSONException {
     kuzzle = spy(kuzzle);
     kuzzle.setSocket(s);
@@ -1089,15 +1050,11 @@ public class KuzzleTest {
         return null;
       }
     }).when(kuzzle).query(eq(QueryArgsHelper.makeQueryArgs("auth", "login")), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    kuzzle.login("local", "username", "password");
-    kuzzle.login("local", "username", "password", 42);
-    kuzzle.login("local", "username", "password", 42, new KuzzleOptions());
-    kuzzle.login("local", "username", "password", 42, new KuzzleOptions(), listenerSpy);
-    kuzzle.login("local", "username", "password", 42, listenerSpy);
-    kuzzle.login("local", "username", "password", new KuzzleOptions());
-    kuzzle.login("local", "username", "password", new KuzzleOptions(), listenerSpy);
+    kuzzle.login("local", new JSONObject().put("username", "username").put("password", "password"));
+    kuzzle.login("local", new JSONObject().put("username", "username").put("password", "password"), 42);
+    kuzzle.login("local", new JSONObject().put("username", "username").put("password", "password"), 42, listenerSpy);
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(7)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(3)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "auth");
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "login");
   }
@@ -1127,20 +1084,13 @@ public class KuzzleTest {
   @Test
   public void testLogout() throws URISyntaxException, JSONException {
     KuzzleOptions options = new KuzzleOptions();
-    options.setLoginStrategy("local");
-    options.setLoginUsername("username");
-    options.setLoginPassword("password");
-    options.setLoginExpiresIn(30000);
     options.setConnect(Mode.MANUAL);
-    options.setQueuable(false);
     kuzzle = new Kuzzle("http://localhost:7512", "index", options);
     kuzzle.setSocket(s);
     kuzzle = spy(kuzzle);
     kuzzle.setSocket(s);
 
-    final JSONObject response = new JSONObject();
-    response.put("jwt", "jwtToken");
-    response.put("requestId", "42");
+    final JSONObject response = new JSONObject("{\"result\": {\"jwt\": \"jwtToken\"}}");
 
     doAnswer(new Answer() {
       @Override
@@ -1151,13 +1101,11 @@ public class KuzzleTest {
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    kuzzle.login("local", "username", "password");
+    kuzzle.login("local", new JSONObject().put("username", "username").put("password", "password"));
     kuzzle.logout();
     kuzzle.logout(mock(KuzzleResponseListener.class));
-    kuzzle.logout(mock(KuzzleOptions.class));
-    kuzzle.logout(mock(KuzzleOptions.class), mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(5)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(3)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "auth");
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "logout");
   }

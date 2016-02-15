@@ -87,12 +87,6 @@ public class Kuzzle {
   private int queueTTL;
   private int queueMaxSize;
 
-  // Auth related
-  private String  loginStrategy;
-  private String  loginUsername;
-  private String  loginPassword;
-  // in second
-  private int loginExpiresIn = 0;
   private String jwtToken;
 
   // Security static class
@@ -147,10 +141,6 @@ public class Kuzzle {
     this.queueMaxSize = (options != null ? options.getQueueMaxSize() : 0);
     this.autoResubscribe = (options == null || options.isAutoResubscribe());
     // login related
-    this.loginStrategy = (options != null ? options.getLoginStrategy() : null);
-    this.loginUsername = (options != null ? options.getLoginUsername() : null);
-    this.loginPassword = (options != null ? options.getLoginPassword() : null);
-    this.loginExpiresIn = (options != null ? options.getLoginExpiresIn() : -1);
     this.url = url;
     this.connectionCallback = connectionCallback;
     this.defaultIndex = index;
@@ -305,9 +295,7 @@ public class Kuzzle {
         @Override
         public void call(Object... args) {
           Kuzzle.this.state = KuzzleStates.CONNECTED;
-          if (loginStrategy != null && loginUsername != null && loginPassword != null) {
-            Kuzzle.this.login(loginStrategy, loginUsername, loginPassword, loginExpiresIn);
-          }
+
           if (Kuzzle.this.connectionCallback != null) {
             Kuzzle.this.connectionCallback.onSuccess(null);
           }
@@ -774,146 +762,94 @@ public class Kuzzle {
    * Log a user according to the strategy and credentials.
    *
    * @param strategy the strategy
-   * @param username the username
-   * @param password the password
+   * @param credentials    login credentials
    * @return kuzzle kuzzle
    */
-  public Kuzzle login(final String strategy, final String username, final String password) {
-    return this.login(strategy, username, password, -1, null, null, null);
+  public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials) {
+    return this.login(strategy, credentials, -1, null, null);
   }
 
   /**
    * Log a user according to the strategy and credentials.
    *
    * @param strategy  the strategy
-   * @param username  the username
-   * @param password  the password
+   * @param credentials    login credentials
    * @param expiresIn the expires in
    * @return kuzzle kuzzle
    */
-  public Kuzzle login(final String strategy, final String username, final String password, final int expiresIn) {
-    return this.login(strategy, username, password, expiresIn, null, null, null);
-  }
-
-  /**
-   * Log a user according to the strategy and credentials.
-   *
-   * @param strategy  the strategy
-   * @param username  the username
-   * @param password  the password
-   * @param expiresIn the expires in
-   * @param listener  the listener
-   * @return kuzzle kuzzle
-   */
-  public Kuzzle login(final String strategy, final String username, final String password, final int expiresIn, KuzzleResponseListener<JSONObject> listener) {
-    return this.login(strategy, username, password, expiresIn, null, listener, null);
-  }
-
-  /**
-   * Log a user according to the strategy and credentials.
-   *
-   * @param strategy       the strategy
-   * @param username       the username
-   * @param password       the password
-   * @param expiresIn      the expires in
-   * @param listener       callback called when strategy's redirectUri is received
-   * @param loggedCallback Last collback called when user is logged
-   * @return kuzzle kuzzle
-   */
-  public Kuzzle login(final String strategy, final String username, final String password, final int expiresIn, KuzzleResponseListener<JSONObject> listener, final OnKuzzleLoginDoneListener loggedCallback) {
-    return this.login(strategy, username, password, expiresIn, null, listener, loggedCallback);
-  }
-
-  /**
-   * Log a user according to the strategy and credentials.
-   *
-   * @param strategy the strategy
-   * @param username the username
-   * @param password the password
-   * @param options  the options
-   * @return kuzzle kuzzle
-   */
-  public Kuzzle login(final String strategy, final String username, final String password, final KuzzleOptions options) {
-    return this.login(strategy, username, password, -1, options, null, null);
-  }
-
-  /**
-   * Log a user according to the strategy and credentials.
-   *
-   * @param strategy  the strategy
-   * @param username  the username
-   * @param password  the password
-   * @param expiresIn the expires in
-   * @param options   the options
-   * @return kuzzle kuzzle
-   */
-  public Kuzzle login(final String strategy, final String username, final String password, final int expiresIn, final KuzzleOptions options) {
-    return this.login(strategy, username, password, expiresIn, options, null, null);
+  public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials, final int expiresIn) {
+    return this.login(strategy, credentials, expiresIn, null, null);
   }
 
   /**
    * Login kuzzle.
    *
    * @param strategy the strategy
-   * @param username the username
-   * @param password the password
-   * @param options  the options
+   * @param credentials    login credentials
    * @param listener the listener
    * @return the kuzzle
    */
-  public Kuzzle login(final String strategy, final String username, final String password, final KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener) {
-    return this.login(strategy, username, password, -1, options, listener, null);
+  public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials, final KuzzleResponseListener<JSONObject> listener) {
+    return this.login(strategy, credentials, -1, listener, null);
   }
 
   /**
    * Login kuzzle.
    *
-   * @param strategy  the strategy
-   * @param username  the username
-   * @param password  the password
-   * @param expiresIn the expires in
-   * @param options   the options
-   * @param listener  the listener
+   * @param strategy      the strategy
+   * @param credentials   login credentials
+   * @param expiresIn     the expires in
+   * @param listener      the listener
    * @return the kuzzle
    */
-  public Kuzzle login(final String strategy, final String username, final String password, int expiresIn, final KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener) {
-    return this.login(strategy, username, password, expiresIn, options, listener, null);
+  public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials, int expiresIn, final KuzzleResponseListener<JSONObject> listener) {
+    return this.login(strategy, credentials, expiresIn, listener, null);
   }
 
   /**
    * Log a user according to the strategy and credentials.
    *
    * @param strategy       the strategy
-   * @param username       the username
-   * @param password       the password
+   * @param credentials    login credentials
    * @param expiresIn      the expires in
-   * @param options        the options
    * @param listener       callback called when strategy's redirectUri is received
-   * @param loggedCallback Last collback called when user is logged
+   * @param loggedCallback Last callback called when user is logged
    * @return kuzzle kuzzle
    */
-  public Kuzzle login(final String strategy, final String username, final String password, int expiresIn, final KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener, final OnKuzzleLoginDoneListener loggedCallback) {
-    JSONObject query = new JSONObject();
-    JSONObject body = new JSONObject();
+  public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials, int expiresIn, final KuzzleResponseListener<JSONObject> listener, final OnKuzzleLoginDoneListener loggedCallback) {
+    if (strategy == null) {
+      throw new IllegalArgumentException("Kuzzle.login: cannot authenticate to Kuzzle without an authentication strategy");
+    }
+
+    if (credentials == null) {
+      throw new IllegalArgumentException("Kuzzle.login: cannot authenticate with null credentials");
+    }
+
     try {
-      body.put("strategy", strategy);
-      body.put("username", username);
-      body.put("password", password);
+      KuzzleOptions options = new KuzzleOptions();
+      JSONObject query = new JSONObject();
+      JSONObject body = new JSONObject(credentials.toString()).put("strategy", strategy);
+
       if (expiresIn >= 0) {
         body.put("expiresIn", expiresIn);
       }
+
       query.put("body", body);
       loginCallback = loggedCallback;
       QueryArgs args = new QueryArgs();
       args.controller = "auth";
       args.action = "login";
+      options.setQueuable(false);
+
       return this.query(args, query, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject object) {
           try {
-            if (!object.isNull("jwt")) {
+            JSONObject result = object.getJSONObject("result");
+
+            if (!result.isNull("jwt")) {
+              Kuzzle.this.jwtToken = result.getString("jwt");
               Kuzzle.this.renewSubscriptions();
-              Kuzzle.this.jwtToken = object.getString("jwt");
             }
             if (listener != null) {
               listener.onSuccess(object);
@@ -1011,17 +947,7 @@ public class Kuzzle {
    * @return the kuzzle
    */
   public Kuzzle logout() {
-    return this.logout(null, null);
-  }
-
-  /**
-   * Logout kuzzle.
-   *
-   * @param options the options
-   * @return the kuzzle
-   */
-  public Kuzzle logout(final KuzzleOptions options) {
-    return this.logout(options, null);
+    return this.logout(null);
   }
 
   /**
@@ -1031,17 +957,10 @@ public class Kuzzle {
    * @return the kuzzle
    */
   public Kuzzle logout(final KuzzleResponseListener<Void> listener) {
-    return this.logout(null, listener);
-  }
+    KuzzleOptions options = new KuzzleOptions();
 
-  /**
-   * Logout kuzzle.
-   *
-   * @param options  the options
-   * @param listener the listener
-   * @return the kuzzle
-   */
-  public Kuzzle logout(final KuzzleOptions options, final KuzzleResponseListener<Void> listener) {
+    options.setQueuable(false);
+    
     try {
       QueryArgs args = new QueryArgs();
       args.controller = "auth";
