@@ -28,7 +28,7 @@ import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.kuzzle.sdk.enums.EventType;
+import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.IKuzzleEventListener;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -198,14 +198,14 @@ public class Kuzzle {
    * insertion.
    * The ID returned by this function is required to remove this listener at a later time.
    *
-   * @param eventType     - name of the global event to subscribe to
+   * @param kuzzleEvent     - name of the global event to subscribe to
    * @param eventListener the event listener
    * @return {string} Unique listener ID
    */
-  public String addListener(final EventType eventType, final IKuzzleEventListener eventListener) {
+  public String addListener(final KuzzleEvent kuzzleEvent, final IKuzzleEventListener eventListener) {
     this.isValid();
 
-    Event e = new Event(eventType) {
+    Event e = new Event(kuzzleEvent) {
       @Override
       public void trigger(Object... args) {
         eventListener.trigger(args);
@@ -301,7 +301,7 @@ public class Kuzzle {
           }
           Kuzzle.this.dequeue();
           for (Event e : Kuzzle.this.eventListeners) {
-            if (e.getType() == EventType.CONNECTED) {
+            if (e.getType() == KuzzleEvent.connected) {
               e.trigger();
             }
           }
@@ -313,7 +313,7 @@ public class Kuzzle {
         public void call(Object... args) {
           Kuzzle.this.state = KuzzleStates.ERROR;
           for (Event e : Kuzzle.this.eventListeners) {
-            if (e.getType() == EventType.ERROR) {
+            if (e.getType() == KuzzleEvent.error) {
               e.trigger(args);
             }
           }
@@ -341,7 +341,7 @@ public class Kuzzle {
             queuing = true;
           }
           for (Event e : eventListeners) {
-            if (e.getType() == EventType.DISCONNECTED) {
+            if (e.getType() == KuzzleEvent.disconnected) {
               e.trigger();
             }
           }
@@ -368,7 +368,7 @@ public class Kuzzle {
 
           // alert listeners
           for (Event e : Kuzzle.this.eventListeners) {
-            if (e.getType() == EventType.RECONNECTED) {
+            if (e.getType() == KuzzleEvent.reconnected) {
               e.trigger();
             }
           }
@@ -960,7 +960,7 @@ public class Kuzzle {
     KuzzleOptions options = new KuzzleOptions();
 
     options.setQueuable(false);
-    
+
     try {
       QueryArgs args = new QueryArgs();
       args.controller = "auth";
@@ -1165,7 +1165,7 @@ public class Kuzzle {
    * @param type the type
    * @return the kuzzle
    */
-  public Kuzzle removeAllListeners(EventType type) {
+  public Kuzzle removeAllListeners(KuzzleEvent type) {
     for (Iterator ite = this.eventListeners.iterator(); ite.hasNext();) {
       if (((Event)ite.next()).getType() == type) {
         ite.remove();
@@ -1318,7 +1318,7 @@ public class Kuzzle {
           // checking token expiration
           if (!((JSONObject) args[0]).isNull("error") && ((JSONObject) args[0]).getJSONObject("error").getString("message").equals("Token expired")) {
             for (Event e : Kuzzle.this.eventListeners) {
-              if (e.getType() == EventType.JWT_TOKEN_EXPIRED) {
+              if (e.getType() == KuzzleEvent.jwtTokenExpired) {
                 e.trigger(request, listener);
               }
             }

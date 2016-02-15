@@ -9,7 +9,7 @@ import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.enums.EventType;
+import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.util.Event;
 import io.socket.client.Socket;
@@ -53,7 +53,7 @@ public class KuzzleListenerTest {
   public void testCONNECTEDevent() {
     mockAnswer(Socket.EVENT_CONNECT);
     event = mock(Event.class);
-    kuzzle.addListener(EventType.CONNECTED, event);
+    kuzzle.addListener(KuzzleEvent.connected, event);
     kuzzle.connect();
     verify(event, times(1)).trigger();
   }
@@ -62,7 +62,7 @@ public class KuzzleListenerTest {
   public void testERRORevent() {
     mockAnswer(Socket.EVENT_CONNECT_ERROR);
     event = mock(Event.class);
-    kuzzle.addListener(EventType.ERROR, event);
+    kuzzle.addListener(KuzzleEvent.error, event);
     kuzzle.connect();
     verify(event, times(1)).trigger(null, null);
   }
@@ -71,7 +71,7 @@ public class KuzzleListenerTest {
   public void testDISCONNECTevent() {
     mockAnswer(Socket.EVENT_DISCONNECT);
     event = mock(Event.class);
-    kuzzle.addListener(EventType.DISCONNECTED, event);
+    kuzzle.addListener(KuzzleEvent.disconnected, event);
     kuzzle.connect();
     verify(event, times(1)).trigger();
   }
@@ -80,7 +80,7 @@ public class KuzzleListenerTest {
   public void testRECONNECTevent() {
     mockAnswer(Socket.EVENT_RECONNECT);
     event = mock(Event.class);
-    kuzzle.addListener(EventType.RECONNECTED, event);
+    kuzzle.addListener(KuzzleEvent.reconnected, event);
     kuzzle.connect();
     verify(event, times(1)).trigger();
   }

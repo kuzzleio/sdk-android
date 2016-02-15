@@ -18,7 +18,7 @@ import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.core.KuzzleRoom;
 import io.kuzzle.sdk.core.KuzzleRoomOptions;
-import io.kuzzle.sdk.enums.EventType;
+import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.listeners.IKuzzleEventListener;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
@@ -336,7 +336,7 @@ public class KuzzleRoomTest {
 
       }
     });
-    k.addListener(EventType.JWT_TOKEN_EXPIRED, listener);
+    k.addListener(KuzzleEvent.jwtTokenExpired, listener);
     KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "index", "test"));
     JSONObject mockResponse = new JSONObject().put("result", new JSONObject());
     mockResponse.put("requestId", "42");

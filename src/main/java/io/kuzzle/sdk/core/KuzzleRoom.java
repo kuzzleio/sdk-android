@@ -8,7 +8,7 @@ import org.json.JSONObject;
 import java.util.Iterator;
 import java.util.UUID;
 
-import io.kuzzle.sdk.enums.EventType;
+import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.enums.Scope;
 import io.kuzzle.sdk.enums.State;
 import io.kuzzle.sdk.enums.Users;
@@ -132,7 +132,7 @@ public class KuzzleRoom {
           if (((JSONObject) args).getString("action").equals("jwtTokenExpired")) {
             KuzzleRoom.this.kuzzle.setJwtToken(null);
             for (Event e : KuzzleRoom.this.kuzzle.getEventListeners()) {
-              if (e.getType() == EventType.JWT_TOKEN_EXPIRED) {
+              if (e.getType() == KuzzleEvent.jwtTokenExpired) {
                 e.trigger();
               }
             }

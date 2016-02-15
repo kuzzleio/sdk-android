@@ -18,7 +18,7 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.core.KuzzleRoom;
-import io.kuzzle.sdk.enums.EventType;
+import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.IKuzzleEventListener;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -115,8 +115,8 @@ public class KuzzleTest {
   @Test
   public void testAddListener() {
     assertEquals(kuzzle.getEventListeners(), new ArrayList<IKuzzleEventListener>());
-    kuzzle.addListener(EventType.CONNECTED, mock(IKuzzleEventListener.class));
-    assertEquals(kuzzle.getEventListeners().get(0).getType(), EventType.CONNECTED);
+    kuzzle.addListener(KuzzleEvent.connected, mock(IKuzzleEventListener.class));
+    assertEquals(kuzzle.getEventListeners().get(0).getType(), KuzzleEvent.connected);
   }
 
   @Test
@@ -146,7 +146,7 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener)invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("now", mock(JSONObject.class))));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("now", mock(JSONObject.class))));
         return null;
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
@@ -180,18 +180,18 @@ public class KuzzleTest {
 
   @Test(expected = IndexOutOfBoundsException.class)
   public void testRemoveAllListeners() {
-    kuzzle.addListener(EventType.CONNECTED, null);
-    assertEquals(kuzzle.getEventListeners().get(0).getType(), EventType.CONNECTED);
+    kuzzle.addListener(KuzzleEvent.connected, null);
+    assertEquals(kuzzle.getEventListeners().get(0).getType(), KuzzleEvent.connected);
     kuzzle.removeAllListeners();
     kuzzle.getEventListeners().get(0);
   }
 
   @Test
   public void testRemoveAllListenersType() {
-    kuzzle.addListener(EventType.CONNECTED, null);
-    kuzzle.addListener(EventType.DISCONNECTED, null);
+    kuzzle.addListener(KuzzleEvent.connected, null);
+    kuzzle.addListener(KuzzleEvent.disconnected, null);
     assertEquals(kuzzle.getEventListeners().size(), 2);
-    kuzzle.removeAllListeners(EventType.CONNECTED);
+    kuzzle.removeAllListeners(KuzzleEvent.connected);
     assertEquals(kuzzle.getEventListeners().size(), 1);
   }
 
@@ -199,10 +199,10 @@ public class KuzzleTest {
   public void testRemoveListener() {
     assertNotNull(kuzzle.getSocket());
     kuzzle = spy(kuzzle);
-    String id = kuzzle.addListener(EventType.DISCONNECTED, mock(IKuzzleEventListener.class));
-    String id2 = kuzzle.addListener(EventType.CONNECTED, mock(IKuzzleEventListener.class));
-    assertEquals(kuzzle.getEventListeners().get(0).getType(), EventType.DISCONNECTED);
-    assertEquals(kuzzle.getEventListeners().get(1).getType(), EventType.CONNECTED);
+    String id = kuzzle.addListener(KuzzleEvent.disconnected, mock(IKuzzleEventListener.class));
+    String id2 = kuzzle.addListener(KuzzleEvent.connected, mock(IKuzzleEventListener.class));
+    assertEquals(kuzzle.getEventListeners().get(0).getType(), KuzzleEvent.disconnected);
+    assertEquals(kuzzle.getEventListeners().get(1).getType(), KuzzleEvent.connected);
     kuzzle.removeListener(id2);
     kuzzle.removeListener(id);
     assertEquals(kuzzle.getEventListeners().size(), 0);
@@ -277,7 +277,7 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener)invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("hits", mock(JSONObject.class))));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("hits", mock(JSONObject.class))));
         return null;
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
@@ -434,7 +434,7 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener)invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", mock(JSONObject.class)));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", mock(JSONObject.class)));
         return null;
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
@@ -477,7 +477,7 @@ public class KuzzleTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetStatsIllegalTimestamp() {
-    kuzzle.getStatistics((String)null, mock(KuzzleResponseListener.class));
+    kuzzle.getStatistics((String) null, mock(KuzzleResponseListener.class));
   }
 
   @Test
@@ -537,7 +537,7 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener)invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", mock(JSONObject.class)));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", mock(JSONObject.class)));
         return null;
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
@@ -717,7 +717,7 @@ public class KuzzleTest {
     kuzzle.setOfflineQueue(o);
 
     IKuzzleEventListener listener = mock(IKuzzleEventListener.class);
-    kuzzle.addListener(EventType.RECONNECTED, listener);
+    kuzzle.addListener(KuzzleEvent.reconnected, listener);
     kuzzle.connect();
     verify(listener, times(1)).trigger();
   }
