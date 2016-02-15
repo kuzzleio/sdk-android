@@ -328,7 +328,7 @@ public class KuzzleRoomTest {
 
   @Test
   public void testJwtTokenExpiredNotification() throws JSONException, URISyntaxException {
-    k = new Kuzzle("http://localhost:7512", "index");
+    k = new Kuzzle("http://localhost:7512");
     IKuzzleEventListener listener = spy(new IKuzzleEventListener() {
 
       @Override

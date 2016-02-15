@@ -65,9 +65,9 @@ public class Kuzzle {
   private KuzzleResponseListener<Void> connectionCallback;
   private KuzzleStates state = KuzzleStates.INITIALIZING;
   private long  reconnectionDelay;
-  private boolean autoResubscribe = true;
-  private boolean autoQueue = false;
-  private boolean autoReplay = false;
+  private boolean autoResubscribe;
+  private boolean autoQueue;
+  private boolean autoReplay;
   /**
    * The Queue filter.
    */
@@ -77,7 +77,7 @@ public class Kuzzle {
       return true;
     }
   };
-  private long replayInterval = 10;
+  private long replayInterval;
   private boolean queuing = false;
   private String defaultIndex;
 
@@ -87,7 +87,7 @@ public class Kuzzle {
   private int queueTTL;
   private int queueMaxSize;
 
-  private String jwtToken;
+  private String jwtToken = null;
 
   // Security static class
   public KuzzleSecurity security;
@@ -121,40 +121,45 @@ public class Kuzzle {
    * Kuzzle object constructor.
    *
    * @param url                the url
-   * @param index              the index
    * @param options            the options
    * @param connectionCallback the connection callback
    * @throws URISyntaxException the uri syntax exception
    */
-  public Kuzzle(@NonNull final String url, @NonNull final String index, final KuzzleOptions options, final KuzzleResponseListener<Void> connectionCallback) throws URISyntaxException {
-    if (url == null || url.isEmpty())
+  public Kuzzle(@NonNull final String url, final KuzzleOptions options, final KuzzleResponseListener<Void> connectionCallback) throws URISyntaxException {
+    if (url == null || url.isEmpty()) {
       throw new IllegalArgumentException("Url can't be empty");
-    if (index == null || index.isEmpty())
-      throw new IllegalArgumentException("Index is missing");
+    }
 
-    this.autoReconnect = (options != null && options.isAutoReconnect());
-    this.headers = (options != null && options.getHeaders() != null ? options.getHeaders() : new JSONObject());
-    this.metadata = (options != null && options.getMetadata() != null ? options.getMetadata() : new JSONObject());
-    this.reconnectionDelay = (options != null ? options.getReconnectionDelay() : 1000);
-    this.queueTTL = (options != null ? options.getQueueTTL() : 0);
-    this.autoReplay = (options != null && options.isAutoReplay());
-    this.queueMaxSize = (options != null ? options.getQueueMaxSize() : 0);
-    this.autoResubscribe = (options == null || options.isAutoResubscribe());
-    // login related
+    KuzzleOptions opt = (options != null ? options : new KuzzleOptions());
+
+    this.autoQueue = opt.isAutoQueue();
+    this.autoReconnect = opt.isAutoReconnect();
+    this.autoReplay = opt.isAutoReplay();
+    this.autoResubscribe = opt.isAutoResubscribe();
+    this.defaultIndex = opt.getDefaultIndex();
+    this.headers = opt.getHeaders();
+    this.metadata = opt.getMetadata();
+    this.queueMaxSize = opt.getQueueMaxSize();
+    this.queueTTL = opt.getQueueTTL();
+    this.reconnectionDelay = opt.getReconnectionDelay();
+    this.replayInterval = opt.getReplayInterval();
+
     this.url = url;
     this.connectionCallback = connectionCallback;
-    this.defaultIndex = index;
+
     if (socket == null) {
       socket = createSocket(this.url);
     }
-    if (options != null && options.getOfflineMode() == Mode.AUTO && this.autoReconnect) {
-      this.autoQueue = this.autoReplay = this.autoResubscribe = true;
+
+    if (opt.getOfflineMode() == Mode.AUTO) {
+      this.autoReconnect = this.autoQueue = this.autoReplay = this.autoResubscribe = true;
     }
-    if (options == null || options.getConnect() == null || options.getConnect() == Mode.AUTO) {
+    if (opt.getConnect() == Mode.AUTO) {
       connect();
     } else {
       this.state = KuzzleStates.READY;
     }
+
     this.security = new KuzzleSecurity(this);
   }
 
@@ -162,35 +167,32 @@ public class Kuzzle {
    * Instantiates a new Kuzzle.
    *
    * @param url   the url
-   * @param index the index
    * @throws URISyntaxException the uri syntax exception
    */
-  public Kuzzle(final String url, final String index) throws URISyntaxException {
-    this(url, index, null, null);
+  public Kuzzle(@NonNull final String url) throws URISyntaxException {
+    this(url, null, null);
   }
 
   /**
    * Instantiates a new Kuzzle.
    *
    * @param url   the url
-   * @param index the index
    * @param cb    the cb
    * @throws URISyntaxException the uri syntax exception
    */
-  public Kuzzle(final String url, final String index, final KuzzleResponseListener cb) throws URISyntaxException {
-    this(url, index, null, cb);
+  public Kuzzle(final String url, final KuzzleResponseListener<Void> cb) throws URISyntaxException {
+    this(url, null, cb);
   }
 
   /**
    * Instantiates a new Kuzzle.
    *
    * @param url     the url
-   * @param index   the index
    * @param options the options
    * @throws URISyntaxException the uri syntax exception
    */
-  public Kuzzle(String url, final String index, KuzzleOptions options) throws URISyntaxException {
-    this(url, index, options, null);
+  public Kuzzle(String url, KuzzleOptions options) throws URISyntaxException {
+    this(url, options, null);
   }
 
   /**
@@ -1085,10 +1087,14 @@ public class Kuzzle {
   public Kuzzle query(final QueryArgs queryArgs, final JSONObject query, final KuzzleOptions options, final OnQueryDoneListener listener) throws JSONException {
     this.isValid();
     JSONObject object = query != null ? query : new JSONObject();
-    if (object.isNull("requestId"))
+
+    if (object.isNull("requestId")) {
       object.put("requestId", UUID.randomUUID().toString());
-    object.put("action", queryArgs.action);
-    object.put("controller", queryArgs.controller);
+    }
+
+    object
+      .put("action", queryArgs.action)
+      .put("controller", queryArgs.controller);
 
     // Global metadata
     JSONObject meta = new JSONObject();
@@ -1102,6 +1108,7 @@ public class Kuzzle {
       if (!options.isQueuable() && this.state == KuzzleStates.OFFLINE) {
         return this;
       }
+
       if (options.getMetadata() != null) {
         for (Iterator iterator = options.getMetadata().keys(); iterator.hasNext(); ) {
           String key = (String) iterator.next();
@@ -1109,35 +1116,55 @@ public class Kuzzle {
         }
       }
     }
+
     object.put("metadata", meta);
-    object.put("index", this.defaultIndex);
 
     if (queryArgs.collection != null) {
       object.put("collection", queryArgs.collection);
     }
+
     if (queryArgs.index != null) {
       object.put("index", queryArgs.index);
     }
+
     this.addHeaders(object, this.headers);
 
-    if (this.state == KuzzleStates.CONNECTED || (options != null && !options.isQueuable())) {
-      emitRequest(object, new OnQueryDoneListener() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          if (listener != null) {
-            listener.onSuccess(response);
-          }
-        }
+    /*
+     * Do not add the token for the checkToken route, to avoid getting a token error when
+     * a developer simply wish to verify his token
+     */
+    if (this.jwtToken != null && !(queryArgs.controller.equals("auth") && queryArgs.action.equals("checkToken"))) {
+      if (!object.has("headers")) {
+        object.put("headers", new JSONObject());
+      }
 
-        @Override
-        public void onError(JSONObject error) {
-          if (error != null) {
-            listener.onError(error);
+      object.getJSONObject("headers").put("authorization", "Bearer " + this.jwtToken);
+    }
+
+    if (this.state == KuzzleStates.CONNECTED || (options != null && !options.isQueuable())) {
+      if (this.state == KuzzleStates.CONNECTED) {
+        emitRequest(object, new OnQueryDoneListener() {
+          @Override
+          public void onSuccess(JSONObject response) {
+            if (listener != null) {
+              listener.onSuccess(response);
+            }
           }
-        }
-      });
-    } else if (this.queuing || (this.state == KuzzleStates.INITIALIZING || this.state == KuzzleStates.CONNECTING)) {
+
+          @Override
+          public void onError(JSONObject error) {
+            if (error != null) {
+              listener.onError(error);
+            }
+          }
+        });
+      }
+      else if (listener != null) {
+        listener.onError(new JSONObject().put("message", "Unable to execute request: not connected to a Kuzzle server.\\nDiscarded request: " + object.toString()));
+      }
+    } else if (this.queuing || this.state == KuzzleStates.INITIALIZING || this.state == KuzzleStates.CONNECTING) {
       cleanQueue();
+
       if (queueFilter.filter(object)) {
         KuzzleQueryObject o = new KuzzleQueryObject();
         o.setTimestamp(new Date());
@@ -1274,7 +1301,7 @@ public class Kuzzle {
    *
    * @return kuzzle kuzzle
    */
-  public Kuzzle stopQueing() {
+  public Kuzzle stopQueuing() {
     if (this.state == KuzzleStates.OFFLINE && !this.autoQueue) {
       this.queuing = false;
     }

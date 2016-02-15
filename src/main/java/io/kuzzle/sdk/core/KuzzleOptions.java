@@ -6,20 +6,22 @@ import io.kuzzle.sdk.enums.KuzzleCollectionType;
 import io.kuzzle.sdk.enums.Mode;
 
 public class KuzzleOptions {
-
-  private boolean autoReconnect = false;
-  private JSONObject headers;
-  private boolean updateIfExists = false;
-  private JSONObject metadata;
-  private Mode connect = Mode.AUTO;
-  private long reconnectionDelay = 1000;
-  private Mode offlineMode;
-  private int queueTTL = 120000;
+  // Default values
+  private boolean autoQueue = false;
+  private boolean autoReconnect = true;
   private boolean autoReplay = false;
+  private boolean autoResubscribe = true;
+  private JSONObject headers = new JSONObject();
+  private JSONObject metadata = new JSONObject();
+  private int queueMaxSize = 500;
+  private int queueTTL = 120000;
+  private long reconnectionDelay = 1000;
+  private boolean updateIfExists = false;
+  private Mode connect = Mode.AUTO;
+  private Mode offlineMode = Mode.MANUAL;
   private int replayInterval = 10;
   private boolean queuable = true;
-  private int queueMaxSize = 500;
-  private boolean autoResubscribe;
+  private String defaultIndex = null;
 
   // Used for getting collections
   private KuzzleCollectionType  collectionType = KuzzleCollectionType.ALL;
@@ -185,5 +187,21 @@ public class KuzzleOptions {
 
   public boolean isHydrated() {
     return this.hydrate;
+  }
+
+  public void setDefaultIndex(final String index) {
+    this.defaultIndex = index;
+  }
+
+  public String getDefaultIndex() {
+    return this.defaultIndex;
+  }
+
+  public void setAutoQueue(boolean autoQueue) {
+    this.autoQueue = autoQueue;
+  }
+
+  public boolean isAutoQueue() {
+    return this.autoQueue;
   }
 }

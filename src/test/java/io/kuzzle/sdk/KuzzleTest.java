@@ -9,6 +9,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -23,6 +24,7 @@ import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.IKuzzleEventListener;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
+import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.sdk.util.KuzzleQueryObject;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -49,13 +51,29 @@ public class KuzzleTest {
   private Socket s;
   private KuzzleResponseListener listener;
 
+  /*
+ * Force the internal status to 'CONNECTED' to make query act as-if connected to Kuzzle
+ */
+  private void forceConnectedState(Kuzzle kuzzle, KuzzleStates state) {
+    try {
+      Field internalState = Kuzzle.class.getDeclaredField("state");
+      internalState.setAccessible(true);
+      internalState.set(kuzzle, state);
+    }
+    catch(Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   @Before
   public void setUp() throws URISyntaxException {
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
+    options.setDefaultIndex("testIndex");
+    kuzzle = new Kuzzle("http://localhost:7512", options);
     s = mock(Socket.class);
     kuzzle.setSocket(s);
+
     listener = new KuzzleResponseListener<Object>() {
       @Override
       public void onSuccess(Object object) {
@@ -82,7 +100,7 @@ public class KuzzleTest {
     }).when(s).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options, mock(KuzzleResponseListener.class));
+    kuzzle = new Kuzzle("http://localhost:7512", options, mock(KuzzleResponseListener.class));
     kuzzle.setSocket(s);
     kuzzle.connect();
     verify(s).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
@@ -90,12 +108,7 @@ public class KuzzleTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testBadUriConnection() throws URISyntaxException {
-    kuzzle = new Kuzzle(null, "testIndex");
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testBadIndex() throws URISyntaxException {
-    kuzzle = new Kuzzle("http://localhost:7512", null);
+    kuzzle = new Kuzzle(null);
   }
 
   @Test
@@ -233,8 +246,10 @@ public class KuzzleTest {
     KuzzleOptions options = new KuzzleOptions();
     options.setQueuable(false);
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
+    kuzzle = new Kuzzle("http://localhost:7512", options);
     kuzzle.setSocket(s);
+    forceConnectedState(kuzzle, KuzzleStates.CONNECTED);
+
     JSONObject meta = new JSONObject();
     meta.put("foo", "bar");
     options.setMetadata(meta);
@@ -257,8 +272,9 @@ public class KuzzleTest {
     options.setMetadata(meta);
     options.setQueuable(false);
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
+    kuzzle = new Kuzzle("http://localhost:7512", options);
     kuzzle.setSocket(s);
+    forceConnectedState(kuzzle, KuzzleStates.CONNECTED);
     kuzzle.query(QueryArgsHelper.makeQueryArgs("controller", "action"), jsonObj, options);
     verify(s).emit(eq("kuzzle"), eq(jsonObj));
     assertEquals(jsonObj.getJSONObject("metadata").getString("foo"), "bar");
@@ -577,7 +593,7 @@ public class KuzzleTest {
     options.setReplayInterval(1);
     options.setConnect(Mode.MANUAL);
     options.setOfflineMode(Mode.AUTO);
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
+    kuzzle = new Kuzzle("http://localhost:7512", options);
     kuzzle.setSocket(s);
     kuzzle.setAutoReconnect(true);
     doAnswer(new Answer() {
@@ -624,7 +640,7 @@ public class KuzzleTest {
     options.setAutoReplay(true);
     options.setConnect(Mode.MANUAL);
     options.setOfflineMode(Mode.AUTO);
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
+    kuzzle = new Kuzzle("http://localhost:7512", options);
     kuzzle.setSocket(s);
     kuzzle.setAutoReconnect(true);
     kuzzle.setAutoQueue(true);
@@ -636,8 +652,8 @@ public class KuzzleTest {
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
     kuzzle.connect();
-    kuzzle.query(QueryArgsHelper.makeQueryArgs("test", "test"), mock(JSONObject.class), mock(OnQueryDoneListener.class));
-    kuzzle.query(QueryArgsHelper.makeQueryArgs("test2", "test2"), mock(JSONObject.class));
+    kuzzle.query(QueryArgsHelper.makeQueryArgs("test", "test"), new JSONObject(), mock(OnQueryDoneListener.class));
+    kuzzle.query(QueryArgsHelper.makeQueryArgs("test2", "test2"), new JSONObject());
     kuzzle.query(QueryArgsHelper.makeQueryArgs("test3", "test3"), new JSONObject());
     assertEquals(kuzzle.getOfflineQueue().size(), 1);
     assertEquals(kuzzle.getOfflineQueue().peek().getQuery().getString("controller"), "test3");
@@ -668,7 +684,7 @@ public class KuzzleTest {
     options.setConnect(Mode.MANUAL);
     JSONObject query = new JSONObject();
     query.put("requestId", "42");
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
+    kuzzle = new Kuzzle("http://localhost:7512", options);
     kuzzle.setSocket(s);
     kuzzle.connect();
     kuzzle.query(QueryArgsHelper.makeQueryArgs("test", "test"), query, null, mock(OnQueryDoneListener.class));
@@ -694,7 +710,7 @@ public class KuzzleTest {
     JSONObject query = new JSONObject("{\"controller\":\"test3\",\"metadata\":{},\"requestId\":\"a476ae61-497e-4338-b4dd-751ac22c6b61\",\"action\":\"test3\",\"collection\":\"test3\"}");
     o.setQuery(query);
 
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
+    kuzzle = new Kuzzle("http://localhost:7512", options);
     kuzzle.setSocket(s);
     kuzzle.setAutoReconnect(true);
 
@@ -730,7 +746,7 @@ public class KuzzleTest {
     options.setConnect(Mode.MANUAL);
     options.setAutoReconnect(true);
     options.setOfflineMode(Mode.AUTO);
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options, mock(KuzzleResponseListener.class));
+    kuzzle = new Kuzzle("http://localhost:7512", options, mock(KuzzleResponseListener.class));
     kuzzle.setSocket(s);
     final Kuzzle kuzzleSpy = spy(kuzzle);
     kuzzleSpy.setAutoReconnect(true);
@@ -780,7 +796,7 @@ public class KuzzleTest {
     listener = spy(listener);
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", listener);
+    kuzzle = new Kuzzle("http://localhost:7512", listener);
     kuzzle.setSocket(s);
     kuzzle = spy(kuzzle);
     when(kuzzle.isValidState()).thenReturn(false);
@@ -793,7 +809,7 @@ public class KuzzleTest {
     listener = spy(listener);
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options, listener);
+    kuzzle = new Kuzzle("http://localhost:7512", options, listener);
     kuzzle.setSocket(s);
     kuzzle = spy(kuzzle);
     doAnswer(new Answer() {
@@ -818,7 +834,7 @@ public class KuzzleTest {
     options.setAutoReconnect(true);
     options.setOfflineMode(Mode.AUTO);
 
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
+    kuzzle = new Kuzzle("http://localhost:7512", options);
     KuzzleQueryObject o = new KuzzleQueryObject();
     o.setTimestamp(new Date());
     o.setAction("test");
@@ -926,13 +942,15 @@ public class KuzzleTest {
   @Test
   public void testManualQueuing() throws URISyntaxException, JSONException {
     KuzzleOptions options = new KuzzleOptions();
+    options.setAutoQueue(false);
+    options.setDefaultIndex("testIndex");
     options.setQueueTTL(10000);
     options.setReplayInterval(1);
     options.setConnect(Mode.MANUAL);
-    options.setOfflineMode(Mode.AUTO);
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
+    kuzzle = new Kuzzle("http://localhost:7512", options);
     kuzzle.setSocket(s);
     kuzzle.setAutoReconnect(true);
+    forceConnectedState(kuzzle, KuzzleStates.OFFLINE);
 
     doAnswer(new Answer() {
       @Override
@@ -948,7 +966,7 @@ public class KuzzleTest {
     kuzzle.query(QueryArgsHelper.makeQueryArgs("test", "test"), query, null, null);
     assertEquals(kuzzle.getOfflineQueue().size(), 1);
     kuzzle.flushQueue();
-    kuzzle.stopQueing();
+    kuzzle.stopQueuing();
     assertEquals(kuzzle.getOfflineQueue().size(), 0);
     kuzzle.query(QueryArgsHelper.makeQueryArgs("test", "test"), query, null, null);
     assertEquals(kuzzle.getOfflineQueue().size(), 0);
@@ -965,7 +983,8 @@ public class KuzzleTest {
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
     KuzzleOptions options = new KuzzleOptions();
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
+    options.setDefaultIndex("testIndex");
+    kuzzle = new Kuzzle("http://localhost:7512", options);
     kuzzle.connect();
     kuzzle.listCollections(mock(KuzzleResponseListener.class));
     assertEquals(kuzzle.getOfflineQueue().size(), 1);
@@ -1003,38 +1022,6 @@ public class KuzzleTest {
     assertEquals(kuzzle.getSubscriptions().size(), 1);
     room.unsubscribe();
     assertEquals(kuzzle.getSubscriptions().size(), 0);
-  }
-
-  @Test
-  public void testDefaultIndex() throws URISyntaxException, JSONException {
-    KuzzleOptions options = new KuzzleOptions();
-    options.setQueuable(false);
-    options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
-    kuzzle.setSocket(s);
-
-    JSONObject jsonObj = new JSONObject();
-    jsonObj.put("requestId", "42");
-
-    kuzzle.query(QueryArgsHelper.makeQueryArgs("controller", "action"), jsonObj, options, null);
-    verify(s).emit(eq("kuzzle"), eq(jsonObj));
-    assertEquals(jsonObj.getString("index"), "testIndex");
-  }
-
-  @Test
-  public void testMultiIndex() throws URISyntaxException, JSONException {
-    KuzzleOptions options = new KuzzleOptions();
-    options.setQueuable(false);
-    options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", "%index", options);
-    kuzzle.setSocket(s);
-
-    JSONObject jsonObj = new JSONObject();
-    jsonObj.put("requestId", "42");
-
-    kuzzle.query(QueryArgsHelper.makeQueryArgs("controller", "action"), jsonObj, options, null);
-    verify(s).emit(eq("kuzzle"), eq(jsonObj));
-    assertEquals(jsonObj.getString("index"), "%index");
   }
 
   @Test
@@ -1085,7 +1072,7 @@ public class KuzzleTest {
   public void testLogout() throws URISyntaxException, JSONException {
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", "index", options);
+    kuzzle = new Kuzzle("http://localhost:7512", options);
     kuzzle.setSocket(s);
     kuzzle = spy(kuzzle);
     kuzzle.setSocket(s);
@@ -1113,16 +1100,6 @@ public class KuzzleTest {
   @Test(expected = IllegalArgumentException.class)
   public void testSetDefaultIndexIllegalIndex() {
     kuzzle.setDefaultIndex(null);
-  }
-
-  @Test
-  public void testSetDefaultIndex() throws JSONException {
-    kuzzle.setDefaultIndex("test-index");
-    JSONObject jsonObj = new JSONObject();
-    jsonObj.put("requestId", "42");
-    kuzzle.query(QueryArgsHelper.makeQueryArgs("controller", "action"), jsonObj, mock(KuzzleOptions.class), null);
-    verify(s).emit(eq("kuzzle"), eq(jsonObj));
-    assertEquals(jsonObj.getString("index"), "test-index");
   }
 
   @Test(expected = IllegalArgumentException.class)

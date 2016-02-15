@@ -32,7 +32,7 @@ public class KuzzleListenerTest {
   public void setUp() throws URISyntaxException {
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
-    kuzzle = new Kuzzle("http://localhost:7512", "testIndex", options);
+    kuzzle = new Kuzzle("http://localhost:7512", options);
     s = mock(Socket.class);
     kuzzle.setSocket(s);
   }
