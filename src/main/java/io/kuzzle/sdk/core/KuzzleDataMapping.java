@@ -47,6 +47,15 @@ public class KuzzleDataMapping {
   }
 
   /**
+   * Copy constructor
+   *
+   * @param kuzzleDataMapping   the KuzzleDataMapping object to copy
+   */
+  public KuzzleDataMapping(final KuzzleDataMapping kuzzleDataMapping) {
+    this(kuzzleDataMapping.dataCollection, kuzzleDataMapping.mapping);
+  }
+
+  /**
    * Applies the new mapping to the data collection.
    *
    * @return the kuzzle data mapping
@@ -118,23 +127,6 @@ public class KuzzleDataMapping {
   /**
    * Gets a refreshed copy of the current object
    *
-   */
-  public void refresh() {
-    this.refresh(null, null);
-  }
-
-  /**
-   * Gets a refreshed copy of the current object
-   *
-   * @param options the options
-   */
-  public void refresh(final KuzzleOptions options) {
-    refresh(options, null);
-  }
-
-  /**
-   * Gets a refreshed copy of the current object
-   *
    * @param listener the listener
    */
   public void refresh(final KuzzleResponseListener<KuzzleDataMapping> listener) {
@@ -155,12 +147,7 @@ public class KuzzleDataMapping {
         @Override
         public void onSuccess(JSONObject args) {
           try {
-            KuzzleDataMapping newMapping = new KuzzleDataMapping(KuzzleDataMapping.this.dataCollection);
-            newMapping.headers = KuzzleDataMapping.this.headers;
-            newMapping.kuzzle = KuzzleDataMapping.this.kuzzle;
-            newMapping.collection = KuzzleDataMapping.this.collection;
-            newMapping.dataCollection = KuzzleDataMapping.this.dataCollection;
-            newMapping.mapping = KuzzleDataMapping.this.mapping;
+            KuzzleDataMapping newMapping = new KuzzleDataMapping(KuzzleDataMapping.this);
 
             if (!args.isNull(KuzzleDataMapping.this.kuzzle.getDefaultIndex())) {
               JSONObject mappings = args.getJSONObject(KuzzleDataMapping.this.kuzzle.getDefaultIndex()).getJSONObject("mappings");

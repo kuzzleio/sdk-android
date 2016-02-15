@@ -152,22 +152,6 @@ public class KuzzleDocument extends JSONObject {
 
   /**
    * Gets a refreshed copy of the current object
-   */
-  public void refresh() {
-    this.refresh(null, null);
-  }
-
-  /**
-   * Gets a refreshed copy of the current object
-   *
-   * @param options the options
-   */
-  public void refresh(final KuzzleOptions options) {
-    this.refresh(options, null);
-  }
-
-  /**
-   * Gets a refreshed copy of the current object
    *
    * @param listener the listener
    */
@@ -196,9 +180,7 @@ public class KuzzleDocument extends JSONObject {
           try {
             newDocument.put("body", args.getJSONObject("_source"));
             newDocument.put("_version", args.get("_version"));
-            if (listener != null) {
-              listener.onSuccess(newDocument);
-            }
+            listener.onSuccess(newDocument);
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
