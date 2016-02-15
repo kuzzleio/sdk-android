@@ -1254,4 +1254,55 @@ public class KuzzleTest {
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "checkToken");
   }
 
+  @Test
+  public void testWhoAmIValid() throws JSONException {
+    kuzzle = spy(kuzzle);
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject()
+          .put("result", new JSONObject()
+            .put("_id", "test")
+            .put("_source", new JSONObject()
+              .put("profile", new JSONObject()
+                .put("_id", "admin")
+                .put("roles", "")))));
+
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+
+    kuzzle.whoAmI(mock(KuzzleResponseListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "auth");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "getCurrentUser");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testWhoAmIInvalid() throws JSONException {
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.whoAmI(mock(KuzzleResponseListener.class));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testWhoAmINoListener() throws JSONException {
+    kuzzle.whoAmI(null);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testWhoAmIInvalidResponse() throws JSONException {
+    kuzzle = spy(kuzzle);
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener)invocation.getArguments()[3]).onSuccess(new JSONObject());
+        ((OnQueryDoneListener)invocation.getArguments()[3]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    kuzzle.whoAmI(mock(KuzzleResponseListener.class));
+  }
 }

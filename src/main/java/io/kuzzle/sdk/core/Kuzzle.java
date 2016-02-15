@@ -13,8 +13,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -55,11 +53,11 @@ public class Kuzzle {
 
   private final int MAX_EMIT_TIMEOUT = 10;
 
-  private List<Event> eventListeners = new ArrayList<Event>();
+  private List<Event> eventListeners = new ArrayList<>();
   private Socket socket;
-  private Map<String, Map<String, KuzzleDataCollection>> collections = new HashMap<String, Map<String, KuzzleDataCollection>>();
-  private Map<String, KuzzleRoom> subscriptions = new ConcurrentHashMap<String, KuzzleRoom>();
-  private Map<String, KuzzleRoom> pendingSubscriptions = new ConcurrentHashMap<String, KuzzleRoom>();
+  private Map<String, Map<String, KuzzleDataCollection>> collections = new HashMap<>();
+  private Map<String, KuzzleRoom> subscriptions = new ConcurrentHashMap<>();
+  private Map<String, KuzzleRoom> pendingSubscriptions = new ConcurrentHashMap<>();
   private boolean autoReconnect = true;
   private JSONObject headers = new JSONObject();
   private JSONObject metadata;
@@ -83,9 +81,9 @@ public class Kuzzle {
   private boolean queuing = false;
   private String defaultIndex;
 
-  private Map<String, Date> requestHistory = new HashMap<String, Date>();
+  private Map<String, Date> requestHistory = new HashMap<>();
 
-  private KuzzleQueue<KuzzleQueryObject> offlineQueue = new KuzzleQueue<KuzzleQueryObject>();
+  private KuzzleQueue<KuzzleQueryObject> offlineQueue = new KuzzleQueue<>();
   private int queueTTL;
   private int queueMaxSize;
 
@@ -140,14 +138,14 @@ public class Kuzzle {
     if (index == null || index.isEmpty())
       throw new IllegalArgumentException("Index is missing");
 
-    this.autoReconnect = (options != null ? options.isAutoReconnect() : false);
+    this.autoReconnect = (options != null && options.isAutoReconnect());
     this.headers = (options != null && options.getHeaders() != null ? options.getHeaders() : new JSONObject());
     this.metadata = (options != null && options.getMetadata() != null ? options.getMetadata() : new JSONObject());
     this.reconnectionDelay = (options != null ? options.getReconnectionDelay() : 1000);
     this.queueTTL = (options != null ? options.getQueueTTL() : 0);
-    this.autoReplay = (options != null ? options.isAutoReplay() : false);
+    this.autoReplay = (options != null && options.isAutoReplay());
     this.queueMaxSize = (options != null ? options.getQueueMaxSize() : 0);
-    this.autoResubscribe = (options != null ? options.isAutoResubscribe() : true);
+    this.autoResubscribe = (options == null || options.isAutoResubscribe());
     // login related
     this.loginStrategy = (options != null ? options.getLoginStrategy() : null);
     this.loginUsername = (options != null ? options.getLoginUsername() : null);
@@ -399,7 +397,11 @@ public class Kuzzle {
    * @param collection the collection
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection dataCollectionFactory(final String collection) {
+  public KuzzleDataCollection dataCollectionFactory(@NonNull final String collection) {
+    if (this.defaultIndex == null) {
+      throw new IllegalArgumentException("KuzzleDataCollection: unable to create a new data collection object: no index specified");
+    }
+
     return this.dataCollectionFactory(this.defaultIndex, collection);
   }
 
@@ -416,7 +418,7 @@ public class Kuzzle {
     }
     this.isValid();
     if (!this.collections.containsKey(collection)) {
-      Map<String, KuzzleDataCollection> col = new HashMap<String, KuzzleDataCollection>();
+      Map<String, KuzzleDataCollection> col = new HashMap<>();
       col.put(collection, new KuzzleDataCollection(this, index, collection));
       this.collections.put(index, col);
     }
@@ -455,6 +457,7 @@ public class Kuzzle {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.getAllStatistics: listener required");
     }
+
     this.isValid();
     try {
       QueryArgs args = new QueryArgs();
@@ -463,20 +466,16 @@ public class Kuzzle {
       this.query(args, null, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject object) {
-          if (listener != null) {
-            try {
-              listener.onSuccess(object.getJSONObject("result").getJSONArray("hits"));
-            } catch (JSONException e) {
-              throw new RuntimeException(e);
-            }
+          try {
+            listener.onSuccess(object.getJSONObject("result").getJSONArray("hits"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
           }
         }
 
         @Override
         public void onError(JSONObject error) {
-          if (listener != null) {
-            listener.onError(error);
-          }
+          listener.onError(error);
         }
       });
     } catch (JSONException e) {
@@ -518,19 +517,16 @@ public class Kuzzle {
       this.query(args, body, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
-          if (listener != null) {
-            try {
-              listener.onSuccess(response.getJSONObject("result"));
-            } catch (JSONException e) {
-              throw new RuntimeException(e);
-            }
+          try {
+            listener.onSuccess(response.getJSONObject("result"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
           }
         }
 
         @Override
         public void onError(JSONObject error) {
-          if (listener != null)
-            listener.onError(error);
+          listener.onError(error);
         }
       });
     } catch (JSONException e) {
@@ -577,19 +573,16 @@ public class Kuzzle {
       this.query(args, body, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
-          if (listener != null) {
-            try {
-              listener.onSuccess(response.getJSONObject("result").getJSONArray("hits"));
-            } catch (JSONException e) {
-              throw new RuntimeException(e);
-            }
+          try {
+            listener.onSuccess(response.getJSONObject("result").getJSONArray("hits"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
           }
         }
 
         @Override
         public void onError(JSONObject error) {
-          if (listener != null)
-            listener.onError(error);
+          listener.onError(error);
         }
       });
     } catch (JSONException e) {
@@ -979,13 +972,7 @@ public class Kuzzle {
                   loginCallback.onError(response.getJSONObject("error"));
                 }
               }
-            } catch (JSONException e) {
-              e.printStackTrace();
-            } catch (ProtocolException e) {
-              e.printStackTrace();
-            } catch (MalformedURLException e) {
-              e.printStackTrace();
-            } catch (IOException e) {
+            } catch (JSONException|IOException e) {
               e.printStackTrace();
             }
           }
@@ -1109,20 +1096,16 @@ public class Kuzzle {
       this.query(args, null, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
-          if (listener != null) {
-            try {
-              listener.onSuccess(new Date(response.getJSONObject("result").getLong("now")));
-            } catch (JSONException e) {
-              throw new RuntimeException(e);
-            }
+          try {
+            listener.onSuccess(new Date(response.getJSONObject("result").getLong("now")));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
           }
         }
 
         @Override
         public void onError(JSONObject error) {
-          if (listener != null) {
-            listener.onError(error);
-          }
+          listener.onError(error);
         }
       });
     } catch (JSONException e) {
@@ -1293,10 +1276,8 @@ public class Kuzzle {
   }
 
   private void renewSubscriptions() {
-    Iterator ite = subscriptions.entrySet().iterator();
-    while (ite.hasNext()) {
-      Map.Entry e = (Map.Entry) ite.next();
-      ((KuzzleRoom)e.getValue()).renew(((KuzzleRoom)e.getValue()).getFilters(), ((KuzzleRoom)e.getValue()).getListener());
+    for(Map.Entry<String, KuzzleRoom> e: subscriptions.entrySet()) {
+      (e.getValue()).renew((e.getValue()).getFilters(), (e.getValue()).getListener());
     }
   }
 
@@ -1755,6 +1736,45 @@ public class Kuzzle {
 
   public String getJwtToken() {
     return this.jwtToken;
+  }
+
+  /**
+   * Retrieves current user information
+   *
+   * @param listener the listener
+   * @return kuzzle
+   */
+  public Kuzzle whoAmI(@NonNull final KuzzleResponseListener<JSONObject> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("Kuzzle.whoAmI: listener required");
+    }
+
+    try {
+      QueryArgs args = new QueryArgs();
+      args.controller = "auth";
+      args.action = "getCurrentUser";
+      JSONObject request = new JSONObject();
+
+      this.query(args, request, null, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            JSONObject result = response.getJSONObject("result");
+            listener.onSuccess(result);
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+    return this;
   }
 
 }
