@@ -5,7 +5,8 @@ import android.support.annotation.NonNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import java.util.LinkedList;
+
+import java.util.ArrayList;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -117,7 +118,7 @@ public class KuzzleSecurity {
           JSONObject result = response.getJSONObject("result");
           JSONArray documents = result.getJSONArray("hits");
           int documentsLength = documents.length();
-          LinkedList<AbstractKuzzleSecurityDocument> roles = new LinkedList<>();
+          ArrayList<AbstractKuzzleSecurityDocument> roles = new ArrayList<>();
 
           for (int i = 0; i < documentsLength; i++) {
             JSONObject document = documents.getJSONObject(i);
@@ -454,7 +455,7 @@ public class KuzzleSecurity {
           JSONObject result = response.getJSONObject("result");
           JSONArray documents = result.getJSONArray("hits");
           int documentsLength = documents.length();
-          LinkedList<AbstractKuzzleSecurityDocument> roles = new LinkedList<>();
+          ArrayList<AbstractKuzzleSecurityDocument> roles = new ArrayList<>();
 
           for (int i = 0; i < documentsLength; i++) {
             JSONObject document = documents.getJSONObject(i);
@@ -799,7 +800,7 @@ public class KuzzleSecurity {
           JSONObject result = response.getJSONObject("result");
           JSONArray documents = result.getJSONArray("hits");
           int documentsLength = documents.length();
-          LinkedList<AbstractKuzzleSecurityDocument> roles = new LinkedList<>();
+          ArrayList<AbstractKuzzleSecurityDocument> roles = new ArrayList<>();
 
           for (int i = 0; i < documentsLength; i++) {
             JSONObject document = documents.getJSONObject(i);
