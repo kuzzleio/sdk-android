@@ -60,10 +60,6 @@ public class AbstractKuzzleSecurityDocument {
   public JSONObject serialize() throws JSONException {
     JSONObject data;
 
-    if (this.content == null) {
-      return new JSONObject();
-    }
-
     data = new JSONObject()
       .put("_id", this.id)
       .put("body", content);
@@ -78,29 +74,29 @@ public class AbstractKuzzleSecurityDocument {
    * @param listener - Optional response callback
    * @throws JSONException
    */
-  public void delete(final KuzzleOptions options, final KuzzleResponseListener listener) throws JSONException {
+  public void delete(final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
     JSONObject data = new JSONObject().put("_id", this.id);
 
-    this.kuzzle.query(kuzzleSecurity.buildQueryArgs(this.deleteActionName), data, options, new OnQueryDoneListener() {
-      @Override
-      public void onSuccess(JSONObject response) {
-        try {
-          if (listener != null) {
+    if (listener != null) {
+      this.kuzzle.query(kuzzleSecurity.buildQueryArgs(this.deleteActionName), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
             listener.onSuccess(response.getJSONObject("result").getString("_id"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
           }
         }
-        catch (JSONException e) {
-          throw new RuntimeException(e);
-        }
-      }
 
-      @Override
-      public void onError(JSONObject error) {
-        if (listener != null) {
+        @Override
+        public void onError(JSONObject error) {
           listener.onError(error);
         }
-      }
-    });
+      });
+    }
+    else {
+      this.kuzzle.query(kuzzleSecurity.buildQueryArgs(this.deleteActionName), data, options);
+    }
   }
 
   /**
@@ -109,7 +105,7 @@ public class AbstractKuzzleSecurityDocument {
    * @param listener - Optional response callback
    * @throws JSONException
    */
-  public void delete(final KuzzleResponseListener listener) throws JSONException {
+  public void delete(final KuzzleResponseListener<String> listener) throws JSONException {
     this.delete(null, listener);
   }
 

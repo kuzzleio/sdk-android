@@ -30,21 +30,22 @@ public class KuzzleRole extends AbstractKuzzleSecurityDocument {
   public void save(final KuzzleOptions options, final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
     JSONObject data = this.serialize();
 
-    this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createOrReplaceRole"), data, options, new OnQueryDoneListener() {
-      @Override
-      public void onSuccess(JSONObject response) {
-        if (listener != null) {
+    if (listener != null) {
+      this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createOrReplaceRole"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
           listener.onSuccess(KuzzleRole.this);
         }
-      }
 
-      @Override
-      public void onError(JSONObject error) {
-        if (listener != null) {
+        @Override
+        public void onError(JSONObject error) {
           listener.onError(error);
         }
-      }
-    });
+      });
+    }
+    else {
+      this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createOrReplaceRole"), data, options);
+    }
   }
 
   /**
