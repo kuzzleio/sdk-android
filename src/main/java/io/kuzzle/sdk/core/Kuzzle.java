@@ -35,6 +35,7 @@ import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnKuzzleLoginDoneListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleTokenValidity;
+import io.kuzzle.sdk.security.KuzzleSecurity;
 import io.kuzzle.sdk.state.KuzzleQueue;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.sdk.util.Event;
@@ -93,6 +94,9 @@ public class Kuzzle {
   // in second
   private int loginExpiresIn = 0;
   private String jwtToken;
+
+  // Security static class
+  public KuzzleSecurity security;
 
   /**
    * The type Query args.
@@ -161,6 +165,7 @@ public class Kuzzle {
     } else {
       this.state = KuzzleStates.READY;
     }
+    this.security = new KuzzleSecurity(this);
   }
 
   /**
