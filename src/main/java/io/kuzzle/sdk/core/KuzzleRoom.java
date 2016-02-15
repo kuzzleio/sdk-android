@@ -67,7 +67,7 @@ public class KuzzleRoom {
     this.kuzzle = kuzzleDataCollection.getKuzzle();
     this.collection = kuzzleDataCollection.getCollection();
     this.headers = kuzzleDataCollection.getHeaders();
-    this.subscribeToSelf = (options != null ? options.isSubscribeToSelf() : true);
+    this.subscribeToSelf = (options == null || options.isSubscribeToSelf());
     this.metadata = (options != null ? options.getMetadata() : new JSONObject());
     this.scope = (options != null ? options.getScope() : Scope.ALL);
     this.state = (options != null ? options.getState() : State.DONE);
