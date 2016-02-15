@@ -173,6 +173,12 @@ public class KuzzleDocumentTest {
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "delete");
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testRefreshNullListenerException() throws IllegalArgumentException {
+    doc.setId("42");
+    doc.refresh(null);
+  }
+
   @Test(expected = RuntimeException.class)
   public void testRefreshQueryException() throws JSONException {
     doc.setId("42");

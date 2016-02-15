@@ -165,10 +165,14 @@ public class KuzzleDocument extends JSONObject {
    * @param options  the options
    * @param listener the listener
    */
-  public void refresh(final KuzzleOptions options, final KuzzleResponseListener<KuzzleDocument> listener) {
+  public void refresh(final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDocument> listener) {
     if (this.getId() == null) {
       throw new RuntimeException("KuzzleDocument.refresh: cannot retrieve a document if no id has been provided");
     }
+    if (listener  == null) {
+      throw new IllegalArgumentException("KuzzleDocument.refresh: a valid KuzzleResponseListener object is required");
+    }
+
     try {
       JSONObject content = new JSONObject();
       content.put("_id", this.getId());
@@ -188,9 +192,7 @@ public class KuzzleDocument extends JSONObject {
 
         @Override
         public void onError(JSONObject arg) {
-          if (listener != null) {
-            listener.onError(arg);
-          }
+          listener.onError(arg);
         }
       });
     } catch (JSONException e) {
