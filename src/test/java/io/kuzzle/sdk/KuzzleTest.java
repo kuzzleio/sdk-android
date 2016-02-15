@@ -11,8 +11,8 @@ import org.mockito.stubbing.Answer;
 
 import java.lang.reflect.Field;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import io.kuzzle.sdk.core.Kuzzle;
@@ -25,14 +25,13 @@ import io.kuzzle.sdk.listeners.IKuzzleEventListener;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.util.EventList;
 import io.kuzzle.sdk.util.KuzzleQueryObject;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 import io.socket.engineio.client.EngineIOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
@@ -44,6 +43,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
 public class KuzzleTest {
 
@@ -51,14 +51,35 @@ public class KuzzleTest {
   private Socket s;
   private KuzzleResponseListener listener;
 
-  /*
- * Force the internal status to 'CONNECTED' to make query act as-if connected to Kuzzle
- */
+  /**
+   * Force the internal status to 'CONNECTED' to make query act as-if connected to Kuzzle
+   *
+   * @param kuzzle
+   * @param state
+   */
   private void forceConnectedState(Kuzzle kuzzle, KuzzleStates state) {
     try {
       Field internalState = Kuzzle.class.getDeclaredField("state");
       internalState.setAccessible(true);
       internalState.set(kuzzle, state);
+    }
+    catch(Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * * Returns all registered listeners on a given event
+   *
+   * @param kuzzle
+   * @param event
+   */
+  public EventList getEventListeners(Kuzzle kuzzle, KuzzleEvent event) {
+    try {
+      Field events = kuzzle.getClass().getDeclaredField("eventListeners");
+      events.setAccessible(true);
+
+      return ((HashMap<KuzzleEvent, EventList>)events.get(kuzzle)).get(event);
     }
     catch(Exception e) {
       throw new RuntimeException(e);
@@ -127,9 +148,9 @@ public class KuzzleTest {
 
   @Test
   public void testAddListener() {
-    assertEquals(kuzzle.getEventListeners(), new ArrayList<IKuzzleEventListener>());
+    assertEquals(getEventListeners(kuzzle, KuzzleEvent.connected), null);
     kuzzle.addListener(KuzzleEvent.connected, mock(IKuzzleEventListener.class));
-    assertEquals(kuzzle.getEventListeners().get(0).getType(), KuzzleEvent.connected);
+    assertThat(getEventListeners(kuzzle, KuzzleEvent.connected), instanceOf(EventList.class));
   }
 
   @Test
@@ -191,34 +212,35 @@ public class KuzzleTest {
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "now");
   }
 
-  @Test(expected = IndexOutOfBoundsException.class)
+  @Test(expected = NullPointerException.class)
   public void testRemoveAllListeners() {
-    kuzzle.addListener(KuzzleEvent.connected, null);
-    assertEquals(kuzzle.getEventListeners().get(0).getType(), KuzzleEvent.connected);
+    String id = kuzzle.addListener(KuzzleEvent.connected, null);
+    assertEquals(getEventListeners(kuzzle, KuzzleEvent.connected).get(id).getType(), KuzzleEvent.connected);
     kuzzle.removeAllListeners();
-    kuzzle.getEventListeners().get(0);
+    getEventListeners(kuzzle, KuzzleEvent.connected).get(id).getType();
   }
 
   @Test
   public void testRemoveAllListenersType() {
     kuzzle.addListener(KuzzleEvent.connected, null);
     kuzzle.addListener(KuzzleEvent.disconnected, null);
-    assertEquals(kuzzle.getEventListeners().size(), 2);
+    assertEquals(getEventListeners(kuzzle, KuzzleEvent.connected).size(), 1);
+    assertEquals(getEventListeners(kuzzle, KuzzleEvent.disconnected).size(), 1);
     kuzzle.removeAllListeners(KuzzleEvent.connected);
-    assertEquals(kuzzle.getEventListeners().size(), 1);
+    assertEquals(getEventListeners(kuzzle, KuzzleEvent.connected).size(), 0);
+    assertEquals(getEventListeners(kuzzle, KuzzleEvent.disconnected).size(), 1);
   }
 
   @Test
   public void testRemoveListener() {
     assertNotNull(kuzzle.getSocket());
-    kuzzle = spy(kuzzle);
     String id = kuzzle.addListener(KuzzleEvent.disconnected, mock(IKuzzleEventListener.class));
     String id2 = kuzzle.addListener(KuzzleEvent.connected, mock(IKuzzleEventListener.class));
-    assertEquals(kuzzle.getEventListeners().get(0).getType(), KuzzleEvent.disconnected);
-    assertEquals(kuzzle.getEventListeners().get(1).getType(), KuzzleEvent.connected);
-    kuzzle.removeListener(id2);
-    kuzzle.removeListener(id);
-    assertEquals(kuzzle.getEventListeners().size(), 0);
+    assertEquals(getEventListeners(kuzzle, KuzzleEvent.disconnected).get(id).getType(), KuzzleEvent.disconnected);
+    assertEquals(getEventListeners(kuzzle, KuzzleEvent.connected).get(id2).getType(), KuzzleEvent.connected);
+    kuzzle.removeListener(KuzzleEvent.connected, id2);
+    assertEquals(getEventListeners(kuzzle, KuzzleEvent.connected).size(), 0);
+    assertEquals(getEventListeners(kuzzle, KuzzleEvent.disconnected).size(), 1);
   }
 
   @Test

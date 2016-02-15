@@ -131,11 +131,7 @@ public class KuzzleRoom {
           String key = ((JSONObject) args).getString("requestId");
           if (((JSONObject) args).getString("action").equals("jwtTokenExpired")) {
             KuzzleRoom.this.kuzzle.setJwtToken(null);
-            for (Event e : KuzzleRoom.this.kuzzle.getEventListeners()) {
-              if (e.getType() == KuzzleEvent.jwtTokenExpired) {
-                e.trigger();
-              }
-            }
+            KuzzleRoom.this.kuzzle.emitEvent(KuzzleEvent.jwtTokenExpired);
           }
           if (KuzzleRoom.this.kuzzle.getRequestHistory().containsKey(key)) {
             if (KuzzleRoom.this.subscribeToSelf) {

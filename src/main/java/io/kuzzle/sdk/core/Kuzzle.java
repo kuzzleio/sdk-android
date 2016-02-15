@@ -15,12 +15,10 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Timer;
@@ -39,6 +37,7 @@ import io.kuzzle.sdk.security.KuzzleSecurity;
 import io.kuzzle.sdk.state.KuzzleQueue;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.sdk.util.Event;
+import io.kuzzle.sdk.util.EventList;
 import io.kuzzle.sdk.util.KuzzleQueryObject;
 import io.kuzzle.sdk.util.QueueFilter;
 import io.socket.client.IO;
@@ -52,8 +51,10 @@ import io.socket.engineio.client.EngineIOException;
 public class Kuzzle {
 
   private final int MAX_EMIT_TIMEOUT = 10;
+  private final int EVENT_TIMEOUT = 200;
 
-  private List<Event> eventListeners = new ArrayList<>();
+  //private List<Event> eventListeners = new ArrayList<>();
+  private HashMap<KuzzleEvent, EventList> eventListeners = new HashMap<>();
   private Socket socket;
   private Map<String, Map<String, KuzzleDataCollection>> collections = new HashMap<>();
   private Map<String, KuzzleRoom> subscriptions = new ConcurrentHashMap<>();
@@ -116,6 +117,28 @@ public class Kuzzle {
 
   // Listener which is called when an OAuth login is done
   private OnKuzzleLoginDoneListener loginCallback;
+
+  /**
+   * Emit an event to all registered listeners
+   * An event cannot be emitted multiple times before a timeout has been reached.
+   *
+   * @param event
+   */
+  protected void emitEvent(KuzzleEvent event, Object ...args) {
+    long now = System.currentTimeMillis();
+
+    if (this.eventListeners.containsKey(event)) {
+      EventList l = this.eventListeners.get(event);
+
+      if (l.lastEmitted < now - this.EVENT_TIMEOUT) {
+        for(Event e : l.values()) {
+          e.trigger(args);
+        }
+
+        l.lastEmitted = now;
+      }
+    }
+  }
 
   /**
    * Kuzzle object constructor.
@@ -201,20 +224,26 @@ public class Kuzzle {
    * The ID returned by this function is required to remove this listener at a later time.
    *
    * @param kuzzleEvent     - name of the global event to subscribe to
-   * @param eventListener the event listener
+   * @param listener the event listener
    * @return {string} Unique listener ID
    */
-  public String addListener(final KuzzleEvent kuzzleEvent, final IKuzzleEventListener eventListener) {
+  public String addListener(final KuzzleEvent kuzzleEvent, final IKuzzleEventListener listener) {
     this.isValid();
 
     Event e = new Event(kuzzleEvent) {
       @Override
       public void trigger(Object... args) {
-        eventListener.trigger(args);
+        listener.trigger(args);
       }
     };
-    eventListeners.add(e);
-    return e.getId().toString();
+
+    if (!eventListeners.containsKey(kuzzleEvent)) {
+      eventListeners.put(kuzzleEvent, new EventList());
+    }
+
+    String id = e.getId().toString();
+    eventListeners.get(kuzzleEvent).put(id, e);
+    return id;
   }
 
   /**
@@ -302,11 +331,7 @@ public class Kuzzle {
             Kuzzle.this.connectionCallback.onSuccess(null);
           }
           Kuzzle.this.dequeue();
-          for (Event e : Kuzzle.this.eventListeners) {
-            if (e.getType() == KuzzleEvent.connected) {
-              e.trigger();
-            }
-          }
+          emitEvent(KuzzleEvent.connected);
         }
       });
     if (socket != null)
@@ -314,11 +339,8 @@ public class Kuzzle {
         @Override
         public void call(Object... args) {
           Kuzzle.this.state = KuzzleStates.ERROR;
-          for (Event e : Kuzzle.this.eventListeners) {
-            if (e.getType() == KuzzleEvent.error) {
-              e.trigger(args);
-            }
-          }
+          emitEvent(KuzzleEvent.error, args);
+
           if (connectionCallback != null) {
             JSONObject error = new JSONObject();
             try {
@@ -342,11 +364,8 @@ public class Kuzzle {
           if (Kuzzle.this.autoQueue) {
             queuing = true;
           }
-          for (Event e : eventListeners) {
-            if (e.getType() == KuzzleEvent.disconnected) {
-              e.trigger();
-            }
-          }
+
+          emitEvent(KuzzleEvent.disconnected);
         }
       });
     if (socket != null)
@@ -369,11 +388,7 @@ public class Kuzzle {
           }
 
           // alert listeners
-          for (Event e : Kuzzle.this.eventListeners) {
-            if (e.getType() == KuzzleEvent.reconnected) {
-              e.trigger();
-            }
-          }
+          emitEvent(KuzzleEvent.reconnected);
         }
       });
     if (socket != null)
@@ -481,7 +496,7 @@ public class Kuzzle {
    * @return the statistics
    */
   public Kuzzle getStatistics(@NonNull final KuzzleResponseListener<JSONObject> listener) {
-    return this.getStatistics((KuzzleOptions)null, listener);
+    return this.getStatistics((KuzzleOptions) null, listener);
   }
 
   /**
@@ -1193,31 +1208,25 @@ public class Kuzzle {
    * @return the kuzzle
    */
   public Kuzzle removeAllListeners(KuzzleEvent type) {
-    for (Iterator ite = this.eventListeners.iterator(); ite.hasNext();) {
-      if (((Event)ite.next()).getType() == type) {
-        ite.remove();
-      }
+    if (eventListeners.containsKey(type)) {
+      eventListeners.get(type).clear();
     }
+
     return this;
   }
 
   /**
    * Removes a listener from an event.
    *
+   * @param event the type
    * @param listenerId the listener id
    * @return the kuzzle
    */
-  public Kuzzle removeListener(String listenerId) {
-    this.isValid();
-
-    int i = 0;
-    for (Event e : eventListeners) {
-      if (e.getId().toString().equals(listenerId)) {
-        eventListeners.remove(i);
-        break;
-      }
-      i++;
+  public Kuzzle removeListener(KuzzleEvent event, String listenerId) {
+    if (eventListeners.containsKey(event)) {
+      eventListeners.get(event).remove(listenerId);
     }
+
     return this;
   }
 
@@ -1344,11 +1353,7 @@ public class Kuzzle {
         try {
           // checking token expiration
           if (!((JSONObject) args[0]).isNull("error") && ((JSONObject) args[0]).getJSONObject("error").getString("message").equals("Token expired")) {
-            for (Event e : Kuzzle.this.eventListeners) {
-              if (e.getType() == KuzzleEvent.jwtTokenExpired) {
-                e.trigger(request, listener);
-              }
-            }
+            emitEvent(KuzzleEvent.jwtTokenExpired, listener);
           }
           if (listener != null) {
             if (!((JSONObject) args[0]).isNull("error")) {
@@ -1506,14 +1511,6 @@ public class Kuzzle {
     return this.offlineQueue.getQueue();
   }
 
-  /**
-   * Gets event listeners.
-   *
-   * @return the event listeners
-   */
-  public List<Event> getEventListeners() {
-    return eventListeners;
-  }
 
   /**
    * Sets queue filter.

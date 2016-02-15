@@ -9,12 +9,8 @@ import io.kuzzle.sdk.listeners.IKuzzleEventListener;
  * The type Event.
  */
 public abstract class Event implements IKuzzleEventListener {
-
   private UUID id;
   private KuzzleEvent type;
-
-  private Event() {
-  }
 
   /**
    * Instantiates a new Event.
