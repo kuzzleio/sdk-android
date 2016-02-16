@@ -22,6 +22,7 @@ import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.listeners.IKuzzleEventListener;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
+import io.kuzzle.sdk.toolbox.KuzzleTestToolbox;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -126,9 +127,6 @@ public class KuzzleRoomTest {
 
   @Test
   public void testRenewWithError() throws URISyntaxException, JSONException {
-    // Mocking getSocket()
-    when(k.getSocket()).thenReturn(IO.socket("http://localhost:7515"));
-    
     // stub to call the callback from KuzzleRoom.renew method
     doAnswer(new Answer() {
       @Override
@@ -161,7 +159,7 @@ public class KuzzleRoomTest {
   @Test
   public void testRenew() throws JSONException {
     Socket s = mock(Socket.class);
-    when(k.getSocket()).thenReturn(s);
+//    when(KuzzleTestToolbox.getSocket(k)).thenReturn(s);
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -193,8 +191,8 @@ public class KuzzleRoomTest {
 
   @Test
   public void testFilters() throws JSONException {
-    Socket s = mock(Socket.class);
-    when(k.getSocket()).thenReturn(s);
+    /*Socket s = mock(Socket.class);
+    when(KuzzleTestToolbox.getSocket(k)).thenReturn(s);*/
     JSONObject filters = new JSONObject();
     filters.put("foo", "bar");
     
@@ -209,7 +207,7 @@ public class KuzzleRoomTest {
   @Test
   public void setMetadataThroughConstructor() throws JSONException {
     Socket s = mock(Socket.class);
-    when(k.getSocket()).thenReturn(s);
+//    when(KuzzleTestToolbox.getSocket(k)).thenReturn(s);
     JSONObject meta = new JSONObject();
     meta.put("foo", "bar");
     KuzzleRoomOptions options = new KuzzleRoomOptions();
@@ -224,8 +222,6 @@ public class KuzzleRoomTest {
 
   @Test
   public void setSubscribeToSelfThroughConstructor() throws JSONException {
-    Socket s = mock(Socket.class);
-    when(k.getSocket()).thenReturn(s);
     JSONObject meta = new JSONObject();
     meta.put("foo", "bar");
     KuzzleRoomOptions options = new KuzzleRoomOptions();
@@ -268,35 +264,29 @@ public class KuzzleRoomTest {
     KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "index", "test"), options);
     Map<String, Date> m = new HashMap();
     m.put("42", new Date());
-    when(k.getRequestHistory()).thenReturn(m);
+//    when(KuzzleTestToolbox.getRequestHistory(k)).thenReturn(m);
     KuzzleResponseListener listener = mock(KuzzleResponseListener.class);
     renew.callAfterRenew(listener, mockNotif);
     verify(listener, atLeastOnce()).onSuccess(any(JSONObject.class));
   }
 
   @Test
-  public void testUnsubscribe() throws JSONException {
+  public void testUnsubscribe() throws JSONException, URISyntaxException {
     Socket s = mock(Socket.class);
-    // Mocking getSocket()
-    when(k.getSocket()).thenReturn(s);
-    
+
+    Kuzzle kuzzle = new Kuzzle("http://localhost:7512");
+    KuzzleTestToolbox.setSocket(kuzzle, s);
+    kuzzle = spy(kuzzle);
+    room = new KuzzleRoom(new KuzzleDataCollection(kuzzle, "index", "test"));
+
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
         //Call callback with response
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(mockResponse);
-        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject());
         return null;
       }
-    }).when(k).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    doAnswer(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener) invocation.getArguments()[2]).onSuccess(mockResponse);
-        ((OnQueryDoneListener) invocation.getArguments()[2]).onError(new JSONObject());
-        return null;
-      }
-    }).when(k).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
     room.renew(mockNotif, listener);
     assertEquals(room.getRoomId(), "42");
@@ -305,7 +295,6 @@ public class KuzzleRoomTest {
 
   @Test
   public void testSetHeaders() throws JSONException {
-    
     JSONObject headers = new JSONObject();
     headers.put("foo", "bar");
     room.setHeaders(headers, true);

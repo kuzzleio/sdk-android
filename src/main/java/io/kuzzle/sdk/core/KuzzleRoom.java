@@ -190,6 +190,7 @@ public class KuzzleRoom {
           } catch (JSONException e) {
             e.printStackTrace();
           }
+
           KuzzleRoom.this.kuzzle.getSocket().on(KuzzleRoom.this.channel, new Emitter.Listener() {
             @Override
             public void call(final Object... args) {

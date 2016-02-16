@@ -9,10 +9,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 
 import io.kuzzle.sdk.core.Kuzzle;
@@ -25,6 +23,7 @@ import io.kuzzle.sdk.listeners.IKuzzleEventListener;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.toolbox.KuzzleTestToolbox;
 import io.kuzzle.sdk.util.EventList;
 import io.kuzzle.sdk.util.KuzzleQueryObject;
 import io.socket.client.Socket;
@@ -51,41 +50,6 @@ public class KuzzleTest {
   private Socket s;
   private KuzzleResponseListener listener;
 
-  /**
-   * Force the internal status to 'CONNECTED' to make query act as-if connected to Kuzzle
-   *
-   * @param kuzzle
-   * @param state
-   */
-  private void forceConnectedState(Kuzzle kuzzle, KuzzleStates state) {
-    try {
-      Field internalState = Kuzzle.class.getDeclaredField("state");
-      internalState.setAccessible(true);
-      internalState.set(kuzzle, state);
-    }
-    catch(Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * * Returns all registered listeners on a given event
-   *
-   * @param kuzzle
-   * @param event
-   */
-  public EventList getEventListeners(Kuzzle kuzzle, KuzzleEvent event) {
-    try {
-      Field events = kuzzle.getClass().getDeclaredField("eventListeners");
-      events.setAccessible(true);
-
-      return ((HashMap<KuzzleEvent, EventList>)events.get(kuzzle)).get(event);
-    }
-    catch(Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   @Before
   public void setUp() throws URISyntaxException {
     KuzzleOptions options = new KuzzleOptions();
@@ -93,7 +57,7 @@ public class KuzzleTest {
     options.setDefaultIndex("testIndex");
     kuzzle = new Kuzzle("http://localhost:7512", options);
     s = mock(Socket.class);
-    kuzzle.setSocket(s);
+    KuzzleTestToolbox.setSocket(kuzzle, s);
 
     listener = new KuzzleResponseListener<Object>() {
       @Override
@@ -122,7 +86,7 @@ public class KuzzleTest {
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
     kuzzle = new Kuzzle("http://localhost:7512", options, mock(KuzzleResponseListener.class));
-    kuzzle.setSocket(s);
+    KuzzleTestToolbox.setSocket(kuzzle, s);
     kuzzle.connect();
     verify(s).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
   }
@@ -148,9 +112,9 @@ public class KuzzleTest {
 
   @Test
   public void testAddListener() {
-    assertEquals(getEventListeners(kuzzle, KuzzleEvent.connected), null);
+    assertEquals(KuzzleTestToolbox.getEventListeners(kuzzle, KuzzleEvent.connected), null);
     kuzzle.addListener(KuzzleEvent.connected, mock(IKuzzleEventListener.class));
-    assertThat(getEventListeners(kuzzle, KuzzleEvent.connected), instanceOf(EventList.class));
+    assertThat(KuzzleTestToolbox.getEventListeners(kuzzle, KuzzleEvent.connected), instanceOf(EventList.class));
   }
 
   @Test
@@ -161,9 +125,9 @@ public class KuzzleTest {
 
   @Test
   public void testDisconnect() {
-    assertNotNull(kuzzle.getSocket());
+    assertNotNull(KuzzleTestToolbox.getSocket(kuzzle));
     kuzzle.disconnect();
-    assertNull(kuzzle.getSocket());
+    assertNull(KuzzleTestToolbox.getSocket(kuzzle));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -215,32 +179,31 @@ public class KuzzleTest {
   @Test(expected = NullPointerException.class)
   public void testRemoveAllListeners() {
     String id = kuzzle.addListener(KuzzleEvent.connected, null);
-    assertEquals(getEventListeners(kuzzle, KuzzleEvent.connected).get(id).getType(), KuzzleEvent.connected);
+    assertEquals(KuzzleTestToolbox.getEventListeners(kuzzle, KuzzleEvent.connected).get(id).getType(), KuzzleEvent.connected);
     kuzzle.removeAllListeners();
-    getEventListeners(kuzzle, KuzzleEvent.connected).get(id).getType();
+    KuzzleTestToolbox.getEventListeners(kuzzle, KuzzleEvent.connected).get(id).getType();
   }
 
   @Test
   public void testRemoveAllListenersType() {
     kuzzle.addListener(KuzzleEvent.connected, null);
     kuzzle.addListener(KuzzleEvent.disconnected, null);
-    assertEquals(getEventListeners(kuzzle, KuzzleEvent.connected).size(), 1);
-    assertEquals(getEventListeners(kuzzle, KuzzleEvent.disconnected).size(), 1);
+    assertEquals(KuzzleTestToolbox.getEventListeners(kuzzle, KuzzleEvent.connected).size(), 1);
+    assertEquals(KuzzleTestToolbox.getEventListeners(kuzzle, KuzzleEvent.disconnected).size(), 1);
     kuzzle.removeAllListeners(KuzzleEvent.connected);
-    assertEquals(getEventListeners(kuzzle, KuzzleEvent.connected).size(), 0);
-    assertEquals(getEventListeners(kuzzle, KuzzleEvent.disconnected).size(), 1);
+    assertEquals(KuzzleTestToolbox.getEventListeners(kuzzle, KuzzleEvent.connected).size(), 0);
+    assertEquals(KuzzleTestToolbox.getEventListeners(kuzzle, KuzzleEvent.disconnected).size(), 1);
   }
 
   @Test
   public void testRemoveListener() {
-    assertNotNull(kuzzle.getSocket());
     String id = kuzzle.addListener(KuzzleEvent.disconnected, mock(IKuzzleEventListener.class));
     String id2 = kuzzle.addListener(KuzzleEvent.connected, mock(IKuzzleEventListener.class));
-    assertEquals(getEventListeners(kuzzle, KuzzleEvent.disconnected).get(id).getType(), KuzzleEvent.disconnected);
-    assertEquals(getEventListeners(kuzzle, KuzzleEvent.connected).get(id2).getType(), KuzzleEvent.connected);
+    assertEquals(KuzzleTestToolbox.getEventListeners(kuzzle, KuzzleEvent.disconnected).get(id).getType(), KuzzleEvent.disconnected);
+    assertEquals(KuzzleTestToolbox.getEventListeners(kuzzle, KuzzleEvent.connected).get(id2).getType(), KuzzleEvent.connected);
     kuzzle.removeListener(KuzzleEvent.connected, id2);
-    assertEquals(getEventListeners(kuzzle, KuzzleEvent.connected).size(), 0);
-    assertEquals(getEventListeners(kuzzle, KuzzleEvent.disconnected).size(), 1);
+    assertEquals(KuzzleTestToolbox.getEventListeners(kuzzle, KuzzleEvent.connected).size(), 0);
+    assertEquals(KuzzleTestToolbox.getEventListeners(kuzzle, KuzzleEvent.disconnected).size(), 1);
   }
 
   @Test
@@ -269,8 +232,8 @@ public class KuzzleTest {
     options.setQueuable(false);
     options.setConnect(Mode.MANUAL);
     kuzzle = new Kuzzle("http://localhost:7512", options);
-    kuzzle.setSocket(s);
-    forceConnectedState(kuzzle, KuzzleStates.CONNECTED);
+    KuzzleTestToolbox.setSocket(kuzzle, s);
+    KuzzleTestToolbox.forceConnectedState(kuzzle, KuzzleStates.CONNECTED);
 
     JSONObject meta = new JSONObject();
     meta.put("foo", "bar");
@@ -295,8 +258,8 @@ public class KuzzleTest {
     options.setQueuable(false);
     options.setConnect(Mode.MANUAL);
     kuzzle = new Kuzzle("http://localhost:7512", options);
-    kuzzle.setSocket(s);
-    forceConnectedState(kuzzle, KuzzleStates.CONNECTED);
+    KuzzleTestToolbox.setSocket(kuzzle, s);
+    KuzzleTestToolbox.forceConnectedState(kuzzle, KuzzleStates.CONNECTED);
     kuzzle.query(QueryArgsHelper.makeQueryArgs("controller", "action"), jsonObj, options);
     verify(s).emit(eq("kuzzle"), eq(jsonObj));
     assertEquals(jsonObj.getJSONObject("metadata").getString("foo"), "bar");
@@ -610,14 +573,15 @@ public class KuzzleTest {
   @Test
   public void testDequeue() throws URISyntaxException, JSONException {
     KuzzleOptions options = new KuzzleOptions();
+    options.setAutoReconnect(true);
     options.setQueueTTL(10000);
     options.setAutoReplay(true);
     options.setReplayInterval(1);
     options.setConnect(Mode.MANUAL);
     options.setOfflineMode(Mode.AUTO);
     kuzzle = new Kuzzle("http://localhost:7512", options);
-    kuzzle.setSocket(s);
-    kuzzle.setAutoReconnect(true);
+    KuzzleTestToolbox.setSocket(kuzzle, s);
+
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -657,15 +621,16 @@ public class KuzzleTest {
   @Test
   public void testQueueMaxSize() throws URISyntaxException, JSONException {
     KuzzleOptions options = new KuzzleOptions();
+    options.setAutoReconnect(true);
+    options.setAutoQueue(true);
     options.setQueueTTL(1000);
     options.setQueueMaxSize(1);
     options.setAutoReplay(true);
     options.setConnect(Mode.MANUAL);
     options.setOfflineMode(Mode.AUTO);
     kuzzle = new Kuzzle("http://localhost:7512", options);
-    kuzzle.setSocket(s);
-    kuzzle.setAutoReconnect(true);
-    kuzzle.setAutoQueue(true);
+    KuzzleTestToolbox.setSocket(kuzzle, s);
+
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -707,7 +672,7 @@ public class KuzzleTest {
     JSONObject query = new JSONObject();
     query.put("requestId", "42");
     kuzzle = new Kuzzle("http://localhost:7512", options);
-    kuzzle.setSocket(s);
+    KuzzleTestToolbox.setSocket(kuzzle, s);
     kuzzle.connect();
     kuzzle.query(QueryArgsHelper.makeQueryArgs("test", "test"), query, null, mock(OnQueryDoneListener.class));
     verify(s, atLeastOnce()).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
@@ -725,6 +690,7 @@ public class KuzzleTest {
     options.setAutoReplay(true);
     options.setConnect(Mode.MANUAL);
     options.setOfflineMode(Mode.AUTO);
+    options.setAutoReconnect(true);
 
     KuzzleQueryObject o = new KuzzleQueryObject();
     o.setTimestamp(new Date());
@@ -733,8 +699,7 @@ public class KuzzleTest {
     o.setQuery(query);
 
     kuzzle = new Kuzzle("http://localhost:7512", options);
-    kuzzle.setSocket(s);
-    kuzzle.setAutoReconnect(true);
+    KuzzleTestToolbox.setSocket(kuzzle, s);
 
     doAnswer(new Answer() {
       @Override
@@ -750,7 +715,7 @@ public class KuzzleTest {
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
-    kuzzle.setAutoReconnect(true);
+
     kuzzle.connect();
     kuzzle.setOfflineQueue(o);
 
@@ -763,17 +728,18 @@ public class KuzzleTest {
   @Test
   public void testRenewSubscriptionsAfterReconnection() throws URISyntaxException, JSONException {
     KuzzleOptions options = new KuzzleOptions();
+    options.setAutoReconnect(true);
     options.setQueueTTL(1);
     options.setAutoReplay(true);
     options.setConnect(Mode.MANUAL);
     options.setAutoReconnect(true);
     options.setOfflineMode(Mode.AUTO);
     kuzzle = new Kuzzle("http://localhost:7512", options, mock(KuzzleResponseListener.class));
-    kuzzle.setSocket(s);
+    KuzzleTestToolbox.setSocket(kuzzle, s);
     final Kuzzle kuzzleSpy = spy(kuzzle);
-    kuzzleSpy.setAutoReconnect(true);
-    kuzzleSpy.addSubscription("42", new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "index", "test")));
-    kuzzleSpy.addSubscription("43", new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "index", "test2")));
+
+    KuzzleTestToolbox.getSubscriptions(kuzzle).put("42", new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "index", "test")));
+    KuzzleTestToolbox.getSubscriptions(kuzzle).put("43", new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "index", "test2")));
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -781,7 +747,7 @@ public class KuzzleTest {
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
-    kuzzleSpy.setAutoReconnect(true);
+
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -798,17 +764,23 @@ public class KuzzleTest {
   }
 
   @Test
-  public void testAutoReconnect() {
-    kuzzle.setAutoReconnect(false);
-    kuzzle = spy(kuzzle);
+  public void testAutoReconnect() throws URISyntaxException {
+    KuzzleOptions options = new KuzzleOptions();
+    options.setConnect(Mode.MANUAL);
+    options.setAutoReconnect(false);
+
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
         ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
-        kuzzle.setSocket(s);
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
+
+    kuzzle = new Kuzzle("http://localhost:7512", options);
+    KuzzleTestToolbox.setSocket(kuzzle, s);
+    kuzzle = spy(kuzzle);
+
     kuzzle.connect();
     verify(kuzzle, times(1)).disconnect();
   }
@@ -819,9 +791,9 @@ public class KuzzleTest {
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
     kuzzle = new Kuzzle("http://localhost:7512", listener);
-    kuzzle.setSocket(s);
+    KuzzleTestToolbox.forceConnectedState(kuzzle, KuzzleStates.LOGGED_OUT);
+    KuzzleTestToolbox.setSocket(kuzzle, s);
     kuzzle = spy(kuzzle);
-    when(kuzzle.isValidState()).thenReturn(false);
     kuzzle.connect();
     verify(listener, atLeastOnce()).onSuccess(any(JSONObject.class));
   }
@@ -832,7 +804,7 @@ public class KuzzleTest {
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
     kuzzle = new Kuzzle("http://localhost:7512", options, listener);
-    kuzzle.setSocket(s);
+    KuzzleTestToolbox.setSocket(kuzzle, s);
     kuzzle = spy(kuzzle);
     doAnswer(new Answer() {
       @Override
@@ -964,15 +936,15 @@ public class KuzzleTest {
   @Test
   public void testManualQueuing() throws URISyntaxException, JSONException {
     KuzzleOptions options = new KuzzleOptions();
+    options.setAutoReconnect(true);
     options.setAutoQueue(false);
     options.setDefaultIndex("testIndex");
     options.setQueueTTL(10000);
     options.setReplayInterval(1);
     options.setConnect(Mode.MANUAL);
     kuzzle = new Kuzzle("http://localhost:7512", options);
-    kuzzle.setSocket(s);
-    kuzzle.setAutoReconnect(true);
-    forceConnectedState(kuzzle, KuzzleStates.OFFLINE);
+    KuzzleTestToolbox.setSocket(kuzzle, s);
+    KuzzleTestToolbox.forceConnectedState(kuzzle, KuzzleStates.OFFLINE);
 
     doAnswer(new Answer() {
       @Override
@@ -999,12 +971,12 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        kuzzle.setAutoReconnect(false);
         ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
     KuzzleOptions options = new KuzzleOptions();
+    options.setAutoReconnect(false);
     options.setDefaultIndex("testIndex");
     kuzzle = new Kuzzle("http://localhost:7512", options);
     kuzzle.connect();
@@ -1049,7 +1021,7 @@ public class KuzzleTest {
   @Test
   public void testLogin() throws JSONException {
     kuzzle = spy(kuzzle);
-    kuzzle.setSocket(s);
+    KuzzleTestToolbox.setSocket(kuzzle, s);
     KuzzleResponseListener listenerSpy = spy(listener);
     doAnswer(new Answer() {
       @Override
@@ -1095,9 +1067,9 @@ public class KuzzleTest {
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
     kuzzle = new Kuzzle("http://localhost:7512", options);
-    kuzzle.setSocket(s);
+    KuzzleTestToolbox.setSocket(kuzzle, s);
     kuzzle = spy(kuzzle);
-    kuzzle.setSocket(s);
+    KuzzleTestToolbox.setSocket(kuzzle, s);
 
     final JSONObject response = new JSONObject("{\"result\": {\"jwt\": \"jwtToken\"}}");
 

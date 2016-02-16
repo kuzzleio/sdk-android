@@ -11,6 +11,7 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.enums.Mode;
+import io.kuzzle.sdk.toolbox.KuzzleTestToolbox;
 import io.kuzzle.sdk.util.Event;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -34,7 +35,7 @@ public class KuzzleListenerTest {
     options.setConnect(Mode.MANUAL);
     kuzzle = new Kuzzle("http://localhost:7512", options);
     s = mock(Socket.class);
-    kuzzle.setSocket(s);
+    KuzzleTestToolbox.setSocket(kuzzle, s);
   }
 
   private void  mockAnswer(final String event) {
@@ -50,7 +51,7 @@ public class KuzzleListenerTest {
   }
 
   @Test
-  public void testCONNECTEDevent() {
+  public void testCONNECTEDevent() throws URISyntaxException {
     mockAnswer(Socket.EVENT_CONNECT);
     event = mock(Event.class);
     kuzzle.addListener(KuzzleEvent.connected, event);
@@ -59,7 +60,7 @@ public class KuzzleListenerTest {
   }
 
   @Test
-  public void testERRORevent() {
+  public void testERRORevent() throws URISyntaxException {
     mockAnswer(Socket.EVENT_CONNECT_ERROR);
     event = mock(Event.class);
     kuzzle.addListener(KuzzleEvent.error, event);
@@ -68,7 +69,7 @@ public class KuzzleListenerTest {
   }
 
   @Test
-  public void testDISCONNECTevent() {
+  public void testDISCONNECTevent() throws URISyntaxException {
     mockAnswer(Socket.EVENT_DISCONNECT);
     event = mock(Event.class);
     kuzzle.addListener(KuzzleEvent.disconnected, event);
@@ -77,7 +78,7 @@ public class KuzzleListenerTest {
   }
 
   @Test
-  public void testRECONNECTevent() {
+  public void testRECONNECTevent() throws URISyntaxException {
     mockAnswer(Socket.EVENT_RECONNECT);
     event = mock(Event.class);
     kuzzle.addListener(KuzzleEvent.reconnected, event);
