@@ -370,7 +370,6 @@ public class Kuzzle {
         public void call(Object... args) {
           Kuzzle.this.state = KuzzleStates.OFFLINE;
           if (!Kuzzle.this.autoReconnect) {
-            System.out.println("DISCONNECTED");
             Kuzzle.this.disconnect();
           }
           if (Kuzzle.this.autoQueue) {

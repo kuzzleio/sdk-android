@@ -40,7 +40,6 @@ public class KuzzleProfileTest {
   @Test
   public void testConstructorNoContent() throws JSONException {
     KuzzleProfile profile = new KuzzleProfile(kuzzle, "foo", null);
-    System.out.println(profile.content);
     assertEquals(profile.id, "foo");
     assertEquals(profile.getRoles().length, 0);
     assertThat(profile.content, instanceOf(JSONObject.class));
