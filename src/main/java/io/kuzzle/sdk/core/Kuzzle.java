@@ -17,7 +17,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
@@ -53,17 +52,15 @@ public class Kuzzle {
   private final int MAX_EMIT_TIMEOUT = 10;
   private final int EVENT_TIMEOUT = 200;
 
-  private HashMap<KuzzleEvent, EventList> eventListeners = new HashMap<>();
+  private ConcurrentHashMap<KuzzleEvent, EventList> eventListeners = new ConcurrentHashMap<>();
   private Socket socket;
-  private Map<String, Map<String, KuzzleDataCollection>> collections = new HashMap<>();
-  private Map<String, KuzzleRoom> subscriptions = new ConcurrentHashMap<>();
-  private Map<String, KuzzleRoom> pendingSubscriptions = new ConcurrentHashMap<>();
+  private Map<String, Map<String, KuzzleDataCollection>> collections = new ConcurrentHashMap<>();
   private boolean autoReconnect = true;
   private JSONObject headers = new JSONObject();
   private JSONObject metadata;
   private String url;
   private KuzzleResponseListener<Void> connectionCallback;
-  private KuzzleStates state = KuzzleStates.INITIALIZING;
+  protected KuzzleStates state = KuzzleStates.INITIALIZING;
   private long  reconnectionDelay;
   private boolean autoResubscribe;
   private boolean autoQueue;
@@ -81,13 +78,27 @@ public class Kuzzle {
   private boolean queuing = false;
   private String defaultIndex;
 
-  private Map<String, Date> requestHistory = new HashMap<>();
+  private ConcurrentHashMap<String, Date> requestHistory = new ConcurrentHashMap<>();
 
   private KuzzleQueue<KuzzleQueryObject> offlineQueue = new KuzzleQueue<>();
   private int queueTTL;
   private int queueMaxSize;
 
   private String jwtToken = null;
+
+  /*
+   These two properties contain the centralized subscription list in the following format:
+    roomId:
+      kuzzleRoomID_1: kuzzleRoomInstance_1,
+      kuzzleRoomID_2: kuzzleRoomInstance_2,
+      kuzzleRoomID_...: kuzzleRoomInstance_...
+
+
+   This was made to allow multiple subscriptions on the same set of filters,
+   something that Kuzzle does not permit.
+   This structure also allows renewing subscriptions after a connection loss
+   */
+  private ConcurrentHashMap<String, ConcurrentHashMap<String, KuzzleRoom>> subscriptions = new ConcurrentHashMap<>();
 
   // Security static class
   public KuzzleSecurity security;
@@ -449,7 +460,7 @@ public class Kuzzle {
     }
 
     if (!this.collections.containsKey(collection)) {
-      Map<String, KuzzleDataCollection> col = new HashMap<>();
+      Map<String, KuzzleDataCollection> col = new ConcurrentHashMap<>();
       col.put(collection, new KuzzleDataCollection(this, index, collection));
       this.collections.put(index, col);
     }
@@ -1263,8 +1274,10 @@ public class Kuzzle {
   }
 
   private void renewSubscriptions() {
-    for(Map.Entry<String, KuzzleRoom> e: subscriptions.entrySet()) {
-      (e.getValue()).renew((e.getValue()).getFilters(), (e.getValue()).getListener());
+    for(Map<String, KuzzleRoom> roomSubscriptions: subscriptions.values()) {
+      for (KuzzleRoom room : roomSubscriptions.values()) {
+        room.renew(room.getListener());
+      }
     }
   }
 
@@ -1489,8 +1502,15 @@ public class Kuzzle {
    * @return kuzzle kuzzle
    */
   protected Kuzzle addPendingSubscription(final String id, final KuzzleRoom room) {
-    if (!this.pendingSubscriptions.containsKey(id))
-      this.pendingSubscriptions.put(id, room);
+    ConcurrentHashMap<String, KuzzleRoom> pending = this.subscriptions.get("pending");
+
+    if (pending == null) {
+      pending = new ConcurrentHashMap<>();
+      this.subscriptions.put("pending", pending);
+    }
+
+    pending.put(id, room);
+
     return this;
   }
 
@@ -1501,20 +1521,33 @@ public class Kuzzle {
    * @return the kuzzle
    */
   protected Kuzzle deletePendingSubscription(final String id) {
-    pendingSubscriptions.remove(id);
+    ConcurrentHashMap<String, KuzzleRoom> pending = this.subscriptions.get("pending");
+
+    if (pending != null) {
+      pending.remove(id);
+    }
+
     return this;
   }
 
   /**
    * Add subscription kuzzle.
    *
-   * @param id   the id
-   * @param room the room
+   * @param roomId Room's unique ID
+   * @param id   KuzzleRoom object unique ID
+   * @param kuzzleRoom KuzzleRoom instance
    * @return kuzzle kuzzle
    */
-  protected Kuzzle addSubscription(final String id, final KuzzleRoom room) {
-    if (!this.subscriptions.containsKey(id))
+  protected Kuzzle addSubscription(final String roomId, final String id, final KuzzleRoom kuzzleRoom) {
+    ConcurrentHashMap<String, KuzzleRoom> room = this.subscriptions.get(roomId);
+
+    if (room == null) {
+      room = new ConcurrentHashMap<>();
       this.subscriptions.put(id, room);
+    }
+
+    room.put(id, kuzzleRoom);
+
     return this;
   }
 
@@ -1669,8 +1702,15 @@ public class Kuzzle {
    * @param id the id
    * @return the kuzzle
    */
-  protected Kuzzle deleteSubscription(final String id) {
-    this.subscriptions.remove(id);
+  protected Kuzzle deleteSubscription(final String roomId, final String id) {
+    if (this.subscriptions.containsKey(roomId)) {
+      this.subscriptions.get(roomId).remove(id);
+
+      if (this.subscriptions.get(roomId).isEmpty()) {
+        this.subscriptions.remove(roomId);
+      }
+    }
+
     return this;
   }
 
@@ -1679,8 +1719,17 @@ public class Kuzzle {
    *
    * @return the subscriptions
    */
-  public Map<String, KuzzleRoom> getSubscriptions() {
-    return subscriptions;
+  protected Map<String, KuzzleRoom> getSubscriptions(String roomId) {
+    return this.subscriptions.get(roomId);
+  }
+
+  /**
+   * Getter for the pendingSubscriptions private property
+   *
+   * @return
+   */
+  protected Map<String, KuzzleRoom> getPendingSubscriptions() {
+    return this.subscriptions.get("pending");
   }
 
   /**
