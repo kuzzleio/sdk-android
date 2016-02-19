@@ -127,8 +127,8 @@ public class KuzzleDataCollection {
    * @param action     the action
    * @return the kuzzle . query args
    */
-  public Kuzzle.QueryArgs makeQueryArgs(final String controller, final String action) {
-    Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
+  public io.kuzzle.sdk.core.Kuzzle.QueryArgs makeQueryArgs(final String controller, final String action) {
+    io.kuzzle.sdk.core.Kuzzle.QueryArgs args = new io.kuzzle.sdk.core.Kuzzle.QueryArgs();
     args.action = action;
     args.controller = controller;
     args.index = this.index;

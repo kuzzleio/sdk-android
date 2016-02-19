@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -28,8 +29,8 @@ public class KuzzleSecurity {
    * @return JSONObject - Kuzzle.query() 1st argument object
    * @throws JSONException
    */
-  protected Kuzzle.QueryArgs buildQueryArgs(@NonNull final String action) throws JSONException {
-    Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
+  protected io.kuzzle.sdk.core.Kuzzle.QueryArgs buildQueryArgs(@NonNull final String action) throws JSONException {
+    io.kuzzle.sdk.core.Kuzzle.QueryArgs args = new io.kuzzle.sdk.core.Kuzzle.QueryArgs();
     args.action = action;
     args.controller = "security";
     return args;

@@ -48,18 +48,17 @@ import io.socket.engineio.client.EngineIOException;
  * The type Kuzzle.
  */
 public class Kuzzle {
-
   private final int MAX_EMIT_TIMEOUT = 10;
   private final int EVENT_TIMEOUT = 200;
 
-  private ConcurrentHashMap<KuzzleEvent, EventList> eventListeners = new ConcurrentHashMap<>();
-  private Socket socket;
+  protected ConcurrentHashMap<KuzzleEvent, EventList> eventListeners = new ConcurrentHashMap<>();
+  protected Socket socket;
   private Map<String, Map<String, KuzzleDataCollection>> collections = new ConcurrentHashMap<>();
   private boolean autoReconnect = true;
   private JSONObject headers = new JSONObject();
   private JSONObject metadata;
   private String url;
-  private KuzzleResponseListener<Void> connectionCallback;
+  protected KuzzleResponseListener<Void> connectionCallback;
   protected KuzzleStates state = KuzzleStates.INITIALIZING;
   private long  reconnectionDelay;
   private boolean autoResubscribe;
@@ -100,7 +99,7 @@ public class Kuzzle {
    something that Kuzzle does not permit.
    This structure also allows renewing subscriptions after a connection loss
    */
-  private ConcurrentHashMap<String, ConcurrentHashMap<String, KuzzleRoom>> subscriptions = new ConcurrentHashMap<>();
+  protected ConcurrentHashMap<String, ConcurrentHashMap<String, KuzzleRoom>> subscriptions = new ConcurrentHashMap<>();
 
   // Security static class
   public KuzzleSecurity security;
@@ -282,9 +281,11 @@ public class Kuzzle {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.checkToken: listener required");
     }
+
     if (token == null || token.isEmpty()) {
       throw new IllegalArgumentException("Kuzzle.checkToken: token required");
     }
+
     try {
       QueryArgs args = new QueryArgs();
       args.controller = "auth";

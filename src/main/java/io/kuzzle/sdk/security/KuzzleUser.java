@@ -1,8 +1,10 @@
 package io.kuzzle.sdk.security;
 
 import android.support.annotation.NonNull;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
