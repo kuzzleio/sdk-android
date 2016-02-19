@@ -312,7 +312,7 @@ public class KuzzleDocument {
       else {
         this.content = new JSONObject();
       }
-    } else {
+    } else if (content != null) {
       for (Iterator iterator = content.keys(); iterator.hasNext(); ) {
         String key = (String) iterator.next();
         this.content.put(key, content.get(key));
@@ -504,7 +504,7 @@ public class KuzzleDocument {
    *
    * @return the version
    */
-  public Long getVersion() {
+  public long getVersion() {
     return this.version;
   }
 

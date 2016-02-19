@@ -38,6 +38,7 @@ public class KuzzleDataMappingTest {
   public void setUp() {
     k = mock(Kuzzle.class);
     when(k.getDefaultIndex()).thenReturn("index");
+    when(k.getHeaders()).thenReturn(new JSONObject());
     dataCollection = new KuzzleDataCollection(k, "index", "test");
     dataMapping = new KuzzleDataMapping(dataCollection);
   }

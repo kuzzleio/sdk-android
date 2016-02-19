@@ -1,10 +1,9 @@
 package io.kuzzle.sdk.toolbox;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleRoom;
@@ -59,7 +58,7 @@ public class KuzzleTestToolbox {
       Field events = kuzzle.getClass().getDeclaredField("eventListeners");
       events.setAccessible(true);
 
-      return ((HashMap<KuzzleEvent, EventList>)events.get(kuzzle)).get(event);
+      return ((ConcurrentHashMap<KuzzleEvent, EventList>)events.get(kuzzle)).get(event);
     }
     catch(Exception e) {
       throw new RuntimeException(e);
@@ -72,12 +71,12 @@ public class KuzzleTestToolbox {
    * @param kuzzle
    * @return
    */
-  public static Map<String, KuzzleRoom> getSubscriptions(Kuzzle kuzzle) {
+  public static Map<String, Map<String, KuzzleRoom>> getSubscriptions(Kuzzle kuzzle) {
     try {
       Field subscriptions = kuzzle.getClass().getDeclaredField("subscriptions");
       subscriptions.setAccessible(true);
 
-      return ((Map<String, KuzzleRoom>)subscriptions.get(kuzzle));
+      return ((Map<String, Map<String, KuzzleRoom>>)subscriptions.get(kuzzle));
     }
     catch (Exception e) {
       throw new RuntimeException(e);

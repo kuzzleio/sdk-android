@@ -98,7 +98,8 @@ public class KuzzleDataCollection {
             JSONArray hits = object.getJSONObject("result").getJSONArray("hits");
             List<KuzzleDocument> docs = new ArrayList<KuzzleDocument>();
             for (int i = 0; i < hits.length(); i++) {
-              KuzzleDocument doc = new KuzzleDocument(KuzzleDataCollection.this, hits.getJSONObject(i));
+              JSONObject hit = hits.getJSONObject(i);
+              KuzzleDocument doc = new KuzzleDocument(KuzzleDataCollection.this, hit.getString("_id"), hit.getJSONObject("_source"));
               docs.add(doc);
             }
             KuzzleDocumentList response = new KuzzleDocumentList(docs, object.getJSONObject("result").getInt("total"));
@@ -319,11 +320,10 @@ public class KuzzleDataCollection {
             try {
               JSONObject result = response.getJSONObject("result");
               KuzzleDocument document = new KuzzleDocument(KuzzleDataCollection.this, result.getString("_id"), result.getJSONObject("_source"));
-
-              document.setVersion(response.getLong("_version"));
+              document.setVersion(result.getLong("_version"));
               listener.onSuccess(document);
             } catch (JSONException e) {
-              throw new RuntimeException();
+              throw new RuntimeException(e);
             }
           }
         }
@@ -1067,7 +1067,7 @@ public class KuzzleDataCollection {
    *
    * @return the kuzzle
    */
-  protected Kuzzle getKuzzle() {
+  public Kuzzle getKuzzle() {
     return kuzzle;
   }
 

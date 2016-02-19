@@ -9,9 +9,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleDataCollection;
@@ -41,7 +45,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
 public class KuzzleTest {
@@ -736,10 +739,21 @@ public class KuzzleTest {
     options.setOfflineMode(Mode.AUTO);
     kuzzle = new Kuzzle("http://localhost:7512", options, mock(KuzzleResponseListener.class));
     KuzzleTestToolbox.setSocket(kuzzle, s);
+    KuzzleTestToolbox.forceConnectedState(kuzzle, KuzzleStates.INITIALIZING);
     final Kuzzle kuzzleSpy = spy(kuzzle);
 
-    KuzzleTestToolbox.getSubscriptions(kuzzle).put("42", new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "index", "test")));
-    KuzzleTestToolbox.getSubscriptions(kuzzle).put("43", new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "index", "test2")));
+    KuzzleRoom
+      room1 = new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "index", "test")),
+      room2 = new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "index", "test2"));
+
+    room1.renew(listener);
+    room2.renew(listener);
+
+    Map<String, Map<String, KuzzleRoom>> subscriptions = KuzzleTestToolbox.getSubscriptions(kuzzle);
+    subscriptions.put("room", new ConcurrentHashMap<String, KuzzleRoom>());
+    subscriptions.get("room").put("42", room1);
+    subscriptions.get("room").put("43", room2);
+
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -751,7 +765,7 @@ public class KuzzleTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
+        ((Emitter.Listener) invocation.getArguments()[1]).call(null, listener);
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
@@ -760,7 +774,6 @@ public class KuzzleTest {
     verify(kuzzleSpy, times(2)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "subscribe");
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "on");
-    assertEquals(kuzzleSpy.getSubscriptions().size(), 2);
   }
 
   @Test
@@ -989,33 +1002,41 @@ public class KuzzleTest {
   }
 
   @Test
-  public void testDeleteSubscription() throws JSONException {
-    kuzzle.setHeaders(new JSONObject());
-    kuzzle = spy(kuzzle);
-    KuzzleDataCollection collection = mock(KuzzleDataCollection.class);
-    Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
-    args.controller = "subscribe";
-    args.action = "off";
-    when(collection.makeQueryArgs(any(String.class), any(String.class))).thenReturn(args);
-    when(collection.getKuzzle()).thenReturn(kuzzle);
-    when(collection.getHeaders()).thenReturn(new JSONObject());
-    KuzzleRoom room = new KuzzleRoom(collection);
-    doAnswer(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        //Mock response
-        JSONObject result = new JSONObject();
-        result.put("roomId", "42");
-        result.put("channel", "channel");
-        //Call callback with response
-        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", result));
-        return null;
-      }
-    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    room.renew(new JSONObject(), mock(KuzzleResponseListener.class));
-    assertEquals(kuzzle.getSubscriptions().size(), 1);
-    room.unsubscribe();
-    assertEquals(kuzzle.getSubscriptions().size(), 0);
+  public void testDeleteSubscription() throws JSONException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    Map<String, Map<String, KuzzleRoom>> subscriptions = KuzzleTestToolbox.getSubscriptions(kuzzle);
+
+    subscriptions.put("foo", new ConcurrentHashMap<String, KuzzleRoom>());
+    subscriptions.get("foo").put("bar", mock(KuzzleRoom.class));
+    subscriptions.get("foo").put("baz", mock(KuzzleRoom.class));
+    subscriptions.get("foo").put("qux", mock(KuzzleRoom.class));
+
+    Method deleteSubscriptions = kuzzle.getClass().getDeclaredMethod("deleteSubscription", String.class, String.class);
+    deleteSubscriptions.setAccessible(true);
+
+    deleteSubscriptions.invoke(kuzzle, "foobar", "whatever");
+
+    // there is always a "pending" room ID used to store pending subscriptions
+    assertEquals(subscriptions.keySet().size(), 2);
+    assertEquals(subscriptions.get("pending").size(), 0);
+    assertEquals(subscriptions.get("foo").size(), 3);
+
+    deleteSubscriptions.invoke(kuzzle, "foo", "baz");
+
+    assertEquals(subscriptions.keySet().size(), 2);
+    assertEquals(subscriptions.get("pending").size(), 0);
+    assertEquals(subscriptions.get("foo").size(), 2);
+
+    deleteSubscriptions.invoke(kuzzle, "foo", "qux");
+
+    assertEquals(subscriptions.keySet().size(), 2);
+    assertEquals(subscriptions.get("pending").size(), 0);
+    assertEquals(subscriptions.get("foo").size(), 1);
+
+    deleteSubscriptions.invoke(kuzzle, "foo", "bar");
+
+    assertEquals(subscriptions.keySet().size(), 1);
+    assertEquals(subscriptions.get("pending").size(), 0);
+    assertEquals(subscriptions.containsKey("foo"), false);
   }
 
   @Test

@@ -87,12 +87,14 @@ public class Kuzzle {
   private String jwtToken = null;
 
   /*
-   These two properties contain the centralized subscription list in the following format:
+   This property contains the centralized subscription list in the following format:
     roomId:
       kuzzleRoomID_1: kuzzleRoomInstance_1,
       kuzzleRoomID_2: kuzzleRoomInstance_2,
-      kuzzleRoomID_...: kuzzleRoomInstance_...
-
+      ...
+    pending: // pending subscriptions
+      kuzzleRoomID_x: kuzzleRoomInstance_x,
+      ...
 
    This was made to allow multiple subscriptions on the same set of filters,
    something that Kuzzle does not permit.
@@ -194,6 +196,7 @@ public class Kuzzle {
     }
 
     this.security = new KuzzleSecurity(this);
+    this.subscriptions.put("pending", new ConcurrentHashMap<String, KuzzleRoom>());
   }
 
   /**
@@ -1502,15 +1505,7 @@ public class Kuzzle {
    * @return kuzzle kuzzle
    */
   protected Kuzzle addPendingSubscription(final String id, final KuzzleRoom room) {
-    ConcurrentHashMap<String, KuzzleRoom> pending = this.subscriptions.get("pending");
-
-    if (pending == null) {
-      pending = new ConcurrentHashMap<>();
-      this.subscriptions.put("pending", pending);
-    }
-
-    pending.put(id, room);
-
+    this.subscriptions.get("pending").put(id, room);
     return this;
   }
 
@@ -1677,7 +1672,7 @@ public class Kuzzle {
   /**
    * Play all queued requests, in order.
    */
-  private void  dequeue() {
+  private void dequeue() {
     if (this.offlineQueue.getQueue().size() > 0) {
       try {
         this.emitRequest(((KuzzleQueryObject) this.offlineQueue.getQueue().peek()).getQuery(), ((KuzzleQueryObject) this.offlineQueue.getQueue().poll()).getCb());
@@ -1720,7 +1715,11 @@ public class Kuzzle {
    * @return the subscriptions
    */
   protected Map<String, KuzzleRoom> getSubscriptions(String roomId) {
-    return this.subscriptions.get(roomId);
+    if (roomId != null && this.subscriptions.containsKey(roomId)) {
+      return this.subscriptions.get(roomId);
+    }
+
+    return null;
   }
 
   /**
@@ -1811,5 +1810,4 @@ public class Kuzzle {
     }
     return this;
   }
-
 }

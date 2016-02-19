@@ -1,6 +1,5 @@
 package io.kuzzle.sdk.core;
 
-import android.os.Handler;
 import android.support.annotation.NonNull;
 
 import org.json.JSONException;
@@ -8,6 +7,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,19 +29,19 @@ import io.socket.emitter.Emitter;
 public class KuzzleRoom {
 
   private String id = UUID.randomUUID().toString();
-  private String collection;
-  private KuzzleDataCollection dataCollection;
-  private JSONObject filters = new JSONObject();
-  private JSONObject headers;
-  private JSONObject metadata;
-  private boolean subscribeToSelf;
-  private String roomId;
-  private Kuzzle kuzzle;
-  private String  channel;
-  private Scope scope;
-  private State state;
-  private Users users;
-  private KuzzleResponseListener<KuzzleNotificationResponse> listener;
+  protected String collection;
+  protected KuzzleDataCollection dataCollection;
+  protected JSONObject filters = new JSONObject();
+  protected JSONObject headers;
+  protected JSONObject metadata;
+  protected boolean subscribeToSelf;
+  protected String roomId;
+  protected Kuzzle kuzzle;
+  protected String channel;
+  protected Scope scope;
+  protected State state;
+  protected Users users;
+  protected KuzzleResponseListener<KuzzleNotificationResponse> listener;
 
   // Used to avoid subscription renewals to trigger multiple times because of
   // multiple but similar events
@@ -319,12 +320,11 @@ public class KuzzleRoom {
           KuzzleRoom.this.unsubscribe();
         }
       });
-
       return this;
     }
 
     if (this.roomId == null) {
-      throw new IllegalStateException("KuzzleRoom.unsubscribe: cannot unsubscribe from an inactive room");
+      return this;
     }
 
     try {
@@ -335,15 +335,13 @@ public class KuzzleRoom {
       this.kuzzle.deleteSubscription(this.roomId, this.id);
 
       if (this.kuzzle.getSubscriptions(this.roomId) == null) {
-
+        final String roomId = this.roomId;
         if (this.kuzzle.getPendingSubscriptions().isEmpty()) {
           this.kuzzle.query(this.dataCollection.makeQueryArgs("subscribe", "off"), data);
         }
 
-        final Handler intervalHandler = new Handler();
-        final String roomId = this.roomId;
-
-        intervalHandler.postDelayed(new Runnable() {
+        final Timer timer = new Timer(UUID.randomUUID().toString());
+        final TimerTask unsubscribeTask = new TimerTask() {
           @Override
           public void run() {
             if (KuzzleRoom.this.kuzzle.getPendingSubscriptions().isEmpty()) {
@@ -357,10 +355,12 @@ public class KuzzleRoom {
               }
             }
             else {
-              intervalHandler.postDelayed(this, 100);
+              timer.schedule(this, 100);
             }
           }
-        }, 100);
+        };
+
+        timer.schedule(unsubscribeTask, 100);
       }
 
       this.roomId = null;

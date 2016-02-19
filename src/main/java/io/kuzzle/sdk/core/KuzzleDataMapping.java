@@ -182,7 +182,7 @@ public class KuzzleDataMapping {
    * @return kuzzle data mapping
    */
   public KuzzleDataMapping remove(final String field) {
-    if (!this.mapping.has(field)) {
+    if (this.mapping.has(field)) {
       KuzzleDataMapping.this.mapping.remove(field);
     }
 
