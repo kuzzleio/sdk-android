@@ -13,18 +13,19 @@ import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.util.KuzzleQueryObject;
+import io.kuzzle.sdk.util.KuzzleQueueFilter;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.QueryArgsHelper;
 import io.socket.client.Socket;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
 public class constructorTest {
   private KuzzleExtend kuzzle;
@@ -131,5 +132,109 @@ public class constructorTest {
   @Test(expected = IllegalArgumentException.class)
   public void testSetDefaultIndexIllegalIndex() {
     kuzzle.setDefaultIndex(null);
+  }
+
+  @Test
+  public void exposeDefaultIndexGetterSetter() {
+    assertEquals("testIndex", kuzzle.getDefaultIndex());
+    assertThat(kuzzle.setDefaultIndex("foobar"), instanceOf(KuzzleExtend.class));
+    assertEquals("foobar", kuzzle.getDefaultIndex());
+  }
+
+  @Test
+  public void exposeJwtTokenGetter() {
+    assertThat(kuzzle.setJwtToken("foobar"), instanceOf(KuzzleExtend.class));
+    assertEquals("foobar", kuzzle.getJwtToken());
+  }
+
+  @Test
+  public void exposeAutoQueueGetterSetter() {
+    assertThat(kuzzle.setAutoQueue(true), instanceOf(KuzzleExtend.class));
+    assertEquals(true, kuzzle.isAutoQueue());
+  }
+
+  @Test
+  public void exposeAutoReconnectGetter() {
+    assertThat(kuzzle.isAutoReconnect(), instanceOf(boolean.class));
+  }
+
+  @Test
+  public void exposeAutoResubscribeGetterSetter() {
+    assertThat(kuzzle.setAutoResubscribe(true), instanceOf(KuzzleExtend.class));
+    assertEquals(true, kuzzle.isAutoResubscribe());
+  }
+
+  @Test
+  public void exposeAutoReplayGetterSetter() {
+    assertThat(kuzzle.setAutoReplay(true), instanceOf(KuzzleExtend.class));
+    assertEquals(true, kuzzle.isAutoReplay());
+  }
+
+  @Test
+  public void exposeOfflineQueueGetterSetter() {
+    KuzzleQueryObject query = new KuzzleQueryObject();
+    assertThat(kuzzle.setOfflineQueue(query), instanceOf(KuzzleExtend.class));
+    assertEquals(kuzzle.getOfflineQueue().peek(), query);
+  }
+
+  @Test
+  public void exposeQueueFilterGetterSetter() {
+    KuzzleQueueFilter qf = new KuzzleQueueFilter() {
+      @Override
+      public boolean filter(JSONObject object) {
+        return false;
+      }
+    };
+
+    assertThat(kuzzle.setQueueFilter(qf), instanceOf(KuzzleExtend.class));
+    assertEquals(qf, kuzzle.getQueueFilter());
+  }
+
+  @Test
+  public void exposeQueueMaxSizeGetterSetter() {
+    assertThat(kuzzle.setQueueMaxSize(123), instanceOf(KuzzleExtend.class));
+    assertEquals(123, kuzzle.getQueueMaxSize());
+  }
+
+  @Test
+  public void ensureQueueMaxSizeIsNeverBelowZero() {
+    kuzzle.setQueueMaxSize(-4623);
+    assertEquals(0, kuzzle.getQueueMaxSize());
+  }
+
+  @Test
+  public void exposeQueueTTLGetterSetter() {
+    assertThat(kuzzle.setQueueTTL(123), instanceOf(KuzzleExtend.class));
+    assertEquals(123, kuzzle.getQueueTTL());
+  }
+
+  @Test
+  public void ensureQueueTTLIsNeverBelowZero() {
+    kuzzle.setQueueTTL(-12);
+    assertEquals(0, kuzzle.getQueueTTL());
+  }
+
+  @Test
+  public void exposeMetadataGetterSetter() {
+    JSONObject meta = new JSONObject();
+    assertThat(kuzzle.setMetadata(meta), instanceOf(KuzzleExtend.class));
+    assertEquals(meta, kuzzle.getMetadata());
+  }
+
+  @Test
+  public void exposeReplayIntervalGetterSetter() {
+    assertThat(kuzzle.setReplayInterval(123), instanceOf(KuzzleExtend.class));
+    assertEquals(123, kuzzle.getReplayInterval());
+  }
+
+  @Test
+  public void ensureReplayIntervalIsNeverBelowZero() {
+    kuzzle.setReplayInterval(-123);
+    assertEquals(0, kuzzle.getReplayInterval());
+  }
+
+  @Test
+  public void exposeReconnectionDelayGetter() {
+    assertThat(kuzzle.getReconnectionDelay(), instanceOf(long.class));
   }
 }

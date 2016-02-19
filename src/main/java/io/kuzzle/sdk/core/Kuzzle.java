@@ -38,7 +38,7 @@ import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.sdk.util.Event;
 import io.kuzzle.sdk.util.EventList;
 import io.kuzzle.sdk.util.KuzzleQueryObject;
-import io.kuzzle.sdk.util.QueueFilter;
+import io.kuzzle.sdk.util.KuzzleQueueFilter;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -53,37 +53,37 @@ public class Kuzzle {
 
   protected ConcurrentHashMap<KuzzleEvent, EventList> eventListeners = new ConcurrentHashMap<>();
   protected Socket socket;
-  private Map<String, Map<String, KuzzleDataCollection>> collections = new ConcurrentHashMap<>();
-  private boolean autoReconnect = true;
-  private JSONObject headers = new JSONObject();
-  private JSONObject metadata;
-  private String url;
+  protected Map<String, Map<String, KuzzleDataCollection>> collections = new ConcurrentHashMap<>();
+  protected boolean autoReconnect = true;
+  protected JSONObject headers = new JSONObject();
+  protected JSONObject metadata;
+  protected String url;
   protected KuzzleResponseListener<Void> connectionCallback;
   protected KuzzleStates state = KuzzleStates.INITIALIZING;
-  private long  reconnectionDelay;
-  private boolean autoResubscribe;
-  private boolean autoQueue;
-  private boolean autoReplay;
+  protected long  reconnectionDelay;
+  protected boolean autoResubscribe;
+  protected boolean autoQueue;
+  protected boolean autoReplay;
   /**
    * The Queue filter.
    */
-  public QueueFilter queueFilter = new QueueFilter() {
+  protected KuzzleQueueFilter queueFilter = new KuzzleQueueFilter() {
     @Override
     public boolean filter(JSONObject object) {
       return true;
     }
   };
-  private long replayInterval;
-  private boolean queuing = false;
-  private String defaultIndex;
+  protected long replayInterval;
+  protected boolean queuing = false;
+  protected String defaultIndex;
 
-  private ConcurrentHashMap<String, Date> requestHistory = new ConcurrentHashMap<>();
+  protected ConcurrentHashMap<String, Date> requestHistory = new ConcurrentHashMap<>();
 
-  private KuzzleQueue<KuzzleQueryObject> offlineQueue = new KuzzleQueue<>();
-  private int queueTTL;
-  private int queueMaxSize;
+  protected KuzzleQueue<KuzzleQueryObject> offlineQueue = new KuzzleQueue<>();
+  protected int queueTTL;
+  protected int queueMaxSize;
 
-  private String jwtToken = null;
+  protected String jwtToken = null;
 
   /*
    This property contains the centralized subscription list in the following format:
@@ -1490,6 +1490,26 @@ public class Kuzzle {
   }
 
   /**
+   * Getter for the AutoResubscribe property
+   *
+   * @return boolean
+   */
+  public boolean isAutoResubscribe() {
+    return this.autoResubscribe;
+  }
+
+  /**
+   * Setter for the AutoResubscribe property
+   *
+   * @param resubscribe
+   * @return
+   */
+  public Kuzzle setAutoResubscribe(boolean resubscribe) {
+    this.autoResubscribe = resubscribe;
+    return this;
+  }
+
+  /**
    * Gets headers.
    *
    * @return the headers
@@ -1570,8 +1590,9 @@ public class Kuzzle {
    *
    * @param object the object
    */
-  public void setOfflineQueue(final KuzzleQueryObject object) {
+  public Kuzzle setOfflineQueue(final KuzzleQueryObject object) {
     this.offlineQueue.addToQueue(object);
+    return this;
   }
 
   /**
@@ -1590,7 +1611,7 @@ public class Kuzzle {
    * @param queueFilter the queue filter
    * @return queue filter
    */
-  public Kuzzle setQueueFilter(QueueFilter queueFilter) {
+  public Kuzzle setQueueFilter(KuzzleQueueFilter queueFilter) {
     this.queueFilter = queueFilter;
     return this;
   }
@@ -1600,7 +1621,7 @@ public class Kuzzle {
    *
    * @return queue filter
    */
-  public QueueFilter  getQueueFilter() {
+  public KuzzleQueueFilter getQueueFilter() {
     return this.queueFilter;
   }
 
@@ -1618,8 +1639,24 @@ public class Kuzzle {
    *
    * @param autoReplay the auto replay
    */
-  public void setAutoReplay(boolean autoReplay) {
+  public Kuzzle setAutoReplay(boolean autoReplay) {
     this.autoReplay = autoReplay;
+    return this;
+  }
+
+  /**
+   * Setter for the QueueMaxSize property
+   *
+   * @param newMaxSize
+   * @return
+   */
+  public Kuzzle setQueueMaxSize(int newMaxSize) {
+    this.queueMaxSize = Math.max(0, newMaxSize);
+    return this;
+  }
+
+  public int getQueueMaxSize() {
+    return this.queueMaxSize;
   }
 
   /**
@@ -1636,8 +1673,9 @@ public class Kuzzle {
    *
    * @param autoQueue the auto queue
    */
-  public void setAutoQueue(final boolean autoQueue) {
+  public Kuzzle setAutoQueue(final boolean autoQueue) {
     this.autoQueue = autoQueue;
+    return this;
   }
 
   /**
@@ -1771,6 +1809,70 @@ public class Kuzzle {
 
   public String getJwtToken() {
     return this.jwtToken;
+  }
+
+  /**
+   * Setter for the QueueTTL property
+   *
+   * @param newTTL
+   * @return
+   */
+  public Kuzzle setQueueTTL(int newTTL) {
+    this.queueTTL = Math.max(0, newTTL);
+    return this;
+  }
+
+  /**
+   * Getter for the QueueTTL property
+   *
+   * @return
+   */
+  public int getQueueTTL() {
+    return this.queueTTL;
+  }
+
+  /**
+   * Setter for the metadata property
+   *
+   * @param newMetadata
+   * @return
+   */
+  public Kuzzle setMetadata(JSONObject newMetadata) {
+    this.metadata = newMetadata;
+    return this;
+  }
+
+  /**
+   * Getter for the metadata property
+   *
+   * @return
+   */
+  public JSONObject getMetadata() {
+    return this.metadata;
+  }
+
+
+  public Kuzzle setReplayInterval(long interval) {
+    this.replayInterval = Math.max(0, interval);
+    return this;
+  }
+
+  /**
+   * Getter for the ReplayInterval property
+   *
+   * @return
+   */
+  public long getReplayInterval() {
+    return this.replayInterval;
+  }
+
+  /**
+   * Getter for the ReconnectionDelay property
+   *
+   * @return
+   */
+  public long getReconnectionDelay() {
+    return this.reconnectionDelay;
   }
 
   /**
