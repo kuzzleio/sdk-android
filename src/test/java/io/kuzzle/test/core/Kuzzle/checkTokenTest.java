@@ -105,10 +105,10 @@ public class checkTokenTest {
 
     kuzzle.checkToken("token-42", mock(KuzzleResponseListener.class));
     kuzzle.checkToken("token-42", mock(KuzzleOptions.class), mock(KuzzleResponseListener.class));
-    ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "auth");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "checkToken");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "auth");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "checkToken");
   }
 
   @Test

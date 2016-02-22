@@ -2,6 +2,9 @@ package io.kuzzle.test.testUtils;
 
 import android.support.annotation.NonNull;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -12,6 +15,7 @@ import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.core.KuzzleRoom;
 import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.sdk.util.EventList;
 import io.socket.client.Socket;
@@ -62,5 +66,13 @@ public class KuzzleExtend extends Kuzzle {
    */
   public Socket getSocket() {
     return this.socket;
+  }
+
+  public void isValid() {
+    super.isValid();
+  }
+
+  public void emitRequest(final JSONObject request, final OnQueryDoneListener listener) throws JSONException {
+    super.emitRequest(request, listener);
   }
 }

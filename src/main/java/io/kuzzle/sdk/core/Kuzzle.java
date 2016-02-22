@@ -1167,7 +1167,11 @@ public class Kuzzle {
 
     // Metadata for this query
     if (options != null) {
-      if (!options.isQueuable() && this.state == KuzzleStates.OFFLINE) {
+      if (!options.isQueuable() && this.state != KuzzleStates.CONNECTED) {
+        if (listener != null) {
+          listener.onError(new JSONObject().put("message", "Unable to execute request: not connected to a Kuzzle server.\\nDiscarded request: " + object.toString()));
+        }
+
         return this;
       }
 
@@ -1204,26 +1208,21 @@ public class Kuzzle {
     }
 
     if (this.state == KuzzleStates.CONNECTED || (options != null && !options.isQueuable())) {
-      if (this.state == KuzzleStates.CONNECTED) {
-        emitRequest(object, new OnQueryDoneListener() {
-          @Override
-          public void onSuccess(JSONObject response) {
-            if (listener != null) {
-              listener.onSuccess(response);
-            }
+      emitRequest(object, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          if (listener != null) {
+            listener.onSuccess(response);
           }
+        }
 
-          @Override
-          public void onError(JSONObject error) {
-            if (error != null) {
-              listener.onError(error);
-            }
+        @Override
+        public void onError(JSONObject error) {
+          if (error != null) {
+            listener.onError(error);
           }
-        });
-      }
-      else if (listener != null) {
-        listener.onError(new JSONObject().put("message", "Unable to execute request: not connected to a Kuzzle server.\\nDiscarded request: " + object.toString()));
-      }
+        }
+      });
     } else if (this.queuing || this.state == KuzzleStates.INITIALIZING || this.state == KuzzleStates.CONNECTING) {
       cleanQueue();
 
@@ -1407,7 +1406,7 @@ public class Kuzzle {
     return IO.socket(this.url, opt);
   }
 
-  private void emitRequest(final JSONObject request, final OnQueryDoneListener listener) throws JSONException {
+  protected void emitRequest(final JSONObject request, final OnQueryDoneListener listener) throws JSONException {
     Date now = new Date();
     Calendar c = Calendar.getInstance();
     c.setTime(now);
@@ -1455,9 +1454,9 @@ public class Kuzzle {
   /**
    * Helper function ensuring that this Kuzzle object is still valid before performing a query
    */
-  public void isValid() {
+  protected void isValid() {
     if (this.state == KuzzleStates.DISCONNECTED) {
-      throw new RuntimeException("This Kuzzle object has been invalidated. Did you try to access it after a disconnect call?");
+      throw new IllegalStateException("This Kuzzle object has been invalidated. Did you try to access it after a disconnect call?");
     }
   }
 
@@ -1467,7 +1466,7 @@ public class Kuzzle {
    * @param query   the query
    * @param headers the headers
    */
-  public void addHeaders(final JSONObject query, final JSONObject headers) {
+  public void addHeaders(JSONObject query, final JSONObject headers) {
     for (Iterator iterator = headers.keys(); iterator.hasNext(); ) {
       String key = (String) iterator.next();
       if (query.isNull(key)) {

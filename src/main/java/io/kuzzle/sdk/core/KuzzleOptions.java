@@ -43,8 +43,9 @@ public class KuzzleOptions {
    *
    * @param autoReconnect the auto reconnect
    */
-  public void setAutoReconnect(boolean autoReconnect) {
+  public KuzzleOptions setAutoReconnect(boolean autoReconnect) {
     this.autoReconnect = autoReconnect;
+    return this;
   }
 
   /**
@@ -61,8 +62,9 @@ public class KuzzleOptions {
    *
    * @param headers the headers
    */
-  public void setHeaders(JSONObject headers) {
+  public KuzzleOptions setHeaders(JSONObject headers) {
     this.headers = headers;
+    return this;
   }
 
   /**
@@ -79,8 +81,9 @@ public class KuzzleOptions {
    *
    * @param updateIfExists the update if exists
    */
-  public void setUpdateIfExists(boolean updateIfExists) {
+  public KuzzleOptions setUpdateIfExists(boolean updateIfExists) {
     this.updateIfExists = updateIfExists;
+    return this;
   }
 
   /**
@@ -97,108 +100,122 @@ public class KuzzleOptions {
    *
    * @param metadata the metadata
    */
-  public void setMetadata(JSONObject metadata) {
+  public KuzzleOptions setMetadata(JSONObject metadata) {
     this.metadata = metadata;
+    return this;
   }
 
   public Mode getConnect() {
     return connect;
   }
 
-  public void setConnect(Mode connect) {
+  public KuzzleOptions setConnect(Mode connect) {
     this.connect = connect;
+    return this;
   }
 
   public long getReconnectionDelay() {
     return reconnectionDelay;
   }
 
-  public void setReconnectionDelay(long reconnectionDelay) {
+  public KuzzleOptions setReconnectionDelay(long reconnectionDelay) {
     this.reconnectionDelay = reconnectionDelay;
+    return this;
   }
 
   public Mode getOfflineMode() {
     return offlineMode;
   }
 
-  public void setOfflineMode(Mode offlineMode) {
+  public KuzzleOptions setOfflineMode(Mode offlineMode) {
     this.offlineMode = offlineMode;
+    return this;
   }
 
   public int getQueueTTL() {
     return queueTTL;
   }
 
-  public void setQueueTTL(int queueTTL) {
+  public KuzzleOptions setQueueTTL(int queueTTL) {
     this.queueTTL = queueTTL;
+    return this;
   }
 
   public boolean isAutoReplay() {
     return autoReplay;
   }
 
-  public void setAutoReplay(boolean autoReplay) {
+  public KuzzleOptions setAutoReplay(boolean autoReplay) {
     this.autoReplay = autoReplay;
+    return this;
   }
 
   public boolean isQueuable() {
     return queuable;
   }
 
-  public void setQueuable(boolean queuable) {
+  public KuzzleOptions setQueuable(boolean queuable) {
     this.queuable = queuable;
+    return this;
   }
 
   public int getQueueMaxSize() {
     return queueMaxSize;
   }
 
-  public void setQueueMaxSize(int queueMaxSize) {
+  public KuzzleOptions setQueueMaxSize(int queueMaxSize) {
     this.queueMaxSize = queueMaxSize;
+    return this;
   }
 
   public int getReplayInterval() {
     return replayInterval;
   }
 
-  public void setReplayInterval(int replayInterval) {
+  public KuzzleOptions setReplayInterval(int replayInterval) {
     this.replayInterval = replayInterval;
+    return this;
   }
 
   public boolean isAutoResubscribe() {
     return autoResubscribe;
   }
 
-  public void setAutoResubscribe(boolean autoResubscribe) {
+  public KuzzleOptions setAutoResubscribe(boolean autoResubscribe) {
     this.autoResubscribe = autoResubscribe;
+    return this;
   }
 
   public KuzzleCollectionType getCollectionType() {
     return collectionType;
   }
 
-  public void setCollectionType(KuzzleCollectionType type) {
+  public KuzzleOptions setCollectionType(KuzzleCollectionType type) {
     this.collectionType = type;
+    return this;
   }
 
-  public void setHydrate(boolean hydrate) {
+  public KuzzleOptions setHydrate(boolean hydrate) {
     this.hydrate = hydrate;
+    return this;
   }
 
   public boolean isHydrated() {
     return this.hydrate;
   }
 
-  public void setDefaultIndex(final String index) {
+  public KuzzleOptions setDefaultIndex(final String index) {
     this.defaultIndex = index;
+    return this;
   }
 
   public String getDefaultIndex() {
     return this.defaultIndex;
   }
 
-  public void setAutoQueue(boolean autoQueue) {
+  public KuzzleOptions setAutoQueue(boolean autoQueue) {
     this.autoQueue = autoQueue;
+    return this;
   }
 
   public boolean isAutoQueue() {
