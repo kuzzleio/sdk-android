@@ -56,8 +56,13 @@ public class constructorTest {
     assertEquals(collection.getHeaders().getString("foo"), "baz");
     content.put("bar", "foo");
     collection.setHeaders(content, false);
-    assertEquals(content.getString("foo"), "baz");
-    assertEquals(content.getString("bar"), "foo");
+    assertEquals(collection.getHeaders().getString("foo"), "baz");
+    assertEquals(collection.getHeaders().getString("bar"), "foo");
+    collection.setHeaders(null, false);
+    assertEquals(collection.getHeaders().getString("foo"), "baz");
+    assertEquals(collection.getHeaders().getString("bar"), "foo");
+    collection.setHeaders(null, true);
+    assertEquals(collection.getHeaders().length(), 0);
   }
 
   @Test(expected = IllegalArgumentException.class)

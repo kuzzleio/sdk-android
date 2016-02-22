@@ -672,17 +672,7 @@ public class KuzzleDataCollection {
     if (listener == null) {
       throw new IllegalArgumentException("KuzzleDataCollection.fetchAllDocuments: listener required");
     }
-    return this.advancedSearch(null, options, new KuzzleResponseListener<KuzzleDocumentList>() {
-      @Override
-      public void onSuccess(KuzzleDocumentList response) {
-        listener.onSuccess(response);
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-        listener.onError(error);
-      }
-    });
+    return this.advancedSearch(null, options, listener);
   }
 
   /**
