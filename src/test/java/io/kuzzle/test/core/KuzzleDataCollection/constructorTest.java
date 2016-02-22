@@ -60,4 +60,18 @@ public class constructorTest {
     assertEquals(content.getString("bar"), "foo");
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldThrowIfNoKuzzleInstanceProvided() {
+    new KuzzleDataCollection(null, "foo", "bar");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldThrowIfNoIndexProvided() {
+    new KuzzleDataCollection(mock(Kuzzle.class), null, "foo");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldThrowIfNoCollectionProvided() {
+    new KuzzleDataCollection(mock(Kuzzle.class), "foo", null);
+  }
 }

@@ -529,7 +529,7 @@ public class KuzzleDocument {
       this.kuzzle.addHeaders(data, getHeaders());
     }
     catch (JSONException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
 
     return data;

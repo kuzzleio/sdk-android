@@ -967,7 +967,7 @@ public class Kuzzle {
                 }
               }
             } catch (JSONException|IOException e) {
-              e.printStackTrace();
+              throw new RuntimeException(e);
             }
           }
         }).start();
@@ -1430,7 +1430,7 @@ public class Kuzzle {
               }
             }
           } catch (JSONException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
           }
         }
       });

@@ -41,7 +41,7 @@ public class KuzzleNotificationResponse {
         this.document.setId(this.result.getString("_id"));
       }
     } catch (JSONException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
   }
 

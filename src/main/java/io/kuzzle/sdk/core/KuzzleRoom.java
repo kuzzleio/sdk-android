@@ -276,7 +276,7 @@ public class KuzzleRoom {
             KuzzleRoom.this.channel = result.getString("channel");
             KuzzleRoom.this.roomId = result.getString("roomId");
           } catch (JSONException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
           }
 
           KuzzleRoom.this.kuzzle.addSubscription(KuzzleRoom.this.roomId, KuzzleRoom.this.id, KuzzleRoom.this);
