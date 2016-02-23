@@ -51,6 +51,33 @@ public class createDocumentTest {
     listener = mock(KuzzleResponseListener.class);
   }
 
+  @Test
+  public void checkSignaturesVariants() throws JSONException {
+    KuzzleDocument doc = mock(KuzzleDocument.class);
+    JSONObject content = new JSONObject();
+    String id = "foo";
+    KuzzleOptions opts = mock(KuzzleOptions.class);
+
+    collection = spy(collection);
+
+    collection.createDocument(doc);
+    collection.createDocument(doc, opts);
+    collection.createDocument(doc, listener);
+    collection.createDocument(doc, opts, listener);
+
+    collection.createDocument(id, content);
+    collection.createDocument(id, content, opts);
+    collection.createDocument(id, content, listener);
+    collection.createDocument(id, content, opts, listener);
+
+    collection.createDocument(content);
+    collection.createDocument(content, opts);
+    collection.createDocument(content, listener);
+    collection.createDocument(content, opts, listener);
+
+    verify(collection, times(12)).createDocument(any(KuzzleDocument.class), any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+  }
+
   @Test(expected = RuntimeException.class)
   public void testCreateDocumentQueryException() throws JSONException {
     doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));

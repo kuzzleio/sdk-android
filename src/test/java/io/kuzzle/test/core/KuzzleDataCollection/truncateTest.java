@@ -50,6 +50,16 @@ public class truncateTest {
     listener = mock(KuzzleResponseListener.class);
   }
 
+  @Test
+  public void checkSignaturesVariants() {
+    collection = spy(collection);
+    collection.truncate();
+    collection.truncate(mock(KuzzleOptions.class));
+    collection.truncate(listener);
+    verify(collection, times(3)).truncate(any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+  }
+
+
   @Test(expected = RuntimeException.class)
   public void testTruncateQueryException() throws JSONException {
     doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));

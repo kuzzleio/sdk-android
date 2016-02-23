@@ -14,6 +14,7 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.OnKuzzleLoginDoneListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.QueryArgsHelper;
@@ -57,6 +58,17 @@ public class loginTest {
   }
 
   @Test
+  public void checkAllSignaturesVariants() {
+    JSONObject stubCredentials = new JSONObject();
+    kuzzle = spy(kuzzle);
+    listener = spy(listener);
+    kuzzle.login("foo", stubCredentials);
+    kuzzle.login("foo", stubCredentials, 42);
+    kuzzle.login("foo", stubCredentials, listener);
+    verify(kuzzle, times(3)).login(any(String.class), any(JSONObject.class), any(int.class), any(KuzzleResponseListener.class), any(OnKuzzleLoginDoneListener.class));
+  }
+
+  @Test
   public void testLogin() throws JSONException {
     kuzzle = spy(kuzzle);
 
@@ -76,5 +88,15 @@ public class loginTest {
     verify(kuzzle, times(3)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "auth");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "login");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testNoStrategy() {
+    kuzzle.login(null, new JSONObject());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testNoCredentials() {
+    kuzzle.login("foo", null);
   }
 }

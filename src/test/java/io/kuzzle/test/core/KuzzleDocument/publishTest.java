@@ -19,6 +19,7 @@ import io.kuzzle.test.testUtils.KuzzleExtend;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -36,6 +37,13 @@ public class publishTest {
     extended.setState(KuzzleStates.CONNECTED);
     k = spy(extended);
     doc = new KuzzleDocument(new KuzzleDataCollection(k, "index", "test"));
+  }
+
+  @Test
+  public void checkSignaturesVariants() {
+    doc = spy(doc);
+    doc.publish();
+    verify(doc).publish(eq((KuzzleOptions)null));
   }
 
   @Test(expected = RuntimeException.class)

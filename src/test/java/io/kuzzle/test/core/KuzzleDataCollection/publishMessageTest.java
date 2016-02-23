@@ -48,6 +48,30 @@ public class publishMessageTest {
     listener = mock(KuzzleResponseListener.class);
   }
 
+  @Test
+  public void checkSignaturesVariants() {
+    KuzzleDocument doc = mock(KuzzleDocument.class);
+
+    when(doc.getContent()).thenReturn(new JSONObject());
+    collection = spy(collection);
+
+    collection.publishMessage(doc);
+    collection.publishMessage(doc, mock(KuzzleOptions.class));
+    collection.publishMessage(mock(JSONObject.class));
+    verify(collection, times(3)).publishMessage(any(JSONObject.class), any(KuzzleOptions.class));
+  }
+
+
+  @Test(expected = IllegalArgumentException.class)
+  public void publishWithNoDocument() {
+    collection.publishMessage((KuzzleDocument)null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void publishWithNoContent() {
+    collection.publishMessage((JSONObject)null);
+  }
+
   @Test(expected = RuntimeException.class)
   public void testPublishMessageException() throws JSONException {
     doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));

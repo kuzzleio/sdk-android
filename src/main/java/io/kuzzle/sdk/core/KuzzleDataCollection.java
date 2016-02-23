@@ -267,6 +267,103 @@ public class KuzzleDataCollection {
   }
 
   /**
+   *
+   * @param id - document ID
+   * @param content - document content
+   * @return this object
+   * @throws JSONException
+   */
+  public KuzzleDataCollection createDocument(final String id, @NonNull final JSONObject content) throws JSONException {
+    return this.createDocument(id, content, null, null);
+  }
+
+  /**
+   *
+   * @param id - document ID
+   * @param content - document content
+   * @param opts - optional arguments
+   * @return this object
+   * @throws JSONException
+   */
+  public KuzzleDataCollection createDocument(final String id, @NonNull final JSONObject content, KuzzleOptions opts) throws JSONException {
+    return this.createDocument(id, content, opts, null);
+  }
+
+  /**
+   *
+   * @param id - document ID
+   * @param content - document content
+   * @param listener - result listener
+   * @return this object
+   * @throws JSONException
+   */
+  public KuzzleDataCollection createDocument(final String id, @NonNull final JSONObject content, final KuzzleResponseListener<KuzzleDocument> listener) throws JSONException {
+    return this.createDocument(id, content, null, listener);
+  }
+
+  /**
+   *
+   * @param content - document content
+   * @return this object
+   * @throws JSONException
+   */
+  public KuzzleDataCollection createDocument(@NonNull final JSONObject content) throws JSONException {
+    return this.createDocument(null, content, null, null);
+  }
+
+  /**
+   *
+   * @param content - document content
+   * @param opts - optional arguments
+   * @return this object
+   * @throws JSONException
+   */
+  public KuzzleDataCollection createDocument(@NonNull final JSONObject content, KuzzleOptions opts) throws JSONException {
+    return this.createDocument(null, content, opts, null);
+  }
+
+  /**
+   *
+   * @param content - document content
+   * @param listener - result listener
+   * @return this object
+   * @throws JSONException
+   */
+  public KuzzleDataCollection createDocument(@NonNull final JSONObject content, final KuzzleResponseListener<KuzzleDocument> listener) throws JSONException {
+    return this.createDocument(null, content, null, listener);
+  }
+
+  /**
+   *
+   * @param content - document content
+   * @param opts - optional arguments
+   * @param listener - result listener
+   * @return this object
+   * @throws JSONException
+   */
+  public KuzzleDataCollection createDocument(@NonNull final JSONObject content, KuzzleOptions opts, final KuzzleResponseListener<KuzzleDocument> listener) throws JSONException {
+    return this.createDocument(null, content, opts, listener);
+  }
+
+  /**
+   *
+   * @param id - document ID
+   * @param content - document content
+   * @param opts - optional arguments
+   * @param listener - result listener
+   * @return this object
+   * @throws JSONException
+   */
+  public KuzzleDataCollection createDocument(final String id, @NonNull final JSONObject content, KuzzleOptions opts, final KuzzleResponseListener<KuzzleDocument> listener) throws JSONException {
+    if (content == null) {
+      throw new IllegalArgumentException("Cannot create an empty document");
+    }
+
+    KuzzleDocument doc = new KuzzleDocument(this, id, content);
+    return this.createDocument(doc, opts, listener);
+  }
+
+  /**
    * Create a new document in Kuzzle
    *
    * @param document the document
@@ -339,6 +436,13 @@ public class KuzzleDataCollection {
       throw new RuntimeException(e);
     }
     return this;
+  }
+
+  /**
+   * @return the kuzzle data mapping
+   */
+  public KuzzleDataMapping dataMappingFactory() {
+    return new KuzzleDataMapping(this);
   }
 
   /**
@@ -532,7 +636,7 @@ public class KuzzleDataCollection {
    * @param filter     the filter
    * @return KuzzleDataCollection kuzzle data collection
    */
-  private KuzzleDataCollection deleteDocument(final String documentId, final JSONObject filter, final KuzzleOptions options, final KuzzleResponseListener<String> listener, final KuzzleResponseListener<String[]> listener2) {
+  protected KuzzleDataCollection deleteDocument(final String documentId, final JSONObject filter, final KuzzleOptions options, final KuzzleResponseListener<String> listener, final KuzzleResponseListener<String[]> listener2) {
     JSONObject data = new JSONObject();
     String action;
     try {
@@ -718,8 +822,35 @@ public class KuzzleDataCollection {
    * @return the kuzzle data collection
    */
   public KuzzleDataCollection publishMessage(@NonNull final KuzzleDocument document, final KuzzleOptions options) {
+    if (document == null) {
+      throw new IllegalArgumentException("Cannot publish a null document");
+    }
+
+    return this.publishMessage(document.getContent(), options);
+  }
+
+  /**
+   * Publish a realtime message
+   *
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection publishMessage(@NonNull final JSONObject content) {
+    return this.publishMessage(content, null);
+  }
+
+  /**
+   * Publish a realtime message
+   *
+   * @param options  the options
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection publishMessage(@NonNull final JSONObject content, final KuzzleOptions options) {
+    if (content == null) {
+      throw new IllegalArgumentException("Cannot publish null content");
+    }
+
     try {
-      JSONObject data = document.serialize();
+      JSONObject data = new JSONObject().put("body", content);
       this.kuzzle.addHeaders(data, this.getHeaders());
       this.kuzzle.query(makeQueryArgs("write", "publish"), data, options, null);
     } catch (JSONException e) {

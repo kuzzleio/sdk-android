@@ -18,6 +18,7 @@ import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.test.testUtils.KuzzleDataCollectionExtend;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
 
@@ -33,7 +34,7 @@ import static org.mockito.Mockito.when;
 
 public class deleteDocumentTest {
   private Kuzzle kuzzle;
-  private KuzzleDataCollection collection;
+  private KuzzleDataCollectionExtend collection;
   private KuzzleResponseListener listener;
 
   @Before
@@ -47,8 +48,27 @@ public class deleteDocumentTest {
     kuzzle = spy(extended);
     when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
-    collection = new KuzzleDataCollection(kuzzle, "index", "test");
+    collection = new KuzzleDataCollectionExtend(kuzzle, "index", "test");
     listener = mock(KuzzleResponseListener.class);
+  }
+
+  @Test
+  public void checkSignaturesVariants() {
+    JSONObject filters = new JSONObject();
+    KuzzleOptions opts = mock(KuzzleOptions.class);
+    collection = spy(collection);
+
+    collection.deleteDocument("foo");
+    collection.deleteDocument("foo", opts);
+    collection.deleteDocument("foo", listener);
+    collection.deleteDocument("foo", opts, listener);
+
+    collection.deleteDocument(filters);
+    collection.deleteDocument(filters, opts);
+    collection.deleteDocument(filters, listener);
+    collection.deleteDocument(filters, opts, listener);
+
+    verify(collection, times(8)).deleteDocument(any(String.class), any(JSONObject.class), any(KuzzleOptions.class), any(KuzzleResponseListener.class), any(KuzzleResponseListener.class));
   }
 
   @Test

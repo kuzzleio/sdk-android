@@ -55,6 +55,14 @@ public class nowTest {
     };
   }
 
+  @Test
+  public void checkAllSignaturesVariants() {
+    listener = spy(listener);
+    kuzzle = spy(kuzzle);
+    kuzzle.now(listener);
+    verify(kuzzle).now(any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void testNowIllegalListener() {
     kuzzle = spy(kuzzle);

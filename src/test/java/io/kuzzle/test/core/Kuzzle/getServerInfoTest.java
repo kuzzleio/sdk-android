@@ -58,6 +58,13 @@ public class getServerInfoTest {
     kuzzle.getServerInfo(null);
   }
 
+  @Test
+  public void testGetServerInfoNoOptions() {
+    kuzzle = spy(kuzzle);
+    kuzzle.getServerInfo(mock(KuzzleResponseListener.class));
+    verify(kuzzle).getServerInfo(any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+  }
+
   @Test(expected = RuntimeException.class)
   public void testGetServerInfoException() throws JSONException {
     listener = spy(listener);

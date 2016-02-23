@@ -45,6 +45,15 @@ public class saveTest {
     doc = new KuzzleDocument(new KuzzleDataCollection(k, "index", "test"));
   }
 
+  @Test
+  public void checkSignaturesVariants() {
+    doc = spy(doc);
+    doc.save();
+    doc.save(mock(KuzzleOptions.class));
+    doc.save(mockListener);
+    verify(doc, times(3)).save(any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+  }
+
   @Test(expected = RuntimeException.class)
   public void testSaveQueryException() throws JSONException {
     doc.setId("42");

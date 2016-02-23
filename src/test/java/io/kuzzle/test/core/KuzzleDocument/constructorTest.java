@@ -19,8 +19,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class constructorTest {
@@ -68,6 +71,13 @@ public class constructorTest {
   }
 
   @Test
+  public void checkSetContentVariants() throws JSONException {
+    doc = spy(doc);
+    doc.setContent(new JSONObject());
+    verify(doc).setContent(any(JSONObject.class), eq(false));
+  }
+
+  @Test
   public void testSetContent() throws JSONException {
     assertEquals(doc.getContent().toString(), new JSONObject().toString());
     JSONObject data = new JSONObject();
@@ -88,6 +98,13 @@ public class constructorTest {
     doc.setContent("foo", "bar");
     assertEquals(doc.getContent().getString("foo"), "bar");
     assertNull(doc.getContent("!exist"));
+  }
+
+  @Test
+  public void checkSetHeadersVariants() {
+    doc = spy(doc);
+    doc.setHeaders(new JSONObject());
+    verify(doc).setHeaders(any(JSONObject.class), eq(false));
   }
 
   @Test

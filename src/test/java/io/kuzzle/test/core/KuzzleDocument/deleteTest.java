@@ -44,6 +44,21 @@ public class deleteTest {
     doc = new KuzzleDocument(new KuzzleDataCollection(k, "index", "test"));
   }
 
+  @Test
+  public void checkSignaturesVariants() {
+    doc.setId("foo");
+    doc = spy(doc);
+    doc.delete();
+    doc.delete(mock(KuzzleOptions.class));
+    doc.delete(mock(KuzzleResponseListener.class));
+    verify(doc, times(3)).delete(any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void cannotDeleteWithoutID() {
+    doc.delete();
+  }
+
   @Test(expected = RuntimeException.class)
   public void testDeleteException() throws JSONException {
     doc.setId("42");

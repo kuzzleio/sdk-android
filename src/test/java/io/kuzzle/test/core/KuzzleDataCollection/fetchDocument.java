@@ -22,6 +22,7 @@ import io.socket.client.Socket;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -50,6 +51,12 @@ public class fetchDocument {
     listener = mock(KuzzleResponseListener.class);
   }
 
+  @Test
+  public void checkSignaturesVariants() {
+    collection = spy(collection);
+    collection.fetchDocument("foo", listener);
+    verify(collection).fetchDocument(eq("foo"), eq((KuzzleOptions)null), eq(listener));
+  }
 
   @Test(expected = IllegalArgumentException.class)
   public void testFetchDocumentIllegalDocumentId() {

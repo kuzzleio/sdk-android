@@ -292,6 +292,7 @@ public class KuzzleRoom {
 
         @Override
         public void onError(JSONObject arg) {
+          KuzzleRoom.this.subscribing = false;
           KuzzleRoom.this.queue.clear();
           listener.onError(arg);
         }

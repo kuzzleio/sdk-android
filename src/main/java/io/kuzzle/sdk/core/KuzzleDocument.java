@@ -147,7 +147,7 @@ public class KuzzleDocument {
    *
    * @param listener the listener
    */
-  public void refresh(final KuzzleResponseListener<KuzzleDocument> listener) {
+  public void refresh(@NonNull final KuzzleResponseListener<KuzzleDocument> listener) {
     this.refresh(null, listener);
   }
 

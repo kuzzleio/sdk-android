@@ -50,6 +50,17 @@ public class deleteTest {
     listener = mock(KuzzleResponseListener.class);
   }
 
+  @Test
+  public void checkSignaturesVariants() {
+    collection = spy(collection);
+    collection.delete();
+    collection.delete(mock(KuzzleOptions.class));
+    collection.delete(listener);
+    collection.delete(mock(KuzzleOptions.class), listener);
+
+    verify(collection, times(4)).delete(any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+  }
+
 
   @Test(expected = RuntimeException.class)
   public void testDeleteQueryException() throws JSONException {

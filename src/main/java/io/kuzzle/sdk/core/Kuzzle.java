@@ -537,7 +537,7 @@ public class Kuzzle {
    * @return the statistics
    */
   public Kuzzle getStatistics(@NonNull final KuzzleResponseListener<JSONObject> listener) {
-    return this.getStatistics((KuzzleOptions) null, listener);
+    return this.getStatistics(null, listener);
   }
 
   /**
@@ -588,7 +588,7 @@ public class Kuzzle {
    * @param listener  the listener
    * @return the statistics
    */
-  public Kuzzle getStatistics(@NonNull final String timestamp, @NonNull final KuzzleResponseListener<JSONArray> listener) {
+  public Kuzzle getStatistics(long timestamp, @NonNull final KuzzleResponseListener<JSONArray> listener) {
     return this.getStatistics(timestamp, null, listener);
   }
 
@@ -600,13 +600,11 @@ public class Kuzzle {
    * @param listener  the listener
    * @return statistics statistics
    */
-  public Kuzzle getStatistics(@NonNull final String timestamp, final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONArray> listener) {
+  public Kuzzle getStatistics(long timestamp, final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONArray> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.getStatistics: listener required");
     }
-    if (timestamp == null) {
-      throw new IllegalArgumentException("Kuzzle.getStatistics: timestamp required");
-    }
+
     this.isValid();
     JSONObject body = new JSONObject();
     JSONObject data = new JSONObject();

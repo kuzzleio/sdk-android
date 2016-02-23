@@ -10,6 +10,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.net.URISyntaxException;
+import java.security.Timestamp;
 import java.util.Date;
 
 import io.kuzzle.sdk.core.Kuzzle;
@@ -55,6 +56,15 @@ public class getStatisticsTest {
     };
   }
 
+  @Test
+  public void checkAllSignaturesVariants() {
+    kuzzle = spy(kuzzle);
+    listener = spy(listener);
+    kuzzle.getStatistics(listener);
+    kuzzle.getStatistics(System.currentTimeMillis(), listener);
+    verify(kuzzle).getStatistics(any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+    verify(kuzzle).getStatistics(any(long.class), any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+  }
 
   @Test(expected = RuntimeException.class)
   public void testGetStatisticsException() throws JSONException {
@@ -68,24 +78,19 @@ public class getStatisticsTest {
         return null;
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    kuzzle.getStatistics(new Date().toString(), listener);
+    kuzzle.getStatistics(System.currentTimeMillis(), listener);
   }
 
   @Test(expected = RuntimeException.class)
   public void testGetStatisticsQueryException() throws JSONException {
     kuzzle = spy(kuzzle);
     doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    kuzzle.getStatistics(new Date().toString(), listener);
+    kuzzle.getStatistics(System.currentTimeMillis(), listener);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetStatsIllegalListener() {
-    kuzzle.getStatistics(new Date().toString(), null);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testGetStatsIllegalTimestamp() {
-    kuzzle.getStatistics((String) null, mock(KuzzleResponseListener.class));
+    kuzzle.getStatistics(System.currentTimeMillis(), null);
   }
 
   @Test
@@ -125,9 +130,9 @@ public class getStatisticsTest {
         return null;
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    kuzzle.getStatistics("2015-11-15T13:36:45.558Z", mock(KuzzleResponseListener.class));
+    kuzzle.getStatistics(System.currentTimeMillis(), mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "admin");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "getStats");
   }

@@ -56,6 +56,13 @@ public class logoutTest {
     };
   }
 
+  @Test
+  public void checkAllSignaturesVariants() {
+    kuzzle = spy(kuzzle);
+    kuzzle.logout();
+    verify(kuzzle).logout(any(KuzzleResponseListener.class));
+  }
+
   @Test(expected = RuntimeException.class)
   public void testLogoutException() throws JSONException {
     listener = spy(listener);
