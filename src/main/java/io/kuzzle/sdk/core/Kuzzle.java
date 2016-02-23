@@ -940,7 +940,6 @@ public class Kuzzle {
               }
               br.close();
 
-              Log.e("login", sb.toString());
               JSONObject response = new JSONObject(sb.toString());
               if (response.isNull("error")) {
                 JSONObject result = response.getJSONObject("result");

@@ -110,20 +110,27 @@ public class countTest {
 
   @Test(expected = RuntimeException.class)
   public void testCountQueryException() throws JSONException {
+    room.setRoomId("foobar");
     doThrow(JSONException.class).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(OnQueryDoneListener.class));
     room.count(listener);
   }
 
   @Test(expected = RuntimeException.class)
   public void testCountException() throws JSONException {
+    room.setRoomId("foobar");
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener) invocation.getArguments()[4]).onSuccess(new JSONObject().put("result", new JSONObject().put("count", 42)));
+        ((OnQueryDoneListener) invocation.getArguments()[2]).onSuccess(new JSONObject().put("result", new JSONObject().put("count", 42)));
         return null;
       }
     }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(OnQueryDoneListener.class));
     doThrow(JSONException.class).when(listener).onSuccess(any(Integer.class));
+    room.count(listener);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testCountNoId() {
     room.count(listener);
   }
 

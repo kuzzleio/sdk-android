@@ -1,5 +1,10 @@
 package io.kuzzle.test.testUtils;
 
+import org.json.JSONObject;
+
+import java.util.Timer;
+import java.util.TimerTask;
+
 import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleRoom;
 import io.kuzzle.sdk.core.KuzzleRoomOptions;
@@ -9,6 +14,7 @@ import io.kuzzle.sdk.listeners.KuzzleResponseListener;
  * Created by scottinet on 19/02/16.
  */
 public class KuzzleRoomExtend extends KuzzleRoom {
+
   public KuzzleRoomExtend(KuzzleDataCollection kuzzleDataCollection) {
     super(kuzzleDataCollection);
   }
@@ -36,4 +42,24 @@ public class KuzzleRoomExtend extends KuzzleRoom {
   public void dequeue() {
     super.dequeue();
   }
+
+  @Override
+  public KuzzleRoom unsubscribe() {
+    // do nothing
+    return this;
+  }
+
+  public KuzzleRoom superUnsubscribe() {
+    return super.unsubscribe();
+  }
+
+  public TimerTask  unsubscribeTask(final Timer timer, final String roomId, final JSONObject data) {
+    return super.unsubscribeTask(timer, roomId, data);
+  }
+
+  public KuzzleRoom makeHeadersNull() {
+    super.headers = null;
+    return this;
+  }
+
 }

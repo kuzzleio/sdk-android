@@ -267,11 +267,11 @@ public class KuzzleRoom {
       this.kuzzle.query(this.dataCollection.makeQueryArgs("subscribe", "on"), subscribeQuery, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject args) {
-          KuzzleRoom.this.kuzzle.deletePendingSubscription(KuzzleRoom.this.id);
-          KuzzleRoom.this.subscribing = false;
-          KuzzleRoom.this.lastRenewal = System.currentTimeMillis();
-
           try {
+            KuzzleRoom.this.kuzzle.deletePendingSubscription(KuzzleRoom.this.id);
+            KuzzleRoom.this.subscribing = false;
+            KuzzleRoom.this.lastRenewal = System.currentTimeMillis();
+
             JSONObject result = args.getJSONObject("result");
             KuzzleRoom.this.channel = result.getString("channel");
             KuzzleRoom.this.roomId = result.getString("roomId");
@@ -353,7 +353,7 @@ public class KuzzleRoom {
     return this;
   }
 
-  private TimerTask unsubscribeTask(final Timer timer, final String roomId, final JSONObject data) {
+  protected TimerTask unsubscribeTask(final Timer timer, final String roomId, final JSONObject data) {
     return new TimerTask() {
       @Override
       public void run() {

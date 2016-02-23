@@ -14,7 +14,9 @@ import io.kuzzle.test.testUtils.KuzzleRoomExtend;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 public class constructorTest {
@@ -55,8 +57,16 @@ public class constructorTest {
     assertEquals(room.isSubscribeToSelf(), true);
   }
 
+  @Test(expected = RuntimeException.class)
+  public void testConstructorException() {
+    KuzzleDataCollection fake = spy(new KuzzleDataCollection(k, "index", "test"));
+    doThrow(JSONException.class).when(fake).getHeaders();
+    room = new KuzzleRoomExtend(fake);
+  }
+
   @Test
   public void testSetHeaders() throws JSONException {
+    room.makeHeadersNull();
     JSONObject headers = new JSONObject();
     headers.put("foo", "bar");
     room.setHeaders(headers, true);
@@ -65,6 +75,13 @@ public class constructorTest {
     room.setHeaders(headers);
     assertEquals(room.getHeaders().getString("foo"), "bar");
     assertEquals(room.getHeaders().getString("oof"), "baz");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testSetHeadersException() {
+    JSONObject json = spy(new JSONObject());
+    doThrow(JSONException.class).when(json).keys();
+    room.setHeaders(json, false);
   }
 
   @Test

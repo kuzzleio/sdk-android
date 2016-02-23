@@ -5,8 +5,8 @@ import android.support.annotation.NonNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Field;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -74,5 +74,17 @@ public class KuzzleExtend extends Kuzzle {
 
   public void emitRequest(final JSONObject request, final OnQueryDoneListener listener) throws JSONException {
     super.emitRequest(request, listener);
+  }
+
+  public Kuzzle deletePendingSubscription(final String id) {
+    return super.deletePendingSubscription(id);
+  }
+
+  public Map<String, Date> getRequestHistory() {
+    return super.getRequestHistory();
+  }
+
+  public Map<String, KuzzleRoom> getPendingSubscriptions() {
+    return super.getPendingSubscriptions();
   }
 }
