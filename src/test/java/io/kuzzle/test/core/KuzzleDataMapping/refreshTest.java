@@ -47,10 +47,15 @@ public class refreshTest {
     verify(dataMapping).refresh(any(KuzzleOptions.class), any(KuzzleResponseListener.class));
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testRefreshIllegalListener() {
+    dataMapping.refresh(null);
+  }
+
   @Test(expected = RuntimeException.class)
   public void testException() throws JSONException {
     doThrow(JSONException.class).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    dataMapping.refresh(null);
+    dataMapping.refresh(mock(KuzzleResponseListener.class));
   }
 
   @Test(expected = RuntimeException.class)
