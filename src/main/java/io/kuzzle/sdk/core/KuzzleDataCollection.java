@@ -874,7 +874,7 @@ public class KuzzleDataCollection {
    * @param listener   the listener
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection replaceDocument(@NonNull final String documentId, final JSONObject content, final KuzzleResponseListener listener) {
+  public KuzzleDataCollection replaceDocument(@NonNull final String documentId, final JSONObject content, final KuzzleResponseListener<KuzzleDocument> listener) {
     return this.replaceDocument(documentId, content, null, listener);
   }
 
