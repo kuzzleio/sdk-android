@@ -480,7 +480,7 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection delete(final KuzzleResponseListener<String> listener) {
+  public KuzzleDataCollection delete(final KuzzleResponseListener<JSONObject> listener) {
     return this.delete(null, listener);
   }
 
@@ -491,7 +491,7 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection delete(final KuzzleOptions options, final KuzzleResponseListener<String> listener) {
+  public KuzzleDataCollection delete(final KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener) {
     JSONObject data = new JSONObject();
     try {
       this.kuzzle.addHeaders(data, this.getHeaders());
@@ -499,11 +499,7 @@ public class KuzzleDataCollection {
         @Override
         public void onSuccess(JSONObject response) {
           if (listener != null) {
-            try {
-              listener.onSuccess(response.getJSONObject("result").getString("_id"));
-            } catch (JSONException e) {
-              throw new RuntimeException(e);
-            }
+            listener.onSuccess(response);
           }
         }
 
