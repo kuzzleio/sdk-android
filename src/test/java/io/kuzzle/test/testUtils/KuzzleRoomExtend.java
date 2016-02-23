@@ -32,4 +32,8 @@ public class KuzzleRoomExtend extends KuzzleRoom {
   public void setSubscribing(final boolean isSubscribing) {
     super.subscribing = isSubscribing;
   }
+
+  public void dequeue() {
+    super.dequeue();
+  }
 }

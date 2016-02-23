@@ -513,7 +513,7 @@ public class KuzzleRoom {
   /**
    * Runs all queued methods called while subscription was in progress
    */
-  private void dequeue() {
+  protected void dequeue() {
     if (this.queue.size() > 0) {
       ExecutorService threadPool = Executors.newSingleThreadExecutor();
 

@@ -33,6 +33,17 @@ import static org.mockito.Mockito.when;
 
 public class countTest {
   private KuzzleResponseListener listener = mock(KuzzleResponseListener.class);
+  private KuzzleResponseListener  spyListener = spy(new KuzzleResponseListener() {
+    @Override
+    public void onSuccess(Object response) {
+
+    }
+
+    @Override
+    public void onError(JSONObject error) {
+
+    }
+  });
   private JSONObject mockNotif = new JSONObject();
   private JSONObject  mockResponse = new JSONObject();
   private Kuzzle k;
@@ -73,7 +84,7 @@ public class countTest {
     room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "index", "test"));
     room.setRoomId("foobar");
     room.setSubscribing(true);
-    room.count(listener);
+    room.count(spyListener);
     room = spy(room);
     room.setSubscribing(false);
     doAnswer(new Answer() {
@@ -94,7 +105,7 @@ public class countTest {
       }
     }).when(extended).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     room.renew(listener);
-    verify(room).count(any(KuzzleResponseListener.class));
+    verify(room).dequeue();
   }
 
   @Test(expected = RuntimeException.class)
@@ -136,4 +147,5 @@ public class countTest {
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "subscribe");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "count");
   }
+
 }
