@@ -266,18 +266,6 @@ public class Kuzzle {
    * @return the kuzzle
    */
   public Kuzzle checkToken(@NonNull final String token, @NonNull final KuzzleResponseListener<KuzzleTokenValidity> listener) {
-    return this.checkToken(token, null, listener);
-  }
-
-  /**
-   * Check token kuzzle.
-   *
-   * @param token    the token
-   * @param options  the options
-   * @param listener the listener
-   * @return the kuzzle
-   */
-  public Kuzzle checkToken(@NonNull final String token, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleTokenValidity> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.checkToken: listener required");
     }
@@ -292,7 +280,7 @@ public class Kuzzle {
       args.action = "checkToken";
       JSONObject request = new JSONObject();
       request.put("body", new JSONObject().put("token", token));
-      this.query(args, request, options, new OnQueryDoneListener() {
+      this.query(args, request, new KuzzleOptions().setQueuable(false), new OnQueryDoneListener() {
 
         @Override
         public void onSuccess(JSONObject response) {
