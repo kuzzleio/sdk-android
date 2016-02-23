@@ -33,6 +33,7 @@ import io.kuzzle.sdk.listeners.OnKuzzleLoginDoneListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleTokenValidity;
 import io.kuzzle.sdk.security.KuzzleSecurity;
+import io.kuzzle.sdk.security.KuzzleUser;
 import io.kuzzle.sdk.state.KuzzleQueue;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.sdk.util.Event;
@@ -266,18 +267,6 @@ public class Kuzzle {
    * @return the kuzzle
    */
   public Kuzzle checkToken(@NonNull final String token, @NonNull final KuzzleResponseListener<KuzzleTokenValidity> listener) {
-    return this.checkToken(token, null, listener);
-  }
-
-  /**
-   * Check token kuzzle.
-   *
-   * @param token    the token
-   * @param options  the options
-   * @param listener the listener
-   * @return the kuzzle
-   */
-  public Kuzzle checkToken(@NonNull final String token, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleTokenValidity> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.checkToken: listener required");
     }
@@ -292,7 +281,7 @@ public class Kuzzle {
       args.action = "checkToken";
       JSONObject request = new JSONObject();
       request.put("body", new JSONObject().put("token", token));
-      this.query(args, request, options, new OnQueryDoneListener() {
+      this.query(args, request, new KuzzleOptions().setQueuable(false), new OnQueryDoneListener() {
 
         @Override
         public void onSuccess(JSONObject response) {
@@ -1878,7 +1867,7 @@ public class Kuzzle {
    * @param listener the listener
    * @return kuzzle
    */
-  public Kuzzle whoAmI(@NonNull final KuzzleResponseListener<JSONObject> listener) {
+  public Kuzzle whoAmI(@NonNull final KuzzleResponseListener<KuzzleUser> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.whoAmI: listener required");
     }
@@ -1894,7 +1883,7 @@ public class Kuzzle {
         public void onSuccess(JSONObject response) {
           try {
             JSONObject result = response.getJSONObject("result");
-            listener.onSuccess(result);
+            listener.onSuccess(new KuzzleUser(Kuzzle.this, result.getString("_id"), result.getJSONObject("_source")));
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
