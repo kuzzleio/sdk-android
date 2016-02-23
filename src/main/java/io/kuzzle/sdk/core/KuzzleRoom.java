@@ -49,7 +49,7 @@ public class KuzzleRoom {
   private long renewalDelay = 500;
 
   // Used to delay method calls when subscription is in progress
-  private boolean subscribing = false;
+  protected boolean subscribing = false;
   private ArrayList<Runnable> queue = new ArrayList<>();
 
   /**
@@ -338,29 +338,10 @@ public class KuzzleRoom {
         final String roomId = this.roomId;
         if (this.kuzzle.getPendingSubscriptions().isEmpty()) {
           this.kuzzle.query(this.dataCollection.makeQueryArgs("subscribe", "off"), data);
+        } else {
+          final Timer timer = new Timer(UUID.randomUUID().toString());
+          unsubscribeTask(timer, roomId, data).run();
         }
-
-        final Timer timer = new Timer(UUID.randomUUID().toString());
-        final TimerTask unsubscribeTask = new TimerTask() {
-          @Override
-          public void run() {
-            if (KuzzleRoom.this.kuzzle.getPendingSubscriptions().isEmpty()) {
-              if (KuzzleRoom.this.kuzzle.getSubscriptions(roomId) == null) {
-                try {
-                  KuzzleRoom.this.kuzzle.query(KuzzleRoom.this.dataCollection.makeQueryArgs("subscribe", "off"), data);
-                }
-                catch (JSONException e) {
-                  throw new RuntimeException(e);
-                }
-              }
-            }
-            else {
-              timer.schedule(this, 100);
-            }
-          }
-        };
-
-        timer.schedule(unsubscribeTask, 100);
       }
 
       this.roomId = null;
@@ -369,6 +350,25 @@ public class KuzzleRoom {
       throw new RuntimeException(e);
     }
     return this;
+  }
+
+  private TimerTask unsubscribeTask(final Timer timer, final String roomId, final JSONObject data) {
+    return new TimerTask() {
+      @Override
+      public void run() {
+        try {
+          if (KuzzleRoom.this.kuzzle.getPendingSubscriptions().isEmpty()) {
+            if (KuzzleRoom.this.kuzzle.getSubscriptions(roomId) == null) {
+              KuzzleRoom.this.kuzzle.query(KuzzleRoom.this.dataCollection.makeQueryArgs("subscribe", "off"), data);
+            }
+          } else {
+            timer.schedule(unsubscribeTask(timer, roomId, data), 100);
+          }
+        } catch (JSONException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    };
   }
 
   /**

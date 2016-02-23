@@ -28,4 +28,8 @@ public class KuzzleRoomExtend extends KuzzleRoom {
   public void setRoomId(final String id) {
     this.roomId = id;
   }
+
+  public void setSubscribing(final boolean isSubscribing) {
+    super.subscribing = isSubscribing;
+  }
 }
