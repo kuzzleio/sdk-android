@@ -55,8 +55,7 @@ public class createRoleTest {
 
   @Test
   public void testCreateRoleReplaceIfExists() throws JSONException {
-    KuzzleOptions options = new KuzzleOptions();
-    options.setUpdateIfExists(true);
+    KuzzleOptions options = new KuzzleOptions().setReplaceIfExist(true);
 
     kuzzleSecurity.createRole("foo", new JSONObject(), options);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);

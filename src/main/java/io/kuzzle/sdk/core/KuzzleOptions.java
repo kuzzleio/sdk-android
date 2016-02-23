@@ -22,6 +22,7 @@ public class KuzzleOptions {
   private int replayInterval = 10;
   private boolean queuable = true;
   private String defaultIndex = null;
+  private boolean replaceIfExist = false;
 
   // Used for getting collections
   private KuzzleCollectionType  collectionType = KuzzleCollectionType.ALL;
@@ -220,5 +221,14 @@ public class KuzzleOptions {
 
   public boolean isAutoQueue() {
     return this.autoQueue;
+  }
+
+  public KuzzleOptions setReplaceIfExist(boolean replace) {
+    this.replaceIfExist = replace;
+    return this;
+  }
+
+  public boolean isReplaceIfExist() {
+    return this.replaceIfExist;
   }
 }

@@ -1,5 +1,6 @@
 package io.kuzzle.test.security.KuzzleSecurity;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -36,7 +37,7 @@ public class createProfileTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testCreateProfileNoID() throws JSONException {
-    kuzzleSecurity.createProfile(null, new JSONObject());
+    kuzzleSecurity.createProfile(null, new JSONArray());
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -46,7 +47,7 @@ public class createProfileTest {
 
   @Test
   public void testCreateProfileNoListener() throws JSONException {
-    kuzzleSecurity.createProfile("foo", new JSONObject(), new KuzzleOptions());
+    kuzzleSecurity.createProfile("foo", new JSONArray(), new KuzzleOptions());
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
@@ -55,10 +56,9 @@ public class createProfileTest {
 
   @Test
   public void testCreateProfileReplaceIfExists() throws JSONException {
-    KuzzleOptions options = new KuzzleOptions();
-    options.setUpdateIfExists(true);
+    KuzzleOptions options = new KuzzleOptions().setReplaceIfExist(true);
 
-    kuzzleSecurity.createProfile("foo", new JSONObject(), options);
+    kuzzleSecurity.createProfile("foo", new JSONArray(), options);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
@@ -86,7 +86,7 @@ public class createProfileTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.createProfile("foobar", new JSONObject(), new KuzzleResponseListener<KuzzleProfile>() {
+    kuzzleSecurity.createProfile("foobar", new JSONArray(), new KuzzleResponseListener<KuzzleProfile>() {
       @Override
       public void onSuccess(KuzzleProfile response) {
         assertEquals(response.id, "foobar");
@@ -120,7 +120,7 @@ public class createProfileTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.createProfile("foobar", new JSONObject(), listener);
+    kuzzleSecurity.createProfile("foobar", new JSONArray(), listener);
   }
 
   @Test(expected = IllegalArgumentException.class)

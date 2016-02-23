@@ -177,7 +177,7 @@ public class KuzzleSecurity {
 
     JSONObject data = new JSONObject().put("_id", id).put("body", content);
 
-    if (options != null && options.isUpdateIfExists()) {
+    if (options != null && options.isReplaceIfExist()) {
       action = "createOrReplaceRole";
     }
 
@@ -510,16 +510,16 @@ public class KuzzleSecurity {
    * @param listener - Callback lisener
    * @throws JSONException
    */
-  public void createProfile(@NonNull final String id, @NonNull final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
+  public void createProfile(@NonNull final String id, @NonNull final JSONArray content, final KuzzleOptions options, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     String action = "createProfile";
 
     if (id == null || content == null) {
       throw new IllegalArgumentException("KuzzleSecurity.createProfile: cannot create a profile with null ID or roles");
     }
 
-    JSONObject data = new JSONObject().put("_id", id).put("body", content);
+    JSONObject data = new JSONObject().put("_id", id).put("body", new JSONObject().put("roles", content));
 
-    if (options != null && options.isUpdateIfExists()) {
+    if (options != null && options.isReplaceIfExist()) {
       action = "createOrReplaceProfile";
     }
 
@@ -560,7 +560,7 @@ public class KuzzleSecurity {
    * @param options - Optional arguments
    * @throws JSONException
    */
-  public void createProfile(@NonNull final String id, @NonNull final JSONObject content, final KuzzleOptions options) throws JSONException {
+  public void createProfile(@NonNull final String id, @NonNull final JSONArray content, final KuzzleOptions options) throws JSONException {
     createProfile(id, content, options, null);
   }
 
@@ -577,7 +577,7 @@ public class KuzzleSecurity {
    * @param listener - Callback lisener
    * @throws JSONException
    */
-  public void createProfile(@NonNull final String id, @NonNull final JSONObject content, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
+  public void createProfile(@NonNull final String id, @NonNull final JSONArray content, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     createProfile(id, content, null, listener);
   }
 
@@ -593,7 +593,7 @@ public class KuzzleSecurity {
    * @param content - Should contain a 'roles' attributes containing the roles referenced by this profile
    * @throws JSONException
    */
-  public void createProfile(@NonNull final String id, @NonNull final JSONObject content) throws JSONException {
+  public void createProfile(@NonNull final String id, @NonNull final JSONArray content) throws JSONException {
     createProfile(id, content, null, null);
   }
 
@@ -856,7 +856,7 @@ public class KuzzleSecurity {
    * @throws JSONException
    */
   public void createUser(@NonNull final String id, @NonNull final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
-    String action = options != null && options.isUpdateIfExists() ? "createOrReplaceUser" : "createUser";
+    String action = options != null && options.isReplaceIfExist() ? "createOrReplaceUser" : "createUser";
     if (id == null || content == null) {
       throw new IllegalArgumentException("KuzzleSecurity.createUser: cannot create a user with a null ID or content");
     }
