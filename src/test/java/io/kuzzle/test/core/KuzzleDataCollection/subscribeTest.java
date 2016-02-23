@@ -21,6 +21,7 @@ import io.socket.client.Socket;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -45,6 +46,13 @@ public class subscribeTest {
 
     collection = new KuzzleDataCollection(kuzzle, "index", "test");
     listener = mock(KuzzleResponseListener.class);
+  }
+
+  @Test
+  public void checkSignaturesVariants() {
+    collection = spy(collection);
+    collection.subscribe(new JSONObject(), listener);
+    verify(collection).subscribe(any(JSONObject.class), eq((KuzzleRoomOptions)null), eq(listener));
   }
 
 

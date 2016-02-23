@@ -51,6 +51,20 @@ public class updateDocumentTest {
     listener = mock(KuzzleResponseListener.class);
   }
 
+  @Test
+  public void checkSignaturesVariants() {
+    JSONObject content = mock(JSONObject.class);
+    String id = "foo";
+    collection = spy(collection);
+
+    collection.updateDocument(id, content);
+    collection.updateDocument(id, content, mock(KuzzleOptions.class));
+    collection.updateDocument(id, content, listener);
+
+    verify(collection, times(3)).updateDocument(any(String.class), any(JSONObject.class), any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+  }
+
+
   @Test(expected = IllegalArgumentException.class)
   public void testUpdateDocumentIllegalDocumentId() {
     collection.updateDocument(null, mock(JSONObject.class));

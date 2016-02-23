@@ -30,6 +30,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 public class eventSystemTest {
@@ -62,7 +63,6 @@ public class eventSystemTest {
 
   @Test
   public void testAddListener() {
-
     assertEquals(kuzzle.getEventListeners(KuzzleEvent.connected), null);
     kuzzle.addListener(KuzzleEvent.connected, mock(IKuzzleEventListener.class));
     assertThat(kuzzle.getEventListeners(KuzzleEvent.connected), instanceOf(EventList.class));
@@ -99,7 +99,6 @@ public class eventSystemTest {
     verify(s, atLeastOnce()).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
     verify(s, atLeastOnce()).once(eq("42"), any(Emitter.Listener.class));
   }
-
 
   @Test(expected = NullPointerException.class)
   public void testRemoveAllListeners() {

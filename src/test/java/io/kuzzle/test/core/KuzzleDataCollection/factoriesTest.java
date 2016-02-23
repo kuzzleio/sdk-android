@@ -22,8 +22,11 @@ import io.socket.client.Socket;
 
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class factoriesTest {
@@ -62,6 +65,7 @@ public class factoriesTest {
 
   @Test
   public void testDataMappingFactory() {
+    assertThat(collection.dataMappingFactory(), instanceOf(KuzzleDataMapping.class));
     assertThat(collection.dataMappingFactory(new JSONObject()), instanceOf(KuzzleDataMapping.class));
   }
 }

@@ -50,6 +50,15 @@ public class createTest {
     listener = mock(KuzzleResponseListener.class);
   }
 
+  @Test
+  public void checkSignaturesVariants() {
+    collection = spy(collection);
+    collection.create();
+    collection.create(mock(KuzzleOptions.class));
+    collection.create(listener);
+    verify(collection, times(3)).create(any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+  }
+
   @Test(expected = RuntimeException.class)
   public void testCreateQueryException() throws JSONException {
     doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));

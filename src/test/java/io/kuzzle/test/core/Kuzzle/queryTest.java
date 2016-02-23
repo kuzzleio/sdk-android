@@ -1,7 +1,5 @@
 package io.kuzzle.test.core.Kuzzle;
 
-import junit.framework.Assert;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -13,8 +11,8 @@ import java.net.URISyntaxException;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.helpers.KuzzleFilterHelper;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.OnKuzzleLoginDoneListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.sdk.util.KuzzleQueueFilter;
@@ -30,6 +28,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class queryTest {
@@ -62,6 +61,17 @@ public class queryTest {
     args = new Kuzzle.QueryArgs();
     args.controller = "foo";
     args.action = "bar";
+  }
+
+  @Test
+  public void checkAllSignaturesVariants() throws JSONException {
+    JSONObject query = new JSONObject();
+    OnQueryDoneListener queryListener = mock(OnQueryDoneListener.class);
+    kuzzle = spy(kuzzle);
+    kuzzle.query(args, query);
+    kuzzle.query(args, query, new KuzzleOptions());
+    kuzzle.query(args, query, queryListener);
+    verify(kuzzle, times(3)).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test(expected = IllegalStateException.class)

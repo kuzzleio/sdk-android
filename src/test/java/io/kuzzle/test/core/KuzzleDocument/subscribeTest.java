@@ -21,6 +21,7 @@ import io.kuzzle.test.testUtils.KuzzleExtend;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -43,6 +44,14 @@ public class subscribeTest {
     doc = new KuzzleDocument(new KuzzleDataCollection(k, "index", "test"));
   }
 
+  @Test
+  public void checkSignaturesVariants() {
+    doc.setId("foo");
+    doc = spy(doc);
+    doc.subscribe(mock(KuzzleResponseListener.class));
+    verify(doc).subscribe(eq((KuzzleRoomOptions)null), any(KuzzleResponseListener.class));
+  }
+
   @Test(expected = RuntimeException.class)
   public void testSubscribeException() throws JSONException {
     doc = new KuzzleDocument(mockCollection);
@@ -51,7 +60,7 @@ public class subscribeTest {
     doc.subscribe(mock(KuzzleResponseListener.class));
   }
 
-  @Test(expected = RuntimeException.class)
+  @Test(expected = IllegalStateException.class)
   public void testSubscribeNullId() {
     doc.subscribe(mock(KuzzleResponseListener.class));
   }

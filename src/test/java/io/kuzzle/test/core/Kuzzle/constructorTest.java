@@ -68,6 +68,12 @@ public class constructorTest {
     verify(kuzzle, never()).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
+  @Test
+  public void testSetHeadersSignaturesVariants() throws JSONException {
+    kuzzle = spy(kuzzle);
+    kuzzle.setHeaders(new JSONObject());
+    verify(kuzzle).setHeaders(any(JSONObject.class), eq(false));
+  }
 
   @Test
   public void testSetHeaders() throws JSONException {

@@ -54,6 +54,15 @@ public class listCollectionsTest {
     };
   }
 
+  @Test
+  public void testAllSignatureVariants() {
+    listener = spy(listener);
+    kuzzle = spy(kuzzle);
+    kuzzle.listCollections(listener);
+    kuzzle.listCollections("foo", listener);
+    kuzzle.listCollections(new KuzzleOptions(), listener);
+    verify(kuzzle, times(3)).listCollections(any(String.class), any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+  }
 
   @Test(expected = IllegalArgumentException.class)
   public void testListCollectionsWithIllegalListener() {

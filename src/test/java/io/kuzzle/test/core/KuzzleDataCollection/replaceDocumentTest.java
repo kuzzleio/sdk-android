@@ -51,6 +51,18 @@ public class replaceDocumentTest {
     listener = mock(KuzzleResponseListener.class);
   }
 
+  @Test
+  public void checkSignaturesVariants() {
+    JSONObject content = mock(JSONObject.class);
+    String id = "foo";
+    collection = spy(collection);
+
+    collection.replaceDocument(id, content);
+    collection.replaceDocument(id, content, mock(KuzzleOptions.class));
+    collection.replaceDocument(id, content, listener);
+
+    verify(collection, times(3)).replaceDocument(any(String.class), any(JSONObject.class), any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+  }
 
   @Test(expected = IllegalArgumentException.class)
   public void testReplaceDocumentIllegalDocumentId() {

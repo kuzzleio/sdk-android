@@ -9,6 +9,8 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleDataMapping;
 
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.hamcrest.junit.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
@@ -55,5 +57,12 @@ public class constructorTest {
     headers.put("foo", "bar");
     dataMapping.setHeaders(headers);
     assertEquals(dataMapping.getHeaders().getString("foo"), "bar");
+  }
+
+  @Test
+  public void testSet() throws JSONException {
+    JSONObject mapping = mock(JSONObject.class);
+    assertThat(dataMapping.set("foo", mapping), instanceOf(KuzzleDataMapping.class));
+    assertEquals(dataMapping.getMapping().getJSONObject("foo"), mapping);
   }
 }

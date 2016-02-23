@@ -62,6 +62,13 @@ public class getAllStatisticsTest {
     kuzzle.getAllStatistics(null);
   }
 
+  @Test
+  public void testGetAllStatisticsNoOptions() {
+    kuzzle = spy(kuzzle);
+    kuzzle.getAllStatistics(listener);
+    verify(kuzzle).getAllStatistics(any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+  }
+
   @Test(expected = RuntimeException.class)
   public void testGetAllStatisticsException() throws JSONException {
     listener = spy(listener);

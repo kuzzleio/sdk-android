@@ -54,6 +54,12 @@ public class listIndexesTest {
     };
   }
 
+  @Test
+  public void testAllSignaturesVariant() {
+    kuzzle = spy(kuzzle);
+    kuzzle.listIndexes(spy(listener));
+    verify(kuzzle).listIndexes(any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+  }
 
   @Test(expected = IllegalArgumentException.class)
   public void testListIndexesWithIllegalListener() {

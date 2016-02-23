@@ -23,6 +23,7 @@ import io.kuzzle.test.testUtils.KuzzleExtend;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -44,6 +45,14 @@ public class refreshTest {
     k = spy(extended);
     mockListener = mock(KuzzleResponseListener.class);
     doc = new KuzzleDocument(new KuzzleDataCollection(k, "index", "test"));
+  }
+
+  @Test
+  public void checkSignaturesVariants() {
+    doc.setId("foo");
+    doc = spy(doc);
+    doc.refresh(mockListener);
+    verify(doc).refresh(eq((KuzzleOptions)null), eq(mockListener));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -74,7 +83,7 @@ public class refreshTest {
     doc.refresh(mockListener);
   }
 
-  @Test(expected = RuntimeException.class)
+  @Test(expected = IllegalStateException.class)
   public void testRefreshWithoutId() {
     doc.refresh(null, null);
   }

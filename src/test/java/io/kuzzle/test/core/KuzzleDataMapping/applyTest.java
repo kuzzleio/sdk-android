@@ -20,6 +20,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,6 +37,15 @@ public class applyTest {
     when(k.getHeaders()).thenReturn(new JSONObject());
     dataCollection = new KuzzleDataCollection(k, "index", "test");
     dataMapping = new KuzzleDataMapping(dataCollection);
+  }
+
+  @Test
+  public void checkSignaturesVariants() {
+    dataMapping = spy(dataMapping);
+    dataMapping.apply();
+    dataMapping.apply(mock(KuzzleOptions.class));
+    dataMapping.apply(mock(KuzzleResponseListener.class));
+    verify(dataMapping, times(3)).apply(any(KuzzleOptions.class), any(KuzzleResponseListener.class));
   }
 
   @Test(expected = RuntimeException.class)
