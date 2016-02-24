@@ -1,8 +1,10 @@
 package io.kuzzle.sdk.security;
 
 import android.support.annotation.NonNull;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -12,8 +14,19 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
  * This class handles users management in Kuzzle
  */
 public class KuzzleUser extends AbstractKuzzleSecurityDocument {
+  /**
+   * The Profile.
+   */
   public KuzzleProfile profile = null;
 
+  /**
+   * Instantiates a new Kuzzle user.
+   *
+   * @param kuzzle  the kuzzle
+   * @param id      the id
+   * @param content the content
+   * @throws JSONException the json exception
+   */
   public KuzzleUser(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
     super(kuzzle, id, null);
     this.deleteActionName = "deleteUser";
@@ -40,9 +53,9 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * This function allow to get the hydrated user of the corresponding current user.
    * The hydrated user has profiles and roles.
    *
-   * @param options - Optional arguments
+   * @param options  - Optional arguments
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void hydrate(final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     if (listener == null) {
@@ -80,7 +93,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * The hydrated user has profiles and roles.
    *
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void hydrate(@NonNull final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     hydrate(null, listener);
@@ -90,7 +103,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * Set a new profile for this user
    *
    * @param profile - new profile
-   * @return this
+   * @return this profile
    */
   public KuzzleUser setProfile(@NonNull final KuzzleProfile profile) {
     if (profile == null) {
@@ -106,7 +119,8 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * Set a new profile for this user
    *
    * @param id - new profile ID
-   * @return this
+   * @return this profile
+   * @throws JSONException the json exception
    */
   public KuzzleUser setProfile(@NonNull final String id) throws JSONException {
     setProfile(new KuzzleProfile(this.kuzzle, id, null));
@@ -116,10 +130,10 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
   /**
    * Save this user in Kuzzle
    *
-   * @param options - Optional arguments
+   * @param options  - Optional arguments
    * @param listener - Callback listener
-   * @return this
-   * @throws JSONException
+   * @return this kuzzle user
+   * @throws JSONException the json exception
    */
   public KuzzleUser save(final KuzzleOptions options, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     JSONObject data = this.serialize();
@@ -148,8 +162,8 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * Save this user in Kuzzle
    *
    * @param listener - Callback listener
-   * @return this
-   * @throws JSONException
+   * @return this kuzzle user
+   * @throws JSONException the json exception
    */
   public KuzzleUser save(final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     return save(null, listener);
@@ -159,8 +173,8 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * Save this user in Kuzzle
    *
    * @param options - Optional arguments
-   * @return this
-   * @throws JSONException
+   * @return this kuzzle user
+   * @throws JSONException the json exception
    */
   public KuzzleUser save(final KuzzleOptions options) throws JSONException {
     return save(options, null);
@@ -169,8 +183,8 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
   /**
    * Save this user in Kuzzle
    *
-   * @return this
-   * @throws JSONException
+   * @return this kuzzle user
+   * @throws JSONException the json exception
    */
   public KuzzleUser save() throws JSONException {
     return save(null, null);
@@ -180,7 +194,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * Return a JSONObject representing a serialized version of this object
    *
    * @return serialized version of this object
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public JSONObject serialize() throws JSONException {
     JSONObject

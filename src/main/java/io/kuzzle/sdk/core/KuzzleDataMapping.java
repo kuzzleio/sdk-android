@@ -1,5 +1,7 @@
 package io.kuzzle.sdk.core;
 
+import android.support.annotation.NonNull;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -39,7 +41,13 @@ public class KuzzleDataMapping {
    * @param mapping              the mapping
    */
   public KuzzleDataMapping(final KuzzleDataCollection kuzzleDataCollection, final JSONObject mapping) {
-    this.headers = kuzzleDataCollection.getHeaders();
+    try {
+      this.headers = new JSONObject(kuzzleDataCollection.getHeaders().toString());
+    }
+    catch(JSONException e) {
+      throw new RuntimeException(e);
+    }
+
     this.kuzzle = kuzzleDataCollection.getKuzzle();
     this.collection = kuzzleDataCollection.getCollection();
     this.mapping = mapping == null ? new JSONObject() : mapping;
@@ -49,7 +57,7 @@ public class KuzzleDataMapping {
   /**
    * Copy constructor
    *
-   * @param kuzzleDataMapping   the KuzzleDataMapping object to copy
+   * @param kuzzleDataMapping the KuzzleDataMapping object to copy
    */
   public KuzzleDataMapping(final KuzzleDataMapping kuzzleDataMapping) {
     this(kuzzleDataMapping.dataCollection, kuzzleDataMapping.mapping);
@@ -93,7 +101,7 @@ public class KuzzleDataMapping {
    */
   public KuzzleDataMapping apply(final KuzzleOptions options, final KuzzleResponseListener<KuzzleDataMapping> listener) {
     JSONObject data = new JSONObject();
-    final JSONObject properties = new JSONObject();
+    JSONObject properties = new JSONObject();
     try {
       properties.put("properties", this.mapping);
       data.put("body", properties);
@@ -101,13 +109,8 @@ public class KuzzleDataMapping {
       this.kuzzle.query(this.dataCollection.makeQueryArgs("admin", "updateMapping"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
-          try {
-            KuzzleDataMapping.this.mapping = properties.getJSONObject("properties");
-            if (listener != null) {
-              listener.onSuccess(KuzzleDataMapping.this);
-            }
-          } catch (JSONException e) {
-            throw new RuntimeException(e);
+          if (listener != null) {
+            listener.onSuccess(KuzzleDataMapping.this);
           }
         }
 
@@ -139,7 +142,11 @@ public class KuzzleDataMapping {
    * @param options  the options
    * @param listener the listener
    */
-  public void refresh(final KuzzleOptions options, final KuzzleResponseListener<KuzzleDataMapping> listener) {
+  public void refresh(final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDataMapping> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("KuzzleDataMapping.refresh: listener callback missing");
+    }
+
     JSONObject data = new JSONObject();
     try {
       this.kuzzle.addHeaders(data, this.headers);
@@ -147,15 +154,11 @@ public class KuzzleDataMapping {
         @Override
         public void onSuccess(JSONObject args) {
           try {
-            KuzzleDataMapping newMapping = new KuzzleDataMapping(KuzzleDataMapping.this);
+            KuzzleDataMapping newMapping = new KuzzleDataMapping(KuzzleDataMapping.this.dataCollection);
+            JSONObject mappings = args.getJSONObject(KuzzleDataMapping.this.dataCollection.getIndex()).getJSONObject("mappings");
+            newMapping.mapping = mappings.getJSONObject(KuzzleDataMapping.this.collection);
 
-            if (!args.isNull(KuzzleDataMapping.this.kuzzle.getDefaultIndex())) {
-              JSONObject mappings = args.getJSONObject(KuzzleDataMapping.this.kuzzle.getDefaultIndex()).getJSONObject("mappings");
-              if (!mappings.isNull(KuzzleDataMapping.this.collection))
-                newMapping.mapping = mappings.getJSONObject(KuzzleDataMapping.this.collection);
-              if (listener != null)
-                listener.onSuccess(newMapping);
-            }
+            listener.onSuccess(newMapping);
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
@@ -163,8 +166,7 @@ public class KuzzleDataMapping {
 
         @Override
         public void onError(JSONObject object) {
-          if (listener != null)
-            listener.onError(object);
+          listener.onError(object);
         }
       });
     } catch (JSONException e) {
@@ -180,8 +182,10 @@ public class KuzzleDataMapping {
    * @return kuzzle data mapping
    */
   public KuzzleDataMapping remove(final String field) {
-    if (!KuzzleDataMapping.this.mapping.isNull(field))
+    if (this.mapping.has(field)) {
       KuzzleDataMapping.this.mapping.remove(field);
+    }
+
     return this;
   }
 
@@ -191,13 +195,10 @@ public class KuzzleDataMapping {
    * @param field   the field
    * @param mapping the mapping
    * @return the kuzzle data mapping
+   * @throws JSONException the json exception
    */
-  public KuzzleDataMapping set(final String field, final JSONObject mapping) {
-    try {
-      this.mapping.put(field, mapping);
-    } catch (JSONException e) {
-      throw new RuntimeException(e);
-    }
+  public KuzzleDataMapping set(final String field, final JSONObject mapping) throws JSONException {
+    this.mapping.put(field, mapping);
     return this;
   }
 
@@ -232,23 +233,27 @@ public class KuzzleDataMapping {
    * @return the headers
    */
   public KuzzleDataMapping setHeaders(final JSONObject content, final boolean replace) {
-    if (this.headers == null) {
-      this.headers = new JSONObject();
-    }
-    if (replace) {
-      this.headers = content;
-    } else {
-      if (content != null) {
-        try {
-          for (Iterator ite = content.keys(); ite.hasNext(); ) {
-            String key = (String) ite.next();
-            this.headers.put(key, content.get(key));
-          }
-        } catch (JSONException e) {
-          throw new RuntimeException(e);
+    try {
+      if (content == null) {
+        if (replace) {
+          this.headers = new JSONObject();
+        }
+
+        return this;
+      }
+
+      if (replace) {
+        this.headers = new JSONObject(content.toString());
+      } else {
+        for (Iterator ite = content.keys(); ite.hasNext(); ) {
+          String key = (String) ite.next();
+          this.headers.put(key, content.get(key));
         }
       }
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
     }
+
     return this;
   }
 

@@ -2,26 +2,22 @@ package io.kuzzle.sdk.util;
 
 import java.util.UUID;
 
-import io.kuzzle.sdk.enums.EventType;
+import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.listeners.IKuzzleEventListener;
 
 /**
  * The type Event.
  */
 public abstract class Event implements IKuzzleEventListener {
-
   private UUID id;
-  private EventType type;
-
-  private Event() {
-  }
+  private KuzzleEvent type;
 
   /**
    * Instantiates a new Event.
    *
    * @param type the type
    */
-  public Event(EventType type) {
+  public Event(KuzzleEvent type) {
     this.id = UUID.randomUUID();
     this.type = type;
   }
@@ -42,7 +38,7 @@ public abstract class Event implements IKuzzleEventListener {
    *
    * @return the type
    */
-  public EventType getType() {
+  public KuzzleEvent getType() {
     return this.type;
   }
 }

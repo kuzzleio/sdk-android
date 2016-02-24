@@ -5,28 +5,27 @@ import org.json.JSONObject;
 import io.kuzzle.sdk.enums.KuzzleCollectionType;
 import io.kuzzle.sdk.enums.Mode;
 
+/**
+ * The type Kuzzle options.
+ */
 public class KuzzleOptions {
-
-  private boolean autoReconnect = false;
-  private JSONObject headers;
-  private boolean updateIfExists = false;
-  private JSONObject metadata;
-  private Mode connect = Mode.AUTO;
-  private long reconnectionDelay = 1000;
-  private Mode offlineMode;
-  private int queueTTL = 120000;
+  // Default values
+  private boolean autoQueue = false;
+  private boolean autoReconnect = true;
   private boolean autoReplay = false;
+  private boolean autoResubscribe = true;
+  private JSONObject headers = new JSONObject();
+  private JSONObject metadata = new JSONObject();
+  private int queueMaxSize = 500;
+  private int queueTTL = 120000;
+  private long reconnectionDelay = 1000;
+  private boolean updateIfExists = false;
+  private Mode connect = Mode.AUTO;
+  private Mode offlineMode = Mode.MANUAL;
   private int replayInterval = 10;
   private boolean queuable = true;
-  private int queueMaxSize = 500;
-  private boolean autoResubscribe;
-
-  // Auth related
-  private String  loginStrategy;
-  private String  loginUsername;
-  private String  loginPassword;
-  // in second
-  private int loginExpiresIn = 0;
+  private String defaultIndex = null;
+  private boolean replaceIfExist = false;
 
   // Used for getting collections
   private KuzzleCollectionType  collectionType = KuzzleCollectionType.ALL;
@@ -47,9 +46,11 @@ public class KuzzleOptions {
    * Sets auto reconnect.
    *
    * @param autoReconnect the auto reconnect
+   * @return the auto reconnect
    */
-  public void setAutoReconnect(boolean autoReconnect) {
+  public KuzzleOptions setAutoReconnect(boolean autoReconnect) {
     this.autoReconnect = autoReconnect;
+    return this;
   }
 
   /**
@@ -65,9 +66,11 @@ public class KuzzleOptions {
    * Sets headers.
    *
    * @param headers the headers
+   * @return the headers
    */
-  public void setHeaders(JSONObject headers) {
+  public KuzzleOptions setHeaders(JSONObject headers) {
     this.headers = headers;
+    return this;
   }
 
   /**
@@ -83,9 +86,11 @@ public class KuzzleOptions {
    * Sets update if exists.
    *
    * @param updateIfExists the update if exists
+   * @return the update if exists
    */
-  public void setUpdateIfExists(boolean updateIfExists) {
+  public KuzzleOptions setUpdateIfExists(boolean updateIfExists) {
     this.updateIfExists = updateIfExists;
+    return this;
   }
 
   /**
@@ -101,128 +106,290 @@ public class KuzzleOptions {
    * Sets metadata.
    *
    * @param metadata the metadata
+   * @return the metadata
    */
-  public void setMetadata(JSONObject metadata) {
+  public KuzzleOptions setMetadata(JSONObject metadata) {
     this.metadata = metadata;
+    return this;
   }
 
+  /**
+   * Gets connect.
+   *
+   * @return the connect
+   */
   public Mode getConnect() {
     return connect;
   }
 
-  public void setConnect(Mode connect) {
+  /**
+   * Sets connect.
+   *
+   * @param connect the connect
+   * @return the connect
+   */
+  public KuzzleOptions setConnect(Mode connect) {
     this.connect = connect;
+    return this;
   }
 
+  /**
+   * Gets reconnection delay.
+   *
+   * @return the reconnection delay
+   */
   public long getReconnectionDelay() {
     return reconnectionDelay;
   }
 
-  public void setReconnectionDelay(long reconnectionDelay) {
+  /**
+   * Sets reconnection delay.
+   *
+   * @param reconnectionDelay the reconnection delay
+   * @return the reconnection delay
+   */
+  public KuzzleOptions setReconnectionDelay(long reconnectionDelay) {
     this.reconnectionDelay = reconnectionDelay;
+    return this;
   }
 
+  /**
+   * Gets offline mode.
+   *
+   * @return the offline mode
+   */
   public Mode getOfflineMode() {
     return offlineMode;
   }
 
-  public void setOfflineMode(Mode offlineMode) {
+  /**
+   * Sets offline mode.
+   *
+   * @param offlineMode the offline mode
+   * @return the offline mode
+   */
+  public KuzzleOptions setOfflineMode(Mode offlineMode) {
     this.offlineMode = offlineMode;
+    return this;
   }
 
+  /**
+   * Gets queue ttl.
+   *
+   * @return the queue ttl
+   */
   public int getQueueTTL() {
     return queueTTL;
   }
 
-  public void setQueueTTL(int queueTTL) {
+  /**
+   * Sets queue ttl.
+   *
+   * @param queueTTL the queue ttl
+   * @return the queue ttl
+   */
+  public KuzzleOptions setQueueTTL(int queueTTL) {
     this.queueTTL = queueTTL;
+    return this;
   }
 
+  /**
+   * Is auto replay boolean.
+   *
+   * @return the boolean
+   */
   public boolean isAutoReplay() {
     return autoReplay;
   }
 
-  public void setAutoReplay(boolean autoReplay) {
+  /**
+   * Sets auto replay.
+   *
+   * @param autoReplay the auto replay
+   * @return the auto replay
+   */
+  public KuzzleOptions setAutoReplay(boolean autoReplay) {
     this.autoReplay = autoReplay;
+    return this;
   }
 
+  /**
+   * Is queuable boolean.
+   *
+   * @return the boolean
+   */
   public boolean isQueuable() {
     return queuable;
   }
 
-  public void setQueuable(boolean queuable) {
+  /**
+   * Sets queuable.
+   *
+   * @param queuable the queuable
+   * @return the queuable
+   */
+  public KuzzleOptions setQueuable(boolean queuable) {
     this.queuable = queuable;
+    return this;
   }
 
+  /**
+   * Gets queue max size.
+   *
+   * @return the queue max size
+   */
   public int getQueueMaxSize() {
     return queueMaxSize;
   }
 
-  public void setQueueMaxSize(int queueMaxSize) {
+  /**
+   * Sets queue max size.
+   *
+   * @param queueMaxSize the queue max size
+   * @return the queue max size
+   */
+  public KuzzleOptions setQueueMaxSize(int queueMaxSize) {
     this.queueMaxSize = queueMaxSize;
+    return this;
   }
 
+  /**
+   * Gets replay interval.
+   *
+   * @return the replay interval
+   */
   public int getReplayInterval() {
     return replayInterval;
   }
 
-  public void setReplayInterval(int replayInterval) {
+  /**
+   * Sets replay interval.
+   *
+   * @param replayInterval the replay interval
+   * @return the replay interval
+   */
+  public KuzzleOptions setReplayInterval(int replayInterval) {
     this.replayInterval = replayInterval;
+    return this;
   }
 
+  /**
+   * Is auto resubscribe boolean.
+   *
+   * @return the boolean
+   */
   public boolean isAutoResubscribe() {
     return autoResubscribe;
   }
 
-  public void setAutoResubscribe(boolean autoResubscribe) {
+  /**
+   * Sets auto resubscribe.
+   *
+   * @param autoResubscribe the auto resubscribe
+   * @return the auto resubscribe
+   */
+  public KuzzleOptions setAutoResubscribe(boolean autoResubscribe) {
     this.autoResubscribe = autoResubscribe;
+    return this;
   }
 
-  public String getLoginStrategy() {
-    return loginStrategy;
-  }
-
-  public void setLoginStrategy(String loginStrategy) {
-    this.loginStrategy = loginStrategy;
-  }
-
-  public String getLoginUsername() {
-    return loginUsername;
-  }
-
-  public void setLoginUsername(String loginUsername) {
-    this.loginUsername = loginUsername;
-  }
-
-  public String getLoginPassword() {
-    return loginPassword;
-  }
-
-  public void setLoginPassword(String loginPassword) {
-    this.loginPassword = loginPassword;
-  }
-
-  public int getLoginExpiresIn() {
-    return loginExpiresIn;
-  }
-
-  public void setLoginExpiresIn(int loginExpiresIn) {
-    this.loginExpiresIn = loginExpiresIn;
-  }
-
+  /**
+   * Gets collection type.
+   *
+   * @return the collection type
+   */
   public KuzzleCollectionType getCollectionType() {
     return collectionType;
   }
 
-  public void setCollectionType(KuzzleCollectionType type) {
+  /**
+   * Sets collection type.
+   *
+   * @param type the type
+   * @return the collection type
+   */
+  public KuzzleOptions setCollectionType(KuzzleCollectionType type) {
     this.collectionType = type;
+    return this;
   }
 
-  public void setHydrate(boolean hydrate) {
+  /**
+   * Sets hydrate.
+   *
+   * @param hydrate the hydrate
+   * @return the hydrate
+   */
+  public KuzzleOptions setHydrate(boolean hydrate) {
     this.hydrate = hydrate;
+    return this;
   }
 
+  /**
+   * Is hydrated boolean.
+   *
+   * @return the boolean
+   */
   public boolean isHydrated() {
     return this.hydrate;
+  }
+
+  /**
+   * Sets default index.
+   *
+   * @param index the index
+   * @return the default index
+   */
+  public KuzzleOptions setDefaultIndex(final String index) {
+    this.defaultIndex = index;
+    return this;
+  }
+
+  /**
+   * Gets default index.
+   *
+   * @return the default index
+   */
+  public String getDefaultIndex() {
+    return this.defaultIndex;
+  }
+
+  /**
+   * Sets auto queue.
+   *
+   * @param autoQueue the auto queue
+   * @return the auto queue
+   */
+  public KuzzleOptions setAutoQueue(boolean autoQueue) {
+    this.autoQueue = autoQueue;
+    return this;
+  }
+
+  /**
+   * Is auto queue boolean.
+   *
+   * @return the boolean
+   */
+  public boolean isAutoQueue() {
+    return this.autoQueue;
+  }
+
+  /**
+   * Sets replace if exist.
+   *
+   * @param replace the replace
+   * @return the replace if exist
+   */
+  public KuzzleOptions setReplaceIfExist(boolean replace) {
+    this.replaceIfExist = replace;
+    return this;
+  }
+
+  /**
+   * Is replace if exist boolean.
+   *
+   * @return the boolean
+   */
+  public boolean isReplaceIfExist() {
+    return this.replaceIfExist;
   }
 }

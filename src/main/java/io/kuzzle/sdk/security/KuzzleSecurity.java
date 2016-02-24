@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -14,9 +15,17 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleSecurityDocumentList;
 
 
+/**
+ * The type Kuzzle security.
+ */
 public class KuzzleSecurity {
   private final Kuzzle kuzzle;
 
+  /**
+   * Instantiates a new Kuzzle security.
+   *
+   * @param kuzzle the kuzzle
+   */
   public KuzzleSecurity(final Kuzzle kuzzle) {
     this.kuzzle = kuzzle;
   }
@@ -26,10 +35,10 @@ public class KuzzleSecurity {
    *
    * @param action - Security controller action name
    * @return JSONObject - Kuzzle.query() 1st argument object
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
-  protected Kuzzle.QueryArgs buildQueryArgs(@NonNull final String action) throws JSONException {
-    Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
+  protected io.kuzzle.sdk.core.Kuzzle.QueryArgs buildQueryArgs(@NonNull final String action) throws JSONException {
+    io.kuzzle.sdk.core.Kuzzle.QueryArgs args = new io.kuzzle.sdk.core.Kuzzle.QueryArgs();
     args.action = action;
     args.controller = "security";
     return args;
@@ -38,8 +47,8 @@ public class KuzzleSecurity {
   /**
    * Retrieves a single Role using its unique Role ID
    *
-   * @param id - unique role ID
-   * @param options - optional query arguments
+   * @param id       - unique role ID
+   * @param options  - optional query arguments
    * @param listener - response callback
    */
   public void getRole(@NonNull final String id, KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleRole> listener) {
@@ -80,7 +89,7 @@ public class KuzzleSecurity {
   /**
    * Retrieves a single Role using its unique Role ID
    *
-   * @param id - unique role ID
+   * @param id       - unique role ID
    * @param listener - response callback
    */
   public void getRole(@NonNull final String id, @NonNull final KuzzleResponseListener<KuzzleRole> listener) {
@@ -90,15 +99,14 @@ public class KuzzleSecurity {
 
   /**
    * Executes a search on roles using a set of filters
-   *
-   *  * /!\ There is a small delay between role creation and their existence in our persistent search layer,
+   * * /!\ There is a small delay between role creation and their existence in our persistent search layer,
    * usually a couple of seconds.
    * That means that a role that was just been created won’t be returned by this function.
    *
-   * @param filters - search filters (see ElasticSearch filters)
-   * @param options - Optional query arguments
+   * @param filters  - search filters (see ElasticSearch filters)
+   * @param options  - Optional query arguments
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void searchRoles(@NonNull final JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleSecurityDocumentList> listener) throws JSONException {
     if (filters == null) {
@@ -140,14 +148,13 @@ public class KuzzleSecurity {
 
   /**
    * Executes a search on roles using a set of filters
-   *
-   *  * /!\ There is a small delay between role creation and their existence in our persistent search layer,
+   * * /!\ There is a small delay between role creation and their existence in our persistent search layer,
    * usually a couple of seconds.
    * That means that a role that was just been created won’t be returned by this function.
    *
-   * @param filters - search filters (see ElasticSearch filters)
+   * @param filters  - search filters (see ElasticSearch filters)
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void searchRoles(@NonNull final JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleSecurityDocumentList> listener) throws JSONException {
     searchRoles(filters, null, listener);
@@ -155,17 +162,16 @@ public class KuzzleSecurity {
 
   /**
    * Create a new role in Kuzzle.
-   *
    * Takes an optional argument object with the following property:
-   *    - replaceIfExist (boolean, default: false):
-   *        If the same role already exists: throw an error if sets to false.
-   *        Replace the existing role otherwise
+   * - replaceIfExist (boolean, default: false):
+   * If the same role already exists: throw an error if sets to false.
+   * Replace the existing role otherwise
    *
-   * @param id - new role ID
-   * @param content - new role rights definitions
-   * @param options - Optional parameters
+   * @param id       - new role ID
+   * @param content  - new role rights definitions
+   * @param options  - Optional parameters
    * @param listener - callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void createRole(@NonNull final String id, @NonNull final JSONObject content, KuzzleOptions options, final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
     String action = "createRole";
@@ -176,7 +182,7 @@ public class KuzzleSecurity {
 
     JSONObject data = new JSONObject().put("_id", id).put("body", content);
 
-    if (options != null && options.isUpdateIfExists()) {
+    if (options != null && options.isReplaceIfExist()) {
       action = "createOrReplaceRole";
     }
 
@@ -206,16 +212,15 @@ public class KuzzleSecurity {
 
   /**
    * Create a new role in Kuzzle.
-   *
    * Takes an optional argument object with the following property:
-   *    - replaceIfExist (boolean, default: false):
-   *        If the same role already exists: throw an error if sets to false.
-   *        Replace the existing role otherwise
+   * - replaceIfExist (boolean, default: false):
+   * If the same role already exists: throw an error if sets to false.
+   * Replace the existing role otherwise
    *
-   * @param id - new role ID
-   * @param content - new role rights definitions
+   * @param id       - new role ID
+   * @param content  - new role rights definitions
    * @param listener - callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void createRole(@NonNull final String id, @NonNull final JSONObject content, final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
     createRole(id, content, null, listener);
@@ -223,16 +228,15 @@ public class KuzzleSecurity {
 
   /**
    * Create a new role in Kuzzle.
-   *
    * Takes an optional argument object with the following property:
-   *    - replaceIfExist (boolean, default: false):
-   *        If the same role already exists: throw an error if sets to false.
-   *        Replace the existing role otherwise
+   * - replaceIfExist (boolean, default: false):
+   * If the same role already exists: throw an error if sets to false.
+   * Replace the existing role otherwise
    *
-   * @param id - new role ID
+   * @param id      - new role ID
    * @param content - new role rights definitions
    * @param options - Optional parameters
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void createRole(@NonNull final String id, @NonNull final JSONObject content, KuzzleOptions options) throws JSONException {
     createRole(id, content, options, null);
@@ -240,15 +244,14 @@ public class KuzzleSecurity {
 
   /**
    * Create a new role in Kuzzle.
-   *
    * Takes an optional argument object with the following property:
-   *    - replaceIfExist (boolean, default: false):
-   *        If the same role already exists: throw an error if sets to false.
-   *        Replace the existing role otherwise
+   * - replaceIfExist (boolean, default: false):
+   * If the same role already exists: throw an error if sets to false.
+   * Replace the existing role otherwise
    *
-   * @param id - new role ID
+   * @param id      - new role ID
    * @param content - new role rights definitions
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void createRole(@NonNull final String id, @NonNull final JSONObject content) throws JSONException {
     createRole(id, content, null, null);
@@ -256,15 +259,14 @@ public class KuzzleSecurity {
 
   /**
    * Delete role.
-   *
    * There is a small delay between role deletion and their deletion in our advanced search layer,
    * usually a couple of seconds.
    * That means that a role that was just been delete will be returned by this function
    *
-   * @param id - ID of the role to delete
-   * @param options - Optional arguments
+   * @param id       - ID of the role to delete
+   * @param options  - Optional arguments
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void deleteRole(@NonNull final String id, final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
     if (id == null) {
@@ -298,14 +300,13 @@ public class KuzzleSecurity {
 
   /**
    * Delete role.
-   *
    * There is a small delay between role deletion and their deletion in our advanced search layer,
    * usually a couple of seconds.
    * That means that a role that was just been delete will be returned by this function
    *
-   * @param id - ID of the role to delete
+   * @param id       - ID of the role to delete
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void deleteRole(@NonNull final String id, final KuzzleResponseListener<String> listener) throws JSONException {
     deleteRole(id, null, listener);
@@ -313,14 +314,13 @@ public class KuzzleSecurity {
 
   /**
    * Delete role.
-   *
    * There is a small delay between role deletion and their deletion in our advanced search layer,
    * usually a couple of seconds.
    * That means that a role that was just been delete will be returned by this function
    *
-   * @param id - ID of the role to delete
+   * @param id      - ID of the role to delete
    * @param options - Optional arguments
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void deleteRole(@NonNull final String id, final KuzzleOptions options) throws JSONException {
     deleteRole(id, options, null);
@@ -328,13 +328,12 @@ public class KuzzleSecurity {
 
   /**
    * Delete role.
-   *
    * There is a small delay between role deletion and their deletion in our advanced search layer,
    * usually a couple of seconds.
    * That means that a role that was just been delete will be returned by this function
    *
    * @param id - ID of the role to delete
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void deleteRole(@NonNull final String id) throws JSONException {
     deleteRole(id, null, null);
@@ -343,10 +342,10 @@ public class KuzzleSecurity {
   /**
    * Instantiate a new KuzzleRole object.
    *
-   * @param id - Role ID
+   * @param id      - Role ID
    * @param content - Role content
    * @return a new KuzzleRole object
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public KuzzleRole roleFactory(@NonNull final String id, final JSONObject content) throws JSONException {
     return new KuzzleRole(this.kuzzle, id, content);
@@ -357,7 +356,7 @@ public class KuzzleSecurity {
    *
    * @param id - Role ID
    * @return a new KuzzleRole object
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public KuzzleRole roleFactory(@NonNull final String id) throws JSONException {
     return new KuzzleRole(this.kuzzle, id, null);
@@ -365,15 +364,14 @@ public class KuzzleSecurity {
 
   /**
    * Get a specific profile from kuzzle
-   *
    * Takes an optional argument object with the following property:
-   *    - hydrate (boolean, default: true):
-   *         if is set to false, return a list id in role instead of KuzzleRole.
+   * - hydrate (boolean, default: true):
+   * if is set to false, return a list id in role instead of KuzzleRole.
    *
-   * @param id - ID of the profile to retrieve
-   * @param options - Optional arguments
+   * @param id       - ID of the profile to retrieve
+   * @param options  - Optional arguments
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void getProfile(@NonNull final String id, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     if (id == null) {
@@ -407,14 +405,13 @@ public class KuzzleSecurity {
 
   /**
    * Get a specific profile from kuzzle
-   *
    * Takes an optional argument object with the following property:
-   *    - hydrate (boolean, default: true):
-   *         if is set to false, return a list id in role instead of KuzzleRole.
+   * - hydrate (boolean, default: true):
+   * if is set to false, return a list id in role instead of KuzzleRole.
    *
-   * @param id - ID of the profile to retrieve
+   * @param id       - ID of the profile to retrieve
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void getProfile(@NonNull final String id, @NonNull final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     getProfile(id, null, listener);
@@ -422,20 +419,18 @@ public class KuzzleSecurity {
 
   /**
    * Executes a search on profiles according to a filter
-   *
    * Takes an optional argument object with the following property:
-   *    - hydrate (boolean, default: true):
-   *         if is set to false, return a list id in role instead of KuzzleRole.
-   *         Because hydrate need to fetch all related KuzzleRole object, leave hydrate to true will have a performance cost
-   *
+   * - hydrate (boolean, default: true):
+   * if is set to false, return a list id in role instead of KuzzleRole.
+   * Because hydrate need to fetch all related KuzzleRole object, leave hydrate to true will have a performance cost
    * /!\ There is a small delay between profile creation and their existence in our persistent search layer,
    * usually a couple of seconds.
    * That means that a profile that was just been created won’t be returned by this function.
    *
-   * @param filters - Search filters
-   * @param options - Optional arguments
+   * @param filters  - Search filters
+   * @param options  - Optional arguments
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void searchProfiles(@NonNull JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleSecurityDocumentList> listener) throws JSONException {
     if (filters == null) {
@@ -477,19 +472,17 @@ public class KuzzleSecurity {
 
   /**
    * Executes a search on profiles according to a filter
-   *
    * Takes an optional argument object with the following property:
-   *    - hydrate (boolean, default: true):
-   *         if is set to false, return a list id in role instead of KuzzleRole.
-   *         Because hydrate need to fetch all related KuzzleRole object, leave hydrate to true will have a performance cost
-   *
+   * - hydrate (boolean, default: true):
+   * if is set to false, return a list id in role instead of KuzzleRole.
+   * Because hydrate need to fetch all related KuzzleRole object, leave hydrate to true will have a performance cost
    * /!\ There is a small delay between profile creation and their existence in our persistent search layer,
    * usually a couple of seconds.
    * That means that a profile that was just been created won’t be returned by this function.
    *
-   * @param filters - Search filters
+   * @param filters  - Search filters
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void searchProfiles(@NonNull JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleSecurityDocumentList> listener) throws JSONException {
     searchProfiles(filters, null, listener);
@@ -497,28 +490,27 @@ public class KuzzleSecurity {
 
   /**
    * Create a new profile in Kuzzle.
-   *
    * Takes an optional argument object with the following property:
-   *    - replaceIfExist (boolean, default: false):
-   *        If the same profile already exists: throw an error if sets to false.
-   *        Replace the existing profile otherwise
+   * - replaceIfExist (boolean, default: false):
+   * If the same profile already exists: throw an error if sets to false.
+   * Replace the existing profile otherwise
    *
-   * @param id - ID of the new profile
-   * @param content - Should contain a 'roles' attributes containing the roles referenced by this profile
-   * @param options - Optional arguments
+   * @param id       - ID of the new profile
+   * @param content  - Should contain a 'roles' attributes containing the roles referenced by this profile
+   * @param options  - Optional arguments
    * @param listener - Callback lisener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
-  public void createProfile(@NonNull final String id, @NonNull final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
+  public void createProfile(@NonNull final String id, @NonNull final JSONArray content, final KuzzleOptions options, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     String action = "createProfile";
 
     if (id == null || content == null) {
       throw new IllegalArgumentException("KuzzleSecurity.createProfile: cannot create a profile with null ID or roles");
     }
 
-    JSONObject data = new JSONObject().put("_id", id).put("body", content);
+    JSONObject data = new JSONObject().put("_id", id).put("body", new JSONObject().put("roles", content));
 
-    if (options != null && options.isUpdateIfExists()) {
+    if (options != null && options.isReplaceIfExist()) {
       action = "createOrReplaceProfile";
     }
 
@@ -548,65 +540,61 @@ public class KuzzleSecurity {
 
   /**
    * Create a new profile in Kuzzle.
-   *
    * Takes an optional argument object with the following property:
-   *    - replaceIfExist (boolean, default: false):
-   *        If the same profile already exists: throw an error if sets to false.
-   *        Replace the existing profile otherwise
+   * - replaceIfExist (boolean, default: false):
+   * If the same profile already exists: throw an error if sets to false.
+   * Replace the existing profile otherwise
    *
-   * @param id - ID of the new profile
+   * @param id      - ID of the new profile
    * @param content - Should contain a 'roles' attributes containing the roles referenced by this profile
    * @param options - Optional arguments
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
-  public void createProfile(@NonNull final String id, @NonNull final JSONObject content, final KuzzleOptions options) throws JSONException {
+  public void createProfile(@NonNull final String id, @NonNull final JSONArray content, final KuzzleOptions options) throws JSONException {
     createProfile(id, content, options, null);
   }
 
   /**
    * Create a new profile in Kuzzle.
-   *
    * Takes an optional argument object with the following property:
-   *    - replaceIfExist (boolean, default: false):
-   *        If the same profile already exists: throw an error if sets to false.
-   *        Replace the existing profile otherwise
+   * - replaceIfExist (boolean, default: false):
+   * If the same profile already exists: throw an error if sets to false.
+   * Replace the existing profile otherwise
    *
-   * @param id - ID of the new profile
-   * @param content - Should contain a 'roles' attributes containing the roles referenced by this profile
+   * @param id       - ID of the new profile
+   * @param content  - Should contain a 'roles' attributes containing the roles referenced by this profile
    * @param listener - Callback lisener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
-  public void createProfile(@NonNull final String id, @NonNull final JSONObject content, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
+  public void createProfile(@NonNull final String id, @NonNull final JSONArray content, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     createProfile(id, content, null, listener);
   }
 
   /**
    * Create a new profile in Kuzzle.
-   *
    * Takes an optional argument object with the following property:
-   *    - replaceIfExist (boolean, default: false):
-   *        If the same profile already exists: throw an error if sets to false.
-   *        Replace the existing profile otherwise
+   * - replaceIfExist (boolean, default: false):
+   * If the same profile already exists: throw an error if sets to false.
+   * Replace the existing profile otherwise
    *
-   * @param id - ID of the new profile
+   * @param id      - ID of the new profile
    * @param content - Should contain a 'roles' attributes containing the roles referenced by this profile
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
-  public void createProfile(@NonNull final String id, @NonNull final JSONObject content) throws JSONException {
+  public void createProfile(@NonNull final String id, @NonNull final JSONArray content) throws JSONException {
     createProfile(id, content, null, null);
   }
 
   /**
    * Delete profile.
-   *
    * There is a small delay between profile deletion and their deletion in our advanced search layer,
    * usually a couple of seconds.
    * That means that a profile that was just been delete will be returned by this function
    *
-   * @param id - ID of the profile to delete
-   * @param options - Optional arguments
+   * @param id       - ID of the profile to delete
+   * @param options  - Optional arguments
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void deleteProfile(@NonNull final String id, final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
     if (id == null) {
@@ -640,14 +628,13 @@ public class KuzzleSecurity {
 
   /**
    * Delete profile.
-   *
    * There is a small delay between profile deletion and their deletion in our advanced search layer,
    * usually a couple of seconds.
    * That means that a profile that was just been delete will be returned by this function
    *
-   * @param id - ID of the profile to delete
+   * @param id       - ID of the profile to delete
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void deleteProfile(@NonNull final String id, final KuzzleResponseListener<String> listener) throws JSONException {
     deleteProfile(id, null, listener);
@@ -655,14 +642,13 @@ public class KuzzleSecurity {
 
   /**
    * Delete profile.
-   *
    * There is a small delay between profile deletion and their deletion in our advanced search layer,
    * usually a couple of seconds.
    * That means that a profile that was just been delete will be returned by this function
    *
-   * @param id - ID of the profile to delete
+   * @param id      - ID of the profile to delete
    * @param options - Optional arguments
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void deleteProfile(@NonNull final String id, final KuzzleOptions options) throws JSONException {
     deleteProfile(id, options, null);
@@ -670,13 +656,12 @@ public class KuzzleSecurity {
 
   /**
    * Delete profile.
-   *
    * There is a small delay between profile deletion and their deletion in our advanced search layer,
    * usually a couple of seconds.
    * That means that a profile that was just been delete will be returned by this function
    *
    * @param id - ID of the profile to delete
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void deleteProfile(@NonNull final String id) throws JSONException {
     deleteProfile(id, null, null);
@@ -685,10 +670,10 @@ public class KuzzleSecurity {
   /**
    * Instanciates a new KuzzleProfile object
    *
-   * @param id - Profile ID
+   * @param id      - Profile ID
    * @param content - Profile content
    * @return a new KuzzleProfile object
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public KuzzleProfile profileFactory(@NonNull final String id, final JSONObject content) throws JSONException {
     return new KuzzleProfile(this.kuzzle, id, content);
@@ -699,7 +684,7 @@ public class KuzzleSecurity {
    *
    * @param id - Profile ID
    * @return a new KuzzleProfile object
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public KuzzleProfile profileFactory(@NonNull final String id) throws JSONException {
     return new KuzzleProfile(this.kuzzle, id, null);
@@ -707,15 +692,14 @@ public class KuzzleSecurity {
 
   /**
    * Get a specific user from kuzzle using its unique ID
-   *
    * Takes an optional argument object with the following property:
-   *    - hydrate (boolean, default: true):
-   *         if is set to false, return a list id in role instead of KuzzleRole.
+   * - hydrate (boolean, default: true):
+   * if is set to false, return a list id in role instead of KuzzleRole.
    *
-   * @param id - User ID to retrieve
-   * @param options - Optional arguments
+   * @param id       - User ID to retrieve
+   * @param options  - Optional arguments
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void getUser(@NonNull final String id, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     if (id == null) {
@@ -749,14 +733,13 @@ public class KuzzleSecurity {
 
   /**
    * Get a specific user from kuzzle using its unique ID
-   *
    * Takes an optional argument object with the following property:
-   *    - hydrate (boolean, default: true):
-   *         if is set to false, return a list id in role instead of KuzzleRole.
+   * - hydrate (boolean, default: true):
+   * if is set to false, return a list id in role instead of KuzzleRole.
    *
-   * @param id - User ID to retrieve
+   * @param id       - User ID to retrieve
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void getUser(@NonNull final String id, @NonNull final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     getUser(id, null, listener);
@@ -764,20 +747,18 @@ public class KuzzleSecurity {
 
   /**
    * Executes a search on user according to a filter
-   *
    * Takes an optional argument object with the following property:
-   *    - hydrate (boolean, default: true):
-   *         if is set to false, return a list id in role instead of KuzzleRole.
-   *         Because hydrate need to fetch all related KuzzleRole object, leave hydrate to true will have a performance cost
-   *
+   * - hydrate (boolean, default: true):
+   * if is set to false, return a list id in role instead of KuzzleRole.
+   * Because hydrate need to fetch all related KuzzleRole object, leave hydrate to true will have a performance cost
    * /!\ There is a small delay between user creation and their existence in our persistent search layer,
    * usually a couple of seconds.
    * That means that a user that was just been created won’t be returned by this function.
    *
-   * @param filters - Search filters
-   * @param options - Optional arguments
+   * @param filters  - Search filters
+   * @param options  - Optional arguments
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void searchUsers(@NonNull JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleSecurityDocumentList> listener) throws JSONException {
     boolean hydrate = options != null ? options.isHydrated() : true;
@@ -822,19 +803,17 @@ public class KuzzleSecurity {
 
   /**
    * Executes a search on user according to a filter
-   *
    * Takes an optional argument object with the following property:
-   *    - hydrate (boolean, default: true):
-   *         if is set to false, return a list id in role instead of KuzzleRole.
-   *         Because hydrate need to fetch all related KuzzleRole object, leave hydrate to true will have a performance cost
-   *
+   * - hydrate (boolean, default: true):
+   * if is set to false, return a list id in role instead of KuzzleRole.
+   * Because hydrate need to fetch all related KuzzleRole object, leave hydrate to true will have a performance cost
    * /!\ There is a small delay between user creation and their existence in our persistent search layer,
    * usually a couple of seconds.
    * That means that a user that was just been created won’t be returned by this function.
    *
-   * @param filters - Search filters
+   * @param filters  - Search filters
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void searchUsers(@NonNull JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleSecurityDocumentList> listener) throws JSONException {
     searchUsers(filters, null, listener);
@@ -842,20 +821,19 @@ public class KuzzleSecurity {
 
   /**
    * Create a new user in Kuzzle.
-   *
    * Takes an optional argument object with the following property:
-   *    - replaceIfExist (boolean, default: false):
-   *        If the same user already exists: throw an error if sets to false.
-   *        Replace the existing user otherwise
+   * - replaceIfExist (boolean, default: false):
+   * If the same user already exists: throw an error if sets to false.
+   * Replace the existing user otherwise
    *
-   * @param id - ID of the user to create
-   * @param content - Should contain a 'profile' attribute with the profile ID
-   * @param options - Optional arguments
+   * @param id       - ID of the user to create
+   * @param content  - Should contain a 'profile' attribute with the profile ID
+   * @param options  - Optional arguments
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void createUser(@NonNull final String id, @NonNull final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
-    String action = options != null && options.isUpdateIfExists() ? "createOrReplaceUser" : "createUser";
+    String action = options != null && options.isReplaceIfExist() ? "createOrReplaceUser" : "createUser";
     if (id == null || content == null) {
       throw new IllegalArgumentException("KuzzleSecurity.createUser: cannot create a user with a null ID or content");
     }
@@ -888,16 +866,15 @@ public class KuzzleSecurity {
 
   /**
    * Create a new user in Kuzzle.
-   *
    * Takes an optional argument object with the following property:
-   *    - replaceIfExist (boolean, default: false):
-   *        If the same user already exists: throw an error if sets to false.
-   *        Replace the existing user otherwise
+   * - replaceIfExist (boolean, default: false):
+   * If the same user already exists: throw an error if sets to false.
+   * Replace the existing user otherwise
    *
-   * @param id - ID of the user to create
+   * @param id      - ID of the user to create
    * @param content - Should contain a 'profile' attribute with the profile ID
    * @param options - Optional arguments
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void createUser(@NonNull final String id, @NonNull final JSONObject content, final KuzzleOptions options) throws JSONException {
     createUser(id, content, options, null);
@@ -905,16 +882,15 @@ public class KuzzleSecurity {
 
   /**
    * Create a new user in Kuzzle.
-   *
    * Takes an optional argument object with the following property:
-   *    - replaceIfExist (boolean, default: false):
-   *        If the same user already exists: throw an error if sets to false.
-   *        Replace the existing user otherwise
+   * - replaceIfExist (boolean, default: false):
+   * If the same user already exists: throw an error if sets to false.
+   * Replace the existing user otherwise
    *
-   * @param id - ID of the user to create
-   * @param content - Should contain a 'profile' attribute with the profile ID
+   * @param id       - ID of the user to create
+   * @param content  - Should contain a 'profile' attribute with the profile ID
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void createUser(@NonNull final String id, @NonNull final JSONObject content, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     createUser(id, content, null, listener);
@@ -922,15 +898,14 @@ public class KuzzleSecurity {
 
   /**
    * Create a new user in Kuzzle.
-   *
    * Takes an optional argument object with the following property:
-   *    - replaceIfExist (boolean, default: false):
-   *        If the same user already exists: throw an error if sets to false.
-   *        Replace the existing user otherwise
+   * - replaceIfExist (boolean, default: false):
+   * If the same user already exists: throw an error if sets to false.
+   * Replace the existing user otherwise
    *
-   * @param id - ID of the user to create
+   * @param id      - ID of the user to create
    * @param content - Should contain a 'profile' attribute with the profile ID
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void createUser(@NonNull final String id, @NonNull final JSONObject content) throws JSONException {
     createUser(id, content, null, null);
@@ -938,15 +913,14 @@ public class KuzzleSecurity {
 
   /**
    * Delete user.
-   *
    * There is a small delay between user deletion and their deletion in our advanced search layer,
    * usually a couple of seconds.
    * That means that a user that was just been delete will be returned by this function
    *
-   * @param id - ID of the user to delete
-   * @param options - Optional arguments
+   * @param id       - ID of the user to delete
+   * @param options  - Optional arguments
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void deleteUser(@NonNull final String id, final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
     if (id == null) {
@@ -980,14 +954,13 @@ public class KuzzleSecurity {
 
   /**
    * Delete user.
-   *
    * There is a small delay between user deletion and their deletion in our advanced search layer,
    * usually a couple of seconds.
    * That means that a user that was just been delete will be returned by this function
    *
-   * @param id - ID of the user to delete
+   * @param id      - ID of the user to delete
    * @param options - Optional arguments
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void deleteUser(@NonNull final String id, final KuzzleOptions options) throws JSONException {
     deleteUser(id, options, null);
@@ -995,14 +968,13 @@ public class KuzzleSecurity {
 
   /**
    * Delete user.
-   *
    * There is a small delay between user deletion and their deletion in our advanced search layer,
    * usually a couple of seconds.
    * That means that a user that was just been delete will be returned by this function
    *
-   * @param id - ID of the user to delete
+   * @param id       - ID of the user to delete
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void deleteUser(@NonNull final String id, final KuzzleResponseListener<String> listener) throws JSONException {
     deleteUser(id, null, listener);
@@ -1010,13 +982,12 @@ public class KuzzleSecurity {
 
   /**
    * Delete user.
-   *
    * There is a small delay between user deletion and their deletion in our advanced search layer,
    * usually a couple of seconds.
    * That means that a user that was just been delete will be returned by this function
    *
    * @param id - ID of the user to delete
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void deleteUser(@NonNull final String id) throws JSONException {
     deleteUser(id, null, null);
@@ -1024,10 +995,11 @@ public class KuzzleSecurity {
 
   /**
    * Instanciates a new KuzzleUser object
-   * @param id - New user ID
+   *
+   * @param id      - New user ID
    * @param content - User content
    * @return a new KuzzleUser object
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public KuzzleUser userFactory(@NonNull final String id, final JSONObject content) throws JSONException {
     return new KuzzleUser(this.kuzzle, id, content);
@@ -1035,9 +1007,10 @@ public class KuzzleSecurity {
 
   /**
    * Instanciates a new KuzzleUser object
+   *
    * @param id - New user ID
    * @return a new KuzzleUser object
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public KuzzleUser userFactory(@NonNull final String id) throws JSONException {
     return new KuzzleUser(this.kuzzle, id, null);
