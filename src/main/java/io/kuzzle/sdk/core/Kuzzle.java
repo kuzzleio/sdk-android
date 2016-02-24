@@ -1,7 +1,6 @@
 package io.kuzzle.sdk.core;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -29,7 +28,6 @@ import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.IKuzzleEventListener;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
-import io.kuzzle.sdk.listeners.OnKuzzleLoginDoneListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleTokenValidity;
 import io.kuzzle.sdk.security.KuzzleSecurity;
@@ -105,6 +103,8 @@ public class Kuzzle {
   // Security static class
   public KuzzleSecurity security;
 
+  private KuzzleResponseListener<JSONObject>  loginCallback;
+
   /**
    * The type Query args.
    */
@@ -126,9 +126,6 @@ public class Kuzzle {
      */
     public String collection;
   }
-
-  // Listener which is called when an OAuth login is done
-  private OnKuzzleLoginDoneListener loginCallback;
 
   /**
    * Emit an event to all registered listeners
@@ -811,7 +808,7 @@ public class Kuzzle {
    * @return kuzzle kuzzle
    */
   public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials) {
-    return this.login(strategy, credentials, -1, null, null);
+    return this.login(strategy, credentials, -1, null);
   }
 
   /**
@@ -823,7 +820,7 @@ public class Kuzzle {
    * @return kuzzle kuzzle
    */
   public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials, final int expiresIn) {
-    return this.login(strategy, credentials, expiresIn, null, null);
+    return this.login(strategy, credentials, expiresIn, null);
   }
 
   /**
@@ -835,20 +832,7 @@ public class Kuzzle {
    * @return the kuzzle
    */
   public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials, final KuzzleResponseListener<JSONObject> listener) {
-    return this.login(strategy, credentials, -1, listener, null);
-  }
-
-  /**
-   * Login kuzzle.
-   *
-   * @param strategy      the strategy
-   * @param credentials   login credentials
-   * @param expiresIn     the expires in
-   * @param listener      the listener
-   * @return the kuzzle
-   */
-  public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials, int expiresIn, final KuzzleResponseListener<JSONObject> listener) {
-    return this.login(strategy, credentials, expiresIn, listener, null);
+    return this.login(strategy, credentials, -1, listener);
   }
 
   /**
@@ -858,10 +842,9 @@ public class Kuzzle {
    * @param credentials    login credentials
    * @param expiresIn      the expires in
    * @param listener       callback called when strategy's redirectUri is received
-   * @param loggedCallback Last callback called when user is logged
    * @return kuzzle kuzzle
    */
-  public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials, int expiresIn, final KuzzleResponseListener<JSONObject> listener, final OnKuzzleLoginDoneListener loggedCallback) {
+  public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials, int expiresIn, final KuzzleResponseListener<JSONObject> listener) {
     if (strategy == null) {
       throw new IllegalArgumentException("Kuzzle.login: cannot authenticate to Kuzzle without an authentication strategy");
     }
@@ -869,6 +852,8 @@ public class Kuzzle {
     if (credentials == null) {
       throw new IllegalArgumentException("Kuzzle.login: cannot authenticate with null credentials");
     }
+
+    this.loginCallback = listener;
 
     try {
       KuzzleOptions options = new KuzzleOptions();
@@ -880,7 +865,6 @@ public class Kuzzle {
       }
 
       query.put("body", body);
-      loginCallback = loggedCallback;
       QueryArgs args = new QueryArgs();
       args.controller = "auth";
       args.action = "login";
@@ -895,6 +879,8 @@ public class Kuzzle {
             if (!result.isNull("jwt")) {
               Kuzzle.this.jwtToken = result.getString("jwt");
               Kuzzle.this.renewSubscriptions();
+              emitEvent(KuzzleEvent.loginAttempt, new JSONObject()
+              .put("success", true));
             }
             if (listener != null) {
               listener.onSuccess(object);
@@ -906,6 +892,13 @@ public class Kuzzle {
 
         @Override
         public void onError(JSONObject error) {
+          try {
+            emitEvent(KuzzleEvent.loginAttempt, new JSONObject()
+                .put("success", false)
+                .put("error", error));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
           if (listener != null) {
             listener.onError(error);
           }
@@ -919,10 +912,9 @@ public class Kuzzle {
   /**
    * WebViewClient to forward kuzzle's jwt token after an OAuth authentication
    */
-  private class KuzzleWebViewClient extends WebViewClient {
+  protected class KuzzleWebViewClient extends WebViewClient {
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, final String url) {
-      Log.e("url", url);
       if (url.contains("code=")) {
         new Thread(new Runnable() {
           @Override
@@ -945,15 +937,24 @@ public class Kuzzle {
                 JSONObject result = response.getJSONObject("result");
                 Kuzzle.this.jwtToken = result.getString("jwt");
                 if (loginCallback != null) {
+                  emitEvent(KuzzleEvent.loginAttempt, new JSONObject()
+                      .put("success", true));
                   loginCallback.onSuccess(result);
                 }
               } else {
+                try {
+                  emitEvent(KuzzleEvent.loginAttempt, new JSONObject()
+                      .put("success", false)
+                      .put("error", response.getJSONObject("error")));
+                } catch (JSONException e) {
+                  throw new RuntimeException(e);
+                }
                 if (loginCallback != null) {
                   loginCallback.onError(response.getJSONObject("error"));
                 }
               }
             } catch (JSONException|IOException e) {
-              throw new RuntimeException(e);
+              e.printStackTrace();
             }
           }
         }).start();
