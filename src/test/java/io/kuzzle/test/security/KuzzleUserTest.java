@@ -218,9 +218,11 @@ public class KuzzleUserTest {
         }
       }
     });
+    stubUser.save(mock(KuzzleOptions.class));
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createOrReplaceUser");
   }
@@ -242,5 +244,21 @@ public class KuzzleUserTest {
     assertEquals(serialized.getString("_id"), stubUser.id);
     assertEquals(serialized.getJSONObject("body").getString("foo"), "bar");
     assertEquals(serialized.getJSONObject("body").getString("profile"), stubUser.profile.id);
+  }
+
+  @Test
+  public void testGetProfiles() throws JSONException {
+    JSONObject stubProfile = new JSONObject(
+        "{" +
+            "\"profile\": {" +
+            "\"_id\": \"bar\"," +
+            "\"_source\": {" +
+            "\"bohemian\": \"rhapsody\"" +
+            "}" +
+            "}" +
+            "}"
+    );
+    KuzzleUser user = new KuzzleUser(kuzzle, "foo", stubProfile);
+    assertEquals(user.getProfiles()[0].getId(), "bar");
   }
 }
