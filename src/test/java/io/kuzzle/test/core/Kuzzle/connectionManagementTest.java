@@ -232,6 +232,7 @@ public class connectionManagementTest {
 
   @Test
   public void testDisconnect() {
+    kuzzle.setState(KuzzleStates.CONNECTED);
     assertNotNull(kuzzle.getSocket());
     kuzzle.disconnect();
     assertNull(kuzzle.getSocket());
