@@ -5,24 +5,29 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.IKuzzleEventListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.sdk.util.KuzzleQueueFilter;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
 
 import static junit.framework.Assert.assertNotNull;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.junit.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -33,7 +38,6 @@ import static org.mockito.Mockito.verify;
 public class queryTest {
   private KuzzleExtend kuzzle;
   private Socket socket = mock(Socket.class);
-  private KuzzleResponseListener listener;
   private Kuzzle.QueryArgs args;
 
   @Before
@@ -44,18 +48,6 @@ public class queryTest {
     kuzzle = new KuzzleExtend("http://localhost:7512", options, null);
     kuzzle.setState(KuzzleStates.CONNECTED);
     kuzzle.setSocket(socket);
-
-    listener = new KuzzleResponseListener<Object>() {
-      @Override
-      public void onSuccess(Object object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    };
 
     args = new Kuzzle.QueryArgs();
     args.controller = "foo";
@@ -258,5 +250,52 @@ public class queryTest {
     verify(kuzzleSpy, never()).emitRequest(any(JSONObject.class), any(OnQueryDoneListener.class));
     verify(filter).filter(any(JSONObject.class));
     assertEquals(kuzzleSpy.getOfflineQueue().size(), 0);
+  }
+
+  @Test
+  public void shouldTriggerJwtTokenExpiredEvent() throws JSONException {
+    IKuzzleEventListener fake = spy(new IKuzzleEventListener() {
+      @Override
+      public void trigger(Object... args) {
+
+      }
+    });
+    kuzzle.addListener(KuzzleEvent.jwtTokenExpired, fake);
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        final JSONObject response = new JSONObject()
+            .put("error", new JSONObject()
+                .put("message", "Token expired"));
+        ((Emitter.Listener) invocation.getArguments()[1]).call(response);
+        return null;
+      }
+    }).when(socket).once(any(String.class), any(Emitter.Listener.class));
+    kuzzle.emitRequest(new JSONObject().put("requestId", "foo"), mock(OnQueryDoneListener.class));
+    verify(fake).trigger(any(Object.class));
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testEmitRequestException() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((Emitter.Listener) invocation.getArguments()[1]).call(new JSONObject());
+        return null;
+      }
+    }).when(socket).once(any(String.class), any(Emitter.Listener.class));
+    OnQueryDoneListener listener = spy(new OnQueryDoneListener() {
+      @Override
+      public void onSuccess(JSONObject response) {
+
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+
+      }
+    });
+    doThrow(JSONException.class).when(listener).onSuccess(any(JSONObject.class));
+    kuzzle.emitRequest(new JSONObject().put("requestId", "foo"), listener);
   }
 }
