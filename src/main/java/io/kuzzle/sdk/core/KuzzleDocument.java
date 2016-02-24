@@ -31,6 +31,7 @@ public class KuzzleDocument {
    * @param kuzzleDataCollection - an instanciated KuzzleDataCollection object
    * @param id                   the id
    * @param content              the content
+   * @throws JSONException the json exception
    */
   public KuzzleDocument(@NonNull final KuzzleDataCollection kuzzleDataCollection, final String id, final JSONObject content) throws JSONException {
     if (kuzzleDataCollection == null) {
@@ -50,6 +51,7 @@ public class KuzzleDocument {
    * KuzzleDocument is the object representation of one of these documents.
    *
    * @param kuzzleDataCollection the kuzzle data collection
+   * @throws JSONException the json exception
    */
   public KuzzleDocument(final KuzzleDataCollection kuzzleDataCollection) throws JSONException {
     this(kuzzleDataCollection, null, null);
@@ -62,6 +64,7 @@ public class KuzzleDocument {
    *
    * @param kuzzleDataCollection the kuzzle data collection
    * @param id                   the id
+   * @throws JSONException the json exception
    */
   public KuzzleDocument(final KuzzleDataCollection kuzzleDataCollection, final String id) throws JSONException {
     this(kuzzleDataCollection, id, null);
@@ -73,6 +76,7 @@ public class KuzzleDocument {
    *
    * @param kuzzleDataCollection the kuzzle data collection
    * @param content              the content
+   * @throws JSONException the json exception
    */
   public KuzzleDocument(final KuzzleDataCollection kuzzleDataCollection, final JSONObject content) throws JSONException {
     this(kuzzleDataCollection, null, content);
@@ -300,9 +304,10 @@ public class KuzzleDocument {
   /**
    * Sets content
    *
-   * @param content    the data
+   * @param content the data
    * @param replace the replace
    * @return content content
+   * @throws JSONException the json exception
    */
   public KuzzleDocument setContent(final JSONObject content, final boolean replace) throws JSONException {
     if (replace) {
@@ -333,6 +338,7 @@ public class KuzzleDocument {
    * @param key   the key
    * @param value the value
    * @return the content
+   * @throws JSONException the json exception
    */
   public KuzzleDocument setContent(@NonNull final String key, final Object value) throws JSONException {
     if (key == null) {
@@ -348,6 +354,7 @@ public class KuzzleDocument {
    *
    * @param data the data
    * @return the content
+   * @throws JSONException the json exception
    */
   public KuzzleDocument setContent(final JSONObject data) throws JSONException {
     this.setContent(data, false);
@@ -416,6 +423,7 @@ public class KuzzleDocument {
    *
    * @param key the key
    * @return the content
+   * @throws JSONException the json exception
    */
   public Object getContent(final String key) throws JSONException {
     if (this.content.has(key)) {
@@ -539,6 +547,11 @@ public class KuzzleDocument {
     return this.serialize().toString();
   }
 
+  /**
+   * Sets version.
+   *
+   * @param version the version
+   */
   public void setVersion(long version) {
     if (version > 0) {
       this.version = version;

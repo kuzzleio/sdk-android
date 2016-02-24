@@ -29,18 +29,57 @@ import io.socket.emitter.Emitter;
 public class KuzzleRoom {
 
   private String id = UUID.randomUUID().toString();
+  /**
+   * The Collection.
+   */
   protected String collection;
+  /**
+   * The Data collection.
+   */
   protected KuzzleDataCollection dataCollection;
+  /**
+   * The Filters.
+   */
   protected JSONObject filters = new JSONObject();
+  /**
+   * The Headers.
+   */
   protected JSONObject headers;
+  /**
+   * The Metadata.
+   */
   protected JSONObject metadata;
+  /**
+   * The Subscribe to self.
+   */
   protected boolean subscribeToSelf;
+  /**
+   * The Room id.
+   */
   protected String roomId;
+  /**
+   * The Kuzzle.
+   */
   protected Kuzzle kuzzle;
+  /**
+   * The Channel.
+   */
   protected String channel;
+  /**
+   * The Scope.
+   */
   protected Scope scope;
+  /**
+   * The State.
+   */
   protected State state;
+  /**
+   * The Users.
+   */
   protected Users users;
+  /**
+   * The Listener.
+   */
   protected KuzzleResponseListener<KuzzleNotificationResponse> listener;
 
   // Used to avoid subscription renewals to trigger multiple times because of
@@ -48,7 +87,10 @@ public class KuzzleRoom {
   private long lastRenewal = 0;
   private long renewalDelay = 500;
 
-  // Used to delay method calls when subscription is in progress
+  /**
+   * The Subscribing.
+   */
+// Used to delay method calls when subscription is in progress
   protected boolean subscribing = false;
   private ArrayList<Runnable> queue = new ArrayList<>();
 
@@ -153,7 +195,7 @@ public class KuzzleRoom {
   /**
    * Call after renew.
    *
-   * @param args     the args
+   * @param args the args
    */
   protected void callAfterRenew(final Object args) {
     if (args == null) {
@@ -305,11 +347,9 @@ public class KuzzleRoom {
 
   /**
    * Unsubscribes from Kuzzle.
-   *
    * Stop listening immediately. If there is no listener left on that room, sends an unsubscribe request to Kuzzle, once
    * pending subscriptions reaches 0, and only if there is still no listener on that room.
    * We wait for pending subscriptions to finish to avoid unsubscribing while another subscription on that room is
-   *
    *
    * @return the kuzzle room
    */
@@ -353,6 +393,14 @@ public class KuzzleRoom {
     return this;
   }
 
+  /**
+   * Unsubscribe task timer task.
+   *
+   * @param timer  the timer
+   * @param roomId the room id
+   * @param data   the data
+   * @return the timer task
+   */
   protected TimerTask unsubscribeTask(final Timer timer, final String roomId, final JSONObject data) {
     return new TimerTask() {
       @Override
@@ -504,7 +552,7 @@ public class KuzzleRoom {
   /**
    * Getter for the listener property
    *
-   * @return
+   * @return listener
    */
   public KuzzleResponseListener<KuzzleNotificationResponse> getListener() {
     return this.listener;

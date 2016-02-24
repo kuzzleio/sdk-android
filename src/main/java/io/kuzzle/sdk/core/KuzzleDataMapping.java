@@ -57,7 +57,7 @@ public class KuzzleDataMapping {
   /**
    * Copy constructor
    *
-   * @param kuzzleDataMapping   the KuzzleDataMapping object to copy
+   * @param kuzzleDataMapping the KuzzleDataMapping object to copy
    */
   public KuzzleDataMapping(final KuzzleDataMapping kuzzleDataMapping) {
     this(kuzzleDataMapping.dataCollection, kuzzleDataMapping.mapping);
@@ -195,6 +195,7 @@ public class KuzzleDataMapping {
    * @param field   the field
    * @param mapping the mapping
    * @return the kuzzle data mapping
+   * @throws JSONException the json exception
    */
   public KuzzleDataMapping set(final String field, final JSONObject mapping) throws JSONException {
     this.mapping.put(field, mapping);
