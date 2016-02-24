@@ -14,12 +14,35 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
  * Base class for the KuzzleRole, KuzzleProfile and KuzzleUser classes
  */
 public class AbstractKuzzleSecurityDocument {
+  /**
+   * The Kuzzle.
+   */
   protected final Kuzzle kuzzle;
+  /**
+   * The Kuzzle security.
+   */
   protected final KuzzleSecurity kuzzleSecurity;
+  /**
+   * The Delete action name.
+   */
   protected String deleteActionName;
+  /**
+   * The Id.
+   */
   public final String id;
+  /**
+   * The Content.
+   */
   public JSONObject content;
 
+  /**
+   * Instantiates a new Abstract kuzzle security document.
+   *
+   * @param kuzzle  the kuzzle
+   * @param id      the id
+   * @param content the content
+   * @throws JSONException the json exception
+   */
   public AbstractKuzzleSecurityDocument(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
     if (id == null) {
       throw new IllegalArgumentException("Cannot initialize with a null ID");
@@ -41,6 +64,7 @@ public class AbstractKuzzleSecurityDocument {
    *
    * @param content - new content
    * @return AbstractKuzzleSecurityDocument - this object
+   * @throws JSONException the json exception
    */
   public AbstractKuzzleSecurityDocument setContent(@NonNull final JSONObject content) throws JSONException {
     if (content == null) {
@@ -56,6 +80,7 @@ public class AbstractKuzzleSecurityDocument {
    * Serializes this object to a plain-old JSON object
    *
    * @return JSONObject - the serialized version of this object
+   * @throws JSONException the json exception
    */
   public JSONObject serialize() throws JSONException {
     JSONObject data;
@@ -70,9 +95,9 @@ public class AbstractKuzzleSecurityDocument {
   /**
    * Delete this role/profile/user from Kuzzle
    *
-   * @param options - Optional configuration
+   * @param options  - Optional configuration
    * @param listener - Optional response callback
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void delete(final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
     JSONObject data = new JSONObject().put("_id", this.id);
@@ -103,7 +128,7 @@ public class AbstractKuzzleSecurityDocument {
    * Delete this role/profile/user from Kuzzle
    *
    * @param listener - Optional response callback
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void delete(final KuzzleResponseListener<String> listener) throws JSONException {
     this.delete(null, listener);
@@ -113,7 +138,7 @@ public class AbstractKuzzleSecurityDocument {
    * Delete this role/profile/user from Kuzzle
    *
    * @param options - Optional configuration
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void delete(final KuzzleOptions options) throws JSONException {
     this.delete(options, null);
@@ -122,7 +147,7 @@ public class AbstractKuzzleSecurityDocument {
   /**
    * Delete this role/profile/user from Kuzzle
    *
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void delete() throws JSONException {
     this.delete(null, null);

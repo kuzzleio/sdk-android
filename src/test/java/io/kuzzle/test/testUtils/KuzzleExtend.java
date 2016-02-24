@@ -1,6 +1,7 @@
 package io.kuzzle.test.testUtils;
 
 import android.support.annotation.NonNull;
+import android.webkit.WebView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,6 +24,19 @@ import io.socket.client.Socket;
 import static org.mockito.Mockito.spy;
 
 public class KuzzleExtend extends Kuzzle {
+
+  public KuzzleResponseListener loginCallback;
+
+  public class KuzzleWebViewClient extends Kuzzle.KuzzleWebViewClient {
+    public boolean shouldOverrideUrlLoading(WebView view, final String url) {
+      return super.shouldOverrideUrlLoading(view, url);
+    }
+  }
+
+  public KuzzleExtend.KuzzleWebViewClient getKuzzleWebViewClient() {
+    return new KuzzleWebViewClient();
+  }
+
   public KuzzleExtend(@NonNull final String url, final KuzzleOptions options, final KuzzleResponseListener<Void> connectionCallback) throws URISyntaxException {
     super(url, options, connectionCallback);
   }
@@ -101,6 +115,10 @@ public class KuzzleExtend extends Kuzzle {
 
   public void setSuperDefaultIndex(final String index) {
     super.defaultIndex = index;
+  }
+
+  public void emitEvent(final KuzzleEvent event, final Object... args) {
+    super.emitEvent(event, args);
   }
 
 }

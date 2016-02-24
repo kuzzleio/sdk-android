@@ -1,7 +1,6 @@
 package io.kuzzle.sdk.core;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -29,7 +28,6 @@ import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.IKuzzleEventListener;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
-import io.kuzzle.sdk.listeners.OnKuzzleLoginDoneListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleTokenValidity;
 import io.kuzzle.sdk.security.KuzzleSecurity;
@@ -52,18 +50,57 @@ public class Kuzzle {
   private final int MAX_EMIT_TIMEOUT = 10;
   private final int EVENT_TIMEOUT = 200;
 
+  /**
+   * The Event listeners.
+   */
   protected ConcurrentHashMap<KuzzleEvent, EventList> eventListeners = new ConcurrentHashMap<>();
+  /**
+   * The Socket.
+   */
   protected Socket socket;
+  /**
+   * The Collections.
+   */
   protected Map<String, Map<String, KuzzleDataCollection>> collections = new ConcurrentHashMap<>();
+  /**
+   * The Auto reconnect.
+   */
   protected boolean autoReconnect = true;
+  /**
+   * The Headers.
+   */
   protected JSONObject headers = new JSONObject();
+  /**
+   * The Metadata.
+   */
   protected JSONObject metadata;
+  /**
+   * The Url.
+   */
   protected String url;
+  /**
+   * The Connection callback.
+   */
   protected KuzzleResponseListener<Void> connectionCallback;
+  /**
+   * The State.
+   */
   protected KuzzleStates state = KuzzleStates.INITIALIZING;
+  /**
+   * The Reconnection delay.
+   */
   protected long  reconnectionDelay;
+  /**
+   * The Auto resubscribe.
+   */
   protected boolean autoResubscribe;
+  /**
+   * The Auto queue.
+   */
   protected boolean autoQueue;
+  /**
+   * The Auto replay.
+   */
   protected boolean autoReplay;
   /**
    * The Queue filter.
@@ -74,19 +111,46 @@ public class Kuzzle {
       return true;
     }
   };
+  /**
+   * The Replay interval.
+   */
   protected long replayInterval;
+  /**
+   * The Queuing.
+   */
   protected boolean queuing = false;
+  /**
+   * The Default index.
+   */
   protected String defaultIndex;
 
+  /**
+   * The Request history.
+   */
   protected ConcurrentHashMap<String, Date> requestHistory = new ConcurrentHashMap<>();
 
+  /**
+   * The Offline queue.
+   */
   protected KuzzleQueue<KuzzleQueryObject> offlineQueue = new KuzzleQueue<>();
+  /**
+   * The Queue ttl.
+   */
   protected int queueTTL;
+  /**
+   * The Queue max size.
+   */
   protected int queueMaxSize;
 
+  /**
+   * The Jwt token.
+   */
   protected String jwtToken = null;
 
-  /*
+  /**
+   * The Subscriptions.
+   */
+/*
    This property contains the centralized subscription list in the following format:
     roomId:
       kuzzleRoomID_1: kuzzleRoomInstance_1,
@@ -102,8 +166,13 @@ public class Kuzzle {
    */
   protected ConcurrentHashMap<String, ConcurrentHashMap<String, KuzzleRoom>> subscriptions = new ConcurrentHashMap<>();
 
-  // Security static class
+  /**
+   * The constant security.
+   */
+// Security static class
   public KuzzleSecurity security;
+
+  private KuzzleResponseListener<JSONObject>  loginCallback;
 
   /**
    * The type Query args.
@@ -127,14 +196,12 @@ public class Kuzzle {
     public String collection;
   }
 
-  // Listener which is called when an OAuth login is done
-  private OnKuzzleLoginDoneListener loginCallback;
-
   /**
    * Emit an event to all registered listeners
    * An event cannot be emitted multiple times before a timeout has been reached.
    *
-   * @param event
+   * @param event the event
+   * @param args  the args
    */
   protected void emitEvent(KuzzleEvent event, Object ...args) {
     long now = System.currentTimeMillis();
@@ -202,7 +269,7 @@ public class Kuzzle {
   /**
    * Instantiates a new Kuzzle.
    *
-   * @param url   the url
+   * @param url the url
    * @throws URISyntaxException the uri syntax exception
    */
   public Kuzzle(@NonNull final String url) throws URISyntaxException {
@@ -212,8 +279,8 @@ public class Kuzzle {
   /**
    * Instantiates a new Kuzzle.
    *
-   * @param url   the url
-   * @param cb    the cb
+   * @param url the url
+   * @param cb  the cb
    * @throws URISyntaxException the uri syntax exception
    */
   public Kuzzle(@NonNull final String url, final KuzzleResponseListener<Void> cb) throws URISyntaxException {
@@ -236,8 +303,8 @@ public class Kuzzle {
    * insertion.
    * The ID returned by this function is required to remove this listener at a later time.
    *
-   * @param kuzzleEvent     - name of the global event to subscribe to
-   * @param listener the event listener
+   * @param kuzzleEvent - name of the global event to subscribe to
+   * @param listener    the event listener
    * @return {string} Unique listener ID
    */
   public String addListener(final KuzzleEvent kuzzleEvent, final IKuzzleEventListener listener) {
@@ -315,6 +382,7 @@ public class Kuzzle {
    * Connects to a Kuzzle instance using the provided URL.
    *
    * @return kuzzle kuzzle
+   * @throws URISyntaxException the uri syntax exception
    */
   public Kuzzle connect() throws URISyntaxException {
     if (!this.isValidState()) {
@@ -806,62 +874,48 @@ public class Kuzzle {
   /**
    * Log a user according to the strategy and credentials.
    *
-   * @param strategy the strategy
-   * @param credentials    login credentials
+   * @param strategy    the strategy
+   * @param credentials login credentials
    * @return kuzzle kuzzle
    */
   public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials) {
-    return this.login(strategy, credentials, -1, null, null);
+    return this.login(strategy, credentials, -1, null);
   }
 
   /**
    * Log a user according to the strategy and credentials.
    *
-   * @param strategy  the strategy
-   * @param credentials    login credentials
-   * @param expiresIn the expires in
+   * @param strategy    the strategy
+   * @param credentials login credentials
+   * @param expiresIn   the expires in
    * @return kuzzle kuzzle
    */
   public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials, final int expiresIn) {
-    return this.login(strategy, credentials, expiresIn, null, null);
+    return this.login(strategy, credentials, expiresIn, null);
   }
 
   /**
    * Login kuzzle.
    *
-   * @param strategy the strategy
-   * @param credentials    login credentials
-   * @param listener the listener
+   * @param strategy    the strategy
+   * @param credentials login credentials
+   * @param listener    the listener
    * @return the kuzzle
    */
   public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials, final KuzzleResponseListener<JSONObject> listener) {
-    return this.login(strategy, credentials, -1, listener, null);
-  }
-
-  /**
-   * Login kuzzle.
-   *
-   * @param strategy      the strategy
-   * @param credentials   login credentials
-   * @param expiresIn     the expires in
-   * @param listener      the listener
-   * @return the kuzzle
-   */
-  public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials, int expiresIn, final KuzzleResponseListener<JSONObject> listener) {
-    return this.login(strategy, credentials, expiresIn, listener, null);
+    return this.login(strategy, credentials, -1, listener);
   }
 
   /**
    * Log a user according to the strategy and credentials.
    *
-   * @param strategy       the strategy
-   * @param credentials    login credentials
-   * @param expiresIn      the expires in
-   * @param listener       callback called when strategy's redirectUri is received
-   * @param loggedCallback Last callback called when user is logged
+   * @param strategy    the strategy
+   * @param credentials login credentials
+   * @param expiresIn   the expires in
+   * @param listener    callback called when strategy's redirectUri is received
    * @return kuzzle kuzzle
    */
-  public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials, int expiresIn, final KuzzleResponseListener<JSONObject> listener, final OnKuzzleLoginDoneListener loggedCallback) {
+  public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials, int expiresIn, final KuzzleResponseListener<JSONObject> listener) {
     if (strategy == null) {
       throw new IllegalArgumentException("Kuzzle.login: cannot authenticate to Kuzzle without an authentication strategy");
     }
@@ -869,6 +923,8 @@ public class Kuzzle {
     if (credentials == null) {
       throw new IllegalArgumentException("Kuzzle.login: cannot authenticate with null credentials");
     }
+
+    this.loginCallback = listener;
 
     try {
       KuzzleOptions options = new KuzzleOptions();
@@ -880,7 +936,6 @@ public class Kuzzle {
       }
 
       query.put("body", body);
-      loginCallback = loggedCallback;
       QueryArgs args = new QueryArgs();
       args.controller = "auth";
       args.action = "login";
@@ -895,6 +950,8 @@ public class Kuzzle {
             if (!result.isNull("jwt")) {
               Kuzzle.this.jwtToken = result.getString("jwt");
               Kuzzle.this.renewSubscriptions();
+              emitEvent(KuzzleEvent.loginAttempt, new JSONObject()
+                  .put("success", true));
             }
             if (listener != null) {
               listener.onSuccess(object);
@@ -906,6 +963,13 @@ public class Kuzzle {
 
         @Override
         public void onError(JSONObject error) {
+          try {
+            emitEvent(KuzzleEvent.loginAttempt, new JSONObject()
+                .put("success", false)
+                .put("error", error));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
           if (listener != null) {
             listener.onError(error);
           }
@@ -919,10 +983,9 @@ public class Kuzzle {
   /**
    * WebViewClient to forward kuzzle's jwt token after an OAuth authentication
    */
-  private class KuzzleWebViewClient extends WebViewClient {
+  protected class KuzzleWebViewClient extends WebViewClient {
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, final String url) {
-      Log.e("url", url);
       if (url.contains("code=")) {
         new Thread(new Runnable() {
           @Override
@@ -945,15 +1008,24 @@ public class Kuzzle {
                 JSONObject result = response.getJSONObject("result");
                 Kuzzle.this.jwtToken = result.getString("jwt");
                 if (loginCallback != null) {
+                  emitEvent(KuzzleEvent.loginAttempt, new JSONObject()
+                      .put("success", true));
                   loginCallback.onSuccess(result);
                 }
               } else {
+                try {
+                  emitEvent(KuzzleEvent.loginAttempt, new JSONObject()
+                      .put("success", false)
+                      .put("error", response.getJSONObject("error")));
+                } catch (JSONException e) {
+                  throw new RuntimeException(e);
+                }
                 if (loginCallback != null) {
                   loginCallback.onError(response.getJSONObject("error"));
                 }
               }
             } catch (JSONException|IOException e) {
-              throw new RuntimeException(e);
+              e.printStackTrace();
             }
           }
         }).start();
@@ -1250,7 +1322,7 @@ public class Kuzzle {
   /**
    * Removes a listener from an event.
    *
-   * @param event the type
+   * @param event      the type
    * @param listenerId the listener id
    * @return the kuzzle
    */
@@ -1392,6 +1464,13 @@ public class Kuzzle {
     return IO.socket(this.url, opt);
   }
 
+  /**
+   * Emit request.
+   *
+   * @param request  the request
+   * @param listener the listener
+   * @throws JSONException the json exception
+   */
   protected void emitRequest(final JSONObject request, final OnQueryDoneListener listener) throws JSONException {
     Date now = new Date();
     Calendar c = Calendar.getInstance();
@@ -1477,7 +1556,7 @@ public class Kuzzle {
   /**
    * Getter for the AutoResubscribe property
    *
-   * @return boolean
+   * @return boolean boolean
    */
   public boolean isAutoResubscribe() {
     return this.autoResubscribe;
@@ -1486,8 +1565,8 @@ public class Kuzzle {
   /**
    * Setter for the AutoResubscribe property
    *
-   * @param resubscribe
-   * @return
+   * @param resubscribe the resubscribe
+   * @return auto resubscribe
    */
   public Kuzzle setAutoResubscribe(boolean resubscribe) {
     this.autoResubscribe = resubscribe;
@@ -1534,8 +1613,8 @@ public class Kuzzle {
   /**
    * Add subscription kuzzle.
    *
-   * @param roomId Room's unique ID
-   * @param id   KuzzleRoom object unique ID
+   * @param roomId     Room's unique ID
+   * @param id         KuzzleRoom object unique ID
    * @param kuzzleRoom KuzzleRoom instance
    * @return kuzzle kuzzle
    */
@@ -1574,6 +1653,7 @@ public class Kuzzle {
    * Sets offline queue.
    *
    * @param object the object
+   * @return the offline queue
    */
   public Kuzzle setOfflineQueue(final KuzzleQueryObject object) {
     this.offlineQueue.addToQueue(object);
@@ -1623,6 +1703,7 @@ public class Kuzzle {
    * Sets auto replay.
    *
    * @param autoReplay the auto replay
+   * @return the auto replay
    */
   public Kuzzle setAutoReplay(boolean autoReplay) {
     this.autoReplay = autoReplay;
@@ -1632,14 +1713,19 @@ public class Kuzzle {
   /**
    * Setter for the QueueMaxSize property
    *
-   * @param newMaxSize
-   * @return
+   * @param newMaxSize the new max size
+   * @return queue max size
    */
   public Kuzzle setQueueMaxSize(int newMaxSize) {
     this.queueMaxSize = Math.max(0, newMaxSize);
     return this;
   }
 
+  /**
+   * Gets queue max size.
+   *
+   * @return the queue max size
+   */
   public int getQueueMaxSize() {
     return this.queueMaxSize;
   }
@@ -1657,6 +1743,7 @@ public class Kuzzle {
    * Sets auto queue.
    *
    * @param autoQueue the auto queue
+   * @return the auto queue
    */
   public Kuzzle setAutoQueue(final boolean autoQueue) {
     this.autoQueue = autoQueue;
@@ -1718,7 +1805,8 @@ public class Kuzzle {
   /**
    * Delete subscription kuzzle.
    *
-   * @param id the id
+   * @param roomId the room id
+   * @param id     the id
    * @return the kuzzle
    */
   protected Kuzzle deleteSubscription(final String roomId, final String id) {
@@ -1736,6 +1824,7 @@ public class Kuzzle {
   /**
    * Gets subscriptions.
    *
+   * @param roomId the room id
    * @return the subscriptions
    */
   protected Map<String, KuzzleRoom> getSubscriptions(String roomId) {
@@ -1749,7 +1838,7 @@ public class Kuzzle {
   /**
    * Getter for the pendingSubscriptions private property
    *
-   * @return
+   * @return pending subscriptions
    */
   protected Map<String, KuzzleRoom> getPendingSubscriptions() {
     return this.subscriptions.get("pending");
@@ -1787,11 +1876,22 @@ public class Kuzzle {
     return this;
   }
 
+  /**
+   * Sets jwt token.
+   *
+   * @param jwtToken the jwt token
+   * @return the jwt token
+   */
   public Kuzzle setJwtToken(final String jwtToken) {
     this.jwtToken = jwtToken;
     return this;
   }
 
+  /**
+   * Gets jwt token.
+   *
+   * @return the jwt token
+   */
   public String getJwtToken() {
     return this.jwtToken;
   }
@@ -1799,8 +1899,8 @@ public class Kuzzle {
   /**
    * Setter for the QueueTTL property
    *
-   * @param newTTL
-   * @return
+   * @param newTTL the new ttl
+   * @return queue ttl
    */
   public Kuzzle setQueueTTL(int newTTL) {
     this.queueTTL = Math.max(0, newTTL);
@@ -1810,7 +1910,7 @@ public class Kuzzle {
   /**
    * Getter for the QueueTTL property
    *
-   * @return
+   * @return queue ttl
    */
   public int getQueueTTL() {
     return this.queueTTL;
@@ -1819,8 +1919,8 @@ public class Kuzzle {
   /**
    * Setter for the metadata property
    *
-   * @param newMetadata
-   * @return
+   * @param newMetadata the new metadata
+   * @return metadata
    */
   public Kuzzle setMetadata(JSONObject newMetadata) {
     this.metadata = newMetadata;
@@ -1830,13 +1930,19 @@ public class Kuzzle {
   /**
    * Getter for the metadata property
    *
-   * @return
+   * @return metadata
    */
   public JSONObject getMetadata() {
     return this.metadata;
   }
 
 
+  /**
+   * Sets replay interval.
+   *
+   * @param interval the interval
+   * @return the replay interval
+   */
   public Kuzzle setReplayInterval(long interval) {
     this.replayInterval = Math.max(0, interval);
     return this;
@@ -1845,7 +1951,7 @@ public class Kuzzle {
   /**
    * Getter for the ReplayInterval property
    *
-   * @return
+   * @return replay interval
    */
   public long getReplayInterval() {
     return this.replayInterval;
@@ -1854,7 +1960,7 @@ public class Kuzzle {
   /**
    * Getter for the ReconnectionDelay property
    *
-   * @return
+   * @return reconnection delay
    */
   public long getReconnectionDelay() {
     return this.reconnectionDelay;
@@ -1864,7 +1970,7 @@ public class Kuzzle {
    * Retrieves current user information
    *
    * @param listener the listener
-   * @return kuzzle
+   * @return kuzzle kuzzle
    */
   public Kuzzle whoAmI(@NonNull final KuzzleResponseListener<KuzzleUser> listener) {
     if (listener == null) {

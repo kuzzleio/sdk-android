@@ -15,6 +15,14 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
  * This class handles roles management in Kuzzle
  */
 public class KuzzleRole extends AbstractKuzzleSecurityDocument {
+  /**
+   * Instantiates a new Kuzzle role.
+   *
+   * @param kuzzle  the kuzzle
+   * @param id      the id
+   * @param content the content
+   * @throws JSONException the json exception
+   */
   public KuzzleRole(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
     super(kuzzle, id, content);
     this.deleteActionName = "deleteRole";
@@ -23,9 +31,9 @@ public class KuzzleRole extends AbstractKuzzleSecurityDocument {
   /**
    * Save this role in Kuzzle
    *
-   * @param options - Optional configuration
+   * @param options  - Optional configuration
    * @param listener - Optional callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void save(final KuzzleOptions options, final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
     JSONObject data = this.serialize();
@@ -52,7 +60,7 @@ public class KuzzleRole extends AbstractKuzzleSecurityDocument {
    * Save this role in Kuzzle
    *
    * @param listener - Optional callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void save(final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
     this.save(null, listener);
@@ -62,7 +70,7 @@ public class KuzzleRole extends AbstractKuzzleSecurityDocument {
    * Save this role in Kuzzle
    *
    * @param options - Optional configuration
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void save(final KuzzleOptions options) throws JSONException {
     this.save(options, null);
@@ -71,7 +79,7 @@ public class KuzzleRole extends AbstractKuzzleSecurityDocument {
   /**
    * Save this role in Kuzzle
    *
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void save() throws JSONException {
     this.save(null, null);

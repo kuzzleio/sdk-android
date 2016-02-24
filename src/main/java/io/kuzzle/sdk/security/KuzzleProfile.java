@@ -20,6 +20,14 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
   private ArrayDeque<KuzzleRole> roles;
 
+  /**
+   * Instantiates a new Kuzzle profile.
+   *
+   * @param kuzzle  the kuzzle
+   * @param id      the id
+   * @param content the content
+   * @throws JSONException the json exception
+   */
   public KuzzleProfile(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
     super(kuzzle, id, null);
     this.deleteActionName = "deleteProfile";
@@ -52,10 +60,10 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
   /**
    * Save this profile in Kuzzle
    *
-   * @param options - Optional arguments
+   * @param options  - Optional arguments
    * @param listener - Callback listener
-   * @return this
-   * @throws JSONException
+   * @return this kuzzle profile
+   * @throws JSONException the json exception
    */
   public KuzzleProfile save(final KuzzleOptions options, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     JSONObject data;
@@ -90,8 +98,8 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * Save this profile in Kuzzle
    *
    * @param listener - Callback listener
-   * @return this
-   * @throws JSONException
+   * @return this kuzzle profile
+   * @throws JSONException the json exception
    */
   public KuzzleProfile save(final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     return this.save(null, listener);
@@ -101,8 +109,8 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * Save this profile in Kuzzle
    *
    * @param options - Optional arguments
-   * @return this
-   * @throws JSONException
+   * @return this kuzzle profile
+   * @throws JSONException the json exception
    */
   public KuzzleProfile save(final KuzzleOptions options) throws JSONException {
     return this.save(options, null);
@@ -111,8 +119,8 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
   /**
    * Save this profile in Kuzzle
    *
-   * @return this
-   * @throws JSONException
+   * @return this kuzzle profile
+   * @throws JSONException the json exception
    */
   public KuzzleProfile save() throws JSONException {
     return this.save(null, null);
@@ -122,7 +130,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * Add a new role to the list of allowed roles of this profile
    *
    * @param role - Role to add to this profile
-   * @return this
+   * @return this kuzzle profile
    */
   public KuzzleProfile addRole(final KuzzleRole role) {
     this.roles.add(role);
@@ -133,7 +141,8 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * Add a new role to the list of allowed roles of this profile
    *
    * @param role - Name of the role to add to this profile
-   * @return this
+   * @return this kuzzle profile
+   * @throws JSONException the json exception
    */
   public KuzzleProfile addRole(final String role) throws JSONException {
     this.roles.add(new KuzzleRole(this.kuzzle, role, null));
@@ -144,7 +153,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * Replace the current roles list with a new one
    *
    * @param roles - New roles list
-   * @return this
+   * @return this roles
    */
   public KuzzleProfile setRoles(final KuzzleRole roles[]) {
     this.roles.clear();
@@ -157,7 +166,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * Replace the current roles list with a new one
    *
    * @param roles - New roles list
-   * @return this
+   * @return this roles
    */
   public KuzzleProfile setRoles(final String roles[]) {
     this.roles.clear();
@@ -177,9 +186,9 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * Hydrate the profile - get real KuzzleRole and not just ids
    * Trying to hydrate when new unsaved roles have been added will fail
    *
-   * @param options - Optional arguments
+   * @param options  - Optional arguments
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void hydrate(final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     if (listener == null) {
@@ -226,7 +235,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * Trying to hydrate when new unsaved roles have been added will fail
    *
    * @param listener - Callback listener
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public void hydrate(@NonNull final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     hydrate(null, listener);
@@ -235,7 +244,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
   /**
    * Serialize the content of this object to a JSON Object
    * @return a serialized version of this object
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public JSONObject serialize() throws JSONException {
     JSONObject

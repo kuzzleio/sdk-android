@@ -23,6 +23,9 @@ public class KuzzleDataCollection {
   private final Kuzzle kuzzle;
   private final String collection;
   private final String index;
+  /**
+   * The Headers.
+   */
   protected JSONObject headers;
 
   /**
@@ -267,92 +270,100 @@ public class KuzzleDataCollection {
   }
 
   /**
+   * Create document kuzzle data collection.
    *
-   * @param id - document ID
+   * @param id      - document ID
    * @param content - document content
    * @return this object
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public KuzzleDataCollection createDocument(final String id, @NonNull final JSONObject content) throws JSONException {
     return this.createDocument(id, content, null, null);
   }
 
   /**
+   * Create document kuzzle data collection.
    *
-   * @param id - document ID
+   * @param id      - document ID
    * @param content - document content
-   * @param opts - optional arguments
+   * @param opts    - optional arguments
    * @return this object
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public KuzzleDataCollection createDocument(final String id, @NonNull final JSONObject content, KuzzleOptions opts) throws JSONException {
     return this.createDocument(id, content, opts, null);
   }
 
   /**
+   * Create document kuzzle data collection.
    *
-   * @param id - document ID
-   * @param content - document content
+   * @param id       - document ID
+   * @param content  - document content
    * @param listener - result listener
    * @return this object
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public KuzzleDataCollection createDocument(final String id, @NonNull final JSONObject content, final KuzzleResponseListener<KuzzleDocument> listener) throws JSONException {
     return this.createDocument(id, content, null, listener);
   }
 
   /**
+   * Create document kuzzle data collection.
    *
    * @param content - document content
    * @return this object
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public KuzzleDataCollection createDocument(@NonNull final JSONObject content) throws JSONException {
     return this.createDocument(null, content, null, null);
   }
 
   /**
+   * Create document kuzzle data collection.
    *
    * @param content - document content
-   * @param opts - optional arguments
+   * @param opts    - optional arguments
    * @return this object
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public KuzzleDataCollection createDocument(@NonNull final JSONObject content, KuzzleOptions opts) throws JSONException {
     return this.createDocument(null, content, opts, null);
   }
 
   /**
+   * Create document kuzzle data collection.
    *
-   * @param content - document content
+   * @param content  - document content
    * @param listener - result listener
    * @return this object
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public KuzzleDataCollection createDocument(@NonNull final JSONObject content, final KuzzleResponseListener<KuzzleDocument> listener) throws JSONException {
     return this.createDocument(null, content, null, listener);
   }
 
   /**
+   * Create document kuzzle data collection.
    *
-   * @param content - document content
-   * @param opts - optional arguments
+   * @param content  - document content
+   * @param opts     - optional arguments
    * @param listener - result listener
    * @return this object
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public KuzzleDataCollection createDocument(@NonNull final JSONObject content, KuzzleOptions opts, final KuzzleResponseListener<KuzzleDocument> listener) throws JSONException {
     return this.createDocument(null, content, opts, listener);
   }
 
   /**
+   * Create document kuzzle data collection.
    *
-   * @param id - document ID
-   * @param content - document content
-   * @param opts - optional arguments
+   * @param id       - document ID
+   * @param content  - document content
+   * @param opts     - optional arguments
    * @param listener - result listener
    * @return this object
-   * @throws JSONException
+   * @throws JSONException the json exception
    */
   public KuzzleDataCollection createDocument(final String id, @NonNull final JSONObject content, KuzzleOptions opts, final KuzzleResponseListener<KuzzleDocument> listener) throws JSONException {
     if (content == null) {
@@ -439,6 +450,8 @@ public class KuzzleDataCollection {
   }
 
   /**
+   * Data mapping factory kuzzle data mapping.
+   *
    * @return the kuzzle data mapping
    */
   public KuzzleDataMapping dataMappingFactory() {
@@ -630,6 +643,9 @@ public class KuzzleDataCollection {
    *
    * @param documentId the document id
    * @param filter     the filter
+   * @param options    the options
+   * @param listener   the listener
+   * @param listener2  the listener 2
    * @return KuzzleDataCollection kuzzle data collection
    */
   protected KuzzleDataCollection deleteDocument(final String documentId, final JSONObject filter, final KuzzleOptions options, final KuzzleResponseListener<String> listener, final KuzzleResponseListener<String[]> listener2) {
@@ -679,18 +695,46 @@ public class KuzzleDataCollection {
     return this;
   }
 
+  /**
+   * Document factory kuzzle document.
+   *
+   * @return the kuzzle document
+   * @throws JSONException the json exception
+   */
   public KuzzleDocument documentFactory() throws JSONException {
     return new KuzzleDocument(this);
   }
 
+  /**
+   * Document factory kuzzle document.
+   *
+   * @param id the id
+   * @return the kuzzle document
+   * @throws JSONException the json exception
+   */
   public KuzzleDocument documentFactory(final String id) throws JSONException {
     return new KuzzleDocument(this, id);
   }
 
+  /**
+   * Document factory kuzzle document.
+   *
+   * @param content the content
+   * @return the kuzzle document
+   * @throws JSONException the json exception
+   */
   public KuzzleDocument documentFactory(final JSONObject content) throws JSONException {
     return new KuzzleDocument(this, content);
   }
 
+  /**
+   * Document factory kuzzle document.
+   *
+   * @param id      the id
+   * @param content the content
+   * @return the kuzzle document
+   * @throws JSONException the json exception
+   */
   public KuzzleDocument documentFactory(final String id, final JSONObject content) throws JSONException {
     return new KuzzleDocument(this, id, content);
   }
@@ -828,6 +872,7 @@ public class KuzzleDataCollection {
   /**
    * Publish a realtime message
    *
+   * @param content the content
    * @return the kuzzle data collection
    */
   public KuzzleDataCollection publishMessage(@NonNull final JSONObject content) {
@@ -837,7 +882,8 @@ public class KuzzleDataCollection {
   /**
    * Publish a realtime message
    *
-   * @param options  the options
+   * @param content the content
+   * @param options the options
    * @return the kuzzle data collection
    */
   public KuzzleDataCollection publishMessage(@NonNull final JSONObject content, final KuzzleOptions options) {
@@ -882,8 +928,8 @@ public class KuzzleDataCollection {
    * Replace document kuzzle data collection.
    *
    * @param documentId the document id
-   * @param options    the options
    * @param content    the content
+   * @param options    the options
    * @return the kuzzle data collection
    */
   public KuzzleDataCollection replaceDocument(@NonNull final String documentId, final JSONObject content, final KuzzleOptions options) {
@@ -935,10 +981,21 @@ public class KuzzleDataCollection {
     return this;
   }
 
+  /**
+   * Room factory kuzzle room.
+   *
+   * @return the kuzzle room
+   */
   public KuzzleRoom roomFactory() {
     return this.roomFactory(null);
   }
 
+  /**
+   * Room factory kuzzle room.
+   *
+   * @param options the options
+   * @return the kuzzle room
+   */
   public KuzzleRoom roomFactory(KuzzleRoomOptions options) {
     return new KuzzleRoom(this, options);
   }
@@ -1200,7 +1257,7 @@ public class KuzzleDataCollection {
   /**
    * Getter for the "index" property
    *
-   * @return
+   * @return index
    */
   public String getIndex() {
     return this.index;
