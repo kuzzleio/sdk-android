@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -38,6 +39,11 @@ public class constructorTest {
     extended.setState(KuzzleStates.CONNECTED);
     k = spy(extended);
     doc = new KuzzleDocument(new KuzzleDataCollection(k, "index", "test"));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testConstructorIllegalDataCollection() throws JSONException {
+    new KuzzleDocument(null, null, null);
   }
 
   @Test
@@ -68,6 +74,19 @@ public class constructorTest {
   public void testSetContentPutException() throws JSONException {
     doc = spy(doc);
     doc.setContent(mock(JSONObject.class));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testSetContentIllegalKey() throws JSONException {
+    doc.setContent(null, "value");
+  }
+
+  @Test
+  public void testSetContentUpdateVersion() throws JSONException {
+    JSONObject content = new JSONObject()
+        .put("version", 42424242);
+    doc.setContent(content, false);
+    assertEquals(42424242, doc.getVersion());
   }
 
   @Test
@@ -107,8 +126,17 @@ public class constructorTest {
     verify(doc).setHeaders(any(JSONObject.class), eq(false));
   }
 
+  @Test(expected = RuntimeException.class)
+  public void testSetHeadersException() {
+    JSONObject fake = spy(new JSONObject());
+    doThrow(JSONException.class).when(fake).toString();
+    doc.setHeaders(fake, true);
+  }
+
   @Test
   public void testSetHeaders() throws JSONException {
+    doc.setHeaders(null, true);
+    assertNotNull(doc.getHeaders());
     JSONObject headers = new JSONObject();
     headers.put("foo", "bar");
     doc.setHeaders(headers, true);

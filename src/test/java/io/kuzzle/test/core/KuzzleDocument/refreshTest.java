@@ -74,8 +74,12 @@ public class refreshTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(mock(JSONObject.class));
-        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
+        JSONObject result = new JSONObject()
+            .put("result", new JSONObject()
+              .put("_id", "foo")
+              .put("_source", mock(JSONObject.class))
+            );
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(result);
         return null;
       }
     }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));

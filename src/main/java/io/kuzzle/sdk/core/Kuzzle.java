@@ -216,7 +216,7 @@ public class Kuzzle {
    * @param cb    the cb
    * @throws URISyntaxException the uri syntax exception
    */
-  public Kuzzle(final String url, final KuzzleResponseListener<Void> cb) throws URISyntaxException {
+  public Kuzzle(@NonNull final String url, final KuzzleResponseListener<Void> cb) throws URISyntaxException {
     this(url, null, cb);
   }
 
@@ -227,7 +227,7 @@ public class Kuzzle {
    * @param options the options
    * @throws URISyntaxException the uri syntax exception
    */
-  public Kuzzle(String url, KuzzleOptions options) throws URISyntaxException {
+  public Kuzzle(@NonNull final String url, KuzzleOptions options) throws URISyntaxException {
     this(url, options, null);
   }
 

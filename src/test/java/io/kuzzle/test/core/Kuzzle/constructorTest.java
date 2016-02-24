@@ -61,6 +61,16 @@ public class constructorTest {
   }
 
   @Test
+  public void checkSignaturesVariants() throws URISyntaxException {
+    Kuzzle k = new Kuzzle("http://localhost:7512");
+    assertNotNull(k);
+    k = new Kuzzle("http://localhost:7512", new KuzzleOptions());
+    assertNotNull(k);
+    k = new Kuzzle("http://localhost:7512", listener);
+    assertNotNull(k);
+  }
+
+  @Test
   public void testKuzzleConstructor() throws URISyntaxException, JSONException {
     kuzzle = spy(kuzzle);
     assertEquals(kuzzle.getDefaultIndex(), "testIndex");

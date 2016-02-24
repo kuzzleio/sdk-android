@@ -6,7 +6,6 @@ import org.junit.Test;
 
 import java.net.URISyntaxException;
 
-import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -48,5 +47,17 @@ public class factoriesTest {
   public void testDataCollectionFactory() {
     assertEquals(kuzzle.dataCollectionFactory("test").fetchDocument("test", mock(KuzzleResponseListener.class)).getCollection(), "test");
     assertEquals(kuzzle.dataCollectionFactory("test2").fetchDocument("test2", mock(KuzzleResponseListener.class)).getCollection(), "test2");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testIllegalDefaultIndex() {
+    kuzzle.setSuperDefaultIndex(null);
+    kuzzle.dataCollectionFactory("foo");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testIllegalIndex() {
+    kuzzle.setSuperDefaultIndex(null);
+    kuzzle.dataCollectionFactory(null, "collection");
   }
 }

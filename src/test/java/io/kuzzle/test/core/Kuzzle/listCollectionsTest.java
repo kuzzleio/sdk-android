@@ -11,7 +11,6 @@ import org.mockito.stubbing.Answer;
 
 import java.net.URISyntaxException;
 
-import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -89,6 +88,13 @@ public class listCollectionsTest {
     kuzzle = spy(kuzzle);
     doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     kuzzle.listCollections(listener);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testListCollectionsIllegalDefaultIndex() {
+    kuzzle = spy(kuzzle);
+    kuzzle.setSuperDefaultIndex(null);
+    kuzzle.listCollections(null, mock(KuzzleOptions.class), listener);
   }
 
   @Test

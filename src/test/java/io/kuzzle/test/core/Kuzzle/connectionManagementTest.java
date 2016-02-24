@@ -22,6 +22,7 @@ import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.IKuzzleEventListener;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
+import io.kuzzle.sdk.responses.KuzzleTokenValidity;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.sdk.util.KuzzleQueryObject;
 import io.kuzzle.test.testUtils.KuzzleExtend;
@@ -36,6 +37,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -53,9 +55,6 @@ public class connectionManagementTest {
     options.setDefaultIndex("testIndex");
 
     s = mock(Socket.class);
-    kuzzle = new KuzzleExtend("http://localhost:7512", options, null);
-    kuzzle.setSocket(s);
-
     listener = new KuzzleResponseListener<Object>() {
       @Override
       public void onSuccess(Object object) {
@@ -67,6 +66,8 @@ public class connectionManagementTest {
 
       }
     };
+    kuzzle = new KuzzleExtend("http://localhost:7512", options, listener);
+    kuzzle.setSocket(s);
   }
 
   @Test
@@ -221,10 +222,13 @@ public class connectionManagementTest {
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
+    kuzzle = spy(kuzzle);
+    KuzzleResponseListener<Void> fake = kuzzle.spyAndGetConnectionCallback();
+    doReturn(true).when(kuzzle).isValidState();
     kuzzle.connect();
     verify(s).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
+    verify(fake).onSuccess(any(Void.class));
   }
-
 
   @Test
   public void testDisconnect() {
@@ -237,5 +241,59 @@ public class connectionManagementTest {
   public void testIsValid() throws Exception {
     kuzzle.disconnect();
     kuzzle.isValid();
+  }
+
+  @Test
+  public void testJWTTokenAfterReconnect() throws URISyntaxException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        //Mock response
+        //Call callback with response
+        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
+        return s;
+      }
+    }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
+    kuzzle = spy(kuzzle);
+    kuzzle.setJwtToken("foo");
+    KuzzleTokenValidity tokenValidity = spy(new KuzzleTokenValidity());
+    doReturn(false).when(tokenValidity).isValid();
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((KuzzleResponseListener) invocation.getArguments()[1]).onSuccess(mock(KuzzleTokenValidity.class));
+        return null;
+      }
+    }).when(kuzzle).checkToken(eq("foo"), any(KuzzleResponseListener.class));
+    kuzzle.connect();
+    assertNull(kuzzle.getJwtToken());
+    doReturn(true).when(tokenValidity).isValid();
+    kuzzle.setJwtToken("foo");
+    kuzzle.connect();
+    assertEquals("foo", kuzzle.getJwtToken());
+  }
+
+  @Test
+  public void testJWTTokenErrorAfterReconnect() throws URISyntaxException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        //Mock response
+        //Call callback with response
+        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
+        return s;
+      }
+    }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
+    kuzzle = spy(kuzzle);
+    kuzzle.setJwtToken("foo");
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((KuzzleResponseListener) invocation.getArguments()[1]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzle).checkToken(eq("foo"), any(KuzzleResponseListener.class));
+    kuzzle.connect();
+    assertNull(kuzzle.getJwtToken());
   }
 }

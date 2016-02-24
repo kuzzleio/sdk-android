@@ -20,6 +20,8 @@ import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.sdk.util.EventList;
 import io.socket.client.Socket;
 
+import static org.mockito.Mockito.spy;
+
 public class KuzzleExtend extends Kuzzle {
   public KuzzleExtend(@NonNull final String url, final KuzzleOptions options, final KuzzleResponseListener<Void> connectionCallback) throws URISyntaxException {
     super(url, options, connectionCallback);
@@ -87,4 +89,18 @@ public class KuzzleExtend extends Kuzzle {
   public Map<String, KuzzleRoom> getPendingSubscriptions() {
     return super.getPendingSubscriptions();
   }
+
+  public boolean isValidState() {
+    return super.isValidState();
+  }
+
+  public KuzzleResponseListener<Void> spyAndGetConnectionCallback() {
+    super.connectionCallback = spy(super.connectionCallback);
+    return super.connectionCallback;
+  }
+
+  public void setSuperDefaultIndex(final String index) {
+    super.defaultIndex = index;
+  }
+
 }
