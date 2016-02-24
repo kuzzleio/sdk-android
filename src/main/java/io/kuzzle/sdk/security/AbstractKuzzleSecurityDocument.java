@@ -127,4 +127,23 @@ public class AbstractKuzzleSecurityDocument {
   public void delete() throws JSONException {
     this.delete(null, null);
   }
+
+  /**
+   * Getter for the "id" property
+   *
+   * @return the document id
+   */
+  public String getId() {
+    return this.id;
+  }
+
+  /**
+   * Getter for the "content" property
+   *
+   * @return the document content
+   */
+  public JSONObject getContent() {
+    return this.content;
+  }
+
 }
