@@ -55,8 +55,7 @@ public class createUserTest {
 
   @Test
   public void testCreateUserReplaceIfExists() throws JSONException {
-    KuzzleOptions options = new KuzzleOptions();
-    options.setUpdateIfExists(true);
+    KuzzleOptions options = new KuzzleOptions().setReplaceIfExist(true);
 
     kuzzleSecurity.createUser("foo", new JSONObject(), options);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
