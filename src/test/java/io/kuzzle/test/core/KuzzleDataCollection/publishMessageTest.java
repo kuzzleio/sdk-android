@@ -64,7 +64,7 @@ public class publishMessageTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void publishWithNoDocument() {
-    collection.publishMessage((KuzzleDocument)null);
+    collection.publishMessage((KuzzleDocument) null);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -88,6 +88,12 @@ public class publishMessageTest {
     verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "write");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "publish");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testPublishMEssageException() {
+    doThrow(JSONException.class).when(kuzzle).addHeaders(any(JSONObject.class), any(JSONObject.class));
+    collection.publishMessage(mock(JSONObject.class));
   }
 
 }

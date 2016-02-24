@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -52,8 +53,7 @@ public class constructorTest {
     verify(collection).setHeaders(any(JSONObject.class), eq(false));
   }
 
-
-  @Test
+  @Test(expected = RuntimeException.class)
   public void testSetHeaders() throws JSONException {
     when(kuzzle.getHeaders()).thenCallRealMethod();
     when(kuzzle.setHeaders(any(JSONObject.class), anyBoolean())).thenCallRealMethod();
@@ -73,6 +73,9 @@ public class constructorTest {
     assertEquals(collection.getHeaders().getString("bar"), "foo");
     collection.setHeaders(null, true);
     assertEquals(collection.getHeaders().length(), 0);
+    JSONObject fake = spy(new JSONObject());
+    doThrow(JSONException.class).when(fake).keys();
+    collection.setHeaders(fake, false);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -88,5 +91,11 @@ public class constructorTest {
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowIfNoCollectionProvided() {
     new KuzzleDataCollection(mock(Kuzzle.class), "foo", null);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testConstructorException() {
+    doThrow(JSONException.class).when(kuzzle).getHeaders();
+    new KuzzleDataCollection(kuzzle, "foo", "collection");
   }
 }

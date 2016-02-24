@@ -135,4 +135,10 @@ public class createDocumentTest {
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "write");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createOrReplace");
   }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCreateDocumentWithIllegalContent() throws JSONException {
+    collection.createDocument("id", null, mock(KuzzleOptions.class), listener);
+  }
+
 }
