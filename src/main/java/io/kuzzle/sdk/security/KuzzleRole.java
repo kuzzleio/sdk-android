@@ -26,6 +26,7 @@ public class KuzzleRole extends AbstractKuzzleSecurityDocument {
   public KuzzleRole(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
     super(kuzzle, id, content);
     this.deleteActionName = "deleteRole";
+    this.updateActionName = "updateRole";
   }
 
   /**
@@ -84,4 +85,5 @@ public class KuzzleRole extends AbstractKuzzleSecurityDocument {
   public void save() throws JSONException {
     this.save(null, null);
   }
+
 }

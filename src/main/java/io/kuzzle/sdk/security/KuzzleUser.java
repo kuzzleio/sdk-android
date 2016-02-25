@@ -30,6 +30,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
   public KuzzleUser(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
     super(kuzzle, id, null);
     this.deleteActionName = "deleteUser";
+    this.updateActionName = "updateUser";
 
     if (content != null) {
       this.content = new JSONObject(content.toString());

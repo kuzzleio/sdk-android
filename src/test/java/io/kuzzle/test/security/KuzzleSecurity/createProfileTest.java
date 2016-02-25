@@ -122,9 +122,4 @@ public class createProfileTest {
 
     kuzzleSecurity.createProfile("foobar", new JSONArray(), listener);
   }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testDeleteProfileNoID() throws JSONException {
-    kuzzleSecurity.deleteProfile(null);
-  }
 }
