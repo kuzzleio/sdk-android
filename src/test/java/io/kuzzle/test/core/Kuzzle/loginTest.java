@@ -133,7 +133,7 @@ public class loginTest {
         return null;
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    doThrow(JSONException.class).when(kuzzle).emitEvent(any(KuzzleEvent.class), any(Object.class));
+    doThrow(JSONException.class).when(kuzzle).setJwtToken(any(String.class));
     kuzzle.login("local", new JSONObject());
   }
 
@@ -149,5 +149,12 @@ public class loginTest {
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     doThrow(JSONException.class).when(kuzzle).emitEvent(any(KuzzleEvent.class), any(Object.class));
     kuzzle.login("local", new JSONObject());
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testSetJwtTokenException() {
+    kuzzle = spy(kuzzle);
+    doThrow(JSONException.class).when(kuzzle).emitEvent(any(KuzzleEvent.class), any(Object.class));
+    kuzzle.setJwtToken("foo");
   }
 }

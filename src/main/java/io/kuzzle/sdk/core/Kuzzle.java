@@ -948,10 +948,8 @@ public class Kuzzle {
             JSONObject result = object.getJSONObject("result");
 
             if (!result.isNull("jwt")) {
-              Kuzzle.this.jwtToken = result.getString("jwt");
+              Kuzzle.this.setJwtToken(result.getString("jwt"));
               Kuzzle.this.renewSubscriptions();
-              emitEvent(KuzzleEvent.loginAttempt, new JSONObject()
-                  .put("success", true));
             }
             if (listener != null) {
               listener.onSuccess(object);
@@ -1006,20 +1004,14 @@ public class Kuzzle {
               JSONObject response = new JSONObject(sb.toString());
               if (response.isNull("error")) {
                 JSONObject result = response.getJSONObject("result");
-                Kuzzle.this.jwtToken = result.getString("jwt");
+                Kuzzle.this.setJwtToken(result.getString("jwt"));
                 if (loginCallback != null) {
-                  emitEvent(KuzzleEvent.loginAttempt, new JSONObject()
-                      .put("success", true));
                   loginCallback.onSuccess(result);
                 }
               } else {
-                try {
                   emitEvent(KuzzleEvent.loginAttempt, new JSONObject()
                       .put("success", false)
                       .put("error", response.getJSONObject("error")));
-                } catch (JSONException e) {
-                  throw new RuntimeException(e);
-                }
                 if (loginCallback != null) {
                   loginCallback.onError(response.getJSONObject("error"));
                 }
@@ -1877,13 +1869,19 @@ public class Kuzzle {
   }
 
   /**
-   * Sets jwt token.
+   * Sets jwt token and trigger the 'loginAttempt' event.
    *
    * @param jwtToken the jwt token
    * @return the jwt token
    */
   public Kuzzle setJwtToken(final String jwtToken) {
     this.jwtToken = jwtToken;
+    try {
+      emitEvent(KuzzleEvent.loginAttempt, new JSONObject()
+          .put("success", true));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
     return this;
   }
 
