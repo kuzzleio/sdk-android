@@ -25,13 +25,11 @@ import static org.mockito.Mockito.verify;
 public class KuzzleRoleTest {
   private Kuzzle kuzzle;
   private KuzzleRole stubRole;
-  private KuzzleResponseListener listener;
 
   @Before
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
     kuzzle.security = new KuzzleSecurity(kuzzle);
-    listener = mock(KuzzleResponseListener.class);
     stubRole = new KuzzleRole(kuzzle, "foo", null);
   }
 
@@ -70,9 +68,11 @@ public class KuzzleRoleTest {
         }
       }
     });
+    stubRole.save(mock(KuzzleOptions.class));
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createOrReplaceRole");
   }

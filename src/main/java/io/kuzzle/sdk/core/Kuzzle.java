@@ -1532,15 +1532,15 @@ public class Kuzzle {
    * @param headers the headers
    */
   public void addHeaders(JSONObject query, final JSONObject headers) {
-    for (Iterator iterator = headers.keys(); iterator.hasNext(); ) {
-      String key = (String) iterator.next();
-      if (query.isNull(key)) {
-        try {
+    try {
+      for (Iterator iterator = headers.keys(); iterator.hasNext(); ) {
+        String key = (String) iterator.next();
+        if (query.isNull(key)) {
           query.put(key, headers.get(key));
-        } catch (JSONException e) {
-          throw new RuntimeException(e);
         }
       }
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
     }
   }
 

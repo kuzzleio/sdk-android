@@ -209,4 +209,14 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
 
     return data;
   }
+
+  /**
+   * Returns the associated profiles
+   *
+   * @return an array of KuzzleProfile objects
+   */
+  public KuzzleProfile[] getProfiles() {
+    KuzzleProfile[] profiles = {this.profile};
+    return profiles;
+  }
 }
