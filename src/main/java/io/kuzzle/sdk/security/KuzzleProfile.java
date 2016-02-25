@@ -31,6 +31,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
   public KuzzleProfile(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
     super(kuzzle, id, null);
     this.deleteActionName = "deleteProfile";
+    this.updateActionName = "updateProfile";
     this.roles = new ArrayDeque<>();
 
     if (content != null) {

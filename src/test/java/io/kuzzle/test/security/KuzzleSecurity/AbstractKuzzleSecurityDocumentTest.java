@@ -102,9 +102,13 @@ public class AbstractKuzzleSecurityDocumentTest {
         }
       }
     });
+    stubRole.delete();
+    stubRole.delete(mock(KuzzleOptions.class));
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(2)).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class));
+
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "deleteRole");
   }
@@ -122,4 +126,53 @@ public class AbstractKuzzleSecurityDocumentTest {
 
     stubRole.delete(listener);
   }
+
+  @Test
+  public void testUpdate() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        JSONObject content = new JSONObject("{\"result\": { \"_id\": \"foo\" }}");
+
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(content);
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
+        return null;
+      }
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+
+    stubRole.update(new KuzzleResponseListener<String>() {
+      @Override
+      public void onSuccess(String response) {
+        assertEquals(response, "foo");
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+        try {
+          assertEquals(error.getString("error"), "stub");
+        } catch (JSONException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    });
+    stubRole.update();
+    stubRole.update(mock(KuzzleOptions.class));
+    verify(kuzzle, times(2)).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class));
+    verify(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testUpdateInvalidJSON() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        JSONObject content = new JSONObject();
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(content);
+        return null;
+      }
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+
+    stubRole.update(listener);
+  }
+
 }

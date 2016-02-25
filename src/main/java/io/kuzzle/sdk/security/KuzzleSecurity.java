@@ -340,6 +340,81 @@ public class KuzzleSecurity {
   }
 
   /**
+   * Update role.
+   *
+   * @param id       the id
+   * @param content  the content
+   * @param options  the options
+   * @param listener the listener
+   * @throws JSONException the json exception
+   */
+  public void updateRole(@NonNull final String id, final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
+    if (id == null) {
+      throw new IllegalArgumentException("KuzzleSecurity.updateRole: cannot update role without an ID");
+    }
+
+    JSONObject data = new JSONObject().put("_id", id);
+    data.put("body", content);
+
+    if (listener != null) {
+      this.kuzzle.query(buildQueryArgs("updateRole"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result").getString("_id"));
+          }
+          catch(JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    }
+    else {
+      this.kuzzle.query(buildQueryArgs("updateRole"), data, options);
+    }
+  }
+
+  /**
+   * Update role.
+   *
+   * @param id       the id
+   * @param content  the content
+   * @param listener the listener
+   * @throws JSONException the json exception
+   */
+  public void updateRole(@NonNull final String id, final JSONObject content, final KuzzleResponseListener<String> listener) throws JSONException {
+    updateRole(id, content, null, listener);
+  }
+
+  /**
+   * Update role.
+   *
+   * @param id      the id
+   * @param content the content
+   * @param options the options
+   * @throws JSONException the json exception
+   */
+  public void updateRole(@NonNull final String id, final JSONObject content, final KuzzleOptions options) throws JSONException {
+    updateRole(id, content, options, null);
+  }
+
+  /**
+   * Update role.
+   *
+   * @param id      the id
+   * @param content the content
+   * @throws JSONException the json exception
+   */
+  public void updateRole(@NonNull final String id, final JSONObject content) throws JSONException {
+    updateRole(id, content, null, null);
+  }
+
+  /**
    * Instantiate a new KuzzleRole object.
    *
    * @param id      - Role ID
@@ -668,6 +743,81 @@ public class KuzzleSecurity {
   }
 
   /**
+   * Update profile.
+   *
+   * @param id       the id
+   * @param content  the content
+   * @param options  the options
+   * @param listener the listener
+   * @throws JSONException the json exception
+   */
+  public void updateProfile(@NonNull final String id, final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
+    if (id == null) {
+      throw new IllegalArgumentException("KuzzleSecurity.updateProfile: cannot update a profile with ID null");
+    }
+
+    JSONObject data = new JSONObject().put("_id", id);
+    data.put("body", content);
+
+    if (listener != null) {
+      this.kuzzle.query(buildQueryArgs("updateProfile"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result").getString("_id"));
+          }
+          catch(JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    }
+    else {
+      this.kuzzle.query(buildQueryArgs("updateProfile"), data, options);
+    }
+  }
+
+  /**
+   * Update profile.
+   *
+   * @param id      the id
+   * @param content the content
+   * @param options the options
+   * @throws JSONException the json exception
+   */
+  public void updateProfile(@NonNull final String id, final JSONObject content, final KuzzleOptions options) throws JSONException {
+    updateProfile(id, content, options, null);
+  }
+
+  /**
+   * Update profile.
+   *
+   * @param id       the id
+   * @param content  the content
+   * @param listener the listener
+   * @throws JSONException the json exception
+   */
+  public void updateProfile(@NonNull final String id, final JSONObject content, final KuzzleResponseListener<String> listener) throws JSONException {
+    this.updateProfile(id, content, null, listener);
+  }
+
+  /**
+   * Update profile.
+   *
+   * @param id      the id
+   * @param content the content
+   * @throws JSONException the json exception
+   */
+  public void updateProfile(@NonNull final String id, final JSONObject content) throws JSONException {
+    updateProfile(id, content, null, null);
+  }
+
+  /**
    * Instanciates a new KuzzleProfile object
    *
    * @param id      - Profile ID
@@ -991,6 +1141,81 @@ public class KuzzleSecurity {
    */
   public void deleteUser(@NonNull final String id) throws JSONException {
     deleteUser(id, null, null);
+  }
+
+  /**
+   * Update user.
+   *
+   * @param id       the id
+   * @param content  the content
+   * @param options  the options
+   * @param listener the listener
+   * @throws JSONException the json exception
+   */
+  public void updateUser(@NonNull final String id, final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
+    if (id == null) {
+      throw new IllegalArgumentException("KuzzleSecurity.updateUser: cannot update user without an ID");
+    }
+
+    JSONObject data = new JSONObject().put("_id", id);
+    data.put("body", content);
+
+    if (listener != null) {
+      this.kuzzle.query(buildQueryArgs("updateUser"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result").getString("_id"));
+          }
+          catch(JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    }
+    else {
+      this.kuzzle.query(buildQueryArgs("updateUser"), data, options);
+    }
+  }
+
+  /**
+   * Update user.
+   *
+   * @param id       the id
+   * @param content  the content
+   * @param listener the listener
+   * @throws JSONException the json exception
+   */
+  public void updateUser(@NonNull final String id, final JSONObject content, final KuzzleResponseListener<String> listener) throws JSONException {
+    updateUser(id, content, null, listener);
+  }
+
+  /**
+   * Update profile.
+   *
+   * @param id      the id
+   * @param content the content
+   * @param options the options
+   * @throws JSONException the json exception
+   */
+  public void updateUser(@NonNull final String id, final JSONObject content, final KuzzleOptions options) throws JSONException {
+    updateUser(id, content, options, null);
+  }
+
+  /**
+   * Update profile.
+   *
+   * @param id      the id
+   * @param content the content
+   * @throws JSONException the json exception
+   */
+  public void updateUser(@NonNull final String id, final JSONObject content) throws JSONException {
+    updateUser(id, content, null, null);
   }
 
   /**

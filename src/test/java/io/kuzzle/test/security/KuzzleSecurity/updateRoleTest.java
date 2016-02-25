@@ -21,29 +21,32 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class deleteProfileTest {
+public class updateRoleTest {
   private Kuzzle kuzzle;
   private KuzzleSecurity kuzzleSecurity;
   private KuzzleResponseListener listener;
+  private JSONObject  content;
 
   @Before
-  public void setUp() {
+  public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
     kuzzleSecurity = new KuzzleSecurity(kuzzle);
     listener = mock(KuzzleResponseListener.class);
+    content = new JSONObject()
+        .put("foo", "bar");
   }
 
   @Test
-  public void testDeleteProfileNoListener() throws JSONException {
-    kuzzleSecurity.deleteProfile("foo", new KuzzleOptions());
-    ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "deleteProfile");
+  public void testUpdateRoleNoListener() throws JSONException {
+    kuzzleSecurity.updateRole("foo", content, new KuzzleOptions());
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "updateRole");
   }
 
   @Test
-  public void testDeleteProfileValidResponse() throws JSONException {
+  public void testUpdateRoleValidResponse() throws JSONException {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -58,9 +61,9 @@ public class deleteProfileTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.deleteProfile("foobar", new KuzzleResponseListener<String>() {
+    kuzzleSecurity.updateRole("foobar", content, new KuzzleResponseListener<String>() {
       @Override
       public void onSuccess(String response) {
         assertEquals(response, "foobar");
@@ -76,14 +79,14 @@ public class deleteProfileTest {
       }
     });
 
-    ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "deleteProfile");
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "updateRole");
   }
 
   @Test(expected = RuntimeException.class)
-  public void testDeleteProfileBadResponse() throws JSONException {
+  public void testUpdateRoleBadResponse() throws JSONException {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -92,13 +95,13 @@ public class deleteProfileTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.deleteProfile("foobar", new KuzzleOptions(), listener);
+    kuzzleSecurity.updateRole("foobar", content, new KuzzleOptions(), listener);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testDeleteProfileNoID() throws JSONException {
-    kuzzleSecurity.deleteProfile(null);
+  public void testUpdateRoleNoID() throws JSONException {
+    kuzzleSecurity.updateRole(null, content);
   }
 }

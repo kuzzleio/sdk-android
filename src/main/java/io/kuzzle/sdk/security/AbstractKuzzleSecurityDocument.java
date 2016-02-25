@@ -27,6 +27,10 @@ public class AbstractKuzzleSecurityDocument {
    */
   protected String deleteActionName;
   /**
+   * The Update action name.
+   */
+  protected String  updateActionName;
+  /**
    * The Id.
    */
   public final String id;
@@ -169,6 +173,56 @@ public class AbstractKuzzleSecurityDocument {
    */
   public JSONObject getContent() {
     return this.content;
+  }
+
+  public void update() throws JSONException {
+    this.update(null, null);
+  }
+
+  public void update(final KuzzleOptions options) throws JSONException {
+    this.update(options, null);
+  }
+
+  /**
+   * Update.
+   *
+   * @param listener the listener
+   * @throws JSONException the json exception
+   */
+  public void update(final KuzzleResponseListener<String> listener) throws JSONException {
+    this.update(null, listener);
+  }
+
+  /**
+   * Update.
+   *
+   * @param options  the options
+   * @param listener the listener
+   * @throws JSONException the json exception
+   */
+  public void update(final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
+    JSONObject data = new JSONObject().put("_id", this.id);
+
+    if (listener != null) {
+      this.kuzzle.query(kuzzleSecurity.buildQueryArgs(this.updateActionName), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result").getString("_id"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    }
+    else {
+      this.kuzzle.query(kuzzleSecurity.buildQueryArgs(this.deleteActionName), data, options);
+    }
   }
 
 }
