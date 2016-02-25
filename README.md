@@ -5,7 +5,7 @@
 Official Kuzzle Android SDK 
 ======
 
-This SDK version requires Kuzzle v0.12 or higher.
+This SDK version requires Kuzzle v1.0.0-beta.1 or higher.
 
 ## About Kuzzle
 
