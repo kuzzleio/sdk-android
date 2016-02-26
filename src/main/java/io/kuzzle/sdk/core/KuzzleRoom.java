@@ -210,7 +210,7 @@ public class KuzzleRoom {
         String key = ((JSONObject) args).getString("requestId");
 
         if (((JSONObject) args).getString("action").equals("jwtTokenExpired")) {
-          KuzzleRoom.this.kuzzle.setJwtToken(null);
+          KuzzleRoom.this.kuzzle.jwtToken = null;
           KuzzleRoom.this.kuzzle.emitEvent(KuzzleEvent.jwtTokenExpired);
         }
 

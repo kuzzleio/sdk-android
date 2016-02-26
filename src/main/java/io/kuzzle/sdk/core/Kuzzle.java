@@ -947,12 +947,12 @@ public class Kuzzle {
           try {
             JSONObject result = object.getJSONObject("result");
 
-            if (!result.isNull("jwt")) {
+            if (result.has("jwt")) {
               Kuzzle.this.setJwtToken(result.getString("jwt"));
-              Kuzzle.this.renewSubscriptions();
             }
+
             if (listener != null) {
-              listener.onSuccess(object);
+              listener.onSuccess(result);
             }
           } catch (JSONException e) {
             throw new RuntimeException(e);
@@ -1003,10 +1003,10 @@ public class Kuzzle {
 
               JSONObject response = new JSONObject(sb.toString());
               if (response.isNull("error")) {
-                JSONObject result = response.getJSONObject("result");
-                Kuzzle.this.setJwtToken(result.getString("jwt"));
+                Kuzzle.this.setJwtToken(response);
+
                 if (loginCallback != null) {
-                  loginCallback.onSuccess(result);
+                  loginCallback.onSuccess(response.getJSONObject("result"));
                 }
               } else {
                   emitEvent(KuzzleEvent.loginAttempt, new JSONObject()
@@ -1326,7 +1326,13 @@ public class Kuzzle {
     return this;
   }
 
-  private void renewSubscriptions() {
+  /**
+   * Renew all registered subscriptions. Usually called after:
+   *   - a connection, if subscriptions occured before
+   *   - a reconnection
+   *   - after a successful login attempt, to subscribe with the new credentials
+   */
+  protected void renewSubscriptions() {
     for(Map<String, KuzzleRoom> roomSubscriptions: subscriptions.values()) {
       for (KuzzleRoom room : roomSubscriptions.values()) {
         room.renew(room.getListener());
@@ -1872,16 +1878,44 @@ public class Kuzzle {
    * Sets jwt token and trigger the 'loginAttempt' event.
    *
    * @param jwtToken the jwt token
-   * @return the jwt token
+   * @return this object
    */
   public Kuzzle setJwtToken(final String jwtToken) {
     this.jwtToken = jwtToken;
     try {
-      emitEvent(KuzzleEvent.loginAttempt, new JSONObject()
-          .put("success", true));
+      this.renewSubscriptions();
+      this.emitEvent(KuzzleEvent.loginAttempt, new JSONObject().put("success", true));
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
+    return this;
+  }
+
+  /**
+   * Sets the JWT Token from a Kuzzle response object
+   *
+   * @param response a Kuzzle response containing a jwt token
+   * @return this object
+   */
+  public Kuzzle setJwtToken(@NonNull final JSONObject response) throws JSONException {
+    JSONObject result;
+
+    if (response == null) {
+      throw new IllegalArgumentException("Cannot set token from a null Kuzzle response");
+    }
+
+    if (response.has("result") && (result = response.getJSONObject("result")).has("jwt")) {
+      this.jwtToken = result.getString("jwt");
+      this.renewSubscriptions();
+      this.emitEvent(KuzzleEvent.loginAttempt, new JSONObject().put("success", true));
+    }
+    else {
+      this.emitEvent(KuzzleEvent.loginAttempt, new JSONObject()
+        .put("success", false)
+        .put("error", "Cannot find a valid JWT token in the following object: " + response.toString())
+      );
+    }
+
     return this;
   }
 

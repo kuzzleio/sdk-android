@@ -121,4 +121,8 @@ public class KuzzleExtend extends Kuzzle {
     super.emitEvent(event, args);
   }
 
+  public void renewSubscriptions() {
+    super.renewSubscriptions();
+  }
+
 }
