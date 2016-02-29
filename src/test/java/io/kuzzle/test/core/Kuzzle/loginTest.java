@@ -65,7 +65,11 @@ public class loginTest {
     kuzzle.login("foo", stubCredentials);
     kuzzle.login("foo", stubCredentials, 42);
     kuzzle.login("foo", stubCredentials, listener);
-    verify(kuzzle, times(3)).login(any(String.class), any(JSONObject.class), any(int.class), any(KuzzleResponseListener.class));
+    kuzzle.login("foo");
+    kuzzle.login("foo", 42);
+    kuzzle.login("foo", 42, listener);
+    kuzzle.login("foo", listener);
+    verify(kuzzle, times(7)).login(any(String.class), any(JSONObject.class), any(int.class), any(KuzzleResponseListener.class));
   }
 
   @Test
@@ -93,11 +97,6 @@ public class loginTest {
   @Test(expected = IllegalArgumentException.class)
   public void testNoStrategy() {
     kuzzle.login(null, new JSONObject());
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testNoCredentials() {
-    kuzzle.login("foo", null);
   }
 
   @Test
