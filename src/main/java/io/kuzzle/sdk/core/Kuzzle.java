@@ -872,14 +872,35 @@ public class Kuzzle {
   }
 
   /**
+   * Login kuzzle.
+   *
+   * @param strategy the strategy
+   * @return the kuzzle
+   */
+  public Kuzzle login(@NonNull final String strategy) {
+    return this.login(strategy, null, -1, null);
+  }
+
+  /**
    * Log a user according to the strategy and credentials.
    *
    * @param strategy    the strategy
    * @param credentials login credentials
    * @return kuzzle kuzzle
    */
-  public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials) {
+  public Kuzzle login(@NonNull final String strategy, final JSONObject credentials) {
     return this.login(strategy, credentials, -1, null);
+  }
+
+  /**
+   * Login kuzzle.
+   *
+   * @param strategy  the strategy
+   * @param expiresIn the expires in
+   * @return the kuzzle
+   */
+  public Kuzzle login(@NonNull final String strategy, final int expiresIn) {
+    return this.login(strategy, null, expiresIn, null);
   }
 
   /**
@@ -890,7 +911,7 @@ public class Kuzzle {
    * @param expiresIn   the expires in
    * @return kuzzle kuzzle
    */
-  public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials, final int expiresIn) {
+  public Kuzzle login(@NonNull final String strategy, final JSONObject credentials, final int expiresIn) {
     return this.login(strategy, credentials, expiresIn, null);
   }
 
@@ -902,8 +923,31 @@ public class Kuzzle {
    * @param listener    the listener
    * @return the kuzzle
    */
-  public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials, final KuzzleResponseListener<JSONObject> listener) {
+  public Kuzzle login(@NonNull final String strategy, final JSONObject credentials, final KuzzleResponseListener<JSONObject> listener) {
     return this.login(strategy, credentials, -1, listener);
+  }
+
+  /**
+   * Login kuzzle.
+   *
+   * @param strategy the strategy
+   * @param listener the listener
+   * @return the kuzzle
+   */
+  public Kuzzle login(@NonNull final String strategy, final KuzzleResponseListener<JSONObject> listener) {
+    return this.login(strategy, null, -1, listener);
+  }
+
+  /**
+   * Login kuzzle.
+   *
+   * @param strategy  the strategy
+   * @param expiresIn the expires in
+   * @param listener  the listener
+   * @return the kuzzle
+   */
+  public Kuzzle login(@NonNull final String strategy, final int expiresIn, final KuzzleResponseListener<JSONObject> listener) {
+    return this.login(strategy, null, expiresIn, listener);
   }
 
   /**
@@ -915,13 +959,9 @@ public class Kuzzle {
    * @param listener    callback called when strategy's redirectUri is received
    * @return kuzzle kuzzle
    */
-  public Kuzzle login(@NonNull final String strategy, @NonNull final JSONObject credentials, int expiresIn, final KuzzleResponseListener<JSONObject> listener) {
+  public Kuzzle login(@NonNull final String strategy, final JSONObject credentials, int expiresIn, final KuzzleResponseListener<JSONObject> listener) {
     if (strategy == null) {
       throw new IllegalArgumentException("Kuzzle.login: cannot authenticate to Kuzzle without an authentication strategy");
-    }
-
-    if (credentials == null) {
-      throw new IllegalArgumentException("Kuzzle.login: cannot authenticate with null credentials");
     }
 
     this.loginCallback = listener;
@@ -929,7 +969,12 @@ public class Kuzzle {
     try {
       KuzzleOptions options = new KuzzleOptions();
       JSONObject query = new JSONObject();
-      JSONObject body = new JSONObject(credentials.toString()).put("strategy", strategy);
+      JSONObject body;
+      if (credentials != null) {
+        body = new JSONObject(credentials.toString());
+      } else {
+        body = new JSONObject().put("strategy", strategy);
+      }
 
       if (expiresIn >= 0) {
         body.put("expiresIn", expiresIn);
@@ -1328,9 +1373,9 @@ public class Kuzzle {
 
   /**
    * Renew all registered subscriptions. Usually called after:
-   *   - a connection, if subscriptions occured before
-   *   - a reconnection
-   *   - after a successful login attempt, to subscribe with the new credentials
+   * - a connection, if subscriptions occured before
+   * - a reconnection
+   * - after a successful login attempt, to subscribe with the new credentials
    */
   protected void renewSubscriptions() {
     for(Map<String, KuzzleRoom> roomSubscriptions: subscriptions.values()) {
@@ -1896,6 +1941,7 @@ public class Kuzzle {
    *
    * @param response a Kuzzle response containing a jwt token
    * @return this object
+   * @throws JSONException the json exception
    */
   public Kuzzle setJwtToken(@NonNull final JSONObject response) throws JSONException {
     JSONObject result;
@@ -1952,7 +1998,7 @@ public class Kuzzle {
    * Setter for the metadata property
    *
    * @param newMetadata the new metadata
-   * @return metadata
+   * @return metadata metadata
    */
   public Kuzzle setMetadata(JSONObject newMetadata) {
     this.metadata = newMetadata;
@@ -1962,7 +2008,7 @@ public class Kuzzle {
   /**
    * Getter for the metadata property
    *
-   * @return metadata
+   * @return metadata metadata
    */
   public JSONObject getMetadata() {
     return this.metadata;
