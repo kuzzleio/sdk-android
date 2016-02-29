@@ -92,6 +92,36 @@ kuzzle = new Kuzzle("http://localhost:7512", "index", options);
 
 ## Login with an OAuth strategy
 
+If you have an OAUTH plugin like kuzzle-plugin-auth-github you can login and use the KuzzleWebViewClient to make it easier to handle.
+
+```java
+Handler handler = new Handler();
+WebView webView = (WebView) findViewById(R.id.webView);
+webView.setWebViewClient(kuzzle.getKuzzleWebViewClient());
+kuzzle.login("github", new KuzzleResponseListener<JSONObject>() {
+      @Override
+      public void onSuccess(final JSONObject object) {
+        handler.post(new Runnable() {
+          @Override
+          public void run() {
+            try {
+              if (object.has("headers")) {
+                webView.loadUrl(object.getJSONObject("headers").getString("Location"));
+              }
+            } catch (JSONException e) {
+              e.printStackTrace();
+            }
+          }
+        });
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+        Log.e("error", error.toString());
+      }
+    });
+```
+
 ## Javadoc
 
 You can find the java doc of the SDK here: [http://kuzzleio.github.io/sdk-android/](http://kuzzleio.github.io/sdk-android/)
