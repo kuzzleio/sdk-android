@@ -1216,7 +1216,7 @@ public class KuzzleDataCollection {
               JSONObject result = response.getJSONObject("result");
               KuzzleDocument document = new KuzzleDocument(KuzzleDataCollection.this, result.getString("_id"), result.getJSONObject("_source"));
               document.setVersion(result.getLong("_version"));
-              listener.onSuccess(document);
+              document.refresh(listener);
             } catch (JSONException e) {
               throw new RuntimeException(e);
             }
