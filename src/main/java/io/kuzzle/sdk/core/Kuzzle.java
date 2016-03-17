@@ -1526,7 +1526,7 @@ public class Kuzzle {
         public void call(Object... args) {
           try {
             // checking token expiration
-            if (!((JSONObject) args[0]).isNull("error") && ((JSONObject) args[0]).getJSONObject("error").getString("message").equals("Token expired")) {
+            if (!((JSONObject) args[0]).isNull("error") && ((JSONObject) args[0]).getJSONObject("error").getString("message").equals("Token expired") && !((JSONObject)args[0]).getString("action").equals("logout")) {
               emitEvent(KuzzleEvent.jwtTokenExpired, listener);
             }
 
