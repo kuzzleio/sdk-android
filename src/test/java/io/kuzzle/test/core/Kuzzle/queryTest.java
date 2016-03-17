@@ -266,7 +266,8 @@ public class queryTest {
       public Object answer(InvocationOnMock invocation) throws Throwable {
         final JSONObject response = new JSONObject()
             .put("error", new JSONObject()
-                .put("message", "Token expired"));
+                .put("message", "Token expired"))
+            .put("action", "notlogout");
         ((Emitter.Listener) invocation.getArguments()[1]).call(response);
         return null;
       }
