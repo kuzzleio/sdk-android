@@ -1,6 +1,5 @@
 package io.kuzzle.sdk.security;
 
-import android.accounts.AbstractAccountAuthenticator;
 import android.support.annotation.NonNull;
 
 import org.json.JSONException;
