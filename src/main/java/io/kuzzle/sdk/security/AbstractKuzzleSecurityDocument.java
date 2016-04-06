@@ -175,40 +175,59 @@ public class AbstractKuzzleSecurityDocument {
     return this.content;
   }
 
-  public void update() throws JSONException {
-    this.update(null, null);
-  }
-
-  public void update(final KuzzleOptions options) throws JSONException {
-    this.update(options, null);
+  /**
+   * Perform a partial update on this object
+   *
+   * @param content - content used to update the object
+   * @throws JSONException
+   */
+  public void update(final JSONObject content) throws JSONException {
+    this.update(content, null, null);
   }
 
   /**
-   * Update.
+   * Perform a partial update on this object
    *
+   * @param content - content used to update the object
+   * @param options - optional arguments
+   * @throws JSONException
+   */
+  public void update(final JSONObject content, final KuzzleOptions options) throws JSONException {
+    this.update(content, options, null);
+  }
+
+  /**
+   * Perform a partial update on this object
+   *
+   * @param content - content used to update the object
    * @param listener the listener
    * @throws JSONException the json exception
    */
-  public void update(final KuzzleResponseListener<String> listener) throws JSONException {
-    this.update(null, listener);
+  public void update(final JSONObject content, final KuzzleResponseListener<AbstractKuzzleSecurityDocument> listener) throws JSONException {
+    this.update(content, null, listener);
   }
 
   /**
-   * Update.
+   * Perform a partial update on this object
    *
+   * @param content - content used to update the object
    * @param options  the options
    * @param listener the listener
    * @throws JSONException the json exception
    */
-  public void update(final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
-    JSONObject data = new JSONObject().put("_id", this.id);
+  public void update(final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<AbstractKuzzleSecurityDocument> listener) throws JSONException {
+    JSONObject data = new JSONObject()
+      .put("_id", this.id)
+      .put("body", content);
 
     if (listener != null) {
       this.kuzzle.query(kuzzleSecurity.buildQueryArgs(this.updateActionName), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(response.getJSONObject("result").getString("_id"));
+            JSONObject updatedContent = response.getJSONObject("result").getJSONObject("_source");
+            AbstractKuzzleSecurityDocument.this.setContent(updatedContent);
+            listener.onSuccess(AbstractKuzzleSecurityDocument.this);
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
@@ -221,7 +240,7 @@ public class AbstractKuzzleSecurityDocument {
       });
     }
     else {
-      this.kuzzle.query(kuzzleSecurity.buildQueryArgs(this.deleteActionName), data, options);
+      this.kuzzle.query(kuzzleSecurity.buildQueryArgs(this.updateActionName), data, options);
     }
   }
 
