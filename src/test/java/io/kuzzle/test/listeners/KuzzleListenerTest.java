@@ -1,7 +1,10 @@
 package io.kuzzle.test.listeners;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -11,11 +14,15 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.enums.Mode;
+import io.kuzzle.sdk.listeners.OnQueryDoneListener;
+import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.sdk.util.Event;
+import io.kuzzle.sdk.util.KuzzleQueryObject;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -25,6 +32,7 @@ import static org.mockito.Mockito.verify;
 
 public class KuzzleListenerTest {
   private Kuzzle kuzzle;
+  private KuzzleExtend kuzzleExtend;
   private Socket s;
   private Event event;
 
@@ -36,6 +44,7 @@ public class KuzzleListenerTest {
     KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", options, null);
     extended.setSocket(s);
     kuzzle = extended;
+    kuzzleExtend = extended;
   }
 
   private void mockAnswer(final String event) {
@@ -86,4 +95,43 @@ public class KuzzleListenerTest {
     verify(event, times(1)).trigger();
   }
 
+  @Test
+  public void testOfflineQueuePush() throws JSONException {
+    event = mock(Event.class);
+    kuzzleExtend.addListener(KuzzleEvent.offlineQueuePush, event);
+
+    KuzzleOptions opts = new KuzzleOptions().setQueuable(true);
+    kuzzleExtend.setState(KuzzleStates.OFFLINE);
+    kuzzleExtend.startQueuing();
+
+    Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
+    args.controller = "foo";
+    args.action = "bar";
+    kuzzleExtend.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(KuzzleQueryObject.class);
+    verify(event).trigger(argument.capture());
+    assertEquals(((KuzzleQueryObject) argument.getValue()).getQuery().getString("action"), "bar");
+  }
+
+  @Test
+  public void testOfflineQueuePop() throws JSONException, URISyntaxException {
+    event = mock(Event.class);
+    kuzzleExtend.setAutoReplay(true);
+    kuzzleExtend.addListener(KuzzleEvent.offlineQueuePop, event);
+    mockAnswer(Socket.EVENT_RECONNECT);
+
+    KuzzleOptions opts = new KuzzleOptions().setQueuable(true);
+    kuzzleExtend.setState(KuzzleStates.OFFLINE);
+    kuzzleExtend.startQueuing();
+
+    Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
+    args.controller = "foo";
+    args.action = "bar";
+    kuzzleExtend.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
+
+    kuzzleExtend.connect();
+    ArgumentCaptor argument = ArgumentCaptor.forClass(KuzzleQueryObject.class);
+    verify(event).trigger(argument.capture());
+    assertEquals(((KuzzleQueryObject) argument.getValue()).getQuery().getString("action"), "bar");
+  }
 }

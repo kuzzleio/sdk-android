@@ -1,6 +1,7 @@
 package io.kuzzle.sdk.state;
 
 import java.util.ArrayDeque;
+import java.util.Iterator;
 import java.util.Queue;
 
 /**
@@ -8,7 +9,7 @@ import java.util.Queue;
  *
  * @param <T> the type parameter
  */
-public class KuzzleQueue<T> {
+public class KuzzleQueue<T> implements Iterable<T> {
 
   private Queue<T> _queue = new ArrayDeque<>();
 
@@ -54,4 +55,8 @@ public class KuzzleQueue<T> {
     return _queue;
   }
 
+  @Override
+  public Iterator<T> iterator() {
+    return _queue.iterator();
+  }
 }

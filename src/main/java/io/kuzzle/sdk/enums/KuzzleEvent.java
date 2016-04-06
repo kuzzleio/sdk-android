@@ -9,5 +9,7 @@ public enum KuzzleEvent {
   connected,
   error,
   jwtTokenExpired,
-  loginAttempt
+  loginAttempt,
+  offlineQueuePush,
+  offlineQueuePop
 }
