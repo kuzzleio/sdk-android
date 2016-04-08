@@ -12,6 +12,7 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
+import io.kuzzle.sdk.security.AbstractKuzzleSecurityDocument;
 import io.kuzzle.sdk.security.KuzzleRole;
 import io.kuzzle.sdk.security.KuzzleSecurity;
 
@@ -79,7 +80,7 @@ public class AbstractKuzzleSecurityDocumentTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        JSONObject content = new JSONObject("{\"result\": { \"_id\": \"foo\" }}");
+        JSONObject content = new JSONObject("{\"result\": { \"_id\": \"foo\", \"_source\": {} }}");
 
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(content);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
@@ -129,10 +130,12 @@ public class AbstractKuzzleSecurityDocumentTest {
 
   @Test
   public void testUpdate() throws JSONException {
+    JSONObject content = new JSONObject();
+
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        JSONObject content = new JSONObject("{\"result\": { \"_id\": \"foo\" }}");
+        JSONObject content = new JSONObject("{\"result\": { \"_id\": \"foo\", \"_source\": {} }}");
 
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(content);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
@@ -140,10 +143,10 @@ public class AbstractKuzzleSecurityDocumentTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    stubRole.update(new KuzzleResponseListener<String>() {
+    stubRole.update(content, new KuzzleResponseListener<AbstractKuzzleSecurityDocument>() {
       @Override
-      public void onSuccess(String response) {
-        assertEquals(response, "foo");
+      public void onSuccess(AbstractKuzzleSecurityDocument response) {
+        assertEquals(response.getId(), "foo");
       }
 
       @Override
@@ -155,8 +158,8 @@ public class AbstractKuzzleSecurityDocumentTest {
         }
       }
     });
-    stubRole.update();
-    stubRole.update(mock(KuzzleOptions.class));
+    stubRole.update(content);
+    stubRole.update(content, mock(KuzzleOptions.class));
     verify(kuzzle, times(2)).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class));
     verify(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
@@ -172,7 +175,7 @@ public class AbstractKuzzleSecurityDocumentTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    stubRole.update(listener);
+    stubRole.update(new JSONObject(), listener);
   }
 
 }

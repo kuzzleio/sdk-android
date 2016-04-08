@@ -10,7 +10,6 @@ import org.mockito.stubbing.Answer;
 import java.net.URISyntaxException;
 import java.util.Date;
 
-import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;

@@ -36,6 +36,7 @@ import io.kuzzle.sdk.state.KuzzleQueue;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.sdk.util.Event;
 import io.kuzzle.sdk.util.EventList;
+import io.kuzzle.sdk.util.KuzzleOfflineQueueLoader;
 import io.kuzzle.sdk.util.KuzzleQueryObject;
 import io.kuzzle.sdk.util.KuzzleQueueFilter;
 import io.socket.client.IO;
@@ -165,6 +166,8 @@ public class Kuzzle {
    This structure also allows renewing subscriptions after a connection loss
    */
   protected ConcurrentHashMap<String, ConcurrentHashMap<String, KuzzleRoom>> subscriptions = new ConcurrentHashMap<>();
+
+  private KuzzleOfflineQueueLoader  offlineQueueLoader;
 
   /**
    * The constant security.
@@ -1327,6 +1330,7 @@ public class Kuzzle {
         o.setCb(listener);
         o.setQuery(object);
         this.offlineQueue.addToQueue(o);
+        Kuzzle.this.emitEvent(KuzzleEvent.offlineQueuePush, o);
       }
     }
     return this;
@@ -1823,13 +1827,39 @@ public class Kuzzle {
     }
   }
 
+  private void  mergeOfflineQueueWithLoader() {
+    KuzzleQueue<KuzzleQueryObject> additionalOfflineQueue = this.offlineQueueLoader.load();
+    try {
+      for (KuzzleQueryObject additionalQuery : additionalOfflineQueue) {
+        for (KuzzleQueryObject offlineQuery : this.offlineQueue) {
+          if (additionalQuery.getQuery() != null && additionalQuery.getQuery().has("requestId") && additionalQuery.getQuery().has("action") && additionalQuery.getQuery().has("controller")) {
+            if (!offlineQuery.getQuery().getString("requestId").equals(additionalQuery.getQuery().getString("requestId"))) {
+              this.offlineQueue.addToQueue(additionalOfflineQueue.dequeue());
+            } else {
+              additionalOfflineQueue.dequeue();
+            }
+          } else {
+            throw new IllegalArgumentException("Invalid offline queue request. One or more missing properties: requestId, action, controller.");
+          }
+        }
+      }
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   /**
    * Play all queued requests, in order.
    */
   private void dequeue() {
+    if (offlineQueueLoader != null) {
+      this.mergeOfflineQueueWithLoader();
+    }
     if (this.offlineQueue.getQueue().size() > 0) {
       try {
-        this.emitRequest(((KuzzleQueryObject) this.offlineQueue.getQueue().peek()).getQuery(), ((KuzzleQueryObject) this.offlineQueue.getQueue().poll()).getCb());
+        KuzzleQueryObject query = (KuzzleQueryObject) this.offlineQueue.getQueue().poll();
+        this.emitRequest(query.getQuery(), query.getCb());
+        this.emitEvent(KuzzleEvent.offlineQueuePop, query);
       } catch (JSONException e) {
         throw new RuntimeException(e);
       }
@@ -2042,6 +2072,15 @@ public class Kuzzle {
    */
   public long getReconnectionDelay() {
     return this.reconnectionDelay;
+  }
+
+  /**
+   * Sets offline queue loader.
+   *
+   * @param offlineQueueLoader the offline queue loader
+   */
+  public void setOfflineQueueLoader(KuzzleOfflineQueueLoader  offlineQueueLoader) {
+    this.offlineQueueLoader = offlineQueueLoader;
   }
 
   /**
