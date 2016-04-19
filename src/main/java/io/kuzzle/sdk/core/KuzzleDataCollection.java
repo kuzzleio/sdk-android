@@ -468,66 +468,6 @@ public class KuzzleDataCollection {
     return new KuzzleDataMapping(this, mapping);
   }
 
-  /**
-   * Delete kuzzle data collection.
-   *
-   * @return the kuzzle data collection
-   */
-  public KuzzleDataCollection delete() {
-    return this.delete(null, null);
-  }
-
-  /**
-   * Delete kuzzle data collection.
-   *
-   * @param options the options
-   * @return the kuzzle data collection
-   */
-  public KuzzleDataCollection delete(final KuzzleOptions options) {
-    return this.delete(options, null);
-  }
-
-  /**
-   * Delete kuzzle data collection.
-   *
-   * @param listener the listener
-   * @return the kuzzle data collection
-   */
-  public KuzzleDataCollection delete(final KuzzleResponseListener<JSONObject> listener) {
-    return this.delete(null, listener);
-  }
-
-  /**
-   * Delete kuzzle data collection.
-   *
-   * @param options  the options
-   * @param listener the listener
-   * @return the kuzzle data collection
-   */
-  public KuzzleDataCollection delete(final KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener) {
-    JSONObject data = new JSONObject();
-    try {
-      this.kuzzle.addHeaders(data, this.getHeaders());
-      this.kuzzle.query(makeQueryArgs("admin", "deleteCollection"), data, options, new OnQueryDoneListener() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          if (listener != null) {
-            listener.onSuccess(response);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          if (listener != null) {
-            listener.onError(error);
-          }
-        }
-      });
-    }  catch (JSONException e) {
-      throw new RuntimeException(e);
-    }
-    return this;
-  }
 
   /**
    * Delete a persistent document.
