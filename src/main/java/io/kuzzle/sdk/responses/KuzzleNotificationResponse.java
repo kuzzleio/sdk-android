@@ -8,6 +8,7 @@ import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.enums.Scope;
 import io.kuzzle.sdk.enums.State;
+import io.kuzzle.sdk.enums.Users;
 
 public class KuzzleNotificationResponse {
   private int status;
@@ -18,6 +19,7 @@ public class KuzzleNotificationResponse {
   private String  action;
   private State   state;
   private Scope   scope;
+  private Users   users;
   private JSONObject  metadata;
   private String requestId;
   private KuzzleDocument document;
@@ -31,11 +33,12 @@ public class KuzzleNotificationResponse {
       this.collection = object.getString("collection");
       this.controller = object.getString("controller");
       this.action = object.getString("action");
-      this.state = State.valueOf(object.getString("state").toUpperCase());
+      this.state = (object.isNull("state") ? null : State.valueOf(object.getString("state").toUpperCase()));
       this.metadata = object.getJSONObject("metadata");
       this.requestId = object.getString("requestId");
       this.result = (object.isNull("result") ? null : object.getJSONObject("result"));
-      this.scope = (this.result.isNull("scope") ? null : Scope.valueOf(this.result.getString("scope").toUpperCase()));
+      this.scope = (object.isNull("scope") ? null : Scope.valueOf(object.getString("scope").toUpperCase()));
+      this.users = (object.isNull("user") ? null : Users.valueOf(object.getString("user").toUpperCase()));
       if (!object.getJSONObject("result").isNull("_source")) {
         this.document = new KuzzleDocument(new KuzzleDataCollection(kuzzle, this.index, this.collection), object.getJSONObject("result"));
         this.document.setId(this.result.getString("_id"));
@@ -119,5 +122,13 @@ public class KuzzleNotificationResponse {
 
   public void setResult(JSONObject result) {
     this.result = result;
+  }
+
+  public Users getUsers() {
+    return users;
+  }
+
+  public void setUsers(Users users) {
+    this.users = users;
   }
 }
