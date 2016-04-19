@@ -179,7 +179,7 @@ public class AbstractKuzzleSecurityDocument {
    * Perform a partial update on this object
    *
    * @param content - content used to update the object
-   * @throws JSONException
+   * @throws JSONException - JSONException
    */
   public void update(final JSONObject content) throws JSONException {
     this.update(content, null, null);
@@ -190,7 +190,7 @@ public class AbstractKuzzleSecurityDocument {
    *
    * @param content - content used to update the object
    * @param options - optional arguments
-   * @throws JSONException
+   * @throws JSONException - JSONException
    */
   public void update(final JSONObject content, final KuzzleOptions options) throws JSONException {
     this.update(content, options, null);

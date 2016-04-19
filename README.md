@@ -5,7 +5,7 @@
 Official Kuzzle Android SDK 
 ======
 
-This SDK version requires Kuzzle v1.0.0-beta.1 or higher.
+This SDK version requires Kuzzle v1.0.0-beta.6 or higher.
 
 ## About Kuzzle
 
@@ -27,7 +27,7 @@ You can configure your android project to get the Kuzzle's android SDK from jcen
             jcenter()
         }
     }
-    compile 'io.kuzzle:sdk-android:1.4.6'
+    compile 'io.kuzzle:sdk-android:1.0.0-beta.1'
 
 ## Basic usage
 
