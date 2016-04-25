@@ -10,7 +10,6 @@ import org.mockito.stubbing.Answer;
 
 import java.net.URISyntaxException;
 
-import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.Mode;
@@ -46,24 +45,26 @@ public class countTest {
   });
   private JSONObject mockNotif = new JSONObject();
   private JSONObject  mockResponse = new JSONObject();
-  private Kuzzle k;
+  private KuzzleExtend k;
   private KuzzleRoomExtend room;
 
   @Before
-  public void setUp() throws JSONException {
+  public void setUp() throws JSONException, URISyntaxException {
     mockNotif.put("type", "type")
-      .put("index", "index")
-      .put("status", 200)
-      .put("collection", "collection")
-      .put("controller", "controller")
-      .put("action", "action")
-      .put("state", "ALL")
-      .put("scope", "ALL")
-      .put("metadata", new JSONObject())
-      .put("result", new JSONObject())
-      .put("requestId", "42");
+        .put("index", "index")
+        .put("status", 200)
+        .put("collection", "collection")
+        .put("controller", "controller")
+        .put("action", "action")
+        .put("state", "ALL")
+        .put("scope", "ALL")
+        .put("metadata", new JSONObject())
+        .put("result", new JSONObject())
+        .put("requestId", "42");
     mockResponse.put("result", new JSONObject().put("channel", "channel").put("roomId", "42"));
-    k = mock(Kuzzle.class);
+    k = spy(new KuzzleExtend("http://localhost:7512", null, null));
+    k.setSocket(mock(Socket.class));
+    k.setState(KuzzleStates.CONNECTED);
     when(k.getHeaders()).thenReturn(new JSONObject());
     room = new KuzzleRoomExtend(new KuzzleDataCollection(k, "index", "test"));
   }
@@ -135,9 +136,16 @@ public class countTest {
   }
 
   @Test
-  public void testCount() throws JSONException {
+  public void testCount() throws JSONException, URISyntaxException {
     JSONObject o = mock(JSONObject.class);
     when(o.put(any(String.class), any(Object.class))).thenReturn(new JSONObject());
+
+    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", null, null);
+    extended.setSocket(mock(Socket.class));
+    extended.setState(KuzzleStates.CONNECTED);
+    extended = spy(extended);
+    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "index", "test"));
+    room.setRoomId("foobar");
 
     doAnswer(new Answer() {
       @Override
@@ -146,11 +154,11 @@ public class countTest {
         ((OnQueryDoneListener)invocation.getArguments()[2]).onError(new JSONObject());
         return null;
       }
-    }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(OnQueryDoneListener.class));
+    }).when(extended).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(OnQueryDoneListener.class));
     room.setRoomId("foobar");
     room.count(mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(k, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(OnQueryDoneListener.class));
+    verify(extended, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "subscribe");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "count");
   }
