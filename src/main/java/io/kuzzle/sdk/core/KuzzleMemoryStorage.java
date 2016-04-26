@@ -12,7 +12,20 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.util.memoryStorage.Action;
 import io.kuzzle.sdk.util.memoryStorage.BitOP;
 import io.kuzzle.sdk.util.memoryStorage.KuzzleMemoryStorageCommands;
+import io.kuzzle.sdk.util.memoryStorage.ObjectCommand;
 import io.kuzzle.sdk.util.memoryStorage.Position;
+import io.kuzzle.sdk.util.memoryStorage.SetParams;
+import io.kuzzle.sdk.util.memoryStorage.ZParams;
+
+/**
+ * Kuzzle's memory storage is a separate data store from the database layer.
+ * It is internaly based on Redis. You can access most of Redis functions (all
+ * lowercased), excepting:
+ *   * all cluster based functions
+ *   * all script based functions
+ *   * all cursors functions
+ *
+ */
 
 public class KuzzleMemoryStorage implements KuzzleMemoryStorageCommands {
 
@@ -121,7 +134,7 @@ public class KuzzleMemoryStorage implements KuzzleMemoryStorageCommands {
   }
 
   @Override
-  public KuzzleMemoryStorage bitpos(String id, long bit) {
+  public KuzzleMemoryStorage bitpos(final String id, final long bit) {
     try {
       return bitpos(new JSONObject()
           .put("_id", id)
@@ -133,7 +146,7 @@ public class KuzzleMemoryStorage implements KuzzleMemoryStorageCommands {
   }
 
   @Override
-  public KuzzleMemoryStorage bitpos(String id, long bit, long start) {
+  public KuzzleMemoryStorage bitpos(final String id, final long bit, final long start) {
     try {
       return bitpos(new JSONObject()
           .put("_id", id)
@@ -161,18 +174,6 @@ public class KuzzleMemoryStorage implements KuzzleMemoryStorageCommands {
 
   private KuzzleMemoryStorage bitpos(final JSONObject query) {
     return send(Action.bitpos, query);
-  }
-
-  @Override
-  public KuzzleMemoryStorage blpop(final String key, long timeout) {
-    try {
-      return send(Action.blpop, new JSONObject()
-          .put("body", new JSONObject()
-              .put("_id", key)
-              .put("timeout", timeout)));
-    } catch (JSONException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   @Override
@@ -206,28 +207,12 @@ public class KuzzleMemoryStorage implements KuzzleMemoryStorageCommands {
   }
 
   @Override
-  public KuzzleMemoryStorage decrby(String key, long integer) {
+  public KuzzleMemoryStorage decrby(final String key, final long integer) {
     try {
       return send(Action.decrby, new JSONObject()
           .put("_id", key)
           .put("body", new JSONObject()
             .put("value", integer)));
-    } catch (JSONException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  public KuzzleMemoryStorage del(final String... keys) {
-    JSONObject query = new JSONObject();
-    try {
-      if (keys.length == 1) {
-        query.put("_id", keys[0]);
-      } else {
-        query.put("body", new JSONObject()
-          .put("keys", keys));
-      }
-      return send(Action.del, query);
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
@@ -241,27 +226,6 @@ public class KuzzleMemoryStorage implements KuzzleMemoryStorageCommands {
   @Override
   public KuzzleMemoryStorage  exec() {
     return send(Action.exec);
-  }
-
-  @Override
-  public KuzzleMemoryStorage exists(final String key) {
-    try {
-      return send(Action.exists, new JSONObject()
-        .put("_id", key));
-    } catch (JSONException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  public KuzzleMemoryStorage exists(final String... keys) {
-    try {
-      return send(Action.exists, new JSONObject()
-          .put("body", new JSONObject()
-            .put("keys", keys)));
-    } catch (JSONException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   @Override
@@ -323,13 +287,8 @@ public class KuzzleMemoryStorage implements KuzzleMemoryStorageCommands {
     JSONObject query = new JSONObject();
     try {
       query.put("_id", key);
-      if (fields.length == 1) {
-        query.put("body", new JSONObject()
-            .put("field", fields[0]));
-      } else {
-        query.put("body", new JSONObject()
-            .put("fields", fields));
-      }
+      query.put("body", new JSONObject()
+          .put("fields", fields));
       return send(Action.hdel, query);
     } catch (JSONException e) {
       throw new RuntimeException(e);
@@ -467,7 +426,7 @@ public class KuzzleMemoryStorage implements KuzzleMemoryStorageCommands {
   }
 
   @Override
-  public KuzzleMemoryStorage lrem(final String key, final long count, String value) {
+  public KuzzleMemoryStorage lrem(final String key, final long count, final String value) {
     try {
       return send(Action.lrem, new JSONObject()
           .put("_id", key)
@@ -480,7 +439,7 @@ public class KuzzleMemoryStorage implements KuzzleMemoryStorageCommands {
   }
 
   @Override
-  public KuzzleMemoryStorage lset(String key, long index, String value) {
+  public KuzzleMemoryStorage lset(final String key, final long index, final String value) {
     try {
       return send(Action.lset, new JSONObject()
           .put("_id", key)
@@ -493,7 +452,7 @@ public class KuzzleMemoryStorage implements KuzzleMemoryStorageCommands {
   }
 
   @Override
-  public KuzzleMemoryStorage ltrim(String key, long start, long end) {
+  public KuzzleMemoryStorage ltrim(final String key, final long start, final long end) {
     try {
       return send(Action.lrange, new JSONObject()
           .put("_id", key)
@@ -506,720 +465,835 @@ public class KuzzleMemoryStorage implements KuzzleMemoryStorageCommands {
   }
 
   @Override
-  public KuzzleMemoryStorage mset(String... keysvalues) {
-    return null;
+  public KuzzleMemoryStorage mset(final String... keysvalues) {
+    try {
+      return send(Action.mset, new JSONObject()
+          .put("body", new JSONObject()
+            .put("values", keysvalues)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  /*
   @Override
-  public KuzzleMemoryStorage set(final String key, final String value) {
-    return send(Action., putKeyValue(key, value));
+  public KuzzleMemoryStorage multi() {
+    return send(Action.multi);
+  }
+
+  @Override
+  public KuzzleMemoryStorage object(final ObjectCommand subcommand, final String args) {
+    try {
+      return send(Action.object, new JSONObject()
+        .put("body", new JSONObject()
+          .put("subcommand", subcommand.toString())
+          .put("args", args)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage pexpire(final String key, final long milliseconds) {
+    try {
+      return send(Action.pexpire, new JSONObject()
+        .put("_id", key)
+        .put("body", new JSONObject()
+          .put("milliseconds", milliseconds)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage pexpireat(final String key, final long timestamp) {
+    try {
+      return send(Action.pexpireat, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("timestamp", timestamp)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage pfadd(final String key, final String... elements) {
+    try {
+      return send(Action.pfadd, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("elements", elements)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage pfmerge(final String destKey, final String... sourceKeys) {
+    try {
+      return send(Action.pfmerge, new JSONObject()
+          .put("body", new JSONObject()
+              .put("destkey", destKey)
+              .put("sourcekeys", sourceKeys)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage ping() {
+    return send(Action.ping);
+  }
+
+  @Override
+  public KuzzleMemoryStorage psetex(final String key, final long milliseconds, final String value) {
+    try {
+      return send(Action.psetex, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("milliseconds", milliseconds)
+              .put("value", value)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage publish(final String channel, final String message) {
+    try {
+      return send(Action.publish, new JSONObject()
+          .put("body", new JSONObject()
+              .put("channel", channel)
+              .put("message", message)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage randomkey() {
+    return send(Action.randomkey);
+  }
+
+  @Override
+  public KuzzleMemoryStorage rename(final String oldkey, final String newkey) {
+    try {
+      return send(Action.rename, new JSONObject()
+          .put("_id", oldkey)
+          .put("body", new JSONObject()
+              .put("newkey", newkey)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage renamenx(final String oldkey, final String newkey) {
+    try {
+      return send(Action.renamenx, new JSONObject()
+          .put("_id", oldkey)
+          .put("body", new JSONObject()
+              .put("newkey", newkey)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage restore(final String key, final long ttl, final String content) {
+    try {
+      return send(Action.restore, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("ttl", ttl)
+              .put("content", content)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage rpoplpush(final String srckey, final String dstkey) {
+    try {
+      return send(Action.rpoplpush, new JSONObject()
+          .put("body", new JSONObject()
+              .put("source", srckey)
+              .put("destination", dstkey)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage sadd(final String key, final String... members) {
+    try {
+      return send(Action.sadd, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("members", members)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage save() {
+    return send(Action.save);
+  }
+
+  @Override
+  public KuzzleMemoryStorage sdiffstore(final String dstkey, final String... keys) {
+    try {
+      return send(Action.sdiffstore, new JSONObject()
+          .put("body", new JSONObject()
+              .put("destination", dstkey)
+              .put("keys", keys)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public KuzzleMemoryStorage set(final String key, final String value, final SetParams params) {
     JSONObject kuzzleQuery;
+    JSONObject body = new JSONObject();
     try {
-      kuzzleQuery = new JSONObject().put(key, value);
+      kuzzleQuery = new JSONObject().put("_id", key);
+      body.put("value", value);
       for (Map.Entry<String, Object> entry : params.getParams().entrySet()) {
-        kuzzleQuery.put(entry.getKey(), entry.getValue());
+        body.put(entry.getKey(), entry.getValue());
       }
+      kuzzleQuery.put("body", body);
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
-    return send(Action., kuzzleQuery);
+    return send(Action.set, kuzzleQuery);
   }
 
   @Override
-  public KuzzleMemoryStorage get(String key) {
-
+  public KuzzleMemoryStorage setbit(final String key, final long offset, final Object value) {
+    try {
+      return send(Action.setbit, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("offset", offset)
+              .put("value", value)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage exists(String key) {
-
+  public KuzzleMemoryStorage setex(final String key, final int seconds, final String value) {
+    try {
+      return send(Action.setbit, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("seconds", seconds)
+              .put("value", value)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage exists(String... keys) {
-
+  public KuzzleMemoryStorage setrange(final String key, final long offset, final String value) {
+    try {
+      return send(Action.setrange, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("offset", offset)
+              .put("value", value)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage del(String... keys) {
-
+  public KuzzleMemoryStorage sinterstore(final String dstkey, final String... keys) {
+    try {
+      return send(Action.sinterstore, new JSONObject()
+          .put("body", new JSONObject()
+              .put("destination", dstkey)
+              .put("keys", keys)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage type(String key) {
-
+  public KuzzleMemoryStorage sismember(final String key, final String member) {
+    try {
+      return send(Action.sinterstore, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("member", member)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage keys(String pattern) {
-
+  public KuzzleMemoryStorage smove(final String srckey, final String dstkey, final String member) {
+    try {
+      return send(Action.smove, new JSONObject()
+          .put("_id", srckey)
+          .put("body", new JSONObject()
+              .put("destination", dstkey)
+              .put("member", member)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage rename(String oldkey, String newkey) {
-
+  public KuzzleMemoryStorage spop(final String key) {
+    try {
+      return send(Action.spop, new JSONObject()
+        .put("_id", key));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage renamenx(String oldkey, String newkey) {
-
+  public KuzzleMemoryStorage spop(final String key, final long count) {
+    try {
+      return send(Action.spop, new JSONObject()
+        .put("_id", key)
+        .put("body", new JSONObject()
+          .put("count", count)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage expire(String key, int seconds) {
-    putKeyValue(key, seconds);
-    return send(Thread.currentThread().getStackTrace()[1].getClassName(), kuzzleQuery);
+  public KuzzleMemoryStorage srem(final String key, final String... members) {
+    try {
+      return send(Action.srem, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("members", members)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage expireAt(String key, long unixTime) {
-    putKeyValue(key, unixTime);
-    return send(Thread.currentThread().getStackTrace()[1].getClassName(), kuzzleQuery);
+  public KuzzleMemoryStorage sunionstore(final String dstkey, final String... keys) {
+    try {
+      return send(Action.sunionstore, new JSONObject()
+          .put("body", new JSONObject()
+              .put("destination", dstkey)
+              .put("keys", keys)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage ttl(String key) {
-
+  public KuzzleMemoryStorage unwatch() {
+    return send(Action.unwatch);
   }
 
   @Override
-  public KuzzleMemoryStorage setbit(String key, long offset, boolean value) {
-
+  public KuzzleMemoryStorage wait(final int replicas, final long timeout) {
+    try {
+      return send(Action.wait, new JSONObject()
+          .put("body", new JSONObject()
+              .put("numslaves", replicas)
+              .put("timeout", timeout)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage setbit(String key, long offset, String value) {
-
+  public KuzzleMemoryStorage zcount(final String key, final Object min, final Object max) {
+    try {
+      return send(Action.zcount, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+            .put("min", min)
+            .put("max", max)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage getbit(String key, long offset) {
-    putKeyValue(key, offset);
-    return send(Thread.currentThread().getStackTrace()[1].getClassName(), kuzzleQuery);
+  public KuzzleMemoryStorage zincrby(final String key, final double score, final String member) {
+    try {
+      return send(Action.zincrby, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("value", score)
+              .put("member", member)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage setrange(String key, long offset, String value) {
-
+  public KuzzleMemoryStorage zinterstore(final String destination, final String[] sets, final ZParams.Aggregate aggregate, final Object... weights) {
+    try {
+      return send(Action.zinterstore, new JSONObject()
+          .put("body", new JSONObject()
+            .put("destination", destination)
+            .put("keys", sets)
+            .put("aggregate", aggregate.toString())
+            .put("weights", weights)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage getrange(String key, long startOffset, long endOffset) {
-
+  public KuzzleMemoryStorage zlexcount(final String key, final long min, final long max) {
+    try {
+      return send(Action.zlexcount, new JSONObject()
+        .put("_id", key)
+        .put("body", new JSONObject()
+          .put("min", min)
+          .put("max", max)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage getSet(String key, String value) {
-    putKeyValue(key, value);
-    return send(Thread.currentThread().getStackTrace()[1].getClassName(), kuzzleQuery);
+  public KuzzleMemoryStorage zrange(final String key, final long start, final long end, final boolean withscores) {
+    try {
+      return send(Action.zrange, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("start", start)
+              .put("stop", end)
+              .put("withscores", withscores)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage zrangebylex(final String key, final long min, final long max, final long offset, final long count) {
+    try {
+      return send(Action.zrangebylex, new JSONObject()
+        .put("_id", key)
+        .put("body", new JSONObject()
+          .put("min", min)
+          .put("max", max)
+          .put("offset", offset)
+          .put("count", count)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage zrangebyscore(final String key, final long min, final long max, final boolean withscores, final long offset, final long count) {
+    try {
+      return send(Action.zrangebylex, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("min", min)
+              .put("max", max)
+              .put("withscores", withscores)
+              .put("offset", offset)
+              .put("count", count)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage zrem(final String key, final String... members) {
+    try {
+      return send(Action.zrem, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("members", members)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage zremrangebylex(final String key, final long min, final long max, final long offset, final long count) {
+    try {
+      return send(Action.zremrangebylex, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("min", min)
+              .put("max", max)
+              .put("offset", offset)
+              .put("count", count)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage zrevrangebyscore(final String key, final long min, final long max, final boolean withscores, final long offset, final long count) {
+    try {
+      return send(Action.zrevrangebyscore, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("min", min)
+              .put("max", max)
+              .put("withscores", withscores)
+              .put("offset", offset)
+              .put("count", count)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage zrevrank(final String key, final String member) {
+    try {
+      return send(Action.zrevrank, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("member", member)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  // Unique Key argument methods
+
+  private KuzzleMemoryStorage sendUniqueKeyArgument(final Action action, final String key) {
+    try {
+      return send(action, new JSONObject()
+          .put("_id", key));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage decr(final String key) {
+    return sendUniqueKeyArgument(Action.decr, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage get(final String key) {
+    return sendUniqueKeyArgument(Action.get, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage dump(final String key) {
+    return sendUniqueKeyArgument(Action.dump, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage hgetall(final String key) {
+    return sendUniqueKeyArgument(Action.hgetall, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage hkeys(final String key) {
+    return sendUniqueKeyArgument(Action.hkeys, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage hlen(final String key) {
+    return sendUniqueKeyArgument(Action.hlen, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage hstrlen(final String key) {
+    return sendUniqueKeyArgument(Action.hstrlen, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage hvals(final String key) {
+    return sendUniqueKeyArgument(Action.hvals, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage incr(final String key) {
+    return sendUniqueKeyArgument(Action.incr, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage llen(final String key) {
+    return sendUniqueKeyArgument(Action.llen, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage lpop(final String key) {
+    return sendUniqueKeyArgument(Action.lpop, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage persist(final String key) {
+    return sendUniqueKeyArgument(Action.persist, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage pttl(final String key) {
+    return sendUniqueKeyArgument(Action.pttl, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage rpop(final String key) {
+    return sendUniqueKeyArgument(Action.rpop, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage scard(final String key) {
+    return sendUniqueKeyArgument(Action.scard, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage smembers(final String key) {
+    return sendUniqueKeyArgument(Action.smembers, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage strlen(final String key) {
+    return sendUniqueKeyArgument(Action.strlen, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage ttl(final String key) {
+    return sendUniqueKeyArgument(Action.ttl, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage type(final String key) {
+    return sendUniqueKeyArgument(Action.type, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage zcard(final String key) {
+    return sendUniqueKeyArgument(Action.zcard, key);
+  }
+
+  @Override
+  public KuzzleMemoryStorage getset(String key, String value) {
+    try {
+      return send(Action.getset, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("value", value)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage lpushx(String key, String value) {
+    try {
+      return send(Action.lpushx, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("value", value)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  // key key
+  private KuzzleMemoryStorage keyKey(final Action action, final String... keys) {
+    try {
+      return send(action, new JSONObject()
+          .put("body", new JSONObject()
+              .put("keys", keys)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage del(final String... keys) {
+    return keyKey(Action.del, keys);
   }
 
   @Override
   public KuzzleMemoryStorage mget(String... keys) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage setnx(String key, String value) {
-    putKeyValue(key, value);
-    return send(Thread.currentThread().getStackTrace()[1].getClassName(), kuzzleQuery);
-  }
-
-  @Override
-  public KuzzleMemoryStorage setex(String key, int seconds, String value) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage mset(String... keysvalues) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage msetnx(String... keysvalues) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage decrBy(String key, long integer) {
-    putKeyValue(key, integer);
-    return send(Thread.currentThread().getStackTrace()[1].getClassName(), kuzzleQuery);
-  }
-
-  @Override
-  public KuzzleMemoryStorage decr(String key) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage incrBy(String key, long integer) {
-    putKeyValue(key, integer);
-    return send(Thread.currentThread().getStackTrace()[1].getClassName(), kuzzleQuery);
-  }
-
-  @Override
-  public KuzzleMemoryStorage incrByFloat(String key, double value) {
-    putKeyValue(key, value);
-    return send(Thread.currentThread().getStackTrace()[1].getClassName(), kuzzleQuery);
-  }
-
-  @Override
-  public KuzzleMemoryStorage incr(String key) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage substr(String key, int start, int end) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage hset(String key, String field, String value) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage hget(String key, String field) {
-    putKeyValue(key, field);
-    return send(Thread.currentThread().getStackTrace()[1].getClassName(), kuzzleQuery);
-  }
-
-  @Override
-  public KuzzleMemoryStorage hsetnx(String key, String field, String value) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage hmset(String key, Map<String, String> hash) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage hmget(String key, String... fields) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage hincrBy(String key, String field, long value) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage hincrByFloat(String key, String field, double value) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage hexists(String key, String field) {
-    putKeyValue(key, field);
-    return send(Thread.currentThread().getStackTrace()[1].getClassName(), kuzzleQuery);
-  }
-
-  @Override
-  public KuzzleMemoryStorage hdel(String key, String... fields) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage hlen(String key) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage hkeys(String key) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage hvals(String key) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage hgetAll(String key) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage rpush(String key, String... strings) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage lpush(String key, String... strings) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage llen(String key) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage lrange(String key, long start, long end) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage ltrim(String key, long start, long end) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage lindex(String key, long index) {
-    putKeyValue(key, index);
-    return send(Thread.currentThread().getStackTrace()[1].getClassName(), kuzzleQuery);
-  }
-
-  @Override
-  public KuzzleMemoryStorage lset(String key, long index, String value) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage lrem(String key, long count, String value) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage lpop(String key) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage rpop(String key) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage rpoplpush(String srckey, String dstkey) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage sadd(String key, String... members) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage smembers(String key) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage srem(String key, String... member) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage spop(String key) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage spop(String key, long count) {
-    putKeyValue(key, count);
-    return send(Thread.currentThread().getStackTrace()[1].getClassName(), kuzzleQuery);
-  }
-
-  @Override
-  public KuzzleMemoryStorage smove(String srckey, String dstkey, String member) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage scard(String key) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage sismember(String key, String member) {
-    putKeyValue(key, member);
-    return send(Thread.currentThread().getStackTrace()[1].getClassName(), kuzzleQuery);
-  }
-
-  @Override
-  public KuzzleMemoryStorage sinter(String... keys) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage sinterstore(String dstkey, String... keys) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage sunion(String... keys) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage sunionstore(String dstkey, String... keys) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage sdiff(String... keys) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage sdiffstore(String dstkey, String... keys) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage srandmember(String key) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zadd(String key, double score, String member) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zadd(String key, double score, String member, ZAddParams params) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zadd(String key, Map<String, Double> scoreMembers) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zadd(String key, Map<String, Double> scoreMembers, ZAddParams params) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zrange(String key, long start, long end) {
-
+    return keyKey(Action.mget, keys);
   }
 
   @Override
-  public KuzzleMemoryStorage zrem(String key, String... members) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zincrby(String key, double score, String member) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zincrby(String key, double score, String member, ZIncrByParams params) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zrank(String key, String member) {
-    putKeyValue(key, member);
-    return send(Thread.currentThread().getStackTrace()[1].getClassName(), kuzzleQuery);
-  }
-
-  @Override
-  public KuzzleMemoryStorage zrevrank(String key, String member) {
-    putKeyValue(key, member);
-    return send(Thread.currentThread().getStackTrace()[1].getClassName(), kuzzleQuery);
-  }
-
-  @Override
-  public KuzzleMemoryStorage zrevrange(String key, long start, long end) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zrangeWithScores(String key, long start, long end) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zrevrangeWithScores(String key, long start, long end) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zcard(String key) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zscore(String key, String member) {
-    putKeyValue(key, member);
-    return send(Thread.currentThread().getStackTrace()[1].getClassName(), kuzzleQuery);
-  }
-
-  @Override
-  public KuzzleMemoryStorage watch(String... keys) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage sort(String key) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage sort(String key, SortingParams sortingParameters) {
-    putKeyValue(key, sortingParameters);
-    return send(Thread.currentThread().getStackTrace()[1].getClassName(), kuzzleQuery);
-  }
-
-  @Override
-  public KuzzleMemoryStorage blpop(String[] args) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage sort(String key, SortingParams sortingParameters, String dstkey) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage sort(String key, String dstkey) {
-    putKeyValue(key, dstkey);
-    return send(Thread.currentThread().getStackTrace()[1].getClassName(), kuzzleQuery);
-  }
-
-  @Override
-  public KuzzleMemoryStorage brpop(String[] args) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage brpoplpush(String source, String destination, int timeout) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zcount(String key, double min, double max) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zcount(String key, String min, String max) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zrangeByScore(String key, double min, double max) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zrangeByScore(String key, String min, String max) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zrangeByScore(String key, double min, double max, int offset, int count) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zrangeByScoreWithScores(String key, double min, double max) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zrangeByScoreWithScores(String key, double min, double max, int offset, int count) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zrangeByScoreWithScores(String key, String min, String max) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zrangeByScoreWithScores(String key, String min, String max, int offset, int count) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zrevrangeByScore(String key, double max, double min) {
-
+  public KuzzleMemoryStorage pfcount(String... keys) {
+    return keyKey(Action.pfcount, keys);
   }
 
   @Override
-  public KuzzleMemoryStorage zrevrangeByScore(String key, String max, String min) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zrevrangeByScore(String key, double max, double min, int offset, int count) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zrevrangeByScoreWithScores(String key, double max, double min) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zrevrangeByScoreWithScores(String key, String max, String min) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zremrangeByRank(String key, long start, long end) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zremrangeByScore(String key, double start, double end) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zremrangeByScore(String key, String start, String end) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zunionstore(String dstkey, String... sets) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zunionstore(String dstkey, ZParams params, String... sets) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zinterstore(String dstkey, String... sets) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage zinterstore(String dstkey, ZParams params, String... sets) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage strlen(String key) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage lpushx(String key, String... string) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage persist(String key) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage rpushx(String key, String... string) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage linsert(String key, LIST_POSITION where, String pivot, String value) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage bgsave() {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage lastsave() {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage save() {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage configSet(String parameter, String value) {
-  }
-
-  @Override
-  public KuzzleMemoryStorage configGet(String pattern) {
-
-  }
-
-  @Override
-  public KuzzleMemoryStorage configResetStat() {
-
+  public KuzzleMemoryStorage exists(final String... keys) {
+    return keyKey(Action.exists, keys);
   }
 
   @Override
-  public KuzzleMemoryStorage multi() {
-
+  public KuzzleMemoryStorage sdiff(final String... keys) {
+    return keyKey(Action.sdiff, keys);
   }
 
   @Override
-  public KuzzleMemoryStorage exec() {
-    return null;
+  public KuzzleMemoryStorage sinter(final String... keys) {
+    return keyKey(Action.sinter, keys);
   }
 
   @Override
-  public KuzzleMemoryStorage send() {
-
+  public KuzzleMemoryStorage sunion(final String... keys) {
+    return keyKey(Action.sunion, keys);
   }
 
   @Override
-  public KuzzleMemoryStorage discard() {
-
+  public KuzzleMemoryStorage watch(final String... keys) {
+    return keyKey(Action.watch, keys);
   }
 
   @Override
-  public KuzzleMemoryStorage objectRefcount(String key) {
-
+  public KuzzleMemoryStorage incrby(String key, long value) {
+    try {
+      return send(Action.incrby, new JSONObject()
+        .put("_id", key)
+        .put("body", new JSONObject()
+          .put("value", value)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage objectIdletime(String key) {
-
+  public KuzzleMemoryStorage incrbyfloat(String key, double value) {
+    try {
+      return send(Action.incrbyfloat, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("value", value)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage objectEncoding(String key) {
-
+  public KuzzleMemoryStorage brpop(final String[] args, long timeout) {
+    try {
+      return send(Action.brpop, new JSONObject()
+          .put("body", new JSONObject()
+              .put("src", args)
+              .put("timeout", timeout)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage bitcount(String key) {
-
+  public KuzzleMemoryStorage hget(final String key, final String field) {
+    try {
+      return send(Action.hget, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("field", field)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage bitcount(String key, long start, long end) {
-
+  public KuzzleMemoryStorage hmget(final String key, final String... fields) {
+    JSONObject query = new JSONObject();
+    try {
+      query.put("_id", key);
+      query.put("body", new JSONObject()
+          .put("fields", fields));
+      return send(Action.hmget, query);
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public KuzzleMemoryStorage bitop(BitOP op, String destKey, String... srcKeys) {
-
+  public KuzzleMemoryStorage hsetnx(final String key, final String field, final String value) {
+    try {
+      return send(Action.hsetnx, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("field", field)
+              .put("value", value)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage msetnx(final String... keysvalues) {
+    try {
+      return send(Action.msetnx, new JSONObject()
+          .put("body", new JSONObject()
+              .put("values", keysvalues)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage rpush(final String key, final String... values) {
+    try {
+      return send(Action.rpush, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("values", values)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage hincrbyfloat(final String key, final String field, final double value) {
+    try {
+      return send(Action.hincrbyfloat, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("field", field)
+              .put("value", value)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage srandmember(final String key, final long count) {
+    try {
+      return send(Action.srandmember, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("count", count)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage zrevrange(final String key, final long start, final long end, final boolean withscores) {
+    try {
+      return send(Action.zrevrange, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("start", start)
+              .put("stop", end)
+              .put("withscores", withscores)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public KuzzleMemoryStorage zscore(final String key, final String member) {
+    try {
+      return send(Action.zscore, new JSONObject()
+          .put("_id", key)
+          .put("body", new JSONObject()
+              .put("member", member)));
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
-
-  @Override
-  public KuzzleMemoryStorage waitReplicas(int replicas, long timeout) {
 
-  }
-  */
 }

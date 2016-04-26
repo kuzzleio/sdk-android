@@ -41,7 +41,7 @@ public class SetParams extends Params {
    * @return SetParams
    */
   public SetParams nx() {
-    addParam(NX);
+    addParam(NX, true);
     return this;
   }
 
@@ -50,7 +50,7 @@ public class SetParams extends Params {
    * @return SetParams
    */
   public SetParams xx() {
-    addParam(XX);
+    addParam(XX, true);
     return this;
   }
 
