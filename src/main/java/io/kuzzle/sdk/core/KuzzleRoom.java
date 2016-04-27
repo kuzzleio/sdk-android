@@ -151,7 +151,7 @@ public class KuzzleRoom {
     }
 
     // Delays this call until after the subscription is finished
-    if (this.subscribing) {
+    if (!this.isReady()) {
       this.queue.add(new Runnable() {
         @Override
         public void run() {
@@ -297,11 +297,11 @@ public class KuzzleRoom {
     try {
       final KuzzleOptions options = new KuzzleOptions();
       final JSONObject
-        subscribeQuery = new JSONObject()
-        .put("body", this.filters)
-        .put("scope", this.scope.toString().toLowerCase())
-        .put("state", this.state.toString().toLowerCase())
-        .put("users", this.users.toString().toLowerCase());
+          subscribeQuery = new JSONObject()
+          .put("body", this.filters)
+          .put("scope", this.scope.toString().toLowerCase())
+          .put("state", this.state.toString().toLowerCase())
+          .put("users", this.users.toString().toLowerCase());
 
       options.setMetadata(this.metadata);
       this.kuzzle.addHeaders(subscribeQuery, this.headers);
@@ -354,7 +354,7 @@ public class KuzzleRoom {
    * @return the kuzzle room
    */
   public KuzzleRoom unsubscribe() {
-    if (this.subscribing) {
+    if (!this.isReady()) {
       this.queue.add(new Runnable() {
         @Override
         public void run() {
@@ -571,5 +571,12 @@ public class KuzzleRoom {
 
       this.queue.clear();
     }
+  }
+
+  private boolean isReady() {
+    if (this.kuzzle.state != KuzzleStates.CONNECTED || this.subscribing) {
+      return false;
+    }
+    return true;
   }
 }
