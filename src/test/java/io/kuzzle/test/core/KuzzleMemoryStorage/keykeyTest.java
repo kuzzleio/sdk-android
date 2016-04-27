@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import io.kuzzle.sdk.core.Kuzzle;
+import io.kuzzle.sdk.util.KuzzleJSONObject;
 import io.kuzzle.sdk.util.memoryStorage.Action;
 import io.kuzzle.test.testUtils.KuzzleMemoryStorageExtend;
 
@@ -38,7 +39,7 @@ public class keykeyTest {
   }
 
   public void testIt(final Action action) throws JSONException {
-    verify(ms).send(eq(action), (JSONObject) argument.capture());
+    verify(ms).send(eq(action), (KuzzleJSONObject) argument.capture());
     assertEquals("id1", ((String[])getBody((JSONObject) argument.getValue()).get("keys"))[0]);
     assertEquals("id2", ((String[])getBody((JSONObject) argument.getValue()).get("keys"))[1]);
   }

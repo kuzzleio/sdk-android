@@ -2,10 +2,9 @@ package io.kuzzle.test.testUtils;
 
 import android.support.annotation.NonNull;
 
-import org.json.JSONObject;
-
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleMemoryStorage;
+import io.kuzzle.sdk.util.KuzzleJSONObject;
 import io.kuzzle.sdk.util.memoryStorage.Action;
 
 public class KuzzleMemoryStorageExtend extends KuzzleMemoryStorage {
@@ -13,7 +12,7 @@ public class KuzzleMemoryStorageExtend extends KuzzleMemoryStorage {
     super(kuzzle);
   }
 
-  public KuzzleMemoryStorage send(final Action action, final JSONObject query) {
+  public KuzzleMemoryStorage send(final Action action, final KuzzleJSONObject query) {
     return super.send(action, query);
   }
 }

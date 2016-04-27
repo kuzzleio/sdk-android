@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import io.kuzzle.sdk.core.Kuzzle;
+import io.kuzzle.sdk.util.KuzzleJSONObject;
 import io.kuzzle.sdk.util.memoryStorage.Action;
 import io.kuzzle.test.testUtils.KuzzleMemoryStorageExtend;
 
@@ -61,7 +62,7 @@ public class uniqueKeyArgumentMethodsTest {
     ms.ttl("key");
     ms.type("key");
     ms.zcard("key");
-    verify(ms, times(20)).send((Action) argumentAction.capture(), (JSONObject) argument.capture());
+    verify(ms, times(20)).send((Action) argumentAction.capture(), (KuzzleJSONObject) argument.capture());
     assertEquals(Action.decr, argumentAction.getAllValues().get(0));
     assertEquals(Action.get, argumentAction.getAllValues().get(1));
     assertEquals(Action.dump, argumentAction.getAllValues().get(2));
