@@ -177,6 +177,8 @@ public class Kuzzle {
 
   private KuzzleResponseListener<JSONObject>  loginCallback;
 
+  public KuzzleMemoryStorage memoryStorage;
+
   /**
    * The type Query args.
    */
@@ -266,6 +268,7 @@ public class Kuzzle {
     }
 
     this.security = new KuzzleSecurity(this);
+    this.memoryStorage = new KuzzleMemoryStorage(this);
     this.subscriptions.put("pending", new ConcurrentHashMap<String, KuzzleRoom>());
   }
 

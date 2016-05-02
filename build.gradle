@@ -70,7 +70,7 @@ ext {
     libraryName = 'kuzzle-sdk-android'
     artifact = 'sdk-android'
 
-    libraryDescription = 'Kuzzle Android SKD aar'
+    libraryDescription = 'Kuzzle Android SDK aar'
 
     developerId = 'kblondel'
     developerName = 'Kevin Blondel'
