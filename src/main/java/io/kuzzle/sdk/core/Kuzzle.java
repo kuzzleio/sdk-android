@@ -177,6 +177,8 @@ public class Kuzzle {
 
   private KuzzleResponseListener<JSONObject>  loginCallback;
 
+  public KuzzleMemoryStorage memoryStorage;
+
   /**
    * The type Query args.
    */
@@ -266,6 +268,7 @@ public class Kuzzle {
     }
 
     this.security = new KuzzleSecurity(this);
+    this.memoryStorage = new KuzzleMemoryStorage(this);
     this.subscriptions.put("pending", new ConcurrentHashMap<String, KuzzleRoom>());
   }
 
@@ -2081,6 +2084,75 @@ public class Kuzzle {
    */
   public void setOfflineQueueLoader(KuzzleOfflineQueueLoader  offlineQueueLoader) {
     this.offlineQueueLoader = offlineQueueLoader;
+  }
+
+  /**
+   * Update current user in Kuzzle.
+   *
+   * @param content
+   * @return itself
+   */
+  public Kuzzle updateSelf(final JSONObject content) {
+    return updateSelf(content, null, null);
+  }
+
+  /**
+   * Update current user in Kuzzle.
+   *
+   * @param content
+   * @param options
+   * @return itself
+   */
+  public Kuzzle updateSelf(final JSONObject content, final KuzzleOptions options) {
+    return updateSelf(content, options, null);
+  }
+
+  /**
+   * Update current user in Kuzzle.
+   *
+   * @param content
+   * @param listener
+   * @return itself
+   */
+  public Kuzzle updateSelf(final JSONObject content, final KuzzleResponseListener listener) {
+    return updateSelf(content, null, listener);
+  }
+
+  /**
+   * Update current user in Kuzzle.
+   *
+   * @param content
+   * @param options
+   * @param listener
+   * @return itself
+   */
+  public Kuzzle updateSelf(final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener) {
+    QueryArgs args = new QueryArgs();
+    args.controller = "auth";
+    args.action = "updateSelf";
+
+    try {
+      JSONObject query = new JSONObject().put("body", content);
+      this.query(args, query, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          if (listener != null) {
+            listener.onSuccess(response);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+
+    return this;
   }
 
   /**

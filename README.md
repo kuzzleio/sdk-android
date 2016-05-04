@@ -2,10 +2,10 @@
 [ ![Download](https://api.bintray.com/packages/kblondel/maven/kuzzle-sdk-android/images/download.svg) ](https://bintray.com/kblondel/maven/kuzzle-sdk-android/_latestVersion)
 [![Join the chat at https://gitter.im/kuzzleio/kuzzle](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/kuzzleio/kuzzle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Official Kuzzle Android SDK 
+Official Kuzzle Android SDK
 ======
 
-This SDK version requires Kuzzle v1.0.0-beta.1 or higher.
+This SDK version requires Kuzzle v1.0.0-beta.6 or higher.
 
 ## About Kuzzle
 
@@ -27,7 +27,9 @@ You can configure your android project to get the Kuzzle's android SDK from jcen
             jcenter()
         }
     }
-    compile 'io.kuzzle:sdk-android:1.0.0-beta.1'
+
+    compile 'io.kuzzle:sdk-android:1.5.0'
+
 
 ## Basic usage
 
