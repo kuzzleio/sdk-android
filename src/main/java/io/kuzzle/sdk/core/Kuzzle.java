@@ -2231,7 +2231,7 @@ public class Kuzzle {
    * @param options
    * @return itself
    */
-  public Kuzzle refreshIndex(String index, KuzzleOptions options) {
+  public Kuzzle refreshIndex(String index, final KuzzleOptions options) {
     return this.refreshIndex(index, options, null);
   }
 
@@ -2241,7 +2241,7 @@ public class Kuzzle {
    * @param options
    * @return itself
    */
-  public Kuzzle refreshIndex(KuzzleOptions options) {
+  public Kuzzle refreshIndex(final KuzzleOptions options) {
     return this.refreshIndex(null, options, null);
   }
 
@@ -2252,7 +2252,7 @@ public class Kuzzle {
    * @param listener
    * @return itself
    */
-  public Kuzzle refreshIndex(KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener) {
+  public Kuzzle refreshIndex(final KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener) {
     return this.refreshIndex(null, options, listener);
   }
 
@@ -2274,7 +2274,7 @@ public class Kuzzle {
    * @param listener
    * @return itself
    */
-  public Kuzzle refreshIndex(String index, KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener) {
+  public Kuzzle refreshIndex(String index, final KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener) {
     if (index == null) {
       if (this.defaultIndex == null) {
         throw new IllegalArgumentException("Kuzzle.refreshIndex: index required");
@@ -2363,7 +2363,7 @@ public class Kuzzle {
    * @param listener
    * @return itself
    */
-  public Kuzzle getAutoRefresh(String index, KuzzleOptions options, @NonNull final KuzzleResponseListener<Boolean> listener) {
+  public Kuzzle getAutoRefresh(String index, final KuzzleOptions options, @NonNull final KuzzleResponseListener<Boolean> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.getAutoRefresh: listener required");
     }
@@ -2387,7 +2387,7 @@ public class Kuzzle {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            Boolean result = response.getBoolean("result");
+            boolean result = response.getBoolean("result");
             listener.onSuccess(result);
           } catch(JSONException e) { throw new RuntimeException(e); }
         }
@@ -2408,7 +2408,7 @@ public class Kuzzle {
    * @param autoRefresh
    * @return itself
    */
-  public Kuzzle setAutoRefresh(Boolean autoRefresh) {
+  public Kuzzle setAutoRefresh(final boolean autoRefresh) {
     return this.setAutoRefresh(null, autoRefresh, null, null);
   }
 
@@ -2419,7 +2419,7 @@ public class Kuzzle {
    * @param listener
    * @return itself
    */
-  public Kuzzle setAutoRefresh(Boolean autoRefresh, KuzzleResponseListener<Boolean> listener) {
+  public Kuzzle setAutoRefresh(final boolean autoRefresh, final KuzzleResponseListener<Boolean> listener) {
     return this.setAutoRefresh(null, autoRefresh, null, listener);
   }
 
@@ -2430,7 +2430,7 @@ public class Kuzzle {
    * @param autoRefresh
    * @return itself
    */
-  public Kuzzle setAutoRefresh(String index, Boolean autoRefresh) {
+  public Kuzzle setAutoRefresh(String index, final boolean autoRefresh) {
     return this.setAutoRefresh(index, autoRefresh, null, null);
   }
 
@@ -2441,7 +2441,7 @@ public class Kuzzle {
    * @param options
    * @return itself
    */
-  public Kuzzle setAutoRefresh(Boolean autoRefresh, KuzzleOptions options) {
+  public Kuzzle setAutoRefresh(final boolean autoRefresh, final KuzzleOptions options) {
     return this.setAutoRefresh(null, autoRefresh, options, null);
   }
 
@@ -2453,7 +2453,7 @@ public class Kuzzle {
    * @param options
    * @return itself
    */
-  public Kuzzle setAutoRefresh(String index, Boolean autoRefresh, KuzzleOptions options) {
+  public Kuzzle setAutoRefresh(String index, final boolean autoRefresh, final KuzzleOptions options) {
     return this.setAutoRefresh(index, autoRefresh, options, null);
   }
 
@@ -2465,7 +2465,7 @@ public class Kuzzle {
    * @param listener
    * @return itself
    */
-  public Kuzzle setAutoRefresh(String index, Boolean autoRefresh, final KuzzleResponseListener<Boolean> listener) {
+  public Kuzzle setAutoRefresh(String index, final boolean autoRefresh, final KuzzleResponseListener<Boolean> listener) {
     return this.setAutoRefresh(index, autoRefresh, null, listener);
   }
 
@@ -2477,7 +2477,7 @@ public class Kuzzle {
    * @param listener
    * @return itself
    */
-  public Kuzzle setAutoRefresh(Boolean autoRefresh, KuzzleOptions options, final KuzzleResponseListener<Boolean> listener) {
+  public Kuzzle setAutoRefresh(final boolean autoRefresh, final KuzzleOptions options, final KuzzleResponseListener<Boolean> listener) {
     return this.setAutoRefresh(null, autoRefresh, options, listener);
   }
 
@@ -2490,7 +2490,7 @@ public class Kuzzle {
    * @param listener
    * @return itself
    */
-  public Kuzzle setAutoRefresh(String index, Boolean autoRefresh, KuzzleOptions options, final KuzzleResponseListener<Boolean> listener) {
+  public Kuzzle setAutoRefresh(String index, final boolean autoRefresh, final KuzzleOptions options, final KuzzleResponseListener<Boolean> listener) {
     if (index == null) {
       if (this.defaultIndex == null) {
         throw new IllegalArgumentException("Kuzzle.setAutoRefresh: index required");
@@ -2515,7 +2515,7 @@ public class Kuzzle {
           }
 
           try {
-            Boolean result = response.getBoolean("result");
+            boolean result = response.getBoolean("result");
             listener.onSuccess(result);
           } catch (JSONException e) { throw new RuntimeException(e); }
         }
@@ -2533,9 +2533,5 @@ public class Kuzzle {
 
     return this;
   }
-
-
-
-
 
 }
