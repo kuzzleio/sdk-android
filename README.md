@@ -92,7 +92,7 @@ kuzzle = new Kuzzle("http://localhost:7512", "index", options);
 
 ## Login with an OAuth strategy
 
-If you have an OAUTH plugin like kuzzle-plugin-auth-github you can login and use the KuzzleWebViewClient to make it easier to handle.
+If you have an OAUTH plugin like kuzzle-plugin-auth-passport-oauth you can login and use the KuzzleWebViewClient to make it easier to handle.
 
 ```java
 Handler handler = new Handler();
