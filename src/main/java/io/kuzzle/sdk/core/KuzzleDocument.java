@@ -98,7 +98,7 @@ public class KuzzleDocument {
    * @param listener the listener
    * @return the kuzzle document
    */
-  public KuzzleDocument delete(final KuzzleResponseListener<KuzzleDocument> listener) {
+  public KuzzleDocument delete(final KuzzleResponseListener<String> listener) {
     return this.delete(null, listener);
   }
 
@@ -118,7 +118,7 @@ public class KuzzleDocument {
    * @param listener the listener
    * @return kuzzle document
    */
-  public KuzzleDocument delete(final KuzzleOptions options, final KuzzleResponseListener<KuzzleDocument> listener) {
+  public KuzzleDocument delete(final KuzzleOptions options, final KuzzleResponseListener<String> listener) {
     try {
       if (this.id == null) {
         throw new IllegalStateException("KuzzleDocument.delete: cannot delete a document without a document ID");
@@ -129,7 +129,11 @@ public class KuzzleDocument {
         public void onSuccess(JSONObject object) {
           setId(null);
           if (listener != null) {
-            listener.onSuccess(KuzzleDocument.this);
+            try {
+              listener.onSuccess(object.getString("result"));
+            } catch (JSONException e) {
+              e.printStackTrace();
+            };
           }
         }
 

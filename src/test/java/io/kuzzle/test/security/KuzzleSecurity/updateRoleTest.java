@@ -12,6 +12,7 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
+import io.kuzzle.sdk.security.KuzzleRole;
 import io.kuzzle.sdk.security.KuzzleSecurity;
 
 import static org.junit.Assert.assertEquals;
@@ -63,10 +64,10 @@ public class updateRoleTest {
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.updateRole("foobar", content, new KuzzleResponseListener<String>() {
+    kuzzleSecurity.updateRole("foobar", content, new KuzzleResponseListener<KuzzleRole>() {
       @Override
-      public void onSuccess(String response) {
-        assertEquals(response, "foobar");
+      public void onSuccess(KuzzleRole role) {
+        assertEquals(role.getId(), "foobar");
       }
 
       @Override
