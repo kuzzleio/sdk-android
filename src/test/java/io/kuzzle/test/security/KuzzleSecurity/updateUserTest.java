@@ -13,6 +13,7 @@ import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.security.KuzzleSecurity;
+import io.kuzzle.sdk.security.KuzzleUser;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -51,11 +52,12 @@ public class updateUserTest {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
         JSONObject response = new JSONObject(
-          "{" +
-            "\"result\": {" +
-            "\"_id\": \"foobar\"" +
-            "}" +
-            "}");
+            "{" +
+                "\"result\": {" +
+                "\"_id\": \"foobar\"," +
+                "\"_source\": {}" +
+                "}" +
+                "}");
 
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
@@ -63,10 +65,10 @@ public class updateUserTest {
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.updateUser("foobar", content, new KuzzleResponseListener<String>() {
+    kuzzleSecurity.updateUser("foobar", content, new KuzzleResponseListener<KuzzleUser>() {
       @Override
-      public void onSuccess(String response) {
-        assertEquals(response, "foobar");
+      public void onSuccess(KuzzleUser response) {
+        assertEquals(response.getId(), "foobar");
       }
 
       @Override

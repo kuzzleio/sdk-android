@@ -12,6 +12,7 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
+import io.kuzzle.sdk.security.KuzzleProfile;
 import io.kuzzle.sdk.security.KuzzleSecurity;
 
 import static org.junit.Assert.assertEquals;
@@ -53,7 +54,8 @@ public class updateProfileTest {
         JSONObject response = new JSONObject(
           "{" +
             "\"result\": {" +
-            "\"_id\": \"foobar\"" +
+            "\"_id\": \"foobar\"," +
+              "\"_source\": {}" +
             "}" +
             "}");
 
@@ -63,10 +65,10 @@ public class updateProfileTest {
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.updateProfile("foobar", content, new KuzzleResponseListener<String>() {
+    kuzzleSecurity.updateProfile("foobar", content, new KuzzleResponseListener<KuzzleProfile>() {
       @Override
-      public void onSuccess(String response) {
-        assertEquals(response, "foobar");
+      public void onSuccess(KuzzleProfile response) {
+        assertEquals(response.getId(), "foobar");
       }
 
       @Override
