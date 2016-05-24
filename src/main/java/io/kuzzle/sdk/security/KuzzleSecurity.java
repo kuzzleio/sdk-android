@@ -361,7 +361,7 @@ public class KuzzleSecurity {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(new KuzzleRole(KuzzleSecurity.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result")));
+            listener.onSuccess(new KuzzleRole(KuzzleSecurity.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result").getJSONObject("_source")));
           }
           catch(JSONException e) {
             throw new RuntimeException(e);
@@ -764,7 +764,7 @@ public class KuzzleSecurity {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(new KuzzleProfile(KuzzleSecurity.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result")));
+            listener.onSuccess(new KuzzleProfile(KuzzleSecurity.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result").getJSONObject("_source")));
           }
           catch(JSONException e) {
             throw new RuntimeException(e);
@@ -1165,7 +1165,7 @@ public class KuzzleSecurity {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(new KuzzleUser(KuzzleSecurity.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result")));
+            listener.onSuccess(new KuzzleUser(KuzzleSecurity.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result").getJSONObject("_source")));
           }
           catch(JSONException e) {
             throw new RuntimeException(e);
