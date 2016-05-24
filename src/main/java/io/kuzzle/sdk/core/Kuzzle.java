@@ -510,17 +510,17 @@ public class Kuzzle {
       throw new IllegalArgumentException("KuzzleDataCollection: unable to create a new data collection object: no index specified");
     }
 
-    return this.dataCollectionFactory(this.defaultIndex, collection);
+    return this.dataCollectionFactory(collection, this.defaultIndex);
   }
 
   /**
    * Create a new instance of a KuzzleDataCollection object
    *
-   * @param index      the index
    * @param collection - The name of the data collection you want to manipulate
+   * @param index      the index
    * @return {object} A KuzzleDataCollection instance
    */
-  public KuzzleDataCollection dataCollectionFactory(@NonNull final String index, final String collection) {
+  public KuzzleDataCollection dataCollectionFactory(@NonNull final String collection, @NonNull final String index) {
     this.isValid();
     if (index == null && this.defaultIndex == null) {
       throw new IllegalArgumentException("KuzzleDataCollection: unable to create a new data collection object: no index specified");
