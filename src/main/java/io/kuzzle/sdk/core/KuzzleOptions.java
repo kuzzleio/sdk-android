@@ -26,6 +26,8 @@ public class KuzzleOptions {
   private boolean queuable = true;
   private String defaultIndex = null;
   private boolean replaceIfExist = false;
+  private long from = 0;
+  private long size = 10;
 
   // Used for getting collections
   private KuzzleCollectionType  collectionType = KuzzleCollectionType.ALL;
@@ -391,5 +393,21 @@ public class KuzzleOptions {
    */
   public boolean isReplaceIfExist() {
     return this.replaceIfExist;
+  }
+
+  public long getFrom() {
+    return from;
+  }
+
+  public void setFrom(long from) {
+    this.from = from;
+  }
+
+  public long getSize() {
+    return size;
+  }
+
+  public void setSize(long size) {
+    this.size = size;
   }
 }

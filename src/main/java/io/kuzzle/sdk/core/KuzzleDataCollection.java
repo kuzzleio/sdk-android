@@ -752,11 +752,21 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection fetchAllDocuments(final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDocumentList> listener) {
+  public KuzzleDataCollection fetchAllDocuments(KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDocumentList> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("KuzzleDataCollection.fetchAllDocuments: listener required");
     }
-    return this.advancedSearch(null, options, listener);
+    JSONObject filter = new JSONObject();
+    if (options == null) {
+      options = new KuzzleOptions();
+    }
+    try {
+      filter.put("from", options.getFrom());
+      filter.put("size", options.getSize());
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+    return this.advancedSearch(filter, options, listener);
   }
 
   /**
