@@ -72,8 +72,8 @@ public class fetchAllDocumentsTest {
   @Test
   public void testPagination() throws JSONException {
     KuzzleOptions options = new KuzzleOptions();
-    options.setFrom(1);
-    options.setSize(42);
+    options.setFrom(1L);
+    options.setSize(42L);
     collection.fetchAllDocuments(options, mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
     verify(kuzzle).query(any(Kuzzle.QueryArgs.class), (JSONObject)argument.capture(), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
