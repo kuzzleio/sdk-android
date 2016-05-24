@@ -54,7 +54,8 @@ public class updateProfileTest {
         JSONObject response = new JSONObject(
           "{" +
             "\"result\": {" +
-            "\"_id\": \"foobar\"" +
+            "\"_id\": \"foobar\"," +
+              "\"_source\": {}" +
             "}" +
             "}");
 
