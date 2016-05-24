@@ -70,15 +70,6 @@ public class fetchAllDocumentsTest {
   }
 
   @Test
-  public void testPaginationDefaultValue() throws JSONException {
-    collection.fetchAllDocuments(mock(KuzzleResponseListener.class));
-    ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
-    verify(kuzzle).query(any(Kuzzle.QueryArgs.class), (JSONObject)argument.capture(), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    assertEquals(((JSONObject) argument.getValue()).getJSONObject("body").getLong("from"), 0);
-    assertEquals(((JSONObject) argument.getValue()).getJSONObject("body").getLong("size"), 10);
-  }
-
-  @Test
   public void testPagination() throws JSONException {
     KuzzleOptions options = new KuzzleOptions();
     options.setFrom(1);
