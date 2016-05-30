@@ -1242,19 +1242,23 @@ public class KuzzleSecurity {
   }
 
   /**
+   * Gets the rights array of a given user.
+   *
    * @param id
    * @param listener
-   * @return
+   * @return the KuzzleSecurity instance
    */
   public KuzzleSecurity getUserRights(@NonNull final String id, @NonNull final KuzzleResponseListener<JSONObject> listener) {
     return getUserRights(id, null, listener);
   }
 
   /**
+   * Gets the rights array of a given user.
+   *
    * @param id
    * @param options
    * @param listener
-   * @return
+   * @return the KuzzleSecurity instance
    */
   public KuzzleSecurity getUserRights(@NonNull final String id, final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONObject> listener) {
     if (id == null || id.isEmpty()) {
@@ -1288,17 +1292,21 @@ public class KuzzleSecurity {
   }
 
   /**
+   * Gets the rights array of the currently logged user.
+   *
    * @param listener
-   * @return
+   * @return the KuzzleSecurity instance
    */
   public KuzzleSecurity getMyRights(@NonNull final KuzzleResponseListener<JSONObject> listener) {
     return getMyRights(null, listener);
   }
 
   /**
+   * Gets the rights array of the currently logged user.
+   *
    * @param options
    * @param listener
-   * @return
+   * @return the KuzzleSecurity instance
    */
   public KuzzleSecurity getMyRights(final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONObject> listener) {
     if (listener == null) {
