@@ -1240,4 +1240,23 @@ public class KuzzleSecurity {
   public KuzzleUser userFactory(@NonNull final String id) throws JSONException {
     return new KuzzleUser(this.kuzzle, id, null);
   }
+
+  /**
+   * @param id
+   * @param listener
+   * @return
+   */
+  public KuzzleSecurity getUserRights(@NonNull final String id, @NonNull final KuzzleResponseListener<JSONObject> listener) {
+    return getUserRights(id, null, listener);
+  }
+
+  /**
+   * @param id
+   * @param options
+   * @param listener
+   * @return
+   */
+  public KuzzleSecurity getUserRights(@NonNull final String id, final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONObject> listener) {
+    return this;
+  }
 }
