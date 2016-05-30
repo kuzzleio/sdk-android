@@ -1243,33 +1243,44 @@ public class KuzzleSecurity {
   }
 
   /**
+   * Tells whether an action is allowed, denied or conditional based on the rights
+   * policies provided as the first argument. An action is defined as a couple of
+   * action and controller (mandatory), plus an index and a collection(optional).
    * @param policies
    * @param controller
    * @param action
-   * @return
+   * @return the KuzzleSecurityObject
    */
   public KuzzlePolicies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull final String action) {
     return this.isActionAllowed(policies, controller, action, null, null);
   }
 
   /**
+   * Tells whether an action is allowed, denied or conditional based on the rights
+   * policies provided as the first argument. An action is defined as a couple of
+   * action and controller (mandatory), plus an index and a collection(optional).
+   *
    * @param policies
    * @param controller
    * @param action
    * @param index
-   * @return
+   * @return the KuzzleSecurityObject
    */
   public KuzzlePolicies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller,@NonNull  final String action, final String index) {
     return this.isActionAllowed(policies, controller, action, index, null);
   }
 
   /**
+   * Tells whether an action is allowed, denied or conditional based on the rights
+   * policies provided as the first argument. An action is defined as a couple of
+   * action and controller (mandatory), plus an index and a collection(optional).
+   *
    * @param policies
    * @param controller
    * @param action
    * @param index
    * @param collection
-   * @return
+   * @return the KuzzleSecurityObject
    */
   public KuzzlePolicies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull final String action, final String index, final String collection) {
     if (policies == null) {
