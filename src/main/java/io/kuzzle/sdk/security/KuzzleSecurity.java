@@ -1242,7 +1242,13 @@ public class KuzzleSecurity {
     return new KuzzleUser(this.kuzzle, id, null);
   }
 
-  public KuzzlePolicies isActionAllowed(final JSONArray policies, final String controller, final String action) {
+  /**
+   * @param policies
+   * @param controller
+   * @param action
+   * @return
+   */
+  public KuzzlePolicies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull final String action) {
     return this.isActionAllowed(policies, controller, action, null, null);
   }
 
@@ -1253,7 +1259,7 @@ public class KuzzleSecurity {
    * @param index
    * @return
    */
-  public KuzzlePolicies isActionAllowed(final JSONArray policies, final String controller, final String action, final String index) {
+  public KuzzlePolicies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller,@NonNull  final String action, final String index) {
     return this.isActionAllowed(policies, controller, action, index, null);
   }
 
@@ -1265,7 +1271,49 @@ public class KuzzleSecurity {
    * @param collection
    * @return
    */
-  public KuzzlePolicies isActionAllowed(final JSONArray policies, final String controller, final String action, final String index, final String collection) {
-    return KuzzlePolicies.allowed;
+  public KuzzlePolicies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull final String action, final String index, final String collection) {
+    if (policies == null) {
+      throw new IllegalArgumentException("KuzzleSecurity.isActionAllowed: policies are mandatory.");
+    }
+    if (controller == null || controller.isEmpty()) {
+      throw new IllegalArgumentException("KuzzleSecurity.isActionAllowed: controller is mandatory.");
+    }
+    if (action == null || action.isEmpty()) {
+      throw new IllegalArgumentException("KuzzleSecurity.isActionAllowed: action is mandatory.");
+    }
+
+    JSONArray filteredPolicies;
+    try {
+      filteredPolicies = filterPolicy(policies, "controller", controller);
+      filteredPolicies = filterPolicy(filteredPolicies, "action", action);
+      filteredPolicies = filterPolicy(filteredPolicies, "index", index);
+      filteredPolicies = filterPolicy(filteredPolicies, "collection", collection);
+      for (int i = 0; i < filteredPolicies.length(); i++) {
+        if (filteredPolicies.getJSONObject(i).getString("value").equals(KuzzlePolicies.allowed.toString())) {
+          return KuzzlePolicies.allowed;
+        }
+      }
+      for (int i = 0; i < filteredPolicies.length(); i++) {
+        if (filteredPolicies.getJSONObject(i).getString("value").equals(KuzzlePolicies.conditional.toString())) {
+          return KuzzlePolicies.conditional;
+        }
+      }
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+    return KuzzlePolicies.denied;
   }
+
+  private JSONArray  filterPolicy(final JSONArray policies, final String attr, final String attrInput) throws JSONException {
+    JSONArray filteredPolicies = new JSONArray();
+    for (int i = 0; i < policies.length(); i++) {
+      JSONObject policy = policies.getJSONObject(i);
+      String attrObject = policy.getString(attr);
+      if (attrObject.equals(attrInput) || attrObject.equals("*")) {
+        filteredPolicies.put(policy);
+      }
+    }
+    return filteredPolicies;
+  }
+
 }

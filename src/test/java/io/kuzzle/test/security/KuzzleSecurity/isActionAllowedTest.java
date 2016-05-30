@@ -8,17 +8,17 @@ import org.junit.Test;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.enums.KuzzlePolicies;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.security.KuzzleSecurity;
 
 import static junit.framework.Assert.assertEquals;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
 public class isActionAllowedTest {
 
   private Kuzzle kuzzle;
   private KuzzleSecurity kuzzleSecurity;
-  private KuzzleResponseListener listener;
   private JSONArray policies;
 
   private JSONObject addProperties(final String ctrl, final String action, final String idx, final String collection, final String value) throws JSONException {
@@ -34,7 +34,6 @@ public class isActionAllowedTest {
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
     kuzzleSecurity = new KuzzleSecurity(kuzzle);
-    listener = mock(KuzzleResponseListener.class);
     policies = new JSONArray()
         .put(addProperties("read", "get", "*", "*", KuzzlePolicies.allowed.toString()))
         .put(addProperties("read", "count", "*", "*", KuzzlePolicies.allowed.toString()))
@@ -51,44 +50,58 @@ public class isActionAllowedTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testInvalidController() {
+  public void testNullPolicies() {
+    kuzzleSecurity.isActionAllowed(null, "ctrl", "action");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testNullController() {
     kuzzleSecurity.isActionAllowed(policies, null, "action");
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testInvalidAction() {
+  public void testNullAction() {
     kuzzleSecurity.isActionAllowed(policies, "ctrl", null);
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testEmptyController() {
+    kuzzleSecurity.isActionAllowed(policies, "", null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testEmptyAction() {
+    kuzzleSecurity.isActionAllowed(policies, "ctrl", "");
+  }
 
   @Test
   public void testControllerActionAllowed() {
-    assertEquals(KuzzlePolicies.allowed, kuzzleSecurity.isActionAllowed(policies, "read", "get", "*", "*"));
+    assertEquals(KuzzlePolicies.allowed, kuzzleSecurity.isActionAllowed(policies, "read", "get"));
   }
 
   @Test
   public void testControllerActionIndexAllowed() {
-
+    assertEquals(KuzzlePolicies.allowed, kuzzleSecurity.isActionAllowed(policies, "read", "count", "myIndex"));
   }
 
   @Test
   public void testControllerActionIndexCollectionAllowed() {
+    assertEquals(KuzzlePolicies.allowed, kuzzleSecurity.isActionAllowed(policies, "read", "search", "index1", "collection1"));
+  }
 
+  @Test
+  public void testControllerActionIndexCollection2Allowed() {
+    assertEquals(KuzzlePolicies.allowed, kuzzleSecurity.isActionAllowed(policies, "read", "search", "index1", "collection2"));
   }
 
   @Test
   public void testControllerActionDenied() {
-    assertEquals(KuzzlePolicies.denied, kuzzleSecurity.isActionAllowed(policies, "read", "listIndexes", "index2"));
+    assertEquals(KuzzlePolicies.denied, kuzzleSecurity.isActionAllowed(policies, "read", "replace"));
   }
 
   @Test
   public void testControllerActionIndexDenied() {
-
-  }
-
-  @Test
-  public void testControllerActionIndexCollectionDenied() {
-
+    assertEquals(KuzzlePolicies.denied, kuzzleSecurity.isActionAllowed(policies, "read", "listIndexes", "index2"));
   }
 
   @Test
@@ -97,12 +110,15 @@ public class isActionAllowedTest {
   }
 
   @Test
-  public void testControllerActionIndexConditional() {
-
-  }
-
-  @Test
   public void testControllerActionIndexCollectionConditional() {
-
+    assertEquals(KuzzlePolicies.conditional, kuzzleSecurity.isActionAllowed(policies, "write", "delete", "index1", "collection1"));
   }
+
+  @Test(expected = RuntimeException.class)
+  public void testJsonException() {
+    policies = spy(policies);
+    doThrow(JSONException.class).when(policies).length();
+    kuzzleSecurity.isActionAllowed(policies, "write", "delete", "index1", "collection1");
+  }
+
 }
