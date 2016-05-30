@@ -1257,6 +1257,33 @@ public class KuzzleSecurity {
    * @return
    */
   public KuzzleSecurity getUserRights(@NonNull final String id, final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONObject> listener) {
+    if (id == null || id.isEmpty()) {
+      throw new IllegalArgumentException("KuzzleSecurity.getUserRights: id is mandatory.");
+    }
+    if (listener == null) {
+      throw new IllegalArgumentException("KuzzleSecurity.getUserRights: listener is mandatory.");
+    }
+    try {
+      JSONObject data = new JSONObject()
+          .put("_id", id);
+      kuzzle.query(buildQueryArgs("getUserRights"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result").getJSONObject("hits"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
     return this;
   }
 }
