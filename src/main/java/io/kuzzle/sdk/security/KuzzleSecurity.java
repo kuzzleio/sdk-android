@@ -1292,7 +1292,7 @@ public class KuzzleSecurity {
    * @return
    */
   public KuzzleSecurity getMyRights(@NonNull final KuzzleResponseListener<JSONObject> listener) {
-    return this;
+    return getMyRights(null, listener);
   }
 
   /**
@@ -1301,6 +1301,28 @@ public class KuzzleSecurity {
    * @return
    */
   public KuzzleSecurity getMyRights(final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONObject> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("KuzzleSecurity.getMyRights: listener is mandatory.");
+    }
+    try {
+      kuzzle.query(buildQueryArgs("getMyRights"), new JSONObject(), options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result").getJSONObject("hits"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
     return this;
   }
 }
