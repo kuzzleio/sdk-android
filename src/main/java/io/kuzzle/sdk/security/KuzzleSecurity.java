@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.enums.KuzzlePolicies;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleSecurityDocumentList;
@@ -1239,5 +1240,32 @@ public class KuzzleSecurity {
    */
   public KuzzleUser userFactory(@NonNull final String id) throws JSONException {
     return new KuzzleUser(this.kuzzle, id, null);
+  }
+
+  public KuzzlePolicies isActionAllowed(final JSONArray policies, final String controller, final String action) {
+    return this.isActionAllowed(policies, controller, action, null, null);
+  }
+
+  /**
+   * @param policies
+   * @param controller
+   * @param action
+   * @param index
+   * @return
+   */
+  public KuzzlePolicies isActionAllowed(final JSONArray policies, final String controller, final String action, final String index) {
+    return this.isActionAllowed(policies, controller, action, index, null);
+  }
+
+  /**
+   * @param policies
+   * @param controller
+   * @param action
+   * @param index
+   * @param collection
+   * @return
+   */
+  public KuzzlePolicies isActionAllowed(final JSONArray policies, final String controller, final String action, final String index, final String collection) {
+    return KuzzlePolicies.allowed;
   }
 }
