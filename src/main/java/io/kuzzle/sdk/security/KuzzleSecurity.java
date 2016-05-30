@@ -1286,4 +1286,21 @@ public class KuzzleSecurity {
     }
     return this;
   }
+
+  /**
+   * @param listener
+   * @return
+   */
+  public KuzzleSecurity getMyRights(@NonNull final KuzzleResponseListener<JSONObject> listener) {
+    return this;
+  }
+
+  /**
+   * @param options
+   * @param listener
+   * @return
+   */
+  public KuzzleSecurity getMyRights(final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONObject> listener) {
+    return this;
+  }
 }
