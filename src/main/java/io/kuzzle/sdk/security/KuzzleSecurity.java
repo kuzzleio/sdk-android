@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.enums.KuzzlePolicies;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleSecurityDocumentList;
