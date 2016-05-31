@@ -1327,4 +1327,97 @@ public class KuzzleSecurity {
     return filteredPolicies;
   }
 
+
+  /**
+   * Gets the rights array of a given user.
+   *
+   * @param id
+   * @param listener
+   * @return the KuzzleSecurity instance
+   */
+  public KuzzleSecurity getUserRights(@NonNull final String id, @NonNull final KuzzleResponseListener<JSONObject> listener) {
+    return getUserRights(id, null, listener);
+  }
+
+  /**
+   * Gets the rights array of a given user.
+   *
+   * @param id
+   * @param options
+   * @param listener
+   * @return the KuzzleSecurity instance
+   */
+  public KuzzleSecurity getUserRights(@NonNull final String id, final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONObject> listener) {
+    if (id == null || id.isEmpty()) {
+      throw new IllegalArgumentException("KuzzleSecurity.getUserRights: id is mandatory.");
+    }
+    if (listener == null) {
+      throw new IllegalArgumentException("KuzzleSecurity.getUserRights: listener is mandatory.");
+    }
+    try {
+      JSONObject data = new JSONObject()
+          .put("_id", id);
+      kuzzle.query(buildQueryArgs("getUserRights"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result").getJSONObject("hits"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+    return this;
+  }
+
+  /**
+   * Gets the rights array of the currently logged user.
+   *
+   * @param listener
+   * @return the KuzzleSecurity instance
+   */
+  public KuzzleSecurity getMyRights(@NonNull final KuzzleResponseListener<JSONObject> listener) {
+    return getMyRights(null, listener);
+  }
+
+  /**
+   * Gets the rights array of the currently logged user.
+   *
+   * @param options
+   * @param listener
+   * @return the KuzzleSecurity instance
+   */
+  public KuzzleSecurity getMyRights(final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONObject> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("KuzzleSecurity.getMyRights: listener is mandatory.");
+    }
+    try {
+      kuzzle.query(buildQueryArgs("getMyRights"), new JSONObject(), options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result").getJSONObject("hits"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+    return this;
+  }
 }
