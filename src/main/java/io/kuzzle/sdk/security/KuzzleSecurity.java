@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.enums.KuzzlePolicies;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleSecurityDocumentList;
@@ -1240,4 +1241,90 @@ public class KuzzleSecurity {
   public KuzzleUser userFactory(@NonNull final String id) throws JSONException {
     return new KuzzleUser(this.kuzzle, id, null);
   }
+
+  /**
+   * Tells whether an action is allowed, denied or conditional based on the rights
+   * policies provided as the first argument. An action is defined as a couple of
+   * action and controller (mandatory), plus an index and a collection(optional).
+   * @param policies
+   * @param controller
+   * @param action
+   * @return the KuzzleSecurityObject
+   */
+  public KuzzlePolicies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull final String action) {
+    return this.isActionAllowed(policies, controller, action, null, null);
+  }
+
+  /**
+   * Tells whether an action is allowed, denied or conditional based on the rights
+   * policies provided as the first argument. An action is defined as a couple of
+   * action and controller (mandatory), plus an index and a collection(optional).
+   *
+   * @param policies
+   * @param controller
+   * @param action
+   * @param index
+   * @return the KuzzleSecurityObject
+   */
+  public KuzzlePolicies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller,@NonNull  final String action, final String index) {
+    return this.isActionAllowed(policies, controller, action, index, null);
+  }
+
+  /**
+   * Tells whether an action is allowed, denied or conditional based on the rights
+   * policies provided as the first argument. An action is defined as a couple of
+   * action and controller (mandatory), plus an index and a collection(optional).
+   *
+   * @param policies
+   * @param controller
+   * @param action
+   * @param index
+   * @param collection
+   * @return the KuzzleSecurityObject
+   */
+  public KuzzlePolicies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull final String action, final String index, final String collection) {
+    if (policies == null) {
+      throw new IllegalArgumentException("KuzzleSecurity.isActionAllowed: policies are mandatory.");
+    }
+    if (controller == null || controller.isEmpty()) {
+      throw new IllegalArgumentException("KuzzleSecurity.isActionAllowed: controller is mandatory.");
+    }
+    if (action == null || action.isEmpty()) {
+      throw new IllegalArgumentException("KuzzleSecurity.isActionAllowed: action is mandatory.");
+    }
+
+    JSONArray filteredPolicies;
+    try {
+      filteredPolicies = filterPolicy(policies, "controller", controller);
+      filteredPolicies = filterPolicy(filteredPolicies, "action", action);
+      filteredPolicies = filterPolicy(filteredPolicies, "index", index);
+      filteredPolicies = filterPolicy(filteredPolicies, "collection", collection);
+      for (int i = 0; i < filteredPolicies.length(); i++) {
+        if (filteredPolicies.getJSONObject(i).getString("value").equals(KuzzlePolicies.allowed.toString())) {
+          return KuzzlePolicies.allowed;
+        }
+      }
+      for (int i = 0; i < filteredPolicies.length(); i++) {
+        if (filteredPolicies.getJSONObject(i).getString("value").equals(KuzzlePolicies.conditional.toString())) {
+          return KuzzlePolicies.conditional;
+        }
+      }
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+    return KuzzlePolicies.denied;
+  }
+
+  private JSONArray  filterPolicy(final JSONArray policies, final String attr, final String attrInput) throws JSONException {
+    JSONArray filteredPolicies = new JSONArray();
+    for (int i = 0; i < policies.length(); i++) {
+      JSONObject policy = policies.getJSONObject(i);
+      String attrObject = policy.getString(attr);
+      if (attrObject.equals(attrInput) || attrObject.equals("*")) {
+        filteredPolicies.put(policy);
+      }
+    }
+    return filteredPolicies;
+  }
+
 }
