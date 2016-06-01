@@ -1,5 +1,6 @@
 package io.kuzzle.test.security.KuzzleSecurity;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -64,7 +65,7 @@ public class getMyRightsTest {
       public Object answer(InvocationOnMock invocation) throws Throwable {
         JSONObject response = new JSONObject()
             .put("result", new JSONObject()
-              .put("hits", new JSONObject()));
+              .put("hits", new JSONArray()));
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
         return null;

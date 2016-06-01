@@ -1335,7 +1335,7 @@ public class KuzzleSecurity {
    * @param listener
    * @return the KuzzleSecurity instance
    */
-  public KuzzleSecurity getUserRights(@NonNull final String id, @NonNull final KuzzleResponseListener<JSONObject> listener) {
+  public KuzzleSecurity getUserRights(@NonNull final String id, @NonNull final KuzzleResponseListener<JSONArray> listener) {
     return getUserRights(id, null, listener);
   }
 
@@ -1347,7 +1347,7 @@ public class KuzzleSecurity {
    * @param listener
    * @return the KuzzleSecurity instance
    */
-  public KuzzleSecurity getUserRights(@NonNull final String id, final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONObject> listener) {
+  public KuzzleSecurity getUserRights(@NonNull final String id, final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONArray> listener) {
     if (id == null || id.isEmpty()) {
       throw new IllegalArgumentException("KuzzleSecurity.getUserRights: id is mandatory.");
     }
@@ -1361,7 +1361,7 @@ public class KuzzleSecurity {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(response.getJSONObject("result").getJSONObject("hits"));
+            listener.onSuccess(response.getJSONObject("result").getJSONArray("hits"));
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
@@ -1384,7 +1384,7 @@ public class KuzzleSecurity {
    * @param listener
    * @return the KuzzleSecurity instance
    */
-  public KuzzleSecurity getMyRights(@NonNull final KuzzleResponseListener<JSONObject> listener) {
+  public KuzzleSecurity getMyRights(@NonNull final KuzzleResponseListener<JSONArray> listener) {
     return getMyRights(null, listener);
   }
 
@@ -1395,7 +1395,7 @@ public class KuzzleSecurity {
    * @param listener
    * @return the KuzzleSecurity instance
    */
-  public KuzzleSecurity getMyRights(final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONObject> listener) {
+  public KuzzleSecurity getMyRights(final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONArray> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("KuzzleSecurity.getMyRights: listener is mandatory.");
     }
@@ -1404,7 +1404,7 @@ public class KuzzleSecurity {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(response.getJSONObject("result").getJSONObject("hits"));
+            listener.onSuccess(response.getJSONObject("result").getJSONArray("hits"));
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
