@@ -3,7 +3,7 @@ apply plugin: 'jacoco-android'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
-version = "1.0.0-rc3"
+version = "1.5.0"
 
 buildscript {
     repositories {
