@@ -2534,4 +2534,61 @@ public class Kuzzle {
     return this;
   }
 
+  /**
+   * Gets the rights array of the currently logged user.
+   *
+   * @param listener
+   * @return the KuzzleSecurity instance
+   */
+  public Kuzzle getMyRights(@NonNull final KuzzleResponseListener<JSONArray> listener) {
+    return getMyRights(null, listener);
+  }
+
+  /**
+   * Gets the rights array of the currently logged user.
+   *
+   * @param options
+   * @param listener
+   * @return the KuzzleSecurity instance
+   */
+  public Kuzzle getMyRights(final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONArray> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("KuzzleSecurity.getMyRights: listener is mandatory.");
+    }
+    try {
+      Kuzzle.this.query(buildQueryArgs("getMyRights"), new JSONObject(), options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result").getJSONArray("hits"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+    return this;
+  }
+
+  /**
+   * Helper function meant to easily build the first Kuzzle.query() argument
+   *
+   * @param action - Security controller action name
+   * @return JSONObject - Kuzzle.query() 1st argument object
+   * @throws JSONException the json exception
+   */
+  protected io.kuzzle.sdk.core.Kuzzle.QueryArgs buildQueryArgs(@NonNull final String action) throws JSONException {
+    io.kuzzle.sdk.core.Kuzzle.QueryArgs args = new io.kuzzle.sdk.core.Kuzzle.QueryArgs();
+    args.action = action;
+    args.controller = "security";
+    return args;
+  }
+
 }
