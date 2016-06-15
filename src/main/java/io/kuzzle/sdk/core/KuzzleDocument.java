@@ -88,8 +88,8 @@ public class KuzzleDocument {
    * @param options the options
    * @return the kuzzle document
    */
-  public KuzzleDocument delete(final KuzzleOptions options) {
-    return this.delete(options, null);
+  public void delete(final KuzzleOptions options) {
+    this.delete(options, null);
   }
 
   /**
@@ -98,8 +98,8 @@ public class KuzzleDocument {
    * @param listener the listener
    * @return the kuzzle document
    */
-  public KuzzleDocument delete(final KuzzleResponseListener<KuzzleDocument> listener) {
-    return this.delete(null, listener);
+  public void delete(final KuzzleResponseListener<String> listener) {
+    this.delete(null, listener);
   }
 
   /**
@@ -107,8 +107,8 @@ public class KuzzleDocument {
    *
    * @return the kuzzle document
    */
-  public KuzzleDocument delete() {
-    return this.delete(null, null);
+  public void delete() {
+    this.delete(null, null);
   }
 
   /**
@@ -118,7 +118,7 @@ public class KuzzleDocument {
    * @param listener the listener
    * @return kuzzle document
    */
-  public KuzzleDocument delete(final KuzzleOptions options, final KuzzleResponseListener<KuzzleDocument> listener) {
+  public void delete(final KuzzleOptions options, final KuzzleResponseListener<String> listener) {
     try {
       if (this.id == null) {
         throw new IllegalStateException("KuzzleDocument.delete: cannot delete a document without a document ID");
@@ -129,7 +129,11 @@ public class KuzzleDocument {
         public void onSuccess(JSONObject object) {
           setId(null);
           if (listener != null) {
-            listener.onSuccess(KuzzleDocument.this);
+            try {
+              listener.onSuccess(object.getString("result"));
+            } catch (JSONException e) {
+              e.printStackTrace();
+            };
           }
         }
 
@@ -143,7 +147,6 @@ public class KuzzleDocument {
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
-    return this;
   }
 
   /**

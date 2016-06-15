@@ -756,7 +756,20 @@ public class KuzzleDataCollection {
     if (listener == null) {
       throw new IllegalArgumentException("KuzzleDataCollection.fetchAllDocuments: listener required");
     }
-    return this.advancedSearch(null, options, listener);
+    JSONObject filter = new JSONObject();
+    if (options != null) {
+      try {
+        if (options.getFrom() != null) {
+          filter.put("from", options.getFrom());
+        }
+        if (options.getSize() != null) {
+          filter.put("size", options.getSize());
+        }
+      } catch (JSONException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return this.advancedSearch(filter, options, listener);
   }
 
   /**

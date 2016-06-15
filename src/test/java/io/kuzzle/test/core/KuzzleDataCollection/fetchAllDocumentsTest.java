@@ -69,4 +69,16 @@ public class fetchAllDocumentsTest {
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "search");
   }
 
+  @Test
+  public void testPagination() throws JSONException {
+    KuzzleOptions options = new KuzzleOptions();
+    options.setFrom(1L);
+    options.setSize(42L);
+    collection.fetchAllDocuments(options, mock(KuzzleResponseListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
+    verify(kuzzle).query(any(Kuzzle.QueryArgs.class), (JSONObject)argument.capture(), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((JSONObject) argument.getValue()).getJSONObject("body").getLong("from"), 1);
+    assertEquals(((JSONObject) argument.getValue()).getJSONObject("body").getLong("size"), 42);
+  }
+
 }

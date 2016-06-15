@@ -510,17 +510,17 @@ public class Kuzzle {
       throw new IllegalArgumentException("KuzzleDataCollection: unable to create a new data collection object: no index specified");
     }
 
-    return this.dataCollectionFactory(this.defaultIndex, collection);
+    return this.dataCollectionFactory(collection, this.defaultIndex);
   }
 
   /**
    * Create a new instance of a KuzzleDataCollection object
    *
-   * @param index      the index
    * @param collection - The name of the data collection you want to manipulate
+   * @param index      the index
    * @return {object} A KuzzleDataCollection instance
    */
-  public KuzzleDataCollection dataCollectionFactory(@NonNull final String index, final String collection) {
+  public KuzzleDataCollection dataCollectionFactory(@NonNull final String collection, @NonNull final String index) {
     this.isValid();
     if (index == null && this.defaultIndex == null) {
       throw new IllegalArgumentException("KuzzleDataCollection: unable to create a new data collection object: no index specified");
@@ -2193,4 +2193,402 @@ public class Kuzzle {
     }
     return this;
   }
+
+  /**
+   * Forces the current/provided index to refresh
+   *
+   * @return itself
+   */
+  public Kuzzle refreshIndex() {
+    return this.refreshIndex(null, null, null);
+  }
+
+  /**
+   * Forces the current/provided index to refresh
+   *
+   * @param index
+   * @return itself
+   */
+  public Kuzzle refreshIndex(String index) {
+    return this.refreshIndex(index, null, null);
+  }
+
+  /**
+   * Forces the current/provided index to refresh
+   *
+   * @param index
+   * @param listener
+   * @return itself
+   */
+  public Kuzzle refreshIndex(String index, final KuzzleResponseListener<JSONObject> listener) {
+    return this.refreshIndex(index, null, listener);
+  }
+
+  /**
+   * Forces the current/provided index to refresh
+   *
+   * @param index
+   * @param options
+   * @return itself
+   */
+  public Kuzzle refreshIndex(String index, final KuzzleOptions options) {
+    return this.refreshIndex(index, options, null);
+  }
+
+  /**
+   * Forces the current/provided index to refresh
+   *
+   * @param options
+   * @return itself
+   */
+  public Kuzzle refreshIndex(final KuzzleOptions options) {
+    return this.refreshIndex(null, options, null);
+  }
+
+  /**
+   * Forces the current/provided index to refresh
+   *
+   * @param options
+   * @param listener
+   * @return itself
+   */
+  public Kuzzle refreshIndex(final KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener) {
+    return this.refreshIndex(null, options, listener);
+  }
+
+  /**
+   * Forces the current/provided index to refresh
+   *
+   * @param listener
+   * @return itself
+   */
+  public Kuzzle refreshIndex(final KuzzleResponseListener<JSONObject> listener) {
+    return this.refreshIndex(null, null, listener);
+  }
+
+  /**
+   * Forces the current/provided index to refresh
+   *
+   * @param index
+   * @param options
+   * @param listener
+   * @return itself
+   */
+  public Kuzzle refreshIndex(String index, final KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener) {
+    if (index == null) {
+      if (this.defaultIndex == null) {
+        throw new IllegalArgumentException("Kuzzle.refreshIndex: index required");
+      } else {
+        index = this.defaultIndex;
+      }
+    }
+
+    QueryArgs args = new QueryArgs();
+    args.index = index;
+    args.controller = "admin";
+    args.action = "refreshIndex";
+    JSONObject request = new JSONObject();
+
+    try {
+      this.query(args, request, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          if (listener == null) {
+            return;
+          }
+
+          try {
+            JSONObject result = response.getJSONObject("result");
+
+            listener.onSuccess(result);
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener == null) {
+            return;
+          }
+
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+
+    return this;
+  }
+
+
+  /**
+   * Gets the current/provided index autorefresh status
+   *
+   * @param listener
+   * @return itself
+   */
+  public Kuzzle getAutoRefresh(@NonNull final KuzzleResponseListener<Boolean> listener) {
+    return this.getAutoRefresh(null, null, listener);
+  }
+
+  /**
+   * Gets the current/provided index autorefresh status
+   *
+   * @param index
+   * @param listener
+   * @return itself
+   */
+  public Kuzzle getAutoRefresh(String index, @NonNull final KuzzleResponseListener<Boolean> listener) {
+    return this.getAutoRefresh(index, null, listener);
+  }
+
+  /**
+   * Gets the current/provided index autorefresh status
+   *
+   * @param options
+   * @param listener
+   * @return itself
+   */
+  public Kuzzle getAutoRefresh(KuzzleOptions options, @NonNull final KuzzleResponseListener<Boolean> listener) {
+    return this.getAutoRefresh(null, options, listener);
+  }
+
+  /**
+   * Gets the current/provided index autorefresh status
+   *
+   * @param index
+   * @param options
+   * @param listener
+   * @return itself
+   */
+  public Kuzzle getAutoRefresh(String index, final KuzzleOptions options, @NonNull final KuzzleResponseListener<Boolean> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("Kuzzle.getAutoRefresh: listener required");
+    }
+
+    if (index == null) {
+      if (this.defaultIndex == null) {
+        throw new IllegalArgumentException("Kuzzle.getAutoRefresh: index required");
+      } else {
+        index = this.defaultIndex;
+      }
+    }
+
+    QueryArgs args = new QueryArgs();
+    args.index = index;
+    args.controller = "admin";
+    args.action = "getAutoRefresh";
+    JSONObject request = new JSONObject();
+
+    try {
+      this.query(args, request, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            boolean result = response.getBoolean("result");
+            listener.onSuccess(result);
+          } catch(JSONException e) { throw new RuntimeException(e); }
+        }
+
+        @Override
+        public void onError(JSONObject error) { listener.onError(error); }
+      });
+    } catch(JSONException e) {
+      throw new RuntimeException(e);
+    }
+
+    return this;
+  }
+
+  /**
+   * (Un)Sets the autorefresh status for the current/given index
+   *
+   * @param autoRefresh
+   * @return itself
+   */
+  public Kuzzle setAutoRefresh(final boolean autoRefresh) {
+    return this.setAutoRefresh(null, autoRefresh, null, null);
+  }
+
+  /**
+   * (Un)Sets the autorefresh status for the current/given index
+   *
+   * @param autoRefresh
+   * @param listener
+   * @return itself
+   */
+  public Kuzzle setAutoRefresh(final boolean autoRefresh, final KuzzleResponseListener<Boolean> listener) {
+    return this.setAutoRefresh(null, autoRefresh, null, listener);
+  }
+
+  /**
+   * (Un)Sets the autorefresh status for the current/given index
+   *
+   * @param index
+   * @param autoRefresh
+   * @return itself
+   */
+  public Kuzzle setAutoRefresh(String index, final boolean autoRefresh) {
+    return this.setAutoRefresh(index, autoRefresh, null, null);
+  }
+
+  /**
+   * (Un)Sets the autorefresh status for the current/given index
+   *
+   * @param autoRefresh
+   * @param options
+   * @return itself
+   */
+  public Kuzzle setAutoRefresh(final boolean autoRefresh, final KuzzleOptions options) {
+    return this.setAutoRefresh(null, autoRefresh, options, null);
+  }
+
+  /**
+   * (Un)Sets the autorefresh status for the current/given index
+   *
+   * @param index
+   * @param autoRefresh
+   * @param options
+   * @return itself
+   */
+  public Kuzzle setAutoRefresh(String index, final boolean autoRefresh, final KuzzleOptions options) {
+    return this.setAutoRefresh(index, autoRefresh, options, null);
+  }
+
+  /**
+   * (Un)Sets the autorefresh status for the current/given index
+   *
+   * @param index
+   * @param autoRefresh
+   * @param listener
+   * @return itself
+   */
+  public Kuzzle setAutoRefresh(String index, final boolean autoRefresh, final KuzzleResponseListener<Boolean> listener) {
+    return this.setAutoRefresh(index, autoRefresh, null, listener);
+  }
+
+  /**
+   * (Un)Sets the autorefresh status for the current/given index
+   *
+   * @param autoRefresh
+   * @param options
+   * @param listener
+   * @return itself
+   */
+  public Kuzzle setAutoRefresh(final boolean autoRefresh, final KuzzleOptions options, final KuzzleResponseListener<Boolean> listener) {
+    return this.setAutoRefresh(null, autoRefresh, options, listener);
+  }
+
+  /**
+   * (Un)Sets the autorefresh status for the current/given index
+   *
+   * @param index
+   * @param autoRefresh
+   * @param options
+   * @param listener
+   * @return itself
+   */
+  public Kuzzle setAutoRefresh(String index, final boolean autoRefresh, final KuzzleOptions options, final KuzzleResponseListener<Boolean> listener) {
+    if (index == null) {
+      if (this.defaultIndex == null) {
+        throw new IllegalArgumentException("Kuzzle.setAutoRefresh: index required");
+      } else {
+        index = this.defaultIndex;
+      }
+    }
+
+    QueryArgs args = new QueryArgs();
+    args.index = index;
+    args.controller = "admin";
+    args.action = "setAutoRefresh";
+    JSONObject request;
+
+    try {
+      request = new JSONObject().put("body", new JSONObject().put("autoRefresh", autoRefresh));
+      this.query(args, request, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          if (listener == null) {
+            return;
+          }
+
+          try {
+            boolean result = response.getBoolean("result");
+            listener.onSuccess(result);
+          } catch (JSONException e) { throw new RuntimeException(e); }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
+        }
+      });
+    } catch(JSONException e) {
+      throw  new RuntimeException(e);
+    }
+
+    return this;
+  }
+
+  /**
+   * Gets the rights array of the currently logged user.
+   *
+   * @param listener
+   * @return the KuzzleSecurity instance
+   */
+  public Kuzzle getMyRights(@NonNull final KuzzleResponseListener<JSONArray> listener) {
+    return getMyRights(null, listener);
+  }
+
+  /**
+   * Gets the rights array of the currently logged user.
+   *
+   * @param options
+   * @param listener
+   * @return the KuzzleSecurity instance
+   */
+  public Kuzzle getMyRights(final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONArray> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("KuzzleSecurity.getMyRights: listener is mandatory.");
+    }
+    try {
+      Kuzzle.this.query(buildQueryArgs("getMyRights"), new JSONObject(), options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result").getJSONArray("hits"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+    return this;
+  }
+
+  /**
+   * Helper function meant to easily build the first Kuzzle.query() argument
+   *
+   * @param action - Security controller action name
+   * @return JSONObject - Kuzzle.query() 1st argument object
+   * @throws JSONException the json exception
+   */
+  protected io.kuzzle.sdk.core.Kuzzle.QueryArgs buildQueryArgs(@NonNull final String action) throws JSONException {
+    io.kuzzle.sdk.core.Kuzzle.QueryArgs args = new io.kuzzle.sdk.core.Kuzzle.QueryArgs();
+    args.action = action;
+    args.controller = "security";
+    return args;
+  }
+
 }

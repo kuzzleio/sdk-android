@@ -27,9 +27,7 @@ You can configure your android project to get the Kuzzle's android SDK from jcen
             jcenter()
         }
     }
-
-    compile 'io.kuzzle:sdk-android:1.5.0'
-
+    compile 'io.kuzzle:sdk-android:1.6.0'
 
 ## Basic usage
 
@@ -94,7 +92,7 @@ kuzzle = new Kuzzle("http://localhost:7512", "index", options);
 
 ## Login with an OAuth strategy
 
-If you have an OAUTH plugin like kuzzle-plugin-auth-github you can login and use the KuzzleWebViewClient to make it easier to handle.
+If you have an OAUTH plugin like kuzzle-plugin-auth-passport-oauth you can login and use the KuzzleWebViewClient to make it easier to handle.
 
 ```java
 Handler handler = new Handler();

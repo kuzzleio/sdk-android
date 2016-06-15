@@ -58,6 +58,6 @@ public class factoriesTest {
   @Test(expected = IllegalArgumentException.class)
   public void testIllegalIndex() {
     kuzzle.setSuperDefaultIndex(null);
-    kuzzle.dataCollectionFactory(null, "collection");
+    kuzzle.dataCollectionFactory("collection", null);
   }
 }

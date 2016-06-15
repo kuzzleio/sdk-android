@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.enums.KuzzlePolicies;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleSecurityDocumentList;
@@ -348,7 +349,7 @@ public class KuzzleSecurity {
    * @param listener the listener
    * @throws JSONException the json exception
    */
-  public void updateRole(@NonNull final String id, final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
+  public void updateRole(@NonNull final String id, final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
     if (id == null) {
       throw new IllegalArgumentException("KuzzleSecurity.updateRole: cannot update role without an ID");
     }
@@ -361,7 +362,7 @@ public class KuzzleSecurity {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(response.getJSONObject("result").getString("_id"));
+            listener.onSuccess(new KuzzleRole(KuzzleSecurity.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result").getJSONObject("_source")));
           }
           catch(JSONException e) {
             throw new RuntimeException(e);
@@ -387,7 +388,7 @@ public class KuzzleSecurity {
    * @param listener the listener
    * @throws JSONException the json exception
    */
-  public void updateRole(@NonNull final String id, final JSONObject content, final KuzzleResponseListener<String> listener) throws JSONException {
+  public void updateRole(@NonNull final String id, final JSONObject content, final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
     updateRole(id, content, null, listener);
   }
 
@@ -751,7 +752,7 @@ public class KuzzleSecurity {
    * @param listener the listener
    * @throws JSONException the json exception
    */
-  public void updateProfile(@NonNull final String id, final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
+  public void updateProfile(@NonNull final String id, final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     if (id == null) {
       throw new IllegalArgumentException("KuzzleSecurity.updateProfile: cannot update a profile with ID null");
     }
@@ -764,7 +765,7 @@ public class KuzzleSecurity {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(response.getJSONObject("result").getString("_id"));
+            listener.onSuccess(new KuzzleProfile(KuzzleSecurity.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result").getJSONObject("_source")));
           }
           catch(JSONException e) {
             throw new RuntimeException(e);
@@ -802,7 +803,7 @@ public class KuzzleSecurity {
    * @param listener the listener
    * @throws JSONException the json exception
    */
-  public void updateProfile(@NonNull final String id, final JSONObject content, final KuzzleResponseListener<String> listener) throws JSONException {
+  public void updateProfile(@NonNull final String id, final JSONObject content, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     this.updateProfile(id, content, null, listener);
   }
 
@@ -1152,7 +1153,7 @@ public class KuzzleSecurity {
    * @param listener the listener
    * @throws JSONException the json exception
    */
-  public void updateUser(@NonNull final String id, final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
+  public void updateUser(@NonNull final String id, final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     if (id == null) {
       throw new IllegalArgumentException("KuzzleSecurity.updateUser: cannot update user without an ID");
     }
@@ -1165,7 +1166,7 @@ public class KuzzleSecurity {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(response.getJSONObject("result").getString("_id"));
+            listener.onSuccess(new KuzzleUser(KuzzleSecurity.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result").getJSONObject("_source")));
           }
           catch(JSONException e) {
             throw new RuntimeException(e);
@@ -1191,7 +1192,7 @@ public class KuzzleSecurity {
    * @param listener the listener
    * @throws JSONException the json exception
    */
-  public void updateUser(@NonNull final String id, final JSONObject content, final KuzzleResponseListener<String> listener) throws JSONException {
+  public void updateUser(@NonNull final String id, final JSONObject content, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     updateUser(id, content, null, listener);
   }
 
@@ -1240,4 +1241,141 @@ public class KuzzleSecurity {
   public KuzzleUser userFactory(@NonNull final String id) throws JSONException {
     return new KuzzleUser(this.kuzzle, id, null);
   }
+
+  /**
+   * Tells whether an action is allowed, denied or conditional based on the rights
+   * policies provided as the first argument. An action is defined as a couple of
+   * action and controller (mandatory), plus an index and a collection(optional).
+   * @param policies
+   * @param controller
+   * @param action
+   * @return the KuzzleSecurityObject
+   */
+  public KuzzlePolicies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull final String action) {
+    return this.isActionAllowed(policies, controller, action, null, null);
+  }
+
+  /**
+   * Tells whether an action is allowed, denied or conditional based on the rights
+   * policies provided as the first argument. An action is defined as a couple of
+   * action and controller (mandatory), plus an index and a collection(optional).
+   *
+   * @param policies
+   * @param controller
+   * @param action
+   * @param index
+   * @return the KuzzleSecurityObject
+   */
+  public KuzzlePolicies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller,@NonNull  final String action, final String index) {
+    return this.isActionAllowed(policies, controller, action, index, null);
+  }
+
+  /**
+   * Tells whether an action is allowed, denied or conditional based on the rights
+   * policies provided as the first argument. An action is defined as a couple of
+   * action and controller (mandatory), plus an index and a collection(optional).
+   *
+   * @param policies
+   * @param controller
+   * @param action
+   * @param index
+   * @param collection
+   * @return the KuzzleSecurityObject
+   */
+  public KuzzlePolicies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull final String action, final String index, final String collection) {
+    if (policies == null) {
+      throw new IllegalArgumentException("KuzzleSecurity.isActionAllowed: policies are mandatory.");
+    }
+    if (controller == null || controller.isEmpty()) {
+      throw new IllegalArgumentException("KuzzleSecurity.isActionAllowed: controller is mandatory.");
+    }
+    if (action == null || action.isEmpty()) {
+      throw new IllegalArgumentException("KuzzleSecurity.isActionAllowed: action is mandatory.");
+    }
+
+    JSONArray filteredPolicies;
+    try {
+      filteredPolicies = filterPolicy(policies, "controller", controller);
+      filteredPolicies = filterPolicy(filteredPolicies, "action", action);
+      filteredPolicies = filterPolicy(filteredPolicies, "index", index);
+      filteredPolicies = filterPolicy(filteredPolicies, "collection", collection);
+      for (int i = 0; i < filteredPolicies.length(); i++) {
+        if (filteredPolicies.getJSONObject(i).getString("value").equals(KuzzlePolicies.allowed.toString())) {
+          return KuzzlePolicies.allowed;
+        }
+      }
+      for (int i = 0; i < filteredPolicies.length(); i++) {
+        if (filteredPolicies.getJSONObject(i).getString("value").equals(KuzzlePolicies.conditional.toString())) {
+          return KuzzlePolicies.conditional;
+        }
+      }
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+    return KuzzlePolicies.denied;
+  }
+
+  private JSONArray  filterPolicy(final JSONArray policies, final String attr, final String attrInput) throws JSONException {
+    JSONArray filteredPolicies = new JSONArray();
+    for (int i = 0; i < policies.length(); i++) {
+      JSONObject policy = policies.getJSONObject(i);
+      String attrObject = policy.getString(attr);
+      if (attrObject.equals(attrInput) || attrObject.equals("*")) {
+        filteredPolicies.put(policy);
+      }
+    }
+    return filteredPolicies;
+  }
+
+
+  /**
+   * Gets the rights array of a given user.
+   *
+   * @param id
+   * @param listener
+   * @return the KuzzleSecurity instance
+   */
+  public KuzzleSecurity getUserRights(@NonNull final String id, @NonNull final KuzzleResponseListener<JSONArray> listener) {
+    return getUserRights(id, null, listener);
+  }
+
+  /**
+   * Gets the rights array of a given user.
+   *
+   * @param id
+   * @param options
+   * @param listener
+   * @return the KuzzleSecurity instance
+   */
+  public KuzzleSecurity getUserRights(@NonNull final String id, final KuzzleOptions options, @NonNull final KuzzleResponseListener<JSONArray> listener) {
+    if (id == null || id.isEmpty()) {
+      throw new IllegalArgumentException("KuzzleSecurity.getUserRights: id is mandatory.");
+    }
+    if (listener == null) {
+      throw new IllegalArgumentException("KuzzleSecurity.getUserRights: listener is mandatory.");
+    }
+    try {
+      JSONObject data = new JSONObject()
+          .put("_id", id);
+      kuzzle.query(buildQueryArgs("getUserRights"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result").getJSONArray("hits"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+    return this;
+  }
+
 }
