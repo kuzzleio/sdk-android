@@ -9,29 +9,30 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import java.net.URISyntaxException;
+
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.security.KuzzleSecurity;
+import io.kuzzle.test.testUtils.KuzzleExtend;
 
 import static junit.framework.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 public class getMyRightsTest {
 
   private Kuzzle kuzzle;
-  private KuzzleSecurity kuzzleSecurity;
   private KuzzleResponseListener listener;
 
   @Before
-  public void setUp() {
-    kuzzle = mock(Kuzzle.class);
-    kuzzleSecurity = new KuzzleSecurity(kuzzle);
+  public void setUp() throws URISyntaxException {
+    kuzzle = spy(new KuzzleExtend("http://localhost:7512", mock(KuzzleOptions.class), mock(KuzzleResponseListener.class)));
     listener = mock(KuzzleResponseListener.class);
   }
 
