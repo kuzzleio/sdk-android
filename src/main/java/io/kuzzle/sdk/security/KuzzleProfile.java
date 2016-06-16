@@ -50,7 +50,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
             if (role.has("_source")) {
               this.roles.add(new KuzzleRole(this.kuzzle, role.getString("_id"), role.getJSONObject("_source")));
             } else {
-              this.roles.add(new KuzzleRole(this.kuzzle, role.getString("_id"), null));
+              this.roles.add(new KuzzleRole(this.kuzzle, role.getString("_id"), role));
             }
           }
         }

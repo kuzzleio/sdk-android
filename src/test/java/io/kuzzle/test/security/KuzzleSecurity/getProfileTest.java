@@ -52,9 +52,14 @@ public class getProfileTest {
           "{" +
             "\"result\": {" +
             "\"_id\": \"foobar\"," +
-            "\"_source\": {}" +
+            "\"_source\": {" +
+              "\"roles\": [{\"_id\": \"foo\", \"_source\": {\"restrictedTo\": []," +
+              "\"allowInternalIndex\": true}" +
+              "}" +
+              "]" +
             "}" +
-            "}");
+            "}" +
+              "}");
 
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
@@ -62,10 +67,19 @@ public class getProfileTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.getProfile("foobar", new KuzzleResponseListener<KuzzleProfile>() {
+    KuzzleOptions options = new KuzzleOptions();
+    options.setHydrate(false);
+
+    kuzzleSecurity.getProfile("foobar", options, new KuzzleResponseListener<KuzzleProfile>() {
       @Override
       public void onSuccess(KuzzleProfile response) {
         assertEquals(response.id, "foobar");
+        assertEquals(true, response.getRoles()[0].getContent().has("restrictedTo"));
+        try {
+          assertEquals(true, response.getRoles()[0].getContent().getBoolean("allowInternalIndex"));
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
 
       @Override

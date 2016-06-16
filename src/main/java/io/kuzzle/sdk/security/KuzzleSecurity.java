@@ -450,6 +450,8 @@ public class KuzzleSecurity {
    * @throws JSONException the json exception
    */
   public void getProfile(@NonNull final String id, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
+    final boolean hydrate;
+
     if (id == null) {
       throw new IllegalArgumentException("KuzzleSecurity.getProfile: cannot get 'null' profile");
     }
@@ -458,14 +460,37 @@ public class KuzzleSecurity {
       throw new IllegalArgumentException("KuzzleSecurity.getProfile: a listener callback is required");
     }
 
+    if (options != null) {
+      hydrate = options.isHydrated();
+    } else {
+      hydrate = true;
+    }
+
     JSONObject data = new JSONObject().put("_id", id);
-    // TODO: handle the options.hydrate parameter
 
     this.kuzzle.query(buildQueryArgs("getProfile"), data, options, new OnQueryDoneListener() {
       @Override
       public void onSuccess(JSONObject response) {
         try {
           JSONObject result = response.getJSONObject("result");
+          if (hydrate == false) {
+            JSONArray formattedRoles = new JSONArray();
+            JSONArray roles = result.getJSONObject("_source").getJSONArray("roles");
+            for (int i = 0; i < roles.length(); i++) {
+              JSONObject formattedRole = new JSONObject()
+                  .put("_id", ((JSONObject)roles.get(i)).getString("_id"));
+              if (((JSONObject) roles.get(i)).getJSONObject("_source").has("restrictedTo")) {
+                formattedRole.put("restrictedTo", ((JSONObject) roles.get(i)).getJSONObject("_source").getJSONArray("restrictedTo"));
+              }
+              if (((JSONObject) roles.get(i)).getJSONObject("_source").has("allowInternalIndex")) {
+                formattedRole.put("allowInternalIndex", ((JSONObject) roles.get(i)).getJSONObject("_source").getBoolean("allowInternalIndex"));
+              }
+              formattedRoles.put(formattedRole);
+              //result.getJSONObject("_source").getJSONArray("roles").put(formattedRole);
+            }
+            result.getJSONObject("_source").remove("roles");
+            result.getJSONObject("_source").put("roles", formattedRoles);
+          }
           listener.onSuccess(new KuzzleProfile(KuzzleSecurity.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
         } catch (JSONException e) {
           throw new RuntimeException(e);
