@@ -486,7 +486,6 @@ public class KuzzleSecurity {
                 formattedRole.put("allowInternalIndex", ((JSONObject) roles.get(i)).getJSONObject("_source").getBoolean("allowInternalIndex"));
               }
               formattedRoles.put(formattedRole);
-              //result.getJSONObject("_source").getJSONArray("roles").put(formattedRole);
             }
             result.getJSONObject("_source").remove("roles");
             result.getJSONObject("_source").put("roles", formattedRoles);
