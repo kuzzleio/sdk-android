@@ -1,5 +1,10 @@
 *__note:__ the # at the end of lines are the pull request numbers on GitHub*
 
+# 1.6.1
+
+* Fix roles format within profiles definition #69
+* Move the `getMyRights` method from the `KuzzleSecurity` object to the `Kuzzle` one #68
+
 # 1.6.0
 
 ## Features
