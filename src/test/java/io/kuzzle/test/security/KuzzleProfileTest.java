@@ -22,7 +22,9 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -88,6 +90,12 @@ public class KuzzleProfileTest {
     stubProfile.addPolicy(new JSONObject().put("roleId", "some role"));
     assertEquals(stubProfile.getPolicies().length(), 1);
     assertTrue(stubProfile.getPolicies().getJSONObject(0).getString("roleId") == "some role");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testAddNullPolicyObject() throws JSONException {
+    stubProfile.addPolicy(new JSONObject().put("roleId", null));
+    doThrow(IllegalArgumentException.class).when(stubProfile).addPolicy(any(JSONObject.class));
   }
 
   @Test

@@ -6,8 +6,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Arrays;
-
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -119,10 +117,11 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle profile
    * @throws IllegalArgumentException, JSONException
    */
-  public KuzzleProfile addPolicy(final JSONObject policy) throws IllegalArgumentException, JSONException {
-    if (policy.getString("roleId") == null) {
+  public KuzzleProfile addPolicy(final JSONObject policy) throws IllegalArgumentException {
+    if (!policy.has("roleId")) {
       throw new IllegalArgumentException("The policy must have, at least, a roleId set.");
     }
+
     this.policies.put(policy);
     return this;
   }
@@ -134,9 +133,13 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle profile
    * @throws JSONException the json exception
    */
-  public KuzzleProfile addPolicy(final String roleId) throws JSONException {
+  public KuzzleProfile addPolicy(final String roleId) {
     JSONObject policy = new JSONObject();
-    policy.put("roleId", roleId);
+    try {
+      policy.put("roleId", roleId);
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
     this.policies.put(policy);
     return this;
   }
@@ -148,12 +151,17 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @return this roles
    * @throws IllegalArgumentException, JSONException
    */
-  public KuzzleProfile setPolicies(final JSONArray policies) throws IllegalArgumentException, JSONException {
-    for (int i = 0; i < policies.length(); i++) {
-      if (policies.getJSONObject(i).getString("roleId") == null) {
-        throw new IllegalArgumentException("All pocicies must have at least a roleId set.");
+  public KuzzleProfile setPolicies(final JSONArray policies) throws IllegalArgumentException {
+    try {
+      for (int i = 0; i < policies.length(); i++) {
+        if (!policies.getJSONObject(i).has("roleId")) {
+          throw new IllegalArgumentException("All pocicies must have at least a roleId set.");
+        }
       }
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
     }
+
     this.policies = policies;
 
     return this;
@@ -166,11 +174,17 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @return this roles
    * @throws JSONException
    */
-  public KuzzleProfile setPolicies(final String rolesIds[]) throws JSONException {
-    for (int i = 0; i < rolesIds.length; i++) {
-      JSONObject policy = new JSONObject();
-      policy.put("roleId", rolesIds[i]);
-      this.policies.put(policy);
+  public KuzzleProfile setPolicies(final String rolesIds[]) {
+    try {
+      for (int i = 0; i < rolesIds.length; i++) {
+        JSONObject policy = new JSONObject();
+
+        policy.put("roleId", rolesIds[i]);
+
+        this.policies.put(policy);
+      }
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
     }
 
     return this;
