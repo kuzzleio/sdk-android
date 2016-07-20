@@ -441,8 +441,6 @@ public class KuzzleSecurity {
   /**
    * Get a specific profile from kuzzle
    * Takes an optional argument object with the following property:
-   * - hydrate (boolean, default: true):
-   * if is set to false, return a list id in role instead of KuzzleRole.
    *
    * @param id       - ID of the profile to retrieve
    * @param options  - Optional arguments
@@ -450,20 +448,12 @@ public class KuzzleSecurity {
    * @throws JSONException the json exception
    */
   public void getProfile(@NonNull final String id, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
-    final boolean hydrate;
-
     if (id == null) {
       throw new IllegalArgumentException("KuzzleSecurity.getProfile: cannot get 'null' profile");
     }
 
     if (listener == null) {
       throw new IllegalArgumentException("KuzzleSecurity.getProfile: a listener callback is required");
-    }
-
-    if (options != null) {
-      hydrate = options.isHydrated();
-    } else {
-      hydrate = true;
     }
 
     JSONObject data = new JSONObject().put("_id", id);
@@ -473,24 +463,22 @@ public class KuzzleSecurity {
       public void onSuccess(JSONObject response) {
         try {
           JSONObject result = response.getJSONObject("result");
-          if (hydrate == false) {
-            JSONArray formattedRoles = new JSONArray();
-            JSONArray roles = result.getJSONObject("_source").getJSONArray("roles");
-            for (int i = 0; i < roles.length(); i++) {
-              JSONObject formattedRole = new JSONObject()
-                  .put("_id", ((JSONObject)roles.get(i)).getString("_id"));
-              if (((JSONObject) roles.get(i)).getJSONObject("_source").has("restrictedTo")) {
-                formattedRole.put("restrictedTo", ((JSONObject) roles.get(i)).getJSONObject("_source").getJSONArray("restrictedTo"));
-              }
-              if (((JSONObject) roles.get(i)).getJSONObject("_source").has("allowInternalIndex")) {
-                formattedRole.put("allowInternalIndex", ((JSONObject) roles.get(i)).getJSONObject("_source").getBoolean("allowInternalIndex"));
-              }
-              formattedRoles.put(formattedRole);
+          JSONArray formattedPolicies = new JSONArray();
+          JSONArray policies = result.getJSONObject("_source").getJSONArray("policies");
+          for (int i = 0; i < policies.length(); i++) {
+            JSONObject formattedPolicy = new JSONObject()
+                .put("roleId", ((JSONObject)policies.get(i)).getString("roleId"));
+            if (((JSONObject) policies.get(i)).has("restrictedTo")) {
+              formattedPolicy.put("restrictedTo", ((JSONObject) policies.get(i)).getJSONArray("restrictedTo"));
             }
-            result.getJSONObject("_source").remove("roles");
-            result.getJSONObject("_source").put("roles", formattedRoles);
+            if (((JSONObject) policies.get(i)).has("allowInternalIndex")) {
+              formattedPolicy.put("allowInternalIndex", ((JSONObject) policies.get(i)).getBoolean("allowInternalIndex"));
+            }
+            formattedPolicies.put(formattedPolicy);
           }
-          listener.onSuccess(new KuzzleProfile(KuzzleSecurity.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+          result.getJSONObject("_source").remove("policies");
+          result.getJSONObject("_source").put("policies", formattedPolicies);
+          listener.onSuccess(new KuzzleProfile(KuzzleSecurity.this.kuzzle, result.getString("roleId"), result.getJSONObject("_source")));
         } catch (JSONException e) {
           throw new RuntimeException(e);
         }
@@ -506,8 +494,6 @@ public class KuzzleSecurity {
   /**
    * Get a specific profile from kuzzle
    * Takes an optional argument object with the following property:
-   * - hydrate (boolean, default: true):
-   * if is set to false, return a list id in role instead of KuzzleRole.
    *
    * @param id       - ID of the profile to retrieve
    * @param listener - Callback listener
@@ -520,9 +506,6 @@ public class KuzzleSecurity {
   /**
    * Executes a search on profiles according to a filter
    * Takes an optional argument object with the following property:
-   * - hydrate (boolean, default: true):
-   * if is set to false, return a list id in role instead of KuzzleRole.
-   * Because hydrate need to fetch all related KuzzleRole object, leave hydrate to true will have a performance cost
    * /!\ There is a small delay between profile creation and their existence in our persistent search layer,
    * usually a couple of seconds.
    * That means that a profile that was just been created won’t be returned by this function.
@@ -573,9 +556,6 @@ public class KuzzleSecurity {
   /**
    * Executes a search on profiles according to a filter
    * Takes an optional argument object with the following property:
-   * - hydrate (boolean, default: true):
-   * if is set to false, return a list id in role instead of KuzzleRole.
-   * Because hydrate need to fetch all related KuzzleRole object, leave hydrate to true will have a performance cost
    * /!\ There is a small delay between profile creation and their existence in our persistent search layer,
    * usually a couple of seconds.
    * That means that a profile that was just been created won’t be returned by this function.
@@ -867,9 +847,6 @@ public class KuzzleSecurity {
 
   /**
    * Get a specific user from kuzzle using its unique ID
-   * Takes an optional argument object with the following property:
-   * - hydrate (boolean, default: true):
-   * if is set to false, return a list id in role instead of KuzzleRole.
    *
    * @param id       - User ID to retrieve
    * @param options  - Optional arguments
@@ -886,7 +863,6 @@ public class KuzzleSecurity {
     }
 
     JSONObject data = new JSONObject().put("_id", id);
-    // TODO: manage the "hydrate" options
 
     this.kuzzle.query(buildQueryArgs("getUser"), data, options, new OnQueryDoneListener() {
       @Override
@@ -908,9 +884,6 @@ public class KuzzleSecurity {
 
   /**
    * Get a specific user from kuzzle using its unique ID
-   * Takes an optional argument object with the following property:
-   * - hydrate (boolean, default: true):
-   * if is set to false, return a list id in role instead of KuzzleRole.
    *
    * @param id       - User ID to retrieve
    * @param listener - Callback listener
@@ -922,10 +895,6 @@ public class KuzzleSecurity {
 
   /**
    * Executes a search on user according to a filter
-   * Takes an optional argument object with the following property:
-   * - hydrate (boolean, default: true):
-   * if is set to false, return a list id in role instead of KuzzleRole.
-   * Because hydrate need to fetch all related KuzzleRole object, leave hydrate to true will have a performance cost
    * /!\ There is a small delay between user creation and their existence in our persistent search layer,
    * usually a couple of seconds.
    * That means that a user that was just been created won’t be returned by this function.
@@ -936,7 +905,6 @@ public class KuzzleSecurity {
    * @throws JSONException the json exception
    */
   public void searchUsers(@NonNull JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleSecurityDocumentList> listener) throws JSONException {
-    boolean hydrate = options != null ? options.isHydrated() : true;
 
     if (filters == null) {
       throw new IllegalArgumentException("KuzzleSecurity.searchUsers: cannot perform a search with null filters");
@@ -947,7 +915,6 @@ public class KuzzleSecurity {
     }
 
     JSONObject data = new JSONObject().put("body", filters);
-    data.getJSONObject("body").put("hydrate", hydrate);
 
     this.kuzzle.query(buildQueryArgs("searchUsers"), data, options, new OnQueryDoneListener() {
       @Override
@@ -979,9 +946,6 @@ public class KuzzleSecurity {
   /**
    * Executes a search on user according to a filter
    * Takes an optional argument object with the following property:
-   * - hydrate (boolean, default: true):
-   * if is set to false, return a list id in role instead of KuzzleRole.
-   * Because hydrate need to fetch all related KuzzleRole object, leave hydrate to true will have a performance cost
    * /!\ There is a small delay between user creation and their existence in our persistent search layer,
    * usually a couple of seconds.
    * That means that a user that was just been created won’t be returned by this function.
