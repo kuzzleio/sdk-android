@@ -180,4 +180,11 @@ public class KuzzleProfileTest {
     assertEquals(stubProfile.getPolicies().getJSONObject(2).getString("roleId"), "baz");
     assertEquals(stubProfile.getPolicies().getJSONObject(3).getString("roleId"), "qux");
   }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testSetBadPolicies() throws JSONException {
+    stubProfile.setPolicies(new JSONArray("[{\"bad\":\"policy\"}]"));
+
+    doThrow(IllegalArgumentException.class).when(stubProfile).setPolicies(any(JSONArray.class));
+  }
 }
