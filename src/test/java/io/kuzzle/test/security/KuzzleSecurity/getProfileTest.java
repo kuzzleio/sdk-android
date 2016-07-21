@@ -53,4 +53,19 @@ public class getProfileTest {
     kuzzleSecurity.getProfile("foobar", listener);
   }
 
+  @Test
+  public void testgetProfileGoodResponse() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        JSONObject response = new JSONObject("{\"result\":{\"_id\":\"foobar\",\"_source\":{\"policies\":[{\"roleId\":\"baz\",\"restrictedTo\":[{\"index\":\"qux\"}],\"allowInternalIndex\":true}]}}}");
+
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
+        return null;
+      }
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+
+    kuzzleSecurity.getProfile("foobar", listener);
+  }
+
 }

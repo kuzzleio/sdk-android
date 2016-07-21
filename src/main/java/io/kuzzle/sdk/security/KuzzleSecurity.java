@@ -465,20 +465,23 @@ public class KuzzleSecurity {
           JSONObject result = response.getJSONObject("result");
           JSONArray formattedPolicies = new JSONArray();
           JSONArray policies = result.getJSONObject("_source").getJSONArray("policies");
+
           for (int i = 0; i < policies.length(); i++) {
             JSONObject formattedPolicy = new JSONObject()
-                .put("roleId", ((JSONObject)policies.get(i)).getString("roleId"));
+                .put("roleId", policies.getJSONObject(i).getString("roleId"));
             if (((JSONObject) policies.get(i)).has("restrictedTo")) {
-              formattedPolicy.put("restrictedTo", ((JSONObject) policies.get(i)).getJSONArray("restrictedTo"));
+              formattedPolicy.put("restrictedTo", policies.getJSONObject(i).getJSONArray("restrictedTo"));
             }
             if (((JSONObject) policies.get(i)).has("allowInternalIndex")) {
-              formattedPolicy.put("allowInternalIndex", ((JSONObject) policies.get(i)).getBoolean("allowInternalIndex"));
+              formattedPolicy.put("allowInternalIndex", policies.getJSONObject(i).getBoolean("allowInternalIndex"));
             }
             formattedPolicies.put(formattedPolicy);
           }
+
           result.getJSONObject("_source").remove("policies");
           result.getJSONObject("_source").put("policies", formattedPolicies);
-          listener.onSuccess(new KuzzleProfile(KuzzleSecurity.this.kuzzle, result.getString("roleId"), result.getJSONObject("_source")));
+
+          listener.onSuccess(new KuzzleProfile(KuzzleSecurity.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
         } catch (JSONException e) {
           throw new RuntimeException(e);
         }
