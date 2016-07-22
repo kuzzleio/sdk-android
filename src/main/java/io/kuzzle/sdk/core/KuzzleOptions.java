@@ -32,9 +32,6 @@ public class KuzzleOptions {
   // Used for getting collections
   private KuzzleCollectionType  collectionType = KuzzleCollectionType.ALL;
 
-  // Used by Kuzzle security objects
-  private boolean hydrate = true;
-
   /**
    * Is auto reconnect boolean.
    *
@@ -313,26 +310,6 @@ public class KuzzleOptions {
   public KuzzleOptions setCollectionType(KuzzleCollectionType type) {
     this.collectionType = type;
     return this;
-  }
-
-  /**
-   * Sets hydrate.
-   *
-   * @param hydrate the hydrate
-   * @return the hydrate
-   */
-  public KuzzleOptions setHydrate(boolean hydrate) {
-    this.hydrate = hydrate;
-    return this;
-  }
-
-  /**
-   * Is hydrated boolean.
-   *
-   * @return the boolean
-   */
-  public boolean isHydrated() {
-    return this.hydrate;
   }
 
   /**

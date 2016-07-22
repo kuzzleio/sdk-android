@@ -20,6 +20,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -36,7 +37,7 @@ public class AbstractKuzzleSecurityDocumentTest {
     kuzzle = mock(Kuzzle.class);
     kuzzle.security = new KuzzleSecurity(kuzzle);
     listener = mock(KuzzleResponseListener.class);
-    stubRole = new KuzzleRole(kuzzle, "foo", null);
+    stubRole = new KuzzleRole(kuzzle, "foo", new JSONObject("{\"foo\":\"bar\"}"));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -178,4 +179,8 @@ public class AbstractKuzzleSecurityDocumentTest {
     stubRole.update(new JSONObject(), listener);
   }
 
+  @Test
+  public void testGetContent() throws JSONException {
+    assertTrue(stubRole.getContent().getString("foo").equals("bar"));
+  }
 }
