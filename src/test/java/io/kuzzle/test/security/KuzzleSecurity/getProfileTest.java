@@ -46,6 +46,7 @@ public class getProfileTest {
         JSONObject response = new JSONObject();
 
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
         return null;
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
@@ -54,13 +55,66 @@ public class getProfileTest {
   }
 
   @Test
-  public void testgetProfileGoodResponse() throws JSONException {
+  public void testgetProfileGoodFullResponse() throws JSONException {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
         JSONObject response = new JSONObject("{\"result\":{\"_id\":\"foobar\",\"_source\":{\"policies\":[{\"roleId\":\"baz\",\"restrictedTo\":[{\"index\":\"qux\"}],\"allowInternalIndex\":true}]}}}");
 
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
+
+        return null;
+      }
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+
+    kuzzleSecurity.getProfile("foobar", listener);
+  }
+
+  @Test
+  public void testgetProfileGoodMinimalResponse() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        JSONObject response = new JSONObject("{\"result\":{\"_id\":\"foobar\",\"_source\":{\"policies\":[{\"roleId\":\"baz\"}]}}}");
+
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
+
+        return null;
+      }
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+
+    kuzzleSecurity.getProfile("foobar", listener);
+  }
+
+  @Test
+  public void testgetProfileGoodWithRestrictedToResponse() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        JSONObject response = new JSONObject("{\"result\":{\"_id\":\"foobar\",\"_source\":{\"policies\":[{\"roleId\":\"baz\"}],\"restrictedTo\":[{\"index\":\"qux\"}]}}}");
+
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
+
+        return null;
+      }
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+
+    kuzzleSecurity.getProfile("foobar", listener);
+  }
+
+  @Test
+  public void testgetProfileGoodWithAllowInternalIndexResponse() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        JSONObject response = new JSONObject("{\"result\":{\"_id\":\"foobar\",\"_source\":{\"policies\":[{\"roleId\":\"baz\"}],\"allowInternalIndex\":true}}}");
+
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
+
         return null;
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
