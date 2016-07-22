@@ -14,15 +14,14 @@ import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.security.KuzzleProfile;
-import io.kuzzle.sdk.security.KuzzleRole;
 import io.kuzzle.sdk.security.KuzzleSecurity;
 
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -186,5 +185,10 @@ public class KuzzleProfileTest {
     stubProfile.setPolicies(new JSONArray("[{\"bad\":\"policy\"}]"));
 
     doThrow(IllegalArgumentException.class).when(stubProfile).setPolicies(any(JSONArray.class));
+  }
+
+  @Test
+  public void testSerializeWithNoPolicies() throws JSONException {
+    assertFalse(stubProfile.serialize().getJSONObject("body").has("policies"));
   }
 }
