@@ -42,7 +42,7 @@ public class queueManagementTest {
     options.setDefaultIndex("testIndex");
 
     s = mock(Socket.class);
-    kuzzle = new KuzzleExtend("http://localhost:7512", options, null);
+    kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
 
     listener = new KuzzleResponseListener<Object>() {
@@ -67,7 +67,7 @@ public class queueManagementTest {
     options.setAutoReconnect(true);
     options.setOfflineMode(Mode.AUTO);
 
-    kuzzle = new KuzzleExtend("http://localhost:7512", options, null);
+    kuzzle = new KuzzleExtend("localhost", options, null);
     KuzzleQueryObject o = new KuzzleQueryObject();
     o.setTimestamp(new Date());
     o.setAction("test");
@@ -89,7 +89,7 @@ public class queueManagementTest {
     options.setQueueTTL(10000);
     options.setReplayInterval(1);
     options.setConnect(Mode.MANUAL);
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", options, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", options, null);
     extended.setSocket(s);
     extended.setState(KuzzleStates.CONNECTED);
 
@@ -125,7 +125,7 @@ public class queueManagementTest {
     KuzzleOptions options = new KuzzleOptions();
     options.setAutoReconnect(false);
     options.setDefaultIndex("testIndex");
-    kuzzle = new KuzzleExtend("http://localhost:7512", options, null);
+    kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.connect();
     kuzzle.listCollections(mock(KuzzleResponseListener.class));
     assertEquals(kuzzle.getOfflineQueue().size(), 1);
@@ -145,7 +145,7 @@ public class queueManagementTest {
     options.setAutoReplay(true);
     options.setConnect(Mode.MANUAL);
     options.setOfflineMode(Mode.AUTO);
-    kuzzle = new KuzzleExtend("http://localhost:7512", options, null);
+    kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
 
     doAnswer(new Answer() {
@@ -174,7 +174,7 @@ public class queueManagementTest {
     options.setReplayInterval(1);
     options.setConnect(Mode.MANUAL);
     options.setOfflineMode(Mode.AUTO);
-    kuzzle = new KuzzleExtend("http://localhost:7512", options, null);
+    kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
 
     doAnswer(new Answer() {

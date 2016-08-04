@@ -41,7 +41,7 @@ public class KuzzleListenerTest {
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
     s = mock(Socket.class);
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", options, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", options, null);
     extended.setSocket(s);
     kuzzle = extended;
     kuzzleExtend = extended;

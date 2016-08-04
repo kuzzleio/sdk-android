@@ -32,7 +32,7 @@ public class updateSelfTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    kuzzle = spy(new Kuzzle("http://localhost:7512"));
+    kuzzle = spy(new Kuzzle("localhost"));
     argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     listener = spy(new KuzzleResponseListener<JSONObject>() {
       @Override

@@ -28,12 +28,10 @@ public class KuzzleOptions {
   private boolean replaceIfExist = false;
   private Long from;
   private Long size;
+  private Integer port = 7512;
 
   // Used for getting collections
   private KuzzleCollectionType  collectionType = KuzzleCollectionType.ALL;
-
-  // Used by Kuzzle security objects
-  private boolean hydrate = true;
 
   /**
    * Is auto reconnect boolean.
@@ -316,26 +314,6 @@ public class KuzzleOptions {
   }
 
   /**
-   * Sets hydrate.
-   *
-   * @param hydrate the hydrate
-   * @return the hydrate
-   */
-  public KuzzleOptions setHydrate(boolean hydrate) {
-    this.hydrate = hydrate;
-    return this;
-  }
-
-  /**
-   * Is hydrated boolean.
-   *
-   * @return the boolean
-   */
-  public boolean isHydrated() {
-    return this.hydrate;
-  }
-
-  /**
    * Sets default index.
    *
    * @param index the index
@@ -409,5 +387,13 @@ public class KuzzleOptions {
 
   public void setSize(Long size) {
     this.size = size;
+  }
+
+  public void setPort(Integer port) {
+    this.port = port;
+  }
+
+  public Integer getPort() {
+    return this.port;
   }
 }

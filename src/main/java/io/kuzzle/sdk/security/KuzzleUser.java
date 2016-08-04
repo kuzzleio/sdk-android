@@ -2,8 +2,12 @@ package io.kuzzle.sdk.security;
 
 import android.support.annotation.NonNull;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.KuzzleOptions;
@@ -15,9 +19,9 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
  */
 public class KuzzleUser extends AbstractKuzzleSecurityDocument {
   /**
-   * The Profile.
+   * The Profiles Ids List.
    */
-  public KuzzleProfile profile = null;
+  private JSONArray profilesIds = null;
 
   /**
    * Instantiates a new Kuzzle user.
@@ -35,100 +39,45 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
     if (content != null) {
       this.content = new JSONObject(content.toString());
 
-      if (content.has("profile")) {
-        JSONObject profile = content.getJSONObject("profile");
-
-        if (profile.has("_id")) {
-          if (profile.has("_source")) {
-            this.profile = new KuzzleProfile(this.kuzzle, profile.getString("_id"), profile.getJSONObject("_source"));
-          }
-          else {
-            this.profile = new KuzzleProfile(this.kuzzle, profile.getString("_id"), null);
-          }
-        }
+      if (content.has("profilesIds")) {
+        this.profilesIds = content.getJSONArray("profilesIds");
       }
     }
   }
 
   /**
-   * This function allow to get the hydrated user of the corresponding current user.
-   * The hydrated user has profiles and roles.
+   * Set a new profiles set for this user
    *
-   * @param options  - Optional arguments
-   * @param listener - Callback listener
-   * @throws JSONException the json exception
+   * @param profilesIds - Strings array of profiles IDs
+   * @return this profiles
    */
-  public void hydrate(final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
-    if (listener == null) {
-      throw new IllegalArgumentException("KuzzleUser.hydrate: a callback listener is required");
+  public KuzzleUser setProfiles(@NonNull final String[] profilesIds) {
+    if (profilesIds == null) {
+      throw new IllegalArgumentException("KuzzleUser.setProfiles: you must provide an array of profiles IDs strings");
     }
 
-    if (this.profile == null) {
-      throw new IllegalArgumentException("KuzzleUser.hydrate: cannot save a user without a profile");
-    }
+    this.profilesIds = new JSONArray(Arrays.asList(profilesIds));
 
-    JSONObject data = new JSONObject().put("_id", this.profile.id);
-
-    this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("getProfile"), data, options, new OnQueryDoneListener() {
-      @Override
-      public void onSuccess(JSONObject response) {
-        try {
-          JSONObject result = response.getJSONObject("result");
-          KuzzleUser user = new KuzzleUser(KuzzleUser.this.kuzzle, KuzzleUser.this.id, null);
-          user.setProfile(new KuzzleProfile(KuzzleUser.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
-          listener.onSuccess(user);
-        } catch (JSONException e) {
-          throw new RuntimeException(e);
-        }
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-        listener.onError(error);
-      }
-    });
+    return this;
   }
 
   /**
-   * This function allow to get the hydrated user of the corresponding current user.
-   * The hydrated user has profiles and roles.
+   * adds a new profile to the profiles set of this user
    *
-   * @param listener - Callback listener
-   * @throws JSONException the json exception
+   * @param profile - String
+   * @return this profiles
    */
-  public void hydrate(@NonNull final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
-    hydrate(null, listener);
-  }
-
-  /**
-   * Set a new profile for this user
-   *
-   * @param profile - new profile
-   * @return this profile
-   */
-  public KuzzleUser setProfile(@NonNull final KuzzleProfile profile) {
+  public KuzzleUser addProfile(@NonNull final String profile) {
     if (profile == null) {
-      throw new IllegalArgumentException("KuzzleUser.setProfile: cannot set null profile");
+      throw new IllegalArgumentException("KuzzleUser.addProfile: you must provide a string");
     }
 
-    this.profile = profile;
+    this.profilesIds.put(profile);
 
     return this;
   }
 
-  /**
-   * Set a new profile for this user
-   *
-   * @param id - new profile ID
-   * @return this profile
-   * @throws JSONException the json exception
-   */
-  public KuzzleUser setProfile(@NonNull final String id) throws JSONException {
-    setProfile(new KuzzleProfile(this.kuzzle, id, null));
-    return this;
-  }
-
-  /**
+   /**
    * Save this user in Kuzzle
    *
    * @param options  - Optional arguments
@@ -202,8 +151,8 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
       data = new JSONObject().put("_id", this.id),
       content = new JSONObject(this.content.toString());
 
-    if (profile != null) {
-      content.put("profile", this.profile.id);
+    if (this.profilesIds != null) {
+      content.put("profilesIds", this.profilesIds);
     }
 
     data.put("body", content);
@@ -214,10 +163,9 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
   /**
    * Returns the associated profiles
    *
-   * @return an array of KuzzleProfile objects
+   * @return an array of strings
    */
-  public KuzzleProfile[] getProfiles() {
-    KuzzleProfile[] profiles = {this.profile};
-    return profiles;
+  public JSONArray getProfiles() {
+    return this.profilesIds;
   }
 }
