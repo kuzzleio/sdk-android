@@ -40,7 +40,7 @@ public class refreshTest {
   public void setUp() throws URISyntaxException, JSONException {
     KuzzleOptions opts = new KuzzleOptions();
     opts.setConnect(Mode.MANUAL);
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", opts, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setState(KuzzleStates.CONNECTED);
     k = spy(extended);
     mockListener = mock(KuzzleResponseListener.class);

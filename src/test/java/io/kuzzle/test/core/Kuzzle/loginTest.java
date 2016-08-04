@@ -41,7 +41,7 @@ public class loginTest {
     options.setDefaultIndex("testIndex");
 
     s = mock(Socket.class);
-    kuzzle = new KuzzleExtend("http://localhost:7512", options, null);
+    kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
 
     listener = new KuzzleResponseListener<Object>() {

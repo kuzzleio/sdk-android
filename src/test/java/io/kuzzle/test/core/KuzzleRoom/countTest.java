@@ -62,7 +62,7 @@ public class countTest {
         .put("result", new JSONObject())
         .put("requestId", "42");
     mockResponse.put("result", new JSONObject().put("channel", "channel").put("roomId", "42"));
-    k = spy(new KuzzleExtend("http://localhost:7512", null, null));
+    k = spy(new KuzzleExtend("localhost", null, null));
     k.setSocket(mock(Socket.class));
     k.setState(KuzzleStates.CONNECTED);
     when(k.getHeaders()).thenReturn(new JSONObject());
@@ -78,7 +78,7 @@ public class countTest {
   public void testCountWhileSubscribing() throws JSONException, URISyntaxException {
     KuzzleOptions opts = new KuzzleOptions();
     opts.setConnect(Mode.MANUAL);
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", opts, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
@@ -140,7 +140,7 @@ public class countTest {
     JSONObject o = mock(JSONObject.class);
     when(o.put(any(String.class), any(Object.class))).thenReturn(new JSONObject());
 
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", null, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", null, null);
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);

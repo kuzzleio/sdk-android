@@ -32,7 +32,7 @@ public class getMyRightsTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    kuzzle = spy(new KuzzleExtend("http://localhost:7512", mock(KuzzleOptions.class), mock(KuzzleResponseListener.class)));
+    kuzzle = spy(new KuzzleExtend("localhost", mock(KuzzleOptions.class), mock(KuzzleResponseListener.class)));
     listener = mock(KuzzleResponseListener.class);
   }
 

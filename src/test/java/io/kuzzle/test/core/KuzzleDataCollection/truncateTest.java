@@ -39,7 +39,7 @@ public class truncateTest {
   public void setUp() throws URISyntaxException {
     KuzzleOptions opts = new KuzzleOptions();
     opts.setConnect(Mode.MANUAL);
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", opts, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
 

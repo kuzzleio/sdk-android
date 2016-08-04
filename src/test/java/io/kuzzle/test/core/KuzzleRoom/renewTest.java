@@ -69,7 +69,7 @@ public class renewTest {
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
     Socket s = mock(Socket.class);
-    KuzzleExtend kuzzle = new KuzzleExtend("http://localhost:7512", options, null);
+    KuzzleExtend kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setState(KuzzleStates.CONNECTED);
 
     final Kuzzle kuzzleSpy = spy(kuzzle);
@@ -107,7 +107,7 @@ public class renewTest {
   public void testRenewQueryException() throws JSONException, URISyntaxException {
     KuzzleOptions opts = new KuzzleOptions();
     opts.setConnect(Mode.MANUAL);
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", opts, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
@@ -122,7 +122,7 @@ public class renewTest {
   public void testRenewException() throws JSONException, URISyntaxException {
     KuzzleOptions opts = new KuzzleOptions();
     opts.setConnect(Mode.MANUAL);
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", opts, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
@@ -149,7 +149,7 @@ public class renewTest {
   public void testNoRenewal() throws JSONException, URISyntaxException {
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
-    KuzzleExtend kuzzle = new KuzzleExtend("http://localhost:7512", options, null);
+    KuzzleExtend kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setState(KuzzleStates.CONNECTED);
     kuzzle.setSocket(mock(Socket.class));
 
@@ -177,7 +177,7 @@ public class renewTest {
   public void testRenewWhileSubscribing() throws JSONException, URISyntaxException {
     KuzzleOptions opts = new KuzzleOptions();
     opts.setConnect(Mode.MANUAL);
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", opts, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);

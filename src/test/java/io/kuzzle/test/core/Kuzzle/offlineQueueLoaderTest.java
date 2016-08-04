@@ -41,7 +41,7 @@ public class offlineQueueLoaderTest {
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
     s = mock(Socket.class);
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", options, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", options, null);
     extended.setSocket(s);
     kuzzleExtend = extended;
   }

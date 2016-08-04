@@ -45,7 +45,7 @@ public class queryTest {
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
 
-    kuzzle = new KuzzleExtend("http://localhost:7512", options, null);
+    kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setState(KuzzleStates.CONNECTED);
     kuzzle.setSocket(socket);
 

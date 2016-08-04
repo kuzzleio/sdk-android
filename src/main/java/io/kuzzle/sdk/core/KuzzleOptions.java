@@ -28,6 +28,7 @@ public class KuzzleOptions {
   private boolean replaceIfExist = false;
   private Long from;
   private Long size;
+  private Integer port = 7512;
 
   // Used for getting collections
   private KuzzleCollectionType  collectionType = KuzzleCollectionType.ALL;
@@ -386,5 +387,13 @@ public class KuzzleOptions {
 
   public void setSize(Long size) {
     this.size = size;
+  }
+
+  public void setPort(Integer port) {
+    this.port = port;
+  }
+
+  public Integer getPort() {
+    return this.port;
   }
 }

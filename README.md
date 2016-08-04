@@ -5,7 +5,7 @@
 Official Kuzzle Android SDK
 ======
 
-This SDK version requires Kuzzle v1.0.0-beta.6 or higher.
+This SDK version requires Kuzzle v1.0.0-RC5 or higher.
 
 ## About Kuzzle
 
@@ -16,7 +16,7 @@ You can access the Kuzzle repository on [Github](https://github.com/kuzzleio/kuz
 
 ## SDK Documentation
 
-The complete SDK documentation is available [here](http://kuzzleio.github.io/sdk-documentation)
+The complete SDK documentation is available [here](http://kuzzle.io/sdk-documentation)
 
 ## Installation
 
@@ -27,12 +27,12 @@ You can configure your android project to get the Kuzzle's android SDK from jcen
             jcenter()
         }
     }
-    compile 'io.kuzzle:sdk-android:1.6.0'
+    compile 'io.kuzzle:sdk-android:2.0.0'
 
 ## Basic usage
 
 ```java
-Kuzzle kuzzle = new Kuzzle("http://host.url", "index", new ResponseListener<Void>() {
+Kuzzle kuzzle = new Kuzzle("host", new ResponseListener<Void>() {
 @Override
 public void onSuccess(Void object) {
     // Handle success
@@ -64,7 +64,7 @@ myDocument.publish();
 
 ## Adding metadata
 
-As stated [here](http://kuzzleio.github.io/kuzzle-api-documentation/#sending-metadata) you can add metadata to a subscription.
+As stated [here](http://kuzzle.io/api-reference/#sending-metadata) you can add metadata to a subscription.
 
 ```java
 KuzzleOptions options = new KuzzleOptions();
@@ -87,7 +87,7 @@ If you have the kuzzle-plugin-auth-passport-local installed you can login using 
 
 ```java
 KuzzleOptions options = new KuzzleOptions();
-kuzzle = new Kuzzle("http://localhost:7512", "index", options);
+kuzzle = new Kuzzle("localhost", options);
 ```
 
 ## Login with an OAuth strategy

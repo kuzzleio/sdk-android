@@ -67,7 +67,7 @@ public class unsubscribeTest {
     opts.setConnect(Mode.MANUAL);
     Socket s = mock(Socket.class);
 
-    KuzzleExtend kuzzle = new KuzzleExtend("http://localhost:7512", opts, null);
+    KuzzleExtend kuzzle = new KuzzleExtend("localhost", opts, null);
     kuzzle.setState(KuzzleStates.CONNECTED);
     kuzzle.setSocket(s);
 
@@ -86,7 +86,7 @@ public class unsubscribeTest {
   public void testUnsubscribeWhileSubscribing() throws JSONException, URISyntaxException {
     KuzzleOptions opts = new KuzzleOptions();
     opts.setConnect(Mode.MANUAL);
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", opts, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
@@ -122,7 +122,7 @@ public class unsubscribeTest {
     opts.setConnect(Mode.MANUAL);
     Socket s = mock(Socket.class);
 
-    KuzzleExtend kuzzle = new KuzzleExtend("http://localhost:7512", opts, null);
+    KuzzleExtend kuzzle = new KuzzleExtend("localhost", opts, null);
     kuzzle.setState(KuzzleStates.CONNECTED);
     kuzzle.setSocket(s);
 
@@ -141,7 +141,7 @@ public class unsubscribeTest {
   public void testUnsubscribeException() throws URISyntaxException {
     KuzzleOptions opts = new KuzzleOptions();
     opts.setConnect(Mode.MANUAL);
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", opts, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
@@ -155,7 +155,7 @@ public class unsubscribeTest {
   public void testUnsubscribeTask() throws URISyntaxException, JSONException {
     KuzzleOptions opts = new KuzzleOptions();
     opts.setConnect(Mode.MANUAL);
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", opts, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
@@ -170,7 +170,7 @@ public class unsubscribeTest {
   public void testUnsubscribeTaskException() throws URISyntaxException {
     KuzzleOptions opts = new KuzzleOptions();
     opts.setConnect(Mode.MANUAL);
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", opts, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
