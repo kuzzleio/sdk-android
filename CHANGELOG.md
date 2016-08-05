@@ -1,5 +1,9 @@
 *__note:__ the # at the end of lines are the pull request numbers on GitHub*
 
+# 1.7.0
+
+* https://github.com/kuzzleio/sdk-android/releases/tag/1.7.0 
+
 # 1.6.1
 
 * Fix roles format within profiles definition #69
