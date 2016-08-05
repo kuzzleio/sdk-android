@@ -1753,6 +1753,16 @@ public class Kuzzle {
     return autoReplay;
   }
 
+
+  /**
+   * Gets network port
+   *
+   * @return integer
+   */
+  public int getPort() {
+    return port;
+  }
+
   /**
    * Sets auto replay.
    *

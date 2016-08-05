@@ -37,6 +37,7 @@ public class constructorTest {
   public void setUp() throws URISyntaxException {
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
+    options.setPort(12345);
     options.setDefaultIndex("testIndex");
 
     s = mock(Socket.class);
@@ -262,5 +263,10 @@ public class constructorTest {
   @Test
   public void exposeReconnectionDelayGetter() {
     assertThat(kuzzle.getReconnectionDelay(), instanceOf(long.class));
+  }
+
+  @Test
+  public void testGetPort() {
+    assertEquals(kuzzle.getPort(), 12345);
   }
 }
