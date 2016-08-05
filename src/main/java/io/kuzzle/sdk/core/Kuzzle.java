@@ -76,9 +76,13 @@ public class Kuzzle {
    */
   protected JSONObject metadata;
   /**
-   * The Url.
+   * The target Kuzzle URL
    */
   protected String url;
+  /**
+   * Target Kuzzle network port
+   */
+  protected Integer port;
   /**
    * The Connection callback.
    */
@@ -170,9 +174,8 @@ public class Kuzzle {
   private KuzzleOfflineQueueLoader  offlineQueueLoader;
 
   /**
-   * The constant security.
+   * Security static class
    */
-// Security static class
   public KuzzleSecurity security;
 
   private KuzzleResponseListener<JSONObject>  loginCallback;
@@ -227,14 +230,14 @@ public class Kuzzle {
   /**
    * Kuzzle object constructor.
    *
-   * @param url                the url
+   * @param host               target host name or IP address
    * @param options            the options
    * @param connectionCallback the connection callback
    * @throws URISyntaxException the uri syntax exception
    */
-  public Kuzzle(@NonNull final String url, final KuzzleOptions options, final KuzzleResponseListener<Void> connectionCallback) throws URISyntaxException {
-    if (url == null || url.isEmpty()) {
-      throw new IllegalArgumentException("Url can't be empty");
+  public Kuzzle(@NonNull final String host, final KuzzleOptions options, final KuzzleResponseListener<Void> connectionCallback) throws URISyntaxException {
+    if (host == null || host.isEmpty()) {
+      throw new IllegalArgumentException("Host name/address can't be empty");
     }
 
     KuzzleOptions opt = (options != null ? options : new KuzzleOptions());
@@ -246,12 +249,13 @@ public class Kuzzle {
     this.defaultIndex = opt.getDefaultIndex();
     this.headers = opt.getHeaders();
     this.metadata = opt.getMetadata();
+    this.port = opt.getPort();
     this.queueMaxSize = opt.getQueueMaxSize();
     this.queueTTL = opt.getQueueTTL();
     this.reconnectionDelay = opt.getReconnectionDelay();
     this.replayInterval = opt.getReplayInterval();
 
-    this.url = url;
+    this.url = "http://" + host + ":" + this.port;
     this.connectionCallback = connectionCallback;
 
     if (socket == null) {
@@ -275,33 +279,33 @@ public class Kuzzle {
   /**
    * Instantiates a new Kuzzle.
    *
-   * @param url the url
+   * @param host target Kuzzle host name or IP address
    * @throws URISyntaxException the uri syntax exception
    */
-  public Kuzzle(@NonNull final String url) throws URISyntaxException {
-    this(url, null, null);
+  public Kuzzle(@NonNull final String host) throws URISyntaxException {
+    this(host, null, null);
   }
 
   /**
    * Instantiates a new Kuzzle.
    *
-   * @param url the url
+   * @param host target Kuzzle host name or IP address
    * @param cb  the cb
    * @throws URISyntaxException the uri syntax exception
    */
-  public Kuzzle(@NonNull final String url, final KuzzleResponseListener<Void> cb) throws URISyntaxException {
-    this(url, null, cb);
+  public Kuzzle(@NonNull final String host, final KuzzleResponseListener<Void> cb) throws URISyntaxException {
+    this(host, null, cb);
   }
 
   /**
    * Instantiates a new Kuzzle.
    *
-   * @param url     the url
+   * @param host target Kuzzle host name or IP address
    * @param options the options
    * @throws URISyntaxException the uri syntax exception
    */
-  public Kuzzle(@NonNull final String url, KuzzleOptions options) throws URISyntaxException {
-    this(url, options, null);
+  public Kuzzle(@NonNull final String host, KuzzleOptions options) throws URISyntaxException {
+    this(host, options, null);
   }
 
   /**
@@ -1747,6 +1751,16 @@ public class Kuzzle {
    */
   public boolean isAutoReplay() {
     return autoReplay;
+  }
+
+
+  /**
+   * Gets network port
+   *
+   * @return integer
+   */
+  public int getPort() {
+    return port;
   }
 
   /**

@@ -38,7 +38,7 @@ public class listIndexesTest {
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
-    kuzzle = new KuzzleExtend("http://localhost:7512", options, null);
+    kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(mock(Socket.class));
 
     listener = new KuzzleResponseListener<Object>() {

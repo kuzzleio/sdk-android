@@ -66,7 +66,7 @@ public class connectionManagementTest {
 
       }
     };
-    kuzzle = new KuzzleExtend("http://localhost:7512", options, listener);
+    kuzzle = new KuzzleExtend("localhost", options, listener);
     kuzzle.setSocket(s);
   }
 
@@ -86,7 +86,7 @@ public class connectionManagementTest {
     JSONObject query = new JSONObject("{\"controller\":\"test3\",\"metadata\":{},\"requestId\":\"a476ae61-497e-4338-b4dd-751ac22c6b61\",\"action\":\"test3\",\"collection\":\"test3\"}");
     o.setQuery(query);
 
-    kuzzle = new KuzzleExtend("http://localhost:7512", options, null);
+    kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
 
     doAnswer(new Answer() {
@@ -122,7 +122,7 @@ public class connectionManagementTest {
     options.setConnect(Mode.MANUAL);
     options.setAutoReconnect(true);
     options.setOfflineMode(Mode.AUTO);
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", options, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", options, null);
     extended.setSocket(s);
     extended.setState(KuzzleStates.INITIALIZING);
     final Kuzzle kuzzleSpy = spy(extended);
@@ -175,7 +175,7 @@ public class connectionManagementTest {
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
 
-    kuzzle = new KuzzleExtend("http://localhost:7512", options, null);
+    kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
     kuzzle = spy(kuzzle);
 

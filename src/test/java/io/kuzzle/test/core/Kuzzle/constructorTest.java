@@ -37,10 +37,11 @@ public class constructorTest {
   public void setUp() throws URISyntaxException {
     KuzzleOptions options = new KuzzleOptions();
     options.setConnect(Mode.MANUAL);
+    options.setPort(12345);
     options.setDefaultIndex("testIndex");
 
     s = mock(Socket.class);
-    kuzzle = new KuzzleExtend("http://localhost:7512", options, null);
+    kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
 
     listener = new KuzzleResponseListener<Object>() {
@@ -63,11 +64,11 @@ public class constructorTest {
 
   @Test
   public void checkSignaturesVariants() throws URISyntaxException {
-    Kuzzle k = new Kuzzle("http://localhost:7512");
+    Kuzzle k = new Kuzzle("localhost");
     assertNotNull(k);
-    k = new Kuzzle("http://localhost:7512", new KuzzleOptions());
+    k = new Kuzzle("localhost", new KuzzleOptions());
     assertNotNull(k);
-    k = new Kuzzle("http://localhost:7512", listener);
+    k = new Kuzzle("localhost", listener);
     assertNotNull(k);
   }
 
@@ -120,7 +121,7 @@ public class constructorTest {
     KuzzleOptions options = new KuzzleOptions();
     options.setQueuable(false);
     options.setConnect(Mode.MANUAL);
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", options, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", options, null);
     extended.setSocket(s);
     extended.setState(KuzzleStates.CONNECTED);
 
@@ -147,7 +148,7 @@ public class constructorTest {
     options.setMetadata(meta);
     options.setQueuable(false);
     options.setConnect(Mode.MANUAL);
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", options, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", options, null);
     extended.setSocket(s);
     extended.setState(KuzzleStates.CONNECTED);
     extended.query(QueryArgsHelper.makeQueryArgs("controller", "action"), jsonObj, options);
@@ -262,5 +263,10 @@ public class constructorTest {
   @Test
   public void exposeReconnectionDelayGetter() {
     assertThat(kuzzle.getReconnectionDelay(), instanceOf(long.class));
+  }
+
+  @Test
+  public void testGetPort() {
+    assertEquals(kuzzle.getPort(), 12345);
   }
 }

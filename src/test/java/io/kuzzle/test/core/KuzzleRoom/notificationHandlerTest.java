@@ -94,7 +94,7 @@ public class notificationHandlerTest {
     options.setSubscribeToSelf(true);
     KuzzleOptions opts = new KuzzleOptions();
     opts.setConnect(Mode.MANUAL);
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", opts, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     Socket s = mock(Socket.class);
     extended.setSocket(s);
     extended.setState(KuzzleStates.CONNECTED);
@@ -110,7 +110,7 @@ public class notificationHandlerTest {
   public void testRenewOn() throws JSONException, URISyntaxException {
     KuzzleOptions opts = new KuzzleOptions();
     opts.setConnect(Mode.MANUAL);
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", opts, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     Socket s = mock(Socket.class);
     extended.setSocket(s);
     extended.setState(KuzzleStates.CONNECTED);
@@ -144,7 +144,7 @@ public class notificationHandlerTest {
 
   @Test
   public void testJwtTokenExpiredNotification() throws JSONException, URISyntaxException {
-    k = new Kuzzle("http://localhost:7512");
+    k = new Kuzzle("localhost");
     IKuzzleEventListener listener = spy(new IKuzzleEventListener() {
       @Override
       public void trigger(Object... args) {
@@ -166,7 +166,7 @@ public class notificationHandlerTest {
     KuzzleRoomOptions options = new KuzzleRoomOptions();
     KuzzleOptions opts = new KuzzleOptions();
     opts.setConnect(Mode.MANUAL);
-    KuzzleExtend extended = new KuzzleExtend("http://localhost:7512", opts, null);
+    KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     Socket s = mock(Socket.class);
     extended.setSocket(s);
     extended.setState(KuzzleStates.CONNECTED);
