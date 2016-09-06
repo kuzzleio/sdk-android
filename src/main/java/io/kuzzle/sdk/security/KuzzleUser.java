@@ -21,7 +21,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
   /**
    * The Profiles Ids List.
    */
-  private JSONArray profilesIds = null;
+  private JSONArray profileIds = null;
 
   /**
    * Instantiates a new Kuzzle user.
@@ -39,8 +39,8 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
     if (content != null) {
       this.content = new JSONObject(content.toString());
 
-      if (content.has("profilesIds")) {
-        this.profilesIds = content.getJSONArray("profilesIds");
+      if (content.has("profileIds")) {
+        this.profileIds = content.getJSONArray("profileIds");
       }
     }
   }
@@ -48,15 +48,15 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
   /**
    * Set a new profiles set for this user
    *
-   * @param profilesIds - Strings array of profiles IDs
+   * @param profileIds - Strings array of profiles IDs
    * @return this profiles
    */
-  public KuzzleUser setProfiles(@NonNull final String[] profilesIds) {
-    if (profilesIds == null) {
+  public KuzzleUser setProfiles(@NonNull final String[] profileIds) {
+    if (profileIds == null) {
       throw new IllegalArgumentException("KuzzleUser.setProfiles: you must provide an array of profiles IDs strings");
     }
 
-    this.profilesIds = new JSONArray(Arrays.asList(profilesIds));
+    this.profileIds = new JSONArray(Arrays.asList(profileIds));
 
     return this;
   }
@@ -72,7 +72,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
       throw new IllegalArgumentException("KuzzleUser.addProfile: you must provide a string");
     }
 
-    this.profilesIds.put(profile);
+    this.profileIds.put(profile);
 
     return this;
   }
@@ -151,8 +151,8 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
       data = new JSONObject().put("_id", this.id),
       content = new JSONObject(this.content.toString());
 
-    if (this.profilesIds != null) {
-      content.put("profilesIds", this.profilesIds);
+    if (this.profileIds != null) {
+      content.put("profileIds", this.profileIds);
     }
 
     data.put("body", content);
@@ -166,6 +166,6 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @return an array of strings
    */
   public JSONArray getProfiles() {
-    return this.profilesIds;
+    return this.profileIds;
   }
 }
