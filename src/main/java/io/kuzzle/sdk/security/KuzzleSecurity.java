@@ -267,9 +267,10 @@ public class KuzzleSecurity {
    * @param id       - ID of the role to delete
    * @param options  - Optional arguments
    * @param listener - Callback listener
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void deleteRole(@NonNull final String id, final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
+  public KuzzleSecurity deleteRole(@NonNull final String id, final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
     if (id == null) {
       throw new IllegalArgumentException("KuzzleSecurity.deleteRole: cannot delete role without an ID");
     }
@@ -297,6 +298,8 @@ public class KuzzleSecurity {
     else {
       this.kuzzle.query(buildQueryArgs("deleteRole"), data, options);
     }
+
+    return this;
   }
 
   /**
@@ -307,10 +310,11 @@ public class KuzzleSecurity {
    *
    * @param id       - ID of the role to delete
    * @param listener - Callback listener
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void deleteRole(@NonNull final String id, final KuzzleResponseListener<String> listener) throws JSONException {
-    deleteRole(id, null, listener);
+  public KuzzleSecurity deleteRole(@NonNull final String id, final KuzzleResponseListener<String> listener) throws JSONException {
+    return deleteRole(id, null, listener);
   }
 
   /**
@@ -321,10 +325,11 @@ public class KuzzleSecurity {
    *
    * @param id      - ID of the role to delete
    * @param options - Optional arguments
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void deleteRole(@NonNull final String id, final KuzzleOptions options) throws JSONException {
-    deleteRole(id, options, null);
+  public KuzzleSecurity deleteRole(@NonNull final String id, final KuzzleOptions options) throws JSONException {
+    return deleteRole(id, options, null);
   }
 
   /**
@@ -334,10 +339,11 @@ public class KuzzleSecurity {
    * That means that a role that was just been delete will be returned by this function
    *
    * @param id - ID of the role to delete
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void deleteRole(@NonNull final String id) throws JSONException {
-    deleteRole(id, null, null);
+  public KuzzleSecurity deleteRole(@NonNull final String id) throws JSONException {
+    return deleteRole(id, null, null);
   }
 
   /**
@@ -347,9 +353,10 @@ public class KuzzleSecurity {
    * @param content  the content
    * @param options  the options
    * @param listener the listener
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void updateRole(@NonNull final String id, final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
+  public KuzzleSecurity updateRole(@NonNull final String id, final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
     if (id == null) {
       throw new IllegalArgumentException("KuzzleSecurity.updateRole: cannot update role without an ID");
     }
@@ -378,6 +385,8 @@ public class KuzzleSecurity {
     else {
       this.kuzzle.query(buildQueryArgs("updateRole"), data, options);
     }
+
+    return this;
   }
 
   /**
@@ -386,10 +395,11 @@ public class KuzzleSecurity {
    * @param id       the id
    * @param content  the content
    * @param listener the listener
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void updateRole(@NonNull final String id, final JSONObject content, final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
-    updateRole(id, content, null, listener);
+  public KuzzleSecurity updateRole(@NonNull final String id, final JSONObject content, final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
+    return updateRole(id, content, null, listener);
   }
 
   /**
@@ -398,10 +408,11 @@ public class KuzzleSecurity {
    * @param id      the id
    * @param content the content
    * @param options the options
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void updateRole(@NonNull final String id, final JSONObject content, final KuzzleOptions options) throws JSONException {
-    updateRole(id, content, options, null);
+  public KuzzleSecurity updateRole(@NonNull final String id, final JSONObject content, final KuzzleOptions options) throws JSONException {
+    return updateRole(id, content, options, null);
   }
 
   /**
@@ -411,8 +422,8 @@ public class KuzzleSecurity {
    * @param content the content
    * @throws JSONException the json exception
    */
-  public void updateRole(@NonNull final String id, final JSONObject content) throws JSONException {
-    updateRole(id, content, null, null);
+  public KuzzleSecurity updateRole(@NonNull final String id, final JSONObject content) throws JSONException {
+    return updateRole(id, content, null, null);
   }
 
   /**
@@ -677,9 +688,10 @@ public class KuzzleSecurity {
    * @param id       - ID of the profile to delete
    * @param options  - Optional arguments
    * @param listener - Callback listener
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void deleteProfile(@NonNull final String id, final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
+  public KuzzleSecurity deleteProfile(@NonNull final String id, final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
     if (id == null) {
       throw new IllegalArgumentException("KuzzleSecurity.deleteProfile: cannot delete a profile with ID null");
     }
@@ -707,6 +719,8 @@ public class KuzzleSecurity {
     else {
       this.kuzzle.query(buildQueryArgs("deleteProfile"), data, options);
     }
+
+    return this;
   }
 
   /**
@@ -717,10 +731,11 @@ public class KuzzleSecurity {
    *
    * @param id       - ID of the profile to delete
    * @param listener - Callback listener
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void deleteProfile(@NonNull final String id, final KuzzleResponseListener<String> listener) throws JSONException {
-    deleteProfile(id, null, listener);
+  public KuzzleSecurity deleteProfile(@NonNull final String id, final KuzzleResponseListener<String> listener) throws JSONException {
+    return deleteProfile(id, null, listener);
   }
 
   /**
@@ -731,10 +746,11 @@ public class KuzzleSecurity {
    *
    * @param id      - ID of the profile to delete
    * @param options - Optional arguments
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void deleteProfile(@NonNull final String id, final KuzzleOptions options) throws JSONException {
-    deleteProfile(id, options, null);
+  public KuzzleSecurity deleteProfile(@NonNull final String id, final KuzzleOptions options) throws JSONException {
+    return deleteProfile(id, options, null);
   }
 
   /**
@@ -744,10 +760,11 @@ public class KuzzleSecurity {
    * That means that a profile that was just been delete will be returned by this function
    *
    * @param id - ID of the profile to delete
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void deleteProfile(@NonNull final String id) throws JSONException {
-    deleteProfile(id, null, null);
+  public KuzzleSecurity deleteProfile(@NonNull final String id) throws JSONException {
+    return deleteProfile(id, null, null);
   }
 
   /**
@@ -757,9 +774,10 @@ public class KuzzleSecurity {
    * @param content  the content
    * @param options  the options
    * @param listener the listener
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void updateProfile(@NonNull final String id, final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
+  public KuzzleSecurity updateProfile(@NonNull final String id, final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     if (id == null) {
       throw new IllegalArgumentException("KuzzleSecurity.updateProfile: cannot update a profile with ID null");
     }
@@ -788,6 +806,8 @@ public class KuzzleSecurity {
     else {
       this.kuzzle.query(buildQueryArgs("updateProfile"), data, options);
     }
+
+    return this;
   }
 
   /**
@@ -796,10 +816,11 @@ public class KuzzleSecurity {
    * @param id      the id
    * @param content the content
    * @param options the options
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void updateProfile(@NonNull final String id, final JSONObject content, final KuzzleOptions options) throws JSONException {
-    updateProfile(id, content, options, null);
+  public KuzzleSecurity updateProfile(@NonNull final String id, final JSONObject content, final KuzzleOptions options) throws JSONException {
+    return updateProfile(id, content, options, null);
   }
 
   /**
@@ -808,10 +829,11 @@ public class KuzzleSecurity {
    * @param id       the id
    * @param content  the content
    * @param listener the listener
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void updateProfile(@NonNull final String id, final JSONObject content, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
-    this.updateProfile(id, content, null, listener);
+  public KuzzleSecurity updateProfile(@NonNull final String id, final JSONObject content, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
+    return this.updateProfile(id, content, null, listener);
   }
 
   /**
@@ -819,10 +841,11 @@ public class KuzzleSecurity {
    *
    * @param id      the id
    * @param content the content
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void updateProfile(@NonNull final String id, final JSONObject content) throws JSONException {
-    updateProfile(id, content, null, null);
+  public KuzzleSecurity updateProfile(@NonNull final String id, final JSONObject content) throws JSONException {
+    return updateProfile(id, content, null, null);
   }
 
   /**
@@ -1062,9 +1085,10 @@ public class KuzzleSecurity {
    * @param id       - ID of the user to delete
    * @param options  - Optional arguments
    * @param listener - Callback listener
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void deleteUser(@NonNull final String id, final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
+  public KuzzleSecurity deleteUser(@NonNull final String id, final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
     if (id == null) {
       throw new IllegalArgumentException("KuzzleSecurity.deleteUser: cannot delete user with ID null");
     }
@@ -1092,6 +1116,8 @@ public class KuzzleSecurity {
     else {
       this.kuzzle.query(buildQueryArgs("deleteUser"), data, options);
     }
+
+    return this;
   }
 
   /**
@@ -1102,10 +1128,11 @@ public class KuzzleSecurity {
    *
    * @param id      - ID of the user to delete
    * @param options - Optional arguments
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void deleteUser(@NonNull final String id, final KuzzleOptions options) throws JSONException {
-    deleteUser(id, options, null);
+  public KuzzleSecurity deleteUser(@NonNull final String id, final KuzzleOptions options) throws JSONException {
+    return deleteUser(id, options, null);
   }
 
   /**
@@ -1116,10 +1143,11 @@ public class KuzzleSecurity {
    *
    * @param id       - ID of the user to delete
    * @param listener - Callback listener
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void deleteUser(@NonNull final String id, final KuzzleResponseListener<String> listener) throws JSONException {
-    deleteUser(id, null, listener);
+  public KuzzleSecurity deleteUser(@NonNull final String id, final KuzzleResponseListener<String> listener) throws JSONException {
+    return deleteUser(id, null, listener);
   }
 
   /**
@@ -1129,10 +1157,11 @@ public class KuzzleSecurity {
    * That means that a user that was just been delete will be returned by this function
    *
    * @param id - ID of the user to delete
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void deleteUser(@NonNull final String id) throws JSONException {
-    deleteUser(id, null, null);
+  public KuzzleSecurity deleteUser(@NonNull final String id) throws JSONException {
+    return deleteUser(id, null, null);
   }
 
   /**
@@ -1142,9 +1171,10 @@ public class KuzzleSecurity {
    * @param content  the content
    * @param options  the options
    * @param listener the listener
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void updateUser(@NonNull final String id, final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
+  public KuzzleSecurity updateUser(@NonNull final String id, final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     if (id == null) {
       throw new IllegalArgumentException("KuzzleSecurity.updateUser: cannot update user without an ID");
     }
@@ -1173,6 +1203,8 @@ public class KuzzleSecurity {
     else {
       this.kuzzle.query(buildQueryArgs("updateUser"), data, options);
     }
+
+    return this;
   }
 
   /**
@@ -1181,33 +1213,36 @@ public class KuzzleSecurity {
    * @param id       the id
    * @param content  the content
    * @param listener the listener
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void updateUser(@NonNull final String id, final JSONObject content, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
-    updateUser(id, content, null, listener);
+  public KuzzleSecurity updateUser(@NonNull final String id, final JSONObject content, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
+    return updateUser(id, content, null, listener);
   }
 
   /**
-   * Update profile.
+   * Update user.
    *
    * @param id      the id
    * @param content the content
    * @param options the options
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void updateUser(@NonNull final String id, final JSONObject content, final KuzzleOptions options) throws JSONException {
-    updateUser(id, content, options, null);
+  public KuzzleSecurity updateUser(@NonNull final String id, final JSONObject content, final KuzzleOptions options) throws JSONException {
+    return updateUser(id, content, options, null);
   }
 
   /**
-   * Update profile.
+   * Update user.
    *
    * @param id      the id
    * @param content the content
+   * @return KuzzleSecurity this object
    * @throws JSONException the json exception
    */
-  public void updateUser(@NonNull final String id, final JSONObject content) throws JSONException {
-    updateUser(id, content, null, null);
+  public KuzzleSecurity updateUser(@NonNull final String id, final JSONObject content) throws JSONException {
+    return updateUser(id, content, null, null);
   }
 
   /**
