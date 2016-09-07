@@ -23,9 +23,3 @@ notifications:
 after_success:
     - bash <(curl -s https://codecov.io/bash)
 
-deploy:
-  provider: bintray
-  file: "descriptor.json"
-  user: "kblondel"
-  key:
-    secure: ls2qQkwT8i65R5x+T9wQ8OJVk9WrY1QQKsVVUqSexX5PSwlu7Z1trSqyHmanVYPuDVd/YiHbk7z7paRjDoRXNwE7CZTu0yiNRAGUlAnJkEhnq+O3gMmFxtW/QPOQ0yV+u6fWnzevp/fUWFBZsYmQcR4fFdexMP2DQ696v0P/8u6g7l2HIAoWx+gCsmT6oJ7qVBcT/ugQ9Zb7hiL+7I3tANiV+qTymOGbWFr/DRkPDUOopEfy/BgXj1mY5rEQ8X4c3ubTYJgtdWfN69SWUjCIl2ytHRpFQMELyg4vuwYCM5vfiCb6WSMJnhVWpZqntuZl0skQyk7wJCLTxBzwFiicukOuwSacv+SiOCHk530vpd6iK+/C2Csv7tZBUwIX8hfh7e7Ibqeo31qA99k43yLqj9vz2QJJ8umnXeTvP4n2UkFSpmmC9z0A5qe0evV1qJjxVpe51J2AxKH004WIUnleml6+GPyBRcwDwNBZ7T+sK098v2QkC4YiAHeqCWQs89UZnFnu8P8wNsIO9OUmcq/ByOHjmAgyQ0R7uS4l6P+ItOwLebJqkK4sBbjFQhse9QlbA4W6ELOEBaj5WLx4pf0btvU57adTgbRRrcl8EDzWWkPxMdHGn4ZBxNQN+P8wvLove8l+KyCxMlIb/5HW6MTYNX3HuZed639HM8hhkGCyCyU=
