@@ -63,7 +63,7 @@ public class KuzzleUserTest {
   public void testKuzzleUserConstructorWithEmptyProfile() throws JSONException {
     JSONObject stubProfile = new JSONObject(
       "{" +
-        "\"profilesIds\": [\"bar\"]," +
+        "\"profileIds\": [\"bar\"]," +
         "\"someuseless\": \"field\"" +
       "}"
     );
@@ -76,7 +76,7 @@ public class KuzzleUserTest {
 
   @Test
   public void testKuzzleUserConstructorProfileWithContent() throws JSONException {
-    JSONObject stubProfile = new JSONObject("{\"profilesIds\": [\"bar\"]}");
+    JSONObject stubProfile = new JSONObject("{\"profileIds\": [\"bar\"]}");
     KuzzleUser user = new KuzzleUser(kuzzle, "foo", stubProfile);
     assertEquals(user.id, "foo");
     assertThat(user.getProfiles(), instanceOf(JSONArray.class));
@@ -159,13 +159,13 @@ public class KuzzleUserTest {
     JSONObject serialized = stubUser.serialize();
     assertEquals(serialized.getString("_id"), stubUser.id);
     assertEquals(serialized.getJSONObject("body").getString("foo"), "bar");
-    assertEquals(serialized.getJSONObject("body").getJSONArray("profilesIds").getString(0), stubUser.getProfiles().getString(0));
+    assertEquals(serialized.getJSONObject("body").getJSONArray("profileIds").getString(0), stubUser.getProfiles().getString(0));
   }
 
   @Test
   public void testGetProfiles() throws JSONException {
     JSONObject stubProfile = new JSONObject(
-            "{\"profilesIds\": [\"bar\"]}"
+            "{\"profileIds\": [\"bar\"]}"
     );
     KuzzleUser user = new KuzzleUser(kuzzle, "foo", stubProfile);
     assertEquals(user.getProfiles().getString(0), "bar");
@@ -174,7 +174,7 @@ public class KuzzleUserTest {
   @Test
   public void testAddProfile() throws JSONException {
     JSONObject stubProfile = new JSONObject(
-            "{\"profilesIds\": [\"bar\"]}"
+            "{\"profileIds\": [\"bar\"]}"
     );
     KuzzleUser user = new KuzzleUser(kuzzle, "foo", stubProfile);
     user.addProfile("new profile");
@@ -184,7 +184,7 @@ public class KuzzleUserTest {
   @Test(expected = IllegalArgumentException.class)
   public void testAddNullProfile() throws JSONException {
     JSONObject stubProfile = new JSONObject(
-            "{\"profilesIds\": [\"bar\"]}"
+            "{\"profileIds\": [\"bar\"]}"
     );
     KuzzleUser user = new KuzzleUser(kuzzle, "foo", stubProfile);
     user.addProfile(null);
