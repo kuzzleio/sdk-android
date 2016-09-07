@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 
 import java.net.URISyntaxException;
 
@@ -31,7 +32,9 @@ import static org.mockito.Mockito.when;
 public class publishMessageTest {
   private Kuzzle kuzzle;
   private KuzzleDataCollection collection;
-  private KuzzleResponseListener listener;
+
+  @Mock
+  private KuzzleResponseListener<JSONObject> listener;
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -45,7 +48,6 @@ public class publishMessageTest {
     when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
     collection = new KuzzleDataCollection(kuzzle, "index", "test");
-    listener = mock(KuzzleResponseListener.class);
   }
 
   @Test
@@ -57,8 +59,13 @@ public class publishMessageTest {
 
     collection.publishMessage(doc);
     collection.publishMessage(doc, mock(KuzzleOptions.class));
+    collection.publishMessage(doc, listener);
+    collection.publishMessage(doc, mock(KuzzleOptions.class), listener);
     collection.publishMessage(mock(JSONObject.class));
-    verify(collection, times(3)).publishMessage(any(JSONObject.class), any(KuzzleOptions.class));
+    collection.publishMessage(mock(JSONObject.class), listener);
+    collection.publishMessage(mock(JSONObject.class), mock(KuzzleOptions.class));
+    collection.publishMessage(mock(JSONObject.class), mock(KuzzleOptions.class), listener);
+    verify(collection, times(8)).publishMessage(any(JSONObject.class), any(KuzzleOptions.class), any(KuzzleResponseListener.class));
   }
 
 

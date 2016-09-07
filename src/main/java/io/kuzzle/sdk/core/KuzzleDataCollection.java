@@ -804,7 +804,35 @@ public class KuzzleDataCollection {
    * @return kuzzle data collection
    */
   public KuzzleDataCollection publishMessage(final KuzzleDocument document) {
-    return this.publishMessage(document, null);
+    return this.publishMessage(document, null, null);
+  }
+
+  /**
+   * Publish a realtime message
+   *
+   * @param document the content
+   * @param listener response callback
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection publishMessage(@NonNull final KuzzleDocument document, final KuzzleResponseListener<JSONObject> listener) {
+    return this.publishMessage(document, null, listener);
+  }
+
+
+  /**
+   * Publish a realtime message
+   *
+   * @param document the content
+   * @param options the options
+   * @param listener response callback
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection publishMessage(@NonNull final KuzzleDocument document, final KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener) {
+    if (document == null) {
+      throw new IllegalArgumentException("Cannot publish a null document");
+    }
+
+    return this.publishMessage(document.getContent(), options, listener);
   }
 
   /**
@@ -815,11 +843,7 @@ public class KuzzleDataCollection {
    * @return the kuzzle data collection
    */
   public KuzzleDataCollection publishMessage(@NonNull final KuzzleDocument document, final KuzzleOptions options) {
-    if (document == null) {
-      throw new IllegalArgumentException("Cannot publish a null document");
-    }
-
-    return this.publishMessage(document.getContent(), options);
+    return this.publishMessage(document, options, null);
   }
 
   /**
@@ -829,8 +853,20 @@ public class KuzzleDataCollection {
    * @return the kuzzle data collection
    */
   public KuzzleDataCollection publishMessage(@NonNull final JSONObject content) {
-    return this.publishMessage(content, null);
+    return this.publishMessage(content, null, null);
   }
+
+  /**
+   * Publish a realtime message
+   *
+   * @param content the content
+   * @param listener response callback
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection publishMessage(@NonNull final JSONObject content, final KuzzleResponseListener<JSONObject> listener) {
+    return this.publishMessage(content, null, listener);
+  }
+
 
   /**
    * Publish a realtime message
@@ -840,6 +876,18 @@ public class KuzzleDataCollection {
    * @return the kuzzle data collection
    */
   public KuzzleDataCollection publishMessage(@NonNull final JSONObject content, final KuzzleOptions options) {
+    return this.publishMessage(content, options, null);
+  }
+
+  /**
+   * Publish a realtime message
+   *
+   * @param content the content
+   * @param options the options
+   * @param listener response callback
+   * @return the kuzzle data collection
+   */
+  public KuzzleDataCollection publishMessage(@NonNull final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener) {
     if (content == null) {
       throw new IllegalArgumentException("Cannot publish null content");
     }
@@ -847,7 +895,21 @@ public class KuzzleDataCollection {
     try {
       JSONObject data = new JSONObject().put("body", content);
       this.kuzzle.addHeaders(data, this.getHeaders());
-      this.kuzzle.query(makeQueryArgs("write", "publish"), data, options, null);
+      this.kuzzle.query(makeQueryArgs("write", "publish"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          if (listener != null) {
+            listener.onSuccess(response);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
+        }
+      });
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
