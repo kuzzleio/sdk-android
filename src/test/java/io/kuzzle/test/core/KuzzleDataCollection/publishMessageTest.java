@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.net.URISyntaxException;
 
@@ -22,12 +23,8 @@ import io.socket.client.Socket;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
 
 public class publishMessageTest {
   private Kuzzle kuzzle;
@@ -35,6 +32,7 @@ public class publishMessageTest {
 
   @Mock
   private KuzzleResponseListener<JSONObject> listener;
+
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -48,6 +46,8 @@ public class publishMessageTest {
     when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
     collection = new KuzzleDataCollection(kuzzle, "index", "test");
+
+    MockitoAnnotations.initMocks(this);
   }
 
   @Test
