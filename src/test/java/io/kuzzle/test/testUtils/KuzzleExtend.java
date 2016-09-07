@@ -37,8 +37,8 @@ public class KuzzleExtend extends Kuzzle {
     return new KuzzleWebViewClient();
   }
 
-  public KuzzleExtend(@NonNull final String url, final KuzzleOptions options, final KuzzleResponseListener<Void> connectionCallback) throws URISyntaxException {
-    super(url, options, connectionCallback);
+  public KuzzleExtend(@NonNull final String host, final KuzzleOptions options, final KuzzleResponseListener<Void> connectionCallback) throws URISyntaxException {
+    super(host, options, connectionCallback);
   }
 
   public void setState(KuzzleStates newState) {
