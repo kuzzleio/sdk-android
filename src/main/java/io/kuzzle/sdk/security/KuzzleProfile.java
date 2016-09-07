@@ -115,7 +115,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    *
    * @param policy - Policy to add to this profile
    * @return this kuzzle profile
-   * @throws IllegalArgumentException, JSONException
+   * @throws IllegalArgumentException
    */
   public KuzzleProfile addPolicy(final JSONObject policy) throws IllegalArgumentException {
     if (!policy.has("roleId")) {
@@ -131,7 +131,6 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    *
    * @param  roleId - Name of the role to add to this profile
    * @return this kuzzle profile
-   * @throws JSONException the json exception
    */
   public KuzzleProfile addPolicy(final String roleId) {
     JSONObject policy = new JSONObject();
@@ -149,7 +148,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    *
    * @param policies - New policies list
    * @return this roles
-   * @throws IllegalArgumentException, JSONException
+   * @throws IllegalArgumentException
    */
   public KuzzleProfile setPolicies(final JSONArray policies) throws IllegalArgumentException {
     try {
@@ -172,7 +171,6 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    *
    * @param rolesIds - New roles list
    * @return this roles
-   * @throws JSONException
    */
   public KuzzleProfile setPolicies(final String rolesIds[]) {
     try {
