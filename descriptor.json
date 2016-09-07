@@ -1,0 +1,7 @@
+{
+  "package": {
+    "name": "kuzzle-sdk-android",
+    "repo": "maven",
+    "subject": "Android SDK for Kuzzle"
+  }
+}
