@@ -57,7 +57,7 @@ public class unsubscribeTest {
     mockResponse.put("result", new JSONObject().put("channel", "channel").put("roomId", "42"));
     k = mock(Kuzzle.class);
     when(k.getHeaders()).thenReturn(new JSONObject());
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(k, "index", "test"));
+    room = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test", "index"));
   }
 
 
@@ -72,7 +72,7 @@ public class unsubscribeTest {
     kuzzle.setSocket(s);
 
     kuzzle = spy(kuzzle);
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(kuzzle, "index", "test"));
+    room = new KuzzleRoomExtend(new KuzzleDataCollection(kuzzle, "test", "index"));
     room.setRoomId("42");
     room.superUnsubscribe();
     assertEquals(room.getRoomId(), null);
@@ -90,7 +90,7 @@ public class unsubscribeTest {
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "index", "test"));
+    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "test", "index"));
     room.setRoomId("foobar");
     room.setSubscribing(true);
     room.superUnsubscribe();
@@ -129,7 +129,7 @@ public class unsubscribeTest {
     kuzzle = spy(kuzzle);
     kuzzle.getPendingSubscriptions().put("42", mock(KuzzleRoom.class));
 
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(kuzzle, "index", "test"));
+    room = new KuzzleRoomExtend(new KuzzleDataCollection(kuzzle, "test", "index"));
     room.setRoomId("42");
     room.superUnsubscribe();
 
@@ -146,7 +146,7 @@ public class unsubscribeTest {
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
     doThrow(JSONException.class).when(extended).getSocket();
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "index", "test"));
+    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "test", "index"));
     room.setRoomId("foobar");
     room.superUnsubscribe();
   }
@@ -160,7 +160,7 @@ public class unsubscribeTest {
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
 
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "index", "test"));
+    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "test", "index"));
     room.setRoomId("foobar");
     room.unsubscribeTask(new Timer(), room.getRoomId(), new JSONObject()).run();
     verify(extended).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
@@ -175,7 +175,7 @@ public class unsubscribeTest {
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
     doThrow(JSONException.class).when(extended).getPendingSubscriptions();
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "index", "test"));
+    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "test", "index"));
     room.setRoomId("foobar");
     room.unsubscribeTask(new Timer(), room.getRoomId(), new JSONObject()).run();
   }

@@ -11,7 +11,7 @@ import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 
 public class KuzzleDataCollectionExtend extends KuzzleDataCollection {
   public KuzzleDataCollectionExtend(@NonNull final Kuzzle kuzzle, @NonNull final String index, @NonNull final String collection) {
-    super(kuzzle, index, collection);
+    super(kuzzle, collection, index);
   }
 
   public KuzzleDataCollection deleteDocument(final String documentId, final JSONObject filter, final KuzzleOptions options, final KuzzleResponseListener<String> listener, final KuzzleResponseListener<String[]> listener2) {

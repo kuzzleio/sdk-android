@@ -41,7 +41,7 @@ public class subscribeTest {
     extended.setState(KuzzleStates.CONNECTED);
     k = spy(extended);
     mockCollection = mock(KuzzleDataCollection.class);
-    doc = new KuzzleDocument(new KuzzleDataCollection(k, "index", "test"));
+    doc = new KuzzleDocument(new KuzzleDataCollection(k, "test", "index"));
   }
 
   @Test

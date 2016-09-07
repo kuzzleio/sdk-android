@@ -28,13 +28,13 @@ public class constructorTest {
     k = mock(Kuzzle.class);
     when(k.getDefaultIndex()).thenReturn("index");
     when(k.getHeaders()).thenReturn(new JSONObject());
-    dataCollection = new KuzzleDataCollection(k, "index", "test");
+    dataCollection = new KuzzleDataCollection(k, "test", "index");
     dataMapping = new KuzzleDataMapping(dataCollection);
   }
 
   @Test(expected = RuntimeException.class)
   public void testConstructorException() {
-    KuzzleDataCollection fake = spy(new KuzzleDataCollection(k, "index", "test"));
+    KuzzleDataCollection fake = spy(new KuzzleDataCollection(k, "test", "index"));
     doThrow(JSONException.class).when(fake).getHeaders();
     dataMapping = new KuzzleDataMapping(fake);
   }
