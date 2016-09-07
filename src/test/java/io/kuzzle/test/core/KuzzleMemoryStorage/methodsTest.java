@@ -304,7 +304,7 @@ public class methodsTest {
   @Test
   public void ltrimTest() throws JSONException {
     ms.ltrim("id", 24, 42);
-    verify(ms).send(eq(Action.lrange), (KuzzleJSONObject) argument.capture());
+    verify(ms).send(eq(Action.ltrim), (KuzzleJSONObject) argument.capture());
     assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
     assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("start"));
     assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("stop"));
@@ -484,7 +484,7 @@ public class methodsTest {
   @Test
   public void setexTest() throws JSONException {
     ms.setex("id", 42, "value");
-    verify(ms).send(eq(Action.setbit), (KuzzleJSONObject) argument.capture());
+    verify(ms).send(eq(Action.setex), (KuzzleJSONObject) argument.capture());
     assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getInt("seconds"));
     assertEquals("value", getBody((KuzzleJSONObject) argument.getValue()).getString("value"));
   }
@@ -509,7 +509,7 @@ public class methodsTest {
   @Test
   public void sismemberTest() throws JSONException {
     ms.sismember("id", "member");
-    verify(ms).send(eq(Action.sinterstore), (KuzzleJSONObject) argument.capture());
+    verify(ms).send(eq(Action.sismember), (KuzzleJSONObject) argument.capture());
     assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
     assertEquals("member", getBody((KuzzleJSONObject) argument.getValue()).getString("member"));
   }
@@ -628,7 +628,7 @@ public class methodsTest {
   @Test
   public void zrangebyscoreTest() throws JSONException {
     ms.zrangebyscore("id", 24, 42, true, 0xff, 1337);
-    verify(ms).send(eq(Action.zrangebylex), (KuzzleJSONObject) argument.capture());
+    verify(ms).send(eq(Action.zrangebyscore), (KuzzleJSONObject) argument.capture());
     assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
     assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("min"));
     assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("max"));
