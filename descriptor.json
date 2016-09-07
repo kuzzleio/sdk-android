@@ -3,5 +3,9 @@
     "name": "kuzzle-sdk-android",
     "repo": "maven",
     "subject": "Android SDK for Kuzzle"
-  }
+  },
+  "version": {
+    "name": "1.8.0"
+  },
+  "publish": true
 }
