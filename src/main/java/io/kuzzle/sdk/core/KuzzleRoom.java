@@ -12,6 +12,7 @@ import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.enums.Scope;
@@ -569,14 +570,21 @@ public class KuzzleRoom {
         threadPool.execute(r);
       }
 
-      this.queue.clear();
+      threadPool.shutdown();
+
+      try {
+        threadPool.awaitTermination(1, TimeUnit.SECONDS);
+      }
+      catch (InterruptedException e) {
+        // do nothing
+      }
+      finally {
+        this.queue.clear();
+      }
     }
   }
 
   private boolean isReady() {
-    if (this.kuzzle.state != KuzzleStates.CONNECTED || this.subscribing) {
-      return false;
-    }
-    return true;
+    return this.kuzzle.state == KuzzleStates.CONNECTED && !this.subscribing;
   }
 }
