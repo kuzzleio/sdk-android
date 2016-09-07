@@ -5,6 +5,8 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -17,6 +19,7 @@ import io.kuzzle.sdk.core.KuzzleRoom;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
+import io.kuzzle.sdk.responses.KuzzleNotificationResponse;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.KuzzleRoomExtend;
@@ -34,7 +37,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class renewTest {
-  private KuzzleResponseListener listener = mock(KuzzleResponseListener.class);
+  @Mock
+  private KuzzleResponseListener<KuzzleNotificationResponse> listener;
+
   private JSONObject mockNotif = new JSONObject();
   private JSONObject  mockResponse = new JSONObject();
   private Kuzzle k;
@@ -57,6 +62,8 @@ public class renewTest {
     k = mock(Kuzzle.class);
     when(k.getHeaders()).thenReturn(new JSONObject());
     room = new KuzzleRoomExtend(new KuzzleDataCollection(k, "index", "test"));
+
+    MockitoAnnotations.initMocks(this);
   }
 
   @Test(expected = IllegalArgumentException.class)

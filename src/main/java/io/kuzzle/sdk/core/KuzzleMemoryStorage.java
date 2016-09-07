@@ -346,7 +346,7 @@ public class KuzzleMemoryStorage implements KuzzleMemoryStorageCommands {
 
   @Override
   public KuzzleMemoryStorage ltrim(final String key, final long start, final long end) {
-    return send(Action.lrange, new KuzzleJSONObject()
+    return send(Action.ltrim, new KuzzleJSONObject()
         .put("_id", key)
         .put("body", new KuzzleJSONObject()
             .put("start", start)
@@ -510,7 +510,7 @@ public class KuzzleMemoryStorage implements KuzzleMemoryStorageCommands {
 
   @Override
   public KuzzleMemoryStorage setex(final String key, final int seconds, final String value) {
-    return send(Action.setbit, new KuzzleJSONObject()
+    return send(Action.setex, new KuzzleJSONObject()
         .put("_id", key)
         .put("body", new KuzzleJSONObject()
             .put("seconds", seconds)
@@ -536,7 +536,7 @@ public class KuzzleMemoryStorage implements KuzzleMemoryStorageCommands {
 
   @Override
   public KuzzleMemoryStorage sismember(final String key, final String member) {
-    return send(Action.sinterstore, new KuzzleJSONObject()
+    return send(Action.sismember, new KuzzleJSONObject()
         .put("_id", key)
         .put("body", new KuzzleJSONObject()
             .put("member", member)));
@@ -654,7 +654,7 @@ public class KuzzleMemoryStorage implements KuzzleMemoryStorageCommands {
 
   @Override
   public KuzzleMemoryStorage zrangebyscore(final String key, final long min, final long max, final boolean withscores, final long offset, final long count) {
-    return send(Action.zrangebylex, new KuzzleJSONObject()
+    return send(Action.zrangebyscore, new KuzzleJSONObject()
         .put("_id", key)
         .put("body", new KuzzleJSONObject()
             .put("min", min)

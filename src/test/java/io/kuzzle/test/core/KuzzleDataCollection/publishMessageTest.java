@@ -5,6 +5,8 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.net.URISyntaxException;
 
@@ -21,17 +23,16 @@ import io.socket.client.Socket;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
 
 public class publishMessageTest {
   private Kuzzle kuzzle;
   private KuzzleDataCollection collection;
-  private KuzzleResponseListener listener;
+
+  @Mock
+  private KuzzleResponseListener<JSONObject> listener;
+
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -45,7 +46,8 @@ public class publishMessageTest {
     when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
     collection = new KuzzleDataCollection(kuzzle, "index", "test");
-    listener = mock(KuzzleResponseListener.class);
+
+    MockitoAnnotations.initMocks(this);
   }
 
   @Test
@@ -57,8 +59,13 @@ public class publishMessageTest {
 
     collection.publishMessage(doc);
     collection.publishMessage(doc, mock(KuzzleOptions.class));
+    collection.publishMessage(doc, listener);
+    collection.publishMessage(doc, mock(KuzzleOptions.class), listener);
     collection.publishMessage(mock(JSONObject.class));
-    verify(collection, times(3)).publishMessage(any(JSONObject.class), any(KuzzleOptions.class));
+    collection.publishMessage(mock(JSONObject.class), listener);
+    collection.publishMessage(mock(JSONObject.class), mock(KuzzleOptions.class));
+    collection.publishMessage(mock(JSONObject.class), mock(KuzzleOptions.class), listener);
+    verify(collection, times(8)).publishMessage(any(JSONObject.class), any(KuzzleOptions.class), any(KuzzleResponseListener.class));
   }
 
 
