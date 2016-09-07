@@ -86,7 +86,6 @@ public class KuzzleDocument {
    * Delete kuzzle document.
    *
    * @param options the options
-   * @return the kuzzle document
    */
   public void delete(final KuzzleOptions options) {
     this.delete(options, null);
@@ -96,7 +95,6 @@ public class KuzzleDocument {
    * Delete kuzzle document.
    *
    * @param listener the listener
-   * @return the kuzzle document
    */
   public void delete(final KuzzleResponseListener<String> listener) {
     this.delete(null, listener);
@@ -104,8 +102,6 @@ public class KuzzleDocument {
 
   /**
    * Delete kuzzle document.
-   *
-   * @return the kuzzle document
    */
   public void delete() {
     this.delete(null, null);
@@ -116,7 +112,6 @@ public class KuzzleDocument {
    *
    * @param options  the options
    * @param listener the listener
-   * @return kuzzle document
    */
   public void delete(final KuzzleOptions options, final KuzzleResponseListener<String> listener) {
     try {
