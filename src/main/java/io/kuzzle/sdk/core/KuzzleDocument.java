@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import java.util.Iterator;
 
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.KuzzleSubscribeListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleNotificationResponse;
 
@@ -366,7 +367,7 @@ public class KuzzleDocument {
    * @param listener the listener
    * @return the kuzzle document
    */
-  public KuzzleDocument subscribe(@NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public KuzzleSubscribeListener<KuzzleResponseListener<KuzzleRoom>> subscribe(@NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
     return this.subscribe(null, listener);
   }
 
@@ -378,10 +379,12 @@ public class KuzzleDocument {
    * @param listener the listener
    * @return kuzzle document
    */
-  public KuzzleDocument subscribe(final KuzzleRoomOptions options,  @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public KuzzleSubscribeListener<KuzzleResponseListener<KuzzleRoom>> subscribe(final KuzzleRoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
     if (this.id == null) {
       throw new IllegalStateException("KuzzleDocument.subscribe: cannot subscribe to a document if no ID has been provided");
     }
+
+    KuzzleSubscribeListener<KuzzleResponseListener<KuzzleRoom>> returnValue;
 
     try {
       JSONObject filters = new JSONObject("{" +
@@ -389,12 +392,11 @@ public class KuzzleDocument {
           "\"values\": [\"" + this.id + "\"]" +
         "}" +
       "}");
-
-      this.dataCollection.subscribe(filters, options, listener);
+      returnValue = this.dataCollection.subscribe(filters, options, listener);
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
-    return null;
+    return returnValue;
   }
 
   /**

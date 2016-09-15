@@ -29,7 +29,6 @@ import io.socket.emitter.Emitter;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -99,57 +98,16 @@ public class renewTest {
         //Call callback with response
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(result);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject());
+        ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
+        verify(kuzzleSpy, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+        assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "subscribe");
+        assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "on");
+
         return null;
       }
     }).when(kuzzleSpy).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    testRoom.renew(new JSONObject(), listener);
-    ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzleSpy, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "subscribe");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "on");
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void testRenewQueryException() throws JSONException, URISyntaxException {
-    KuzzleOptions opts = new KuzzleOptions();
-    opts.setConnect(Mode.MANUAL);
-    KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
-    extended.setSocket(mock(Socket.class));
-    extended.setState(KuzzleStates.CONNECTED);
-    extended = spy(extended);
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "index", "collection"));
-    room.setRoomId("foobar");
-    room = spy(room);
-    doThrow(JSONException.class).when(extended).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    room.renew(listener);
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void testRenewException() throws JSONException, URISyntaxException {
-    KuzzleOptions opts = new KuzzleOptions();
-    opts.setConnect(Mode.MANUAL);
-    KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
-    extended.setSocket(mock(Socket.class));
-    extended.setState(KuzzleStates.CONNECTED);
-    extended = spy(extended);
-    doThrow(JSONException.class).when(extended).deletePendingSubscription(any(String.class));
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "index", "collection"));
-    room.setRoomId("foobar");
-    room = spy(room);
-    doAnswer(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        //Mock response
-        JSONObject result = new JSONObject();
-        result.put("result", new JSONObject().put("channel", "channel").put("roomId", "42"));
-        //Call callback with response
-        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(result);
-        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject());
-        return null;
-      }
-    }).when(extended).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    room.renew(listener);
+    testRoom.renew(new JSONObject(), listener, null);
   }
 
   @Test
@@ -172,12 +130,13 @@ public class renewTest {
         //Call callback with response
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(result);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject());
+        verify(kuzzleSpy, times(1)).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+
         return null;
       }
     }).when(kuzzleSpy).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     testRoom.renew(listener);
     testRoom.renew(listener);
-    verify(kuzzleSpy, times(1)).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
   }
 
   @Test
@@ -205,10 +164,11 @@ public class renewTest {
         //Call callback with response
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(result);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject());
+        verify(room).dequeue();
+
         return null;
       }
     }).when(extended).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     room.renew(listener);
-    verify(room).dequeue();
   }
 }

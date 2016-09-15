@@ -239,8 +239,20 @@ public class KuzzleRoom {
    * @param listener the listener
    * @return kuzzle room
    */
-  public KuzzleRoom renew(final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
-    return this.renew(null, listener);
+  public KuzzleRoom renew(@NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+    return this.renew(null, listener, null);
+  }
+
+  /**
+   * Renew the subscription. Force a resubscription using the same filters if no new ones are provided.
+   * Unsubscribes first if this KuzzleRoom was already listening to events.
+   *
+   * @param listener the listener
+   * @param subscribeResponseListener
+   * @return kuzzle room
+   */
+  public KuzzleRoom renew(@NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener, final KuzzleResponseListener<KuzzleRoom> subscribeResponseListener) {
+    return this.renew(null, listener, subscribeResponseListener);
   }
 
   /**
@@ -251,9 +263,8 @@ public class KuzzleRoom {
    * @param listener the listener
    * @return kuzzle room
    */
-  public KuzzleRoom renew(final JSONObject filters, final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public KuzzleRoom renew(final JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener, final KuzzleResponseListener<KuzzleRoom> subscribeResponseListener) {
     long now = System.currentTimeMillis();
-
     if (listener == null) {
       throw new IllegalArgumentException("KuzzleRoom.renew: a callback listener is required");
     }
@@ -281,7 +292,7 @@ public class KuzzleRoom {
       this.queue.add(new Runnable() {
         @Override
         public void run() {
-          KuzzleRoom.this.renew(filters, listener);
+          KuzzleRoom.this.renew(filters, listener, subscribeResponseListener);
         }
       });
 
@@ -306,39 +317,55 @@ public class KuzzleRoom {
       options.setMetadata(this.metadata);
       this.kuzzle.addHeaders(subscribeQuery, this.headers);
 
-      this.kuzzle.query(this.dataCollection.makeQueryArgs("subscribe", "on"), subscribeQuery, options, new OnQueryDoneListener() {
+      new Thread(new Runnable() {
         @Override
-        public void onSuccess(JSONObject args) {
+        public void run() {
           try {
-            KuzzleRoom.this.kuzzle.deletePendingSubscription(KuzzleRoom.this.id);
-            KuzzleRoom.this.subscribing = false;
-            KuzzleRoom.this.lastRenewal = System.currentTimeMillis();
+            KuzzleRoom.this.kuzzle.query(KuzzleRoom.this.dataCollection.makeQueryArgs("subscribe", "on"), subscribeQuery, options, new OnQueryDoneListener() {
+              @Override
+              public void onSuccess(JSONObject args) {
+                try {
+                  KuzzleRoom.this.kuzzle.deletePendingSubscription(KuzzleRoom.this.id);
+                  KuzzleRoom.this.subscribing = false;
+                  KuzzleRoom.this.lastRenewal = System.currentTimeMillis();
 
-            JSONObject result = args.getJSONObject("result");
-            KuzzleRoom.this.channel = result.getString("channel");
-            KuzzleRoom.this.roomId = result.getString("roomId");
+                  JSONObject result = args.getJSONObject("result");
+                  KuzzleRoom.this.channel = result.getString("channel");
+                  KuzzleRoom.this.roomId = result.getString("roomId");
+                  if (subscribeResponseListener != null) {
+                    subscribeResponseListener.onSuccess(KuzzleRoom.this);
+                  }
+                } catch (JSONException e) {
+                  throw new RuntimeException(e);
+                }
+
+                KuzzleRoom.this.kuzzle.addSubscription(KuzzleRoom.this.roomId, KuzzleRoom.this.id, KuzzleRoom.this);
+
+                KuzzleRoom.this.kuzzle.getSocket().on(KuzzleRoom.this.channel, new Emitter.Listener() {
+                  @Override
+                  public void call(final Object... args) {
+                    callAfterRenew(args[0]);
+                  }
+                });
+
+                KuzzleRoom.this.dequeue();
+              }
+
+              @Override
+              public void onError(JSONObject arg) {
+                KuzzleRoom.this.subscribing = false;
+                KuzzleRoom.this.queue.clear();
+                if (subscribeResponseListener != null) {
+                  subscribeResponseListener.onError(arg);
+                }
+              }
+            });
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
-
-          KuzzleRoom.this.kuzzle.addSubscription(KuzzleRoom.this.roomId, KuzzleRoom.this.id, KuzzleRoom.this);
-          KuzzleRoom.this.kuzzle.getSocket().on(KuzzleRoom.this.channel, new Emitter.Listener() {
-            @Override
-            public void call(final Object... args) {
-              callAfterRenew(args[0]);
-            }
-          });
-
-          KuzzleRoom.this.dequeue();
         }
+      }).start();
 
-        @Override
-        public void onError(JSONObject arg) {
-          KuzzleRoom.this.subscribing = false;
-          KuzzleRoom.this.queue.clear();
-          listener.onError(arg);
-        }
-      });
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
