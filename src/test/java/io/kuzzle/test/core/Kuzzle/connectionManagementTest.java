@@ -128,8 +128,8 @@ public class connectionManagementTest {
     final Kuzzle kuzzleSpy = spy(extended);
 
     KuzzleRoom
-      room1 = new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "index", "test")),
-      room2 = new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "index", "test2"));
+      room1 = new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "test", "index")),
+      room2 = new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "test2", "index"));
 
     room1.renew(listener);
     room2.renew(listener);

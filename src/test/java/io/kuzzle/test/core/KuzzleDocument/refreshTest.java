@@ -44,7 +44,7 @@ public class refreshTest {
     extended.setState(KuzzleStates.CONNECTED);
     k = spy(extended);
     mockListener = mock(KuzzleResponseListener.class);
-    doc = new KuzzleDocument(new KuzzleDataCollection(k, "index", "test"));
+    doc = new KuzzleDocument(new KuzzleDataCollection(k, "test", "index"));
   }
 
   @Test

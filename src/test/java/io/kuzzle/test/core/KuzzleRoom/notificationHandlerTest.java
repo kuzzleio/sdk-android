@@ -58,19 +58,19 @@ public class notificationHandlerTest {
     mockResponse.put("result", new JSONObject().put("channel", "channel").put("roomId", "42"));
     k = mock(Kuzzle.class);
     when(k.getHeaders()).thenReturn(new JSONObject());
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(k, "index", "test"));
+    room = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test", "index"));
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testCallAfterRenewWithNoResponse() {
-    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "index", "test"));
+    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test", "index"));
     // Should throw an exception
     renew.callAfterRenew(null);
   }
 
   @Test
   public void testCallAfterRenewWithError() throws JSONException {
-    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "index", "test"));
+    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test", "index"));
     JSONObject errorResponse = new JSONObject();
     errorResponse.put("error", "error");
     KuzzleResponseListener listener = mock(KuzzleResponseListener.class);
@@ -81,7 +81,7 @@ public class notificationHandlerTest {
 
   @Test
   public void testCallAfterRenew() throws JSONException {
-    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "index", "test"));
+    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test", "index"));
     renew.setListener(listener);
     JSONObject mockResponse = new JSONObject().put("result", new JSONObject());
     mockResponse.put("requestId", "42");
@@ -99,7 +99,7 @@ public class notificationHandlerTest {
     extended.setSocket(s);
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
-    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "index", "test"), options);
+    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "test", "index"), options);
     renew.setListener(listener);
     extended.getRequestHistory().put("42", new Date());
     renew.callAfterRenew(mockNotif);
@@ -115,7 +115,7 @@ public class notificationHandlerTest {
     extended.setSocket(s);
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "index", "collection"));
+    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "collection", "index"));
     room.setRoomId("foobar");
     room = spy(room);
     doAnswer(new Answer() {
@@ -152,7 +152,7 @@ public class notificationHandlerTest {
       }
     });
     k.addListener(KuzzleEvent.jwtTokenExpired, listener);
-    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "index", "test"));
+    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test", "index"));
     renew.setListener(mock(KuzzleResponseListener.class));
     JSONObject mockResponse = new JSONObject().put("result", new JSONObject());
     mockResponse.put("requestId", "42");
@@ -171,7 +171,7 @@ public class notificationHandlerTest {
     extended.setSocket(s);
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
-    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "index", "test"), options);
+    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "test", "index"), options);
     mockNotif = spy(mockNotif);
     doThrow(JSONException.class).when(mockNotif).isNull(any(String.class));
     renew.setListener(listener);

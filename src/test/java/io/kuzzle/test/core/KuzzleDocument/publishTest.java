@@ -36,7 +36,7 @@ public class publishTest {
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setState(KuzzleStates.CONNECTED);
     k = spy(extended);
-    doc = new KuzzleDocument(new KuzzleDataCollection(k, "index", "test"));
+    doc = new KuzzleDocument(new KuzzleDataCollection(k, "test", "index"));
   }
 
   @Test

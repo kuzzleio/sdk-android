@@ -532,7 +532,7 @@ public class Kuzzle {
 
     if (!this.collections.containsKey(collection)) {
       Map<String, KuzzleDataCollection> col = new ConcurrentHashMap<>();
-      col.put(collection, new KuzzleDataCollection(this, index, collection));
+      col.put(collection, new KuzzleDataCollection(this, collection, index));
       this.collections.put(index, col);
     }
     return this.collections.get(index).get(collection);

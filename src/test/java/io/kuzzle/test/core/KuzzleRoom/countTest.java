@@ -66,7 +66,7 @@ public class countTest {
     k.setSocket(mock(Socket.class));
     k.setState(KuzzleStates.CONNECTED);
     when(k.getHeaders()).thenReturn(new JSONObject());
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(k, "index", "test"));
+    room = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test", "index"));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -82,7 +82,7 @@ public class countTest {
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "index", "test"));
+    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "test", "index"));
     room.setRoomId("foobar");
     room.setSubscribing(true);
     room.count(spyListener);
@@ -144,7 +144,7 @@ public class countTest {
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "index", "test"));
+    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "test", "index"));
     room.setRoomId("foobar");
 
     doAnswer(new Answer() {

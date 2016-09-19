@@ -33,10 +33,10 @@ public class KuzzleDataCollection {
    * or like a room for pub/sub messages.
    *
    * @param kuzzle     the kuzzle
-   * @param index      the index
    * @param collection the collection
+   * @param index      the index
    */
-  public KuzzleDataCollection(@NonNull final Kuzzle kuzzle, @NonNull final String index, @NonNull final String collection) {
+  public KuzzleDataCollection(@NonNull final Kuzzle kuzzle, @NonNull final String collection, @NonNull final String index) {
     if (kuzzle == null) {
       throw new IllegalArgumentException("KuzzleDataCollection: need a Kuzzle instance to initialize");
     }
