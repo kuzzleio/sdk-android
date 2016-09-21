@@ -34,9 +34,10 @@ public class KuzzleRole extends AbstractKuzzleSecurityDocument {
    *
    * @param options  - Optional configuration
    * @param listener - Optional callback listener
+   * @return KuzzleRole this object
    * @throws JSONException the json exception
    */
-  public void save(final KuzzleOptions options, final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
+  public KuzzleRole save(final KuzzleOptions options, final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
     JSONObject data = this.serialize();
 
     if (listener != null) {
@@ -55,35 +56,39 @@ public class KuzzleRole extends AbstractKuzzleSecurityDocument {
     else {
       this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createOrReplaceRole"), data, options);
     }
+
+    return this;
   }
 
   /**
    * Save this role in Kuzzle
    *
    * @param listener - Optional callback listener
+   * @return KuzzleRole this object
    * @throws JSONException the json exception
    */
-  public void save(final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
-    this.save(null, listener);
+  public KuzzleRole save(final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
+    return this.save(null, listener);
   }
 
   /**
    * Save this role in Kuzzle
    *
    * @param options - Optional configuration
+   * @return KuzzleRole this object
    * @throws JSONException the json exception
    */
-  public void save(final KuzzleOptions options) throws JSONException {
-    this.save(options, null);
+  public KuzzleRole save(final KuzzleOptions options) throws JSONException {
+    return this.save(options, null);
   }
 
   /**
    * Save this role in Kuzzle
    *
+   * @return KuzzleRole this object
    * @throws JSONException the json exception
    */
-  public void save() throws JSONException {
-    this.save(null, null);
+  public KuzzleRole save() throws JSONException {
+    return this.save(null, null);
   }
-
 }

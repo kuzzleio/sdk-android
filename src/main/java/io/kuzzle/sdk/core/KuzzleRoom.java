@@ -143,9 +143,8 @@ public class KuzzleRoom {
    * Returns the number of other subscriptions on that room.
    *
    * @param listener the listener
-   * @return kuzzle room
    */
-  public KuzzleRoom count(@NonNull final KuzzleResponseListener<Integer> listener) {
+  public void count(@NonNull final KuzzleResponseListener<Integer> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("KuzzleRoom.count: a callback listener is required");
     }
@@ -158,8 +157,7 @@ public class KuzzleRoom {
           KuzzleRoom.this.count(listener);
         }
       });
-
-      return this;
+      return;
     }
 
     if (this.roomId == null) {
@@ -188,8 +186,6 @@ public class KuzzleRoom {
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
-
-    return this;
   }
 
   /**
@@ -237,10 +233,9 @@ public class KuzzleRoom {
    * Unsubscribes first if this KuzzleRoom was already listening to events.
    *
    * @param listener the listener
-   * @return kuzzle room
    */
-  public KuzzleRoom renew(final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
-    return this.renew(null, listener);
+  public void renew(final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+    this.renew(null, listener);
   }
 
   /**
@@ -249,9 +244,8 @@ public class KuzzleRoom {
    *
    * @param filters  the filters
    * @param listener the listener
-   * @return kuzzle room
    */
-  public KuzzleRoom renew(final JSONObject filters, final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public void renew(final JSONObject filters, final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
     long now = System.currentTimeMillis();
 
     if (listener == null) {
@@ -260,7 +254,7 @@ public class KuzzleRoom {
 
     // Skip subscription renewal if another one was performed just a moment before
     if (this.lastRenewal > 0 && (now - this.lastRenewal) <= this.renewalDelay) {
-      return this;
+      return;
     }
 
     if (filters != null) {
@@ -274,7 +268,7 @@ public class KuzzleRoom {
     if (this.kuzzle.state != KuzzleStates.CONNECTED) {
       this.listener = listener;
       this.kuzzle.addPendingSubscription(this.id, this);
-      return this;
+      return;
     }
 
     if (this.subscribing) {
@@ -285,7 +279,7 @@ public class KuzzleRoom {
         }
       });
 
-      return this;
+      return;
     }
 
     this.unsubscribe();
@@ -342,7 +336,6 @@ public class KuzzleRoom {
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
-    return this;
   }
 
   /**

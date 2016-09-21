@@ -179,10 +179,11 @@ public class AbstractKuzzleSecurityDocument {
    * Perform a partial update on this object
    *
    * @param content - content used to update the object
+   * @return AbstractKuzzleSecurityDocument this object
    * @throws JSONException - JSONException
    */
-  public void update(final JSONObject content) throws JSONException {
-    this.update(content, null, null);
+  public AbstractKuzzleSecurityDocument update(final JSONObject content) throws JSONException {
+    return this.update(content, null, null);
   }
 
   /**
@@ -190,10 +191,11 @@ public class AbstractKuzzleSecurityDocument {
    *
    * @param content - content used to update the object
    * @param options - optional arguments
+   * @return AbstractKuzzleSecurityDocument this object
    * @throws JSONException - JSONException
    */
-  public void update(final JSONObject content, final KuzzleOptions options) throws JSONException {
-    this.update(content, options, null);
+  public AbstractKuzzleSecurityDocument update(final JSONObject content, final KuzzleOptions options) throws JSONException {
+    return this.update(content, options, null);
   }
 
   /**
@@ -201,10 +203,11 @@ public class AbstractKuzzleSecurityDocument {
    *
    * @param content - content used to update the object
    * @param listener the listener
+   * @return AbstractKuzzleSecurityDocument this object
    * @throws JSONException the json exception
    */
-  public void update(final JSONObject content, final KuzzleResponseListener<AbstractKuzzleSecurityDocument> listener) throws JSONException {
-    this.update(content, null, listener);
+  public AbstractKuzzleSecurityDocument update(final JSONObject content, final KuzzleResponseListener<AbstractKuzzleSecurityDocument> listener) throws JSONException {
+    return this.update(content, null, listener);
   }
 
   /**
@@ -213,9 +216,10 @@ public class AbstractKuzzleSecurityDocument {
    * @param content - content used to update the object
    * @param options  the options
    * @param listener the listener
+   * @return AbstractKuzzleSecurityDocument this object
    * @throws JSONException the json exception
    */
-  public void update(final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<AbstractKuzzleSecurityDocument> listener) throws JSONException {
+  public AbstractKuzzleSecurityDocument update(final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<AbstractKuzzleSecurityDocument> listener) throws JSONException {
     JSONObject data = new JSONObject()
       .put("_id", this.id)
       .put("body", content);
@@ -242,6 +246,7 @@ public class AbstractKuzzleSecurityDocument {
     else {
       this.kuzzle.query(kuzzleSecurity.buildQueryArgs(this.updateActionName), data, options);
     }
-  }
 
+    return this;
+  }
 }
