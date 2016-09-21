@@ -78,6 +78,7 @@ public class renewTest {
     Socket s = mock(Socket.class);
     KuzzleExtend kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setState(KuzzleStates.CONNECTED);
+    kuzzle.setSocket(s);
 
     final Kuzzle kuzzleSpy = spy(kuzzle);
     KuzzleRoom testRoom = new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "collection", "index"));

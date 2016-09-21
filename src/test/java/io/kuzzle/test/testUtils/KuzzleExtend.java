@@ -24,6 +24,7 @@ import io.socket.client.Socket;
 import static org.mockito.Mockito.spy;
 
 public class KuzzleExtend extends Kuzzle {
+  protected Socket savedSocket = null;
 
   public KuzzleResponseListener loginCallback;
 
@@ -46,7 +47,7 @@ public class KuzzleExtend extends Kuzzle {
   }
 
   public void setSocket(Socket s) {
-    this.socket = s;
+    this.socket = this.savedSocket = s;
   }
 
   public void setListener(KuzzleResponseListener listener) {
@@ -56,6 +57,11 @@ public class KuzzleExtend extends Kuzzle {
 
   public Kuzzle deleteSubscription(final String roomId, final String id) {
     return super.deleteSubscription(roomId, id);
+  }
+
+
+  protected Socket createSocket() throws URISyntaxException {
+    return this.savedSocket != null ? this.savedSocket : super.createSocket();
   }
 
   /**

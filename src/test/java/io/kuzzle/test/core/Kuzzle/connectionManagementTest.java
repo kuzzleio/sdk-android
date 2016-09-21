@@ -180,7 +180,10 @@ public class connectionManagementTest {
     kuzzle = spy(kuzzle);
 
     kuzzle.connect();
-    verify(kuzzle, times(1)).disconnect();
+
+    // since "connect" is called 2 times with a socket set, disconnect
+    // is called each time
+    verify(kuzzle, times(2)).disconnect();
   }
 
   @Test
