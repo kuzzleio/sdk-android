@@ -76,9 +76,9 @@ public class Kuzzle {
    */
   protected JSONObject metadata;
   /**
-   * The target Kuzzle URL
+   * The target Kuzzle host
    */
-  protected String url;
+  protected String host;
   /**
    * Target Kuzzle network port
    */
@@ -240,6 +240,8 @@ public class Kuzzle {
       throw new IllegalArgumentException("Host name/address can't be empty");
     }
 
+    this.host = host;
+
     KuzzleOptions opt = (options != null ? options : new KuzzleOptions());
 
     this.autoQueue = opt.isAutoQueue();
@@ -255,12 +257,7 @@ public class Kuzzle {
     this.reconnectionDelay = opt.getReconnectionDelay();
     this.replayInterval = opt.getReplayInterval();
 
-    this.url = "http://" + host + ":" + this.port;
     this.connectionCallback = connectionCallback;
-
-    if (socket == null) {
-      socket = createSocket();
-    }
 
     if (opt.getOfflineMode() == Mode.AUTO) {
       this.autoReconnect = this.autoQueue = this.autoReplay = this.autoResubscribe = true;
@@ -387,7 +384,7 @@ public class Kuzzle {
   }
 
   /**
-   * Connects to a Kuzzle instance using the provided URL.
+   * Connects to a Kuzzle instance using the provided host and port.
    *
    * @return kuzzle kuzzle
    * @throws URISyntaxException the uri syntax exception
@@ -400,9 +397,11 @@ public class Kuzzle {
       }
     }
 
-    if (this.socket == null) {
-      this.socket = createSocket();
+    if (this.socket != null) {
+      this.disconnect();
     }
+
+    this.socket = createSocket();
 
     Kuzzle.this.state = KuzzleStates.CONNECTING;
 
@@ -1480,12 +1479,12 @@ public class Kuzzle {
     this.emitEvent(KuzzleEvent.reconnected);
   }
 
-  private Socket createSocket() throws URISyntaxException {
+  protected Socket createSocket() throws URISyntaxException {
     IO.Options opt = new IO.Options();
     opt.forceNew = true;
     opt.reconnection = this.autoReconnect;
     opt.reconnectionDelay = this.reconnectionDelay;
-    return IO.socket(this.url, opt);
+    return IO.socket("http://" + host + ":" + this.port, opt);
   }
 
   /**
@@ -1734,10 +1733,41 @@ public class Kuzzle {
   }
 
   /**
+   * Sets the network port
+   *
+   * @param port the new port
+   * @return this
+   */
+  public Kuzzle setPort(int port) {
+    this.port = port;
+    return this;
+  }
+
+  /**
+   * Gets the kuzzle host
+   *
+   * @returns string
+   */
+  public String getHost() {
+    return this.host;
+  }
+
+  /**
+   * Sets the kuzzle host instance
+   *
+   * @param host the new host to set
+   * @return
+   */
+  public Kuzzle setHost(String host) {
+    this.host = host;
+    return this;
+  }
+
+  /**
    * Sets auto replay.
    *
    * @param autoReplay the auto replay
-   * @return the auto replay
+   * @return this
    */
   public Kuzzle setAutoReplay(boolean autoReplay) {
     this.autoReplay = autoReplay;
