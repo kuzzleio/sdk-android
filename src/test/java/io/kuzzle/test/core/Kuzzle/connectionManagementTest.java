@@ -151,15 +151,16 @@ public class connectionManagementTest {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
         ((Emitter.Listener) invocation.getArguments()[1]).call(null, listener);
-        ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-        verify(kuzzleSpy, atLeastOnce()).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-        assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "subscribe");
-        assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "on");
 
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
+
     kuzzleSpy.connect();
+    ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
+    verify(kuzzleSpy, atLeastOnce()).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "subscribe");
+    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "on");
   }
 
   @Test
