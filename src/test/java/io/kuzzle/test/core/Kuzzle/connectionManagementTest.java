@@ -114,7 +114,7 @@ public class connectionManagementTest {
   }
 
   @Test
-  public void testRenewSubscriptionsAfterReconnection() throws URISyntaxException, JSONException {
+  public void testRenewSubscriptionsAfterReconnection() throws URISyntaxException, JSONException, InterruptedException {
     KuzzleOptions options = new KuzzleOptions();
     options.setAutoReconnect(true);
     options.setQueueTTL(1);
@@ -155,8 +155,9 @@ public class connectionManagementTest {
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
-
     kuzzleSpy.connect();
+
+    Thread.sleep(2);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzleSpy, atLeastOnce()).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "subscribe");

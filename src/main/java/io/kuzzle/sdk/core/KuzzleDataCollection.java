@@ -25,6 +25,8 @@ public class KuzzleDataCollection {
   private final String collection;
   private final String index;
   private KuzzleResponseListener<KuzzleRoom> subscribeCallback;
+  private JSONObject subscribeError = null;
+  private KuzzleRoom  subscribeRoom = null;
 
   /**
    * The Headers.
@@ -1083,14 +1085,9 @@ public class KuzzleDataCollection {
     }
     this.kuzzle.isValid();
     final KuzzleRoom room = new KuzzleRoom(this, options);
-    final KuzzleSubscribeListener<KuzzleResponseListener<KuzzleRoom>> subscribeResponseListener = new KuzzleSubscribeListener<KuzzleResponseListener<KuzzleRoom>>() {
-      @Override
-      public void onDone(KuzzleResponseListener<KuzzleRoom> callback) {
-        KuzzleDataCollection.this.subscribeCallback = callback;
-      }
-    };
+    final KuzzleSubscribeListener<KuzzleResponseListener<KuzzleRoom>> subscribeResponseListener = new KuzzleSubscribeListener<>();
 
-    room.renew(filters, listener, KuzzleDataCollection.this.subscribeCallback);
+    room.renew(filters, listener, subscribeResponseListener);
 
     return subscribeResponseListener;
   }

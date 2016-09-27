@@ -19,6 +19,7 @@ import io.kuzzle.sdk.enums.Scope;
 import io.kuzzle.sdk.enums.State;
 import io.kuzzle.sdk.enums.Users;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.KuzzleSubscribeListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleNotificationResponse;
 import io.kuzzle.sdk.state.KuzzleStates;
@@ -248,7 +249,7 @@ public class KuzzleRoom {
    * @param subscribeResponseListener
    * @return kuzzle room
    */
-  public KuzzleRoom renew(@NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener, final KuzzleResponseListener<KuzzleRoom> subscribeResponseListener) {
+  public KuzzleRoom renew(@NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener, final KuzzleSubscribeListener<KuzzleResponseListener<KuzzleRoom>> subscribeResponseListener) {
     return this.renew(null, listener, subscribeResponseListener);
   }
 
@@ -260,7 +261,7 @@ public class KuzzleRoom {
    * @param listener the listener
    * @return kuzzle room
    */
-  public KuzzleRoom renew(final JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener, final KuzzleResponseListener<KuzzleRoom> subscribeResponseListener) {
+  public KuzzleRoom renew(final JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener, final KuzzleSubscribeListener<KuzzleResponseListener<KuzzleRoom>> subscribeResponseListener) {
     long now = System.currentTimeMillis();
 
     if (listener == null) {
@@ -331,7 +332,7 @@ public class KuzzleRoom {
                   KuzzleRoom.this.channel = result.getString("channel");
                   KuzzleRoom.this.roomId = result.getString("roomId");
                   if (subscribeResponseListener != null) {
-                    subscribeResponseListener.onSuccess(KuzzleRoom.this);
+                    subscribeResponseListener.done(null, KuzzleRoom.this);
                   }
                 } catch (JSONException e) {
                   throw new RuntimeException(e);
@@ -354,7 +355,7 @@ public class KuzzleRoom {
                 KuzzleRoom.this.subscribing = false;
                 KuzzleRoom.this.queue.clear();
                 if (subscribeResponseListener != null) {
-                  subscribeResponseListener.onError(arg);
+                  subscribeResponseListener.done(arg, null);
                 }
               }
             });
