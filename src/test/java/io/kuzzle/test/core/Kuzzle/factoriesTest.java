@@ -45,8 +45,8 @@ public class factoriesTest {
 
   @Test
   public void testDataCollectionFactory() {
-    assertEquals(kuzzle.dataCollectionFactory("test").fetchDocument("test", mock(KuzzleResponseListener.class)).getCollection(), "test");
-    assertEquals(kuzzle.dataCollectionFactory("test2").fetchDocument("test2", mock(KuzzleResponseListener.class)).getCollection(), "test2");
+    assertEquals(kuzzle.dataCollectionFactory("test").getCollection(), "test");
+    assertEquals(kuzzle.dataCollectionFactory("test2").getCollection(), "test2");
   }
 
   @Test(expected = IllegalArgumentException.class)

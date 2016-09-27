@@ -269,4 +269,22 @@ public class constructorTest {
   public void testGetPort() {
     assertEquals(kuzzle.getPort(), 12345);
   }
+
+  @Test
+  public void testSetPort() {
+    kuzzle = spy(kuzzle);
+    kuzzle.setPort(1234);
+    assertEquals(kuzzle.getPort(), 1234);
+  }
+
+  @Test
+  public void testGetHost() {
+    assertEquals("localhost", kuzzle.getHost());
+  }
+
+  @Test public void testSetHost() {
+    kuzzle = spy(kuzzle);
+    kuzzle.setHost("foobar");
+    assertEquals("foobar", kuzzle.getHost());
+  }
 }

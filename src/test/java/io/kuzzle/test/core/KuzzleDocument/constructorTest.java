@@ -38,7 +38,7 @@ public class constructorTest {
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setState(KuzzleStates.CONNECTED);
     k = spy(extended);
-    doc = new KuzzleDocument(new KuzzleDataCollection(k, "index", "test"));
+    doc = new KuzzleDocument(new KuzzleDataCollection(k, "test", "index"));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -48,7 +48,7 @@ public class constructorTest {
 
   @Test
   public void testConstructor() throws JSONException {
-    doc = new KuzzleDocument(new KuzzleDataCollection(k, "index", "test"), "42");
+    doc = new KuzzleDocument(new KuzzleDataCollection(k, "test", "index"), "42");
     assertEquals(doc.getId(), "42");
   }
 
@@ -56,7 +56,7 @@ public class constructorTest {
   public void testCollection() throws JSONException {
     Kuzzle k = mock(Kuzzle.class);
     when(k.getHeaders()).thenReturn(new JSONObject());
-    KuzzleDataCollection collection = new KuzzleDataCollection(k, "index", "test");
+    KuzzleDataCollection collection = new KuzzleDataCollection(k, "test", "index");
     KuzzleDocument doc = new KuzzleDocument(collection);
     assertEquals(doc.getCollection(), collection.getCollection());
   }
@@ -66,7 +66,7 @@ public class constructorTest {
     JSONObject content = new JSONObject();
     content.put("foo", "bar");
 
-    doc = new KuzzleDocument(new KuzzleDataCollection(k, "index", "test"), content);
+    doc = new KuzzleDocument(new KuzzleDataCollection(k, "test", "index"), content);
     assertEquals(doc.getContent().getString("foo"), "bar");
   }
 

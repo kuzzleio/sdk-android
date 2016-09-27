@@ -42,7 +42,7 @@ public class constructorTest {
     kuzzle = spy(extended);
     when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
-    collection = new KuzzleDataCollection(kuzzle, "index", "test");
+    collection = new KuzzleDataCollection(kuzzle, "test", "index");
     listener = mock(KuzzleResponseListener.class);
   }
 
@@ -85,17 +85,17 @@ public class constructorTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowIfNoIndexProvided() {
-    new KuzzleDataCollection(mock(Kuzzle.class), null, "foo");
+    new KuzzleDataCollection(mock(Kuzzle.class), "foo", null);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowIfNoCollectionProvided() {
-    new KuzzleDataCollection(mock(Kuzzle.class), "foo", null);
+    new KuzzleDataCollection(mock(Kuzzle.class), null, "foo");
   }
 
   @Test(expected = RuntimeException.class)
   public void testConstructorException() {
     doThrow(JSONException.class).when(kuzzle).getHeaders();
-    new KuzzleDataCollection(kuzzle, "foo", "collection");
+    new KuzzleDataCollection(kuzzle, "collections", "foo");
   }
 }

@@ -46,7 +46,7 @@ public class truncateTest {
     kuzzle = spy(extended);
     when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
-    collection = new KuzzleDataCollection(kuzzle, "index", "test");
+    collection = new KuzzleDataCollection(kuzzle, "test", "index");
     listener = mock(KuzzleResponseListener.class);
   }
 

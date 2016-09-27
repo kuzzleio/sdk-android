@@ -128,8 +128,8 @@ public class connectionManagementTest {
     final Kuzzle kuzzleSpy = spy(extended);
 
     KuzzleRoom
-      room1 = new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "index", "test")),
-      room2 = new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "index", "test2"));
+      room1 = new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "test", "index")),
+      room2 = new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "test2", "index"));
 
     room1.renew(listener);
     room2.renew(listener);
@@ -182,7 +182,10 @@ public class connectionManagementTest {
     kuzzle = spy(kuzzle);
 
     kuzzle.connect();
-    verify(kuzzle, times(1)).disconnect();
+
+    // since "connect" is called 2 times with a socket set, disconnect
+    // is called each time
+    verify(kuzzle, times(2)).disconnect();
   }
 
   @Test

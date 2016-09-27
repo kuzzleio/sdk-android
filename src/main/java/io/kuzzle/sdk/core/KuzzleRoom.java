@@ -12,6 +12,7 @@ import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.enums.Scope;
@@ -143,9 +144,8 @@ public class KuzzleRoom {
    * Returns the number of other subscriptions on that room.
    *
    * @param listener the listener
-   * @return kuzzle room
    */
-  public KuzzleRoom count(@NonNull final KuzzleResponseListener<Integer> listener) {
+  public void count(@NonNull final KuzzleResponseListener<Integer> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("KuzzleRoom.count: a callback listener is required");
     }
@@ -158,8 +158,7 @@ public class KuzzleRoom {
           KuzzleRoom.this.count(listener);
         }
       });
-
-      return this;
+      return;
     }
 
     if (this.roomId == null) {
@@ -188,8 +187,6 @@ public class KuzzleRoom {
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
-
-    return this;
   }
 
   /**
@@ -265,6 +262,7 @@ public class KuzzleRoom {
    */
   public KuzzleRoom renew(final JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener, final KuzzleResponseListener<KuzzleRoom> subscribeResponseListener) {
     long now = System.currentTimeMillis();
+
     if (listener == null) {
       throw new IllegalArgumentException("KuzzleRoom.renew: a callback listener is required");
     }
@@ -596,14 +594,21 @@ public class KuzzleRoom {
         threadPool.execute(r);
       }
 
-      this.queue.clear();
+      threadPool.shutdown();
+
+      try {
+        threadPool.awaitTermination(1, TimeUnit.SECONDS);
+      }
+      catch (InterruptedException e) {
+        // do nothing
+      }
+      finally {
+        this.queue.clear();
+      }
     }
   }
 
   private boolean isReady() {
-    if (this.kuzzle.state != KuzzleStates.CONNECTED || this.subscribing) {
-      return false;
-    }
-    return true;
+    return this.kuzzle.state == KuzzleStates.CONNECTED && !this.subscribing;
   }
 }

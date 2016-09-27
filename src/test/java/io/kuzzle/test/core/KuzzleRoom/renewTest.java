@@ -60,7 +60,7 @@ public class renewTest {
     mockResponse.put("result", new JSONObject().put("channel", "channel").put("roomId", "42"));
     k = mock(Kuzzle.class);
     when(k.getHeaders()).thenReturn(new JSONObject());
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(k, "index", "test"));
+    room = new KuzzleRoomExtend(new KuzzleDataCollection(k, "text", "index"));
 
     MockitoAnnotations.initMocks(this);
   }
@@ -77,9 +77,10 @@ public class renewTest {
     Socket s = mock(Socket.class);
     KuzzleExtend kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setState(KuzzleStates.CONNECTED);
+    kuzzle.setSocket(s);
 
     final Kuzzle kuzzleSpy = spy(kuzzle);
-    KuzzleRoom testRoom = new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "index", "collection"));
+    KuzzleRoom testRoom = new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "collection", "index"));
 
     doAnswer(new Answer() {
       @Override
@@ -119,7 +120,7 @@ public class renewTest {
     kuzzle.setSocket(mock(Socket.class));
 
     final Kuzzle kuzzleSpy = spy(kuzzle);
-    KuzzleRoomExtend testRoom = new KuzzleRoomExtend(new KuzzleDataCollection(kuzzleSpy, "index", "collection"));
+    KuzzleRoomExtend testRoom = new KuzzleRoomExtend(new KuzzleDataCollection(kuzzleSpy, "collection", "index"));
     testRoom.setRoomId("foobar");
     doAnswer(new Answer() {
       @Override
@@ -147,7 +148,7 @@ public class renewTest {
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "index", "test"));
+    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "test", "index"));
     room.setRoomId("foobar");
     room.setSubscribing(true);
     room.renew(listener);
