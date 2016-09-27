@@ -131,4 +131,8 @@ public class KuzzleExtend extends Kuzzle {
     super.renewSubscriptions();
   }
 
+  public void setJwtTokenWithoutSubscribe(final String token) {
+    super.jwtToken = token;
+  }
+
 }
