@@ -7,7 +7,7 @@ import java.util.List;
 
 import io.kuzzle.sdk.core.KuzzleRoom;
 
-public class KuzzleSubscribeListener<T> {
+public class KuzzleSubscribeListener {
   private JSONObject  error;
   private KuzzleRoom  room;
   private List<KuzzleResponseListener<KuzzleRoom>>  cbs = new ArrayList<>();
@@ -22,7 +22,7 @@ public class KuzzleSubscribeListener<T> {
     }
   }
 
-  public KuzzleSubscribeListener<T> done(JSONObject error, KuzzleRoom room) {
+  public KuzzleSubscribeListener done(JSONObject error, KuzzleRoom room) {
     this.error = error;
     this.room = room;
 

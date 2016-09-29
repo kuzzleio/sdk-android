@@ -1054,7 +1054,7 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle room
    */
-  public KuzzleSubscribeListener<KuzzleResponseListener<KuzzleRoom>> subscribe(final JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public KuzzleSubscribeListener subscribe(final JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
     return this.subscribe(filters, null, listener);
   }
 
@@ -1066,7 +1066,7 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle room
    */
-  public KuzzleSubscribeListener<KuzzleResponseListener<KuzzleRoom>> subscribe(final KuzzleRoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public KuzzleSubscribeListener subscribe(final KuzzleRoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
     return this.subscribe(null, options, listener);
   }
 
@@ -1079,13 +1079,13 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return kuzzle room
    */
-  public KuzzleSubscribeListener<KuzzleResponseListener<KuzzleRoom>> subscribe(final JSONObject filters, final KuzzleRoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public KuzzleSubscribeListener subscribe(final JSONObject filters, final KuzzleRoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("KuzzleDataCollection.subscribe: listener required");
     }
     this.kuzzle.isValid();
     final KuzzleRoom room = new KuzzleRoom(this, options);
-    final KuzzleSubscribeListener<KuzzleResponseListener<KuzzleRoom>> subscribeResponseListener = new KuzzleSubscribeListener<>();
+    final KuzzleSubscribeListener subscribeResponseListener = new KuzzleSubscribeListener();
 
     room.renew(filters, listener, subscribeResponseListener);
 

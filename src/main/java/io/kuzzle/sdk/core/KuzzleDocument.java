@@ -367,7 +367,7 @@ public class KuzzleDocument {
    * @param listener the listener
    * @return the kuzzle document
    */
-  public KuzzleSubscribeListener<KuzzleResponseListener<KuzzleRoom>> subscribe(@NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public KuzzleSubscribeListener subscribe(@NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
     return this.subscribe(null, listener);
   }
 
@@ -379,12 +379,12 @@ public class KuzzleDocument {
    * @param listener the listener
    * @return kuzzle document
    */
-  public KuzzleSubscribeListener<KuzzleResponseListener<KuzzleRoom>> subscribe(final KuzzleRoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public KuzzleSubscribeListener subscribe(final KuzzleRoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
     if (this.id == null) {
       throw new IllegalStateException("KuzzleDocument.subscribe: cannot subscribe to a document if no ID has been provided");
     }
 
-    KuzzleSubscribeListener<KuzzleResponseListener<KuzzleRoom>> returnValue;
+    KuzzleSubscribeListener returnValue;
 
     try {
       JSONObject filters = new JSONObject("{" +

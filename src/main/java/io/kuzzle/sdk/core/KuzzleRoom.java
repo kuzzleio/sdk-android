@@ -249,7 +249,7 @@ public class KuzzleRoom {
    * @param subscribeResponseListener
    * @return kuzzle room
    */
-  public KuzzleRoom renew(@NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener, final KuzzleSubscribeListener<KuzzleResponseListener<KuzzleRoom>> subscribeResponseListener) {
+  public KuzzleRoom renew(@NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener, final KuzzleSubscribeListener subscribeResponseListener) {
     return this.renew(null, listener, subscribeResponseListener);
   }
 
@@ -261,7 +261,7 @@ public class KuzzleRoom {
    * @param listener the listener
    * @return kuzzle room
    */
-  public KuzzleRoom renew(final JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener, final KuzzleSubscribeListener<KuzzleResponseListener<KuzzleRoom>> subscribeResponseListener) {
+  public KuzzleRoom renew(final JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener, final KuzzleSubscribeListener subscribeResponseListener) {
     long now = System.currentTimeMillis();
 
     if (listener == null) {
