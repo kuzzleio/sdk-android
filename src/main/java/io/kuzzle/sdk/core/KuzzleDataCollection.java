@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.KuzzleSubscribeListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleDocumentList;
 import io.kuzzle.sdk.responses.KuzzleNotificationResponse;
@@ -23,6 +24,10 @@ public class KuzzleDataCollection {
   private final Kuzzle kuzzle;
   private final String collection;
   private final String index;
+  private KuzzleResponseListener<KuzzleRoom> subscribeCallback;
+  private JSONObject subscribeError = null;
+  private KuzzleRoom  subscribeRoom = null;
+
   /**
    * The Headers.
    */
@@ -1049,7 +1054,7 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle room
    */
-  public KuzzleRoom subscribe(final JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public KuzzleSubscribeListener subscribe(final JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
     return this.subscribe(filters, null, listener);
   }
 
@@ -1061,7 +1066,7 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle room
    */
-  public KuzzleRoom subscribe(final KuzzleRoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public KuzzleSubscribeListener subscribe(final KuzzleRoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
     return this.subscribe(null, options, listener);
   }
 
@@ -1074,15 +1079,17 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return kuzzle room
    */
-  public KuzzleRoom subscribe(final JSONObject filters, final KuzzleRoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public KuzzleSubscribeListener subscribe(final JSONObject filters, final KuzzleRoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("KuzzleDataCollection.subscribe: listener required");
     }
     this.kuzzle.isValid();
-    KuzzleRoom room = new KuzzleRoom(this, options);
-    room.renew(filters, listener);
+    final KuzzleRoom room = new KuzzleRoom(this, options);
+    final KuzzleSubscribeListener subscribeResponseListener = new KuzzleSubscribeListener();
 
-    return room;
+    room.renew(filters, listener, subscribeResponseListener);
+
+    return subscribeResponseListener;
   }
 
   /**

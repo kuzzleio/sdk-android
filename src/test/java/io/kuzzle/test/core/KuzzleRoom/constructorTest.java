@@ -99,7 +99,7 @@ public class constructorTest {
     JSONObject filters = new JSONObject();
     filters.put("foo", "bar");
 
-    room.renew(filters, listener);
+    room.renew(filters, listener, null);
     assertEquals(room.getFilters().getString("foo"), "bar");
     JSONObject filters2 = new JSONObject();
     filters2.put("foo", "rab");

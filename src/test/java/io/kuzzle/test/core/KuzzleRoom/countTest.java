@@ -101,12 +101,13 @@ public class countTest {
         if (invocation.getArguments()[3] != null) {
           ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(result);
           ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject());
+          verify(room).dequeue();
+
         }
         return null;
       }
     }).when(extended).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     room.renew(listener);
-    verify(room).dequeue();
   }
 
   @Test(expected = RuntimeException.class)

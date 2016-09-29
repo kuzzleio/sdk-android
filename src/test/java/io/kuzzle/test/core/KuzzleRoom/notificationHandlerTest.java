@@ -135,11 +135,12 @@ public class notificationHandlerTest {
       public Object answer(InvocationOnMock invocation) throws Throwable {
         //Call callback with response
         ((Emitter.Listener) invocation.getArguments()[1]).call(mockNotif);
+        verify(room).callAfterRenew(any(Object.class));
+
         return null;
       }
     }).when(s).on(any(String.class), any(Emitter.Listener.class));
     room.renew(listener);
-    verify(room).callAfterRenew(any(Object.class));
   }
 
   @Test

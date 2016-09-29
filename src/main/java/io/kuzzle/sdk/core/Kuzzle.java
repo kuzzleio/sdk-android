@@ -1360,7 +1360,7 @@ public class Kuzzle {
   protected void renewSubscriptions() {
     for(Map<String, KuzzleRoom> roomSubscriptions: subscriptions.values()) {
       for (KuzzleRoom room : roomSubscriptions.values()) {
-        room.renew(room.getListener());
+        room.renew(room.getListener(), room.getSubscribeListener());
       }
     }
   }
