@@ -1984,6 +1984,22 @@ public class Kuzzle {
   }
 
   /**
+   * Unset the jwtToken and unsubscribe all rooms if any
+   *
+   * @return Kuzzle instance
+   */
+  public Kuzzle unsetJwtToken() {
+    this.jwtToken = null;
+
+    for(Map<String, KuzzleRoom> roomSubscriptions: subscriptions.values()) {
+      for (KuzzleRoom room : roomSubscriptions.values()) {
+        room.unsubscribe();
+      }
+    }
+    return this;
+  }
+
+  /**
    * Sets the JWT Token from a Kuzzle response object
    *
    * @param response a Kuzzle response containing a jwt token
