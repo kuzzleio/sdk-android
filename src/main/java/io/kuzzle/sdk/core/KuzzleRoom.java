@@ -95,6 +95,7 @@ public class KuzzleRoom {
 // Used to delay method calls when subscription is in progress
   protected boolean subscribing = false;
   private ArrayList<Runnable> queue = new ArrayList<>();
+  private KuzzleSubscribeListener doneListener;
 
   /**
    * Instantiates a new Kuzzle room.
@@ -283,6 +284,7 @@ public class KuzzleRoom {
      */
     if (this.kuzzle.state != KuzzleStates.CONNECTED) {
       this.listener = listener;
+      this.doneListener = subscribeResponseListener;
       this.kuzzle.addPendingSubscription(this.id, this);
       return this;
     }
@@ -302,6 +304,7 @@ public class KuzzleRoom {
     this.roomId = null;
     this.subscribing = true;
     this.listener = listener;
+    this.doneListener = subscribeResponseListener;
     this.kuzzle.addPendingSubscription(this.id, this);
 
     try {
@@ -582,6 +585,10 @@ public class KuzzleRoom {
    */
   public KuzzleResponseListener<KuzzleNotificationResponse> getListener() {
     return this.listener;
+  }
+
+  public KuzzleSubscribeListener  getSubscribeListener() {
+    return doneListener;
   }
 
   /**
