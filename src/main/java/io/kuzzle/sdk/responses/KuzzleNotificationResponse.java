@@ -40,7 +40,7 @@ public class KuzzleNotificationResponse {
       this.scope = (object.isNull("scope") ? null : Scope.valueOf(object.getString("scope").toUpperCase()));
       this.users = (object.isNull("user") ? null : Users.valueOf(object.getString("user").toUpperCase()));
       if (!object.getJSONObject("result").isNull("_source")) {
-        this.document = new KuzzleDocument(new KuzzleDataCollection(kuzzle, this.index, this.collection), object.getJSONObject("result"));
+        this.document = new KuzzleDocument(new KuzzleDataCollection(kuzzle, this.collection, this.index), object.getJSONObject("result"));
         this.document.setId(this.result.getString("_id"));
       }
     } catch (JSONException e) {

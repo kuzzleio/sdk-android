@@ -19,6 +19,7 @@ import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.test.testUtils.KuzzleExtend;
+import io.socket.client.Socket;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -40,8 +41,9 @@ public class deleteTest {
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setState(KuzzleStates.CONNECTED);
+    extended.setSocket(mock(Socket.class));
     k = spy(extended);
-    doc = new KuzzleDocument(new KuzzleDataCollection(k, "index", "test"));
+    doc = new KuzzleDocument(new KuzzleDataCollection(k, "test", "index"));
   }
 
   @Test

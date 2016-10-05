@@ -12,12 +12,14 @@ import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.enums.Scope;
 import io.kuzzle.sdk.enums.State;
 import io.kuzzle.sdk.enums.Users;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.KuzzleSubscribeListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleNotificationResponse;
 import io.kuzzle.sdk.state.KuzzleStates;
@@ -93,6 +95,7 @@ public class KuzzleRoom {
 // Used to delay method calls when subscription is in progress
   protected boolean subscribing = false;
   private ArrayList<Runnable> queue = new ArrayList<>();
+  private KuzzleSubscribeListener doneListener;
 
   /**
    * Instantiates a new Kuzzle room.
@@ -143,9 +146,8 @@ public class KuzzleRoom {
    * Returns the number of other subscriptions on that room.
    *
    * @param listener the listener
-   * @return kuzzle room
    */
-  public KuzzleRoom count(@NonNull final KuzzleResponseListener<Integer> listener) {
+  public void count(@NonNull final KuzzleResponseListener<Integer> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("KuzzleRoom.count: a callback listener is required");
     }
@@ -158,8 +160,7 @@ public class KuzzleRoom {
           KuzzleRoom.this.count(listener);
         }
       });
-
-      return this;
+      return;
     }
 
     if (this.roomId == null) {
@@ -188,8 +189,6 @@ public class KuzzleRoom {
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
-
-    return this;
   }
 
   /**
@@ -239,8 +238,20 @@ public class KuzzleRoom {
    * @param listener the listener
    * @return kuzzle room
    */
-  public KuzzleRoom renew(final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
-    return this.renew(null, listener);
+  public KuzzleRoom renew(@NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+    return this.renew(null, listener, null);
+  }
+
+  /**
+   * Renew the subscription. Force a resubscription using the same filters if no new ones are provided.
+   * Unsubscribes first if this KuzzleRoom was already listening to events.
+   *
+   * @param listener the listener
+   * @param subscribeResponseListener
+   * @return kuzzle room
+   */
+  public KuzzleRoom renew(@NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener, final KuzzleSubscribeListener subscribeResponseListener) {
+    return this.renew(null, listener, subscribeResponseListener);
   }
 
   /**
@@ -251,7 +262,7 @@ public class KuzzleRoom {
    * @param listener the listener
    * @return kuzzle room
    */
-  public KuzzleRoom renew(final JSONObject filters, final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public KuzzleRoom renew(final JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener, final KuzzleSubscribeListener subscribeResponseListener) {
     long now = System.currentTimeMillis();
 
     if (listener == null) {
@@ -273,6 +284,7 @@ public class KuzzleRoom {
      */
     if (this.kuzzle.state != KuzzleStates.CONNECTED) {
       this.listener = listener;
+      this.doneListener = subscribeResponseListener;
       this.kuzzle.addPendingSubscription(this.id, this);
       return this;
     }
@@ -281,7 +293,7 @@ public class KuzzleRoom {
       this.queue.add(new Runnable() {
         @Override
         public void run() {
-          KuzzleRoom.this.renew(filters, listener);
+          KuzzleRoom.this.renew(filters, listener, subscribeResponseListener);
         }
       });
 
@@ -292,6 +304,7 @@ public class KuzzleRoom {
     this.roomId = null;
     this.subscribing = true;
     this.listener = listener;
+    this.doneListener = subscribeResponseListener;
     this.kuzzle.addPendingSubscription(this.id, this);
 
     try {
@@ -306,39 +319,55 @@ public class KuzzleRoom {
       options.setMetadata(this.metadata);
       this.kuzzle.addHeaders(subscribeQuery, this.headers);
 
-      this.kuzzle.query(this.dataCollection.makeQueryArgs("subscribe", "on"), subscribeQuery, options, new OnQueryDoneListener() {
+      new Thread(new Runnable() {
         @Override
-        public void onSuccess(JSONObject args) {
+        public void run() {
           try {
-            KuzzleRoom.this.kuzzle.deletePendingSubscription(KuzzleRoom.this.id);
-            KuzzleRoom.this.subscribing = false;
-            KuzzleRoom.this.lastRenewal = System.currentTimeMillis();
+            KuzzleRoom.this.kuzzle.query(KuzzleRoom.this.dataCollection.makeQueryArgs("subscribe", "on"), subscribeQuery, options, new OnQueryDoneListener() {
+              @Override
+              public void onSuccess(JSONObject args) {
+                try {
+                  KuzzleRoom.this.kuzzle.deletePendingSubscription(KuzzleRoom.this.id);
+                  KuzzleRoom.this.subscribing = false;
+                  KuzzleRoom.this.lastRenewal = System.currentTimeMillis();
 
-            JSONObject result = args.getJSONObject("result");
-            KuzzleRoom.this.channel = result.getString("channel");
-            KuzzleRoom.this.roomId = result.getString("roomId");
+                  JSONObject result = args.getJSONObject("result");
+                  KuzzleRoom.this.channel = result.getString("channel");
+                  KuzzleRoom.this.roomId = result.getString("roomId");
+                  if (subscribeResponseListener != null) {
+                    subscribeResponseListener.done(null, KuzzleRoom.this);
+                  }
+                } catch (JSONException e) {
+                  throw new RuntimeException(e);
+                }
+
+                KuzzleRoom.this.kuzzle.addSubscription(KuzzleRoom.this.roomId, KuzzleRoom.this.id, KuzzleRoom.this);
+
+                KuzzleRoom.this.kuzzle.getSocket().on(KuzzleRoom.this.channel, new Emitter.Listener() {
+                  @Override
+                  public void call(final Object... args) {
+                    callAfterRenew(args[0]);
+                  }
+                });
+
+                KuzzleRoom.this.dequeue();
+              }
+
+              @Override
+              public void onError(JSONObject arg) {
+                KuzzleRoom.this.subscribing = false;
+                KuzzleRoom.this.queue.clear();
+                if (subscribeResponseListener != null) {
+                  subscribeResponseListener.done(arg, null);
+                }
+              }
+            });
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
-
-          KuzzleRoom.this.kuzzle.addSubscription(KuzzleRoom.this.roomId, KuzzleRoom.this.id, KuzzleRoom.this);
-          KuzzleRoom.this.kuzzle.getSocket().on(KuzzleRoom.this.channel, new Emitter.Listener() {
-            @Override
-            public void call(final Object... args) {
-              callAfterRenew(args[0]);
-            }
-          });
-
-          KuzzleRoom.this.dequeue();
         }
+      }).start();
 
-        @Override
-        public void onError(JSONObject arg) {
-          KuzzleRoom.this.subscribing = false;
-          KuzzleRoom.this.queue.clear();
-          listener.onError(arg);
-        }
-      });
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
@@ -558,6 +587,10 @@ public class KuzzleRoom {
     return this.listener;
   }
 
+  public KuzzleSubscribeListener  getSubscribeListener() {
+    return doneListener;
+  }
+
   /**
    * Runs all queued methods called while subscription was in progress
    */
@@ -569,14 +602,21 @@ public class KuzzleRoom {
         threadPool.execute(r);
       }
 
-      this.queue.clear();
+      threadPool.shutdown();
+
+      try {
+        threadPool.awaitTermination(1, TimeUnit.SECONDS);
+      }
+      catch (InterruptedException e) {
+        // do nothing
+      }
+      finally {
+        this.queue.clear();
+      }
     }
   }
 
   private boolean isReady() {
-    if (this.kuzzle.state != KuzzleStates.CONNECTED || this.subscribing) {
-      return false;
-    }
-    return true;
+    return this.kuzzle.state == KuzzleStates.CONNECTED && !this.subscribing;
   }
 }

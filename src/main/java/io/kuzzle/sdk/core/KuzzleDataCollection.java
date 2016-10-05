@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.KuzzleSubscribeListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleDocumentList;
 import io.kuzzle.sdk.responses.KuzzleNotificationResponse;
@@ -23,6 +24,10 @@ public class KuzzleDataCollection {
   private final Kuzzle kuzzle;
   private final String collection;
   private final String index;
+  private KuzzleResponseListener<KuzzleRoom> subscribeCallback;
+  private JSONObject subscribeError = null;
+  private KuzzleRoom  subscribeRoom = null;
+
   /**
    * The Headers.
    */
@@ -33,10 +38,10 @@ public class KuzzleDataCollection {
    * or like a room for pub/sub messages.
    *
    * @param kuzzle     the kuzzle
-   * @param index      the index
    * @param collection the collection
+   * @param index      the index
    */
-  public KuzzleDataCollection(@NonNull final Kuzzle kuzzle, @NonNull final String index, @NonNull final String collection) {
+  public KuzzleDataCollection(@NonNull final Kuzzle kuzzle, @NonNull final String collection, @NonNull final String index) {
     if (kuzzle == null) {
       throw new IllegalArgumentException("KuzzleDataCollection: need a Kuzzle instance to initialize");
     }
@@ -64,10 +69,9 @@ public class KuzzleDataCollection {
    *
    * @param filter   the filter
    * @param listener the listener
-   * @return the kuzzle data collection
    */
-  public KuzzleDataCollection advancedSearch(final JSONObject filter, final KuzzleResponseListener<KuzzleDocumentList> listener) {
-    return this.advancedSearch(filter, null, listener);
+  public void advancedSearch(final JSONObject filter, final KuzzleResponseListener<KuzzleDocumentList> listener) {
+    this.advancedSearch(filter, null, listener);
   }
 
   /**
@@ -79,9 +83,8 @@ public class KuzzleDataCollection {
    * @param filters  the filters
    * @param options  the options
    * @param listener the listener
-   * @return KuzzleDataCollection object
    */
-  public KuzzleDataCollection advancedSearch(final JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDocumentList> listener) {
+  public void advancedSearch(final JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDocumentList> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("listener cannot be null");
     }
@@ -120,7 +123,6 @@ public class KuzzleDataCollection {
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
-    return this;
   }
 
   /**
@@ -144,20 +146,18 @@ public class KuzzleDataCollection {
    *
    * @param filters  the filters
    * @param listener the listener
-   * @return the kuzzle data collection
    */
-  public KuzzleDataCollection count(final JSONObject filters, @NonNull final KuzzleResponseListener<Integer> listener) {
-    return this.count(filters, null, listener);
+  public void count(final JSONObject filters, @NonNull final KuzzleResponseListener<Integer> listener) {
+    this.count(filters, null, listener);
   }
 
   /**
    * Count kuzzle data collection.
    *
    * @param listener the listener
-   * @return the kuzzle data collection
    */
-  public KuzzleDataCollection count(@NonNull final KuzzleResponseListener<Integer> listener) {
-    return this.count(null, null, listener);
+  public void count(@NonNull final KuzzleResponseListener<Integer> listener) {
+    this.count(null, null, listener);
   }
 
   /**
@@ -169,9 +169,8 @@ public class KuzzleDataCollection {
    * @param filters  the filters
    * @param options  the options
    * @param listener the cb
-   * @return KuzzleDataCollection kuzzle data collection
    */
-  public KuzzleDataCollection count(final JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener<Integer> listener) {
+  public void count(final JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener<Integer> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("KuzzleDataCollection.count: listener required");
     }
@@ -197,7 +196,6 @@ public class KuzzleDataCollection {
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
-    return this;
   }
 
   /**
@@ -684,10 +682,9 @@ public class KuzzleDataCollection {
    *
    * @param documentId the document id
    * @param listener   the listener
-   * @return the kuzzle data collection
    */
-  public KuzzleDataCollection fetchDocument(@NonNull final String documentId, @NonNull final KuzzleResponseListener<KuzzleDocument> listener) {
-    return this.fetchDocument(documentId, null, listener);
+  public void fetchDocument(@NonNull final String documentId, @NonNull final KuzzleResponseListener<KuzzleDocument> listener) {
+    this.fetchDocument(documentId, null, listener);
   }
 
   /**
@@ -696,9 +693,8 @@ public class KuzzleDataCollection {
    * @param documentId the document id
    * @param options    the options
    * @param listener   the listener
-   * @return KuzzleDataCollection kuzzle data collection
    */
-  public KuzzleDataCollection fetchDocument(@NonNull final String documentId, final KuzzleOptions options, final KuzzleResponseListener<KuzzleDocument> listener) {
+  public void fetchDocument(@NonNull final String documentId, final KuzzleOptions options, final KuzzleResponseListener<KuzzleDocument> listener) {
     if (documentId == null) {
       throw new IllegalArgumentException("KuzzleDataCollection.fetchDocument: documentId required");
     }
@@ -732,17 +728,15 @@ public class KuzzleDataCollection {
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
-    return this;
   }
 
   /**
    * Retrieves all documents stored in this data collection.
    *
    * @param listener the listener
-   * @return the kuzzle data collection
    */
-  public KuzzleDataCollection fetchAllDocuments(@NonNull final KuzzleResponseListener<KuzzleDocumentList> listener) {
-    return this.fetchAllDocuments(null, listener);
+  public void fetchAllDocuments(@NonNull final KuzzleResponseListener<KuzzleDocumentList> listener) {
+    this.fetchAllDocuments(null, listener);
   }
 
   /**
@@ -750,9 +744,8 @@ public class KuzzleDataCollection {
    *
    * @param options  the options
    * @param listener the listener
-   * @return the kuzzle data collection
    */
-  public KuzzleDataCollection fetchAllDocuments(final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDocumentList> listener) {
+  public void fetchAllDocuments(final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDocumentList> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("KuzzleDataCollection.fetchAllDocuments: listener required");
     }
@@ -769,17 +762,16 @@ public class KuzzleDataCollection {
         throw new RuntimeException(e);
       }
     }
-    return this.advancedSearch(filter, options, listener);
+    this.advancedSearch(filter, options, listener);
   }
 
   /**
    * Instantiates a KuzzleDataMapping object containing the current mapping of this collection.
    *
    * @param listener the listener
-   * @return the mapping
    */
-  public KuzzleDataCollection getMapping(@NonNull final KuzzleResponseListener<KuzzleDataMapping> listener) {
-    return this.getMapping(null, listener);
+  public void getMapping(@NonNull final KuzzleResponseListener<KuzzleDataMapping> listener) {
+    this.getMapping(null, listener);
   }
 
   /**
@@ -787,14 +779,12 @@ public class KuzzleDataCollection {
    *
    * @param options  the options
    * @param listener the listener
-   * @return the mapping
    */
-  public KuzzleDataCollection getMapping(final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDataMapping> listener) {
+  public void getMapping(final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDataMapping> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("KuzzleDataCollection.getMapping: listener required");
     }
     new KuzzleDataMapping(this).refresh(options, listener);
-    return this;
   }
 
   /**
@@ -1064,7 +1054,7 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle room
    */
-  public KuzzleRoom subscribe(final JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public KuzzleSubscribeListener subscribe(final JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
     return this.subscribe(filters, null, listener);
   }
 
@@ -1076,7 +1066,7 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return the kuzzle room
    */
-  public KuzzleRoom subscribe(final KuzzleRoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public KuzzleSubscribeListener subscribe(final KuzzleRoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
     return this.subscribe(null, options, listener);
   }
 
@@ -1089,13 +1079,17 @@ public class KuzzleDataCollection {
    * @param listener the listener
    * @return kuzzle room
    */
-  public KuzzleRoom subscribe(final JSONObject filters, final KuzzleRoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public KuzzleSubscribeListener subscribe(final JSONObject filters, final KuzzleRoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("KuzzleDataCollection.subscribe: listener required");
     }
     this.kuzzle.isValid();
-    KuzzleRoom room = new KuzzleRoom(this, options);
-    return room.renew(filters, listener);
+    final KuzzleRoom room = new KuzzleRoom(this, options);
+    final KuzzleSubscribeListener subscribeResponseListener = new KuzzleSubscribeListener();
+
+    room.renew(filters, listener, subscribeResponseListener);
+
+    return subscribeResponseListener;
   }
 
   /**
