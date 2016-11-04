@@ -791,7 +791,14 @@ public class Kuzzle {
       if (options == null) {
         options = new KuzzleOptions();
       }
-      query.put("body", new JSONObject().put("type", options.getCollectionType()));
+      JSONObject body = new JSONObject().put("type", options.getCollectionType());
+      if (options.getFrom() != null) {
+        body.put("from", options.getFrom());
+      }
+      if (options.getSize() != null) {
+        body.put("size", options.getSize());
+      }
+      query.put("body", body);
       this.query(args, query, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject collections) {
