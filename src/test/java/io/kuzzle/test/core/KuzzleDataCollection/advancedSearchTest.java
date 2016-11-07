@@ -126,6 +126,26 @@ public class advancedSearchTest {
           "        \"_type\": \"users\"\n" +
           "      }\n" +
           "    ],\n" +
+          "    \"aggregations\": {\n" +
+          "      \"aggs_name\": {\n" +
+          "        \"buckets\": [\n" +
+          "          {\n" +
+          "            \"doc_count\": 5,\n" +
+          "            \"key\": \"i\"\n" +
+          "          },\n" +
+          "          {\n" +
+          "            \"doc_count\": 2,\n" +
+          "            \"key\": \"hate\"\n" +
+          "          },\n" +
+          "          {\n" +
+          "            \"doc_count\": 1,\n" +
+          "            \"key\": \"admir\"\n" +
+          "          }\n" +
+          "        ],\n" +
+          "        \"doc_count_error_upper_bound\": 0,\n" +
+          "        \"sum_other_doc_count\": 1\n" +
+          "      }\n" +
+          "    },\n" +
           "    \"max_score\": 1,\n" +
           "    \"timed_out\": false,\n" +
           "    \"took\": 307,\n" +
@@ -143,6 +163,11 @@ public class advancedSearchTest {
       @Override
       public void onSuccess(KuzzleDocumentList result) {
         assertEquals(result.getTotal(), 2);
+        try {
+          assertEquals(result.getAggregations().getJSONObject("aggs_name").getJSONArray("buckets").getJSONObject(0).getString("key"), "i");
+        } catch (JSONException e) {
+          throw new RuntimeException(e);
+        }
         try {
           assertEquals(result.getDocuments().get(1).getContent("sibling"), "none");
         } catch (JSONException e) {
