@@ -126,32 +126,111 @@ public class advancedSearchTest {
           "        \"_type\": \"users\"\n" +
           "      }\n" +
           "    ],\n" +
-          "    \"aggregations\": {\n" +
-          "      \"aggs_name\": {\n" +
-          "        \"buckets\": [\n" +
-          "          {\n" +
-          "            \"doc_count\": 5,\n" +
-          "            \"key\": \"i\"\n" +
-          "          },\n" +
-          "          {\n" +
-          "            \"doc_count\": 2,\n" +
-          "            \"key\": \"hate\"\n" +
-          "          },\n" +
-          "          {\n" +
-          "            \"doc_count\": 1,\n" +
-          "            \"key\": \"admir\"\n" +
-          "          }\n" +
-          "        ],\n" +
-          "        \"doc_count_error_upper_bound\": 0,\n" +
-          "        \"sum_other_doc_count\": 1\n" +
-          "      }\n" +
-          "    },\n" +
           "    \"max_score\": 1,\n" +
           "    \"timed_out\": false,\n" +
           "    \"took\": 307,\n" +
           "    \"total\": 2\n" +
           "  }" +
           "}");
+
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject());
+        return null;
+      }
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+
+    collection.advancedSearch(filters, null, new KuzzleResponseListener<KuzzleDocumentList>() {
+      @Override
+      public void onSuccess(KuzzleDocumentList result) {
+        assertEquals(result.getTotal(), 2);
+        try {
+          assertEquals(result.getDocuments().get(1).getContent("sibling"), "none");
+        } catch (JSONException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+      }
+    });
+    collection.advancedSearch(filters, mock(KuzzleResponseListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "read");
+    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "search");
+  }
+
+  @Test
+  public void testAdvancedSearchWithAggregations() throws JSONException {
+    JSONObject filters = new JSONObject();
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        JSONObject response = new JSONObject("{\"result\": {\n" +
+                "    \"_shards\": {\n" +
+                "      \"failed\": 0,\n" +
+                "      \"successful\": 5,\n" +
+                "      \"total\": 5\n" +
+                "    },\n" +
+                "    \"hits\": [\n" +
+                "      {\n" +
+                "        \"_id\": \"AVJAwyDMZAGQHg9Dhfw2\",\n" +
+                "        \"_index\": \"cabble\",\n" +
+                "        \"_score\": 1,\n" +
+                "        \"_source\": {\n" +
+                "          \"pos\": {\n" +
+                "            \"lat\": 43.6073821,\n" +
+                "            \"lon\": 3.9130721\n" +
+                "          },\n" +
+                "          \"sibling\": \"none\",\n" +
+                "          \"status\": \"idle\",\n" +
+                "          \"type\": \"customer\"\n" +
+                "        },\n" +
+                "        \"_type\": \"users\"\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"_id\": \"AVJAwyOvZAGQHg9Dhfw3\",\n" +
+                "        \"_index\": \"cabble\",\n" +
+                "        \"_score\": 1,\n" +
+                "        \"_source\": {\n" +
+                "          \"pos\": {\n" +
+                "            \"lat\": 43.6073683,\n" +
+                "            \"lon\": 3.8999983\n" +
+                "          },\n" +
+                "          \"sibling\": \"none\",\n" +
+                "          \"status\": \"idle\",\n" +
+                "          \"type\": \"cab\"\n" +
+                "        },\n" +
+                "        \"_type\": \"users\"\n" +
+                "      }\n" +
+                "    ],\n" +
+                "    \"aggregations\": {\n" +
+                "      \"aggs_name\": {\n" +
+                "        \"buckets\": [\n" +
+                "          {\n" +
+                "            \"doc_count\": 5,\n" +
+                "            \"key\": \"i\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"doc_count\": 2,\n" +
+                "            \"key\": \"hate\"\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"doc_count\": 1,\n" +
+                "            \"key\": \"admir\"\n" +
+                "          }\n" +
+                "        ],\n" +
+                "        \"doc_count_error_upper_bound\": 0,\n" +
+                "        \"sum_other_doc_count\": 1\n" +
+                "      }\n" +
+                "    },\n" +
+                "    \"max_score\": 1,\n" +
+                "    \"timed_out\": false,\n" +
+                "    \"took\": 307,\n" +
+                "    \"total\": 2\n" +
+                "  }" +
+                "}");
 
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject());
