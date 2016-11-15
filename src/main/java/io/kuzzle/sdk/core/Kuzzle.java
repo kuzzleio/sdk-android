@@ -1256,6 +1256,10 @@ public class Kuzzle {
         return this;
       }
 
+      if (options.getRefresh() != null) {
+        object.put("refresh", options.getRefresh());
+      }
+
       if (options.getMetadata() != null) {
         for (Iterator iterator = options.getMetadata().keys(); iterator.hasNext(); ) {
           String key = (String) iterator.next();
