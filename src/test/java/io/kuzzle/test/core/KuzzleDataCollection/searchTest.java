@@ -32,7 +32,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class advancedSearchTest {
+public class searchTest {
   private Kuzzle kuzzle;
   private KuzzleDataCollection collection;
   private KuzzleResponseListener listener;
@@ -54,23 +54,23 @@ public class advancedSearchTest {
   @Test
   public void checkSignaturesVariants() {
     collection = spy(collection);
-    collection.advancedSearch(new JSONObject(), listener);
-    verify(collection).advancedSearch(any(JSONObject.class), eq((KuzzleOptions)null), eq(listener));
+    collection.search(new JSONObject(), listener);
+    verify(collection).search(any(JSONObject.class), eq((KuzzleOptions)null), eq(listener));
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testAdvancedSearchIllegalListener() {
-    collection.advancedSearch(null, null, null);
+  public void testSearchIllegalListener() {
+    collection.search(null, null, null);
   }
 
   @Test(expected = RuntimeException.class)
-  public void testAdvancedSearchQueryException() throws JSONException {
+  public void testSearchQueryException() throws JSONException {
     doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    collection.advancedSearch(null, listener);
+    collection.search(null, listener);
   }
 
   @Test(expected = RuntimeException.class)
-  public void testAdvancedSearchException() throws JSONException {
+  public void testSearchException() throws JSONException {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -79,11 +79,11 @@ public class advancedSearchTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     doThrow(JSONException.class).when(listener).onSuccess(any(Integer.class));
-    collection.advancedSearch(null, listener);
+    collection.search(null, listener);
   }
 
   @Test
-  public void testAdvancedSearch() throws JSONException {
+  public void testSearch() throws JSONException {
     JSONObject filters = new JSONObject();
     doAnswer(new Answer() {
       @Override
@@ -139,7 +139,7 @@ public class advancedSearchTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    collection.advancedSearch(filters, null, new KuzzleResponseListener<KuzzleDocumentList>() {
+    collection.search(filters, null, new KuzzleResponseListener<KuzzleDocumentList>() {
       @Override
       public void onSuccess(KuzzleDocumentList result) {
         assertEquals(result.getTotal(), 2);
@@ -154,7 +154,7 @@ public class advancedSearchTest {
       public void onError(JSONObject error) {
       }
     });
-    collection.advancedSearch(filters, mock(KuzzleResponseListener.class));
+    collection.search(filters, mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "read");

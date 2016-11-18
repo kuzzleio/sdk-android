@@ -70,8 +70,8 @@ public class KuzzleDataCollection {
    * @param filter   the filter
    * @param listener the listener
    */
-  public void advancedSearch(final JSONObject filter, final KuzzleResponseListener<KuzzleDocumentList> listener) {
-    this.advancedSearch(filter, null, listener);
+  public void search(final JSONObject filter, final KuzzleResponseListener<KuzzleDocumentList> listener) {
+    this.search(filter, null, listener);
   }
 
   /**
@@ -84,7 +84,7 @@ public class KuzzleDataCollection {
    * @param options  the options
    * @param listener the listener
    */
-  public void advancedSearch(final JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDocumentList> listener) {
+  public void search(final JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDocumentList> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("listener cannot be null");
     }
@@ -762,7 +762,7 @@ public class KuzzleDataCollection {
         throw new RuntimeException(e);
       }
     }
-    this.advancedSearch(filter, options, listener);
+    this.search(filter, options, listener);
   }
 
   /**
