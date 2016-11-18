@@ -26,6 +26,7 @@ public class KuzzleOptions {
   private boolean queuable = true;
   private String defaultIndex = null;
   private boolean replaceIfExist = false;
+  private String refresh = null;
   private Long from;
   private Long size;
   private Integer port = 7512;
@@ -377,23 +378,35 @@ public class KuzzleOptions {
     return from;
   }
 
-  public void setFrom(Long from) {
+  public KuzzleOptions setFrom(Long from) {
     this.from = from;
+    return this;
   }
 
   public Long getSize() {
     return size;
   }
 
-  public void setSize(Long size) {
+  public KuzzleOptions setSize(Long size) {
     this.size = size;
+    return this;
   }
 
-  public void setPort(Integer port) {
+  public KuzzleOptions setPort(Integer port) {
     this.port = port;
+    return this;
   }
 
   public Integer getPort() {
     return this.port;
+  }
+
+  public String getRefresh() {
+    return refresh;
+  }
+
+  public KuzzleOptions setRefresh(String refresh) {
+    this.refresh = refresh;
+    return this;
   }
 }

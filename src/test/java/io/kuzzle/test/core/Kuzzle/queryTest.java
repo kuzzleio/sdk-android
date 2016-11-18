@@ -196,6 +196,20 @@ public class queryTest {
   }
 
   @Test
+  public void shouldAddRefresh() throws JSONException {
+    String optionsRefresh = "foo";
+    KuzzleOptions opts = new KuzzleOptions().setRefresh(optionsRefresh);
+
+    kuzzle.query(args, new JSONObject(), opts);
+
+    ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
+    verify(socket).emit(any(String.class), (JSONObject) argument.capture());
+
+    String refresh = ((JSONObject) argument.getValue()).getString("refresh");
+    assertEquals(refresh, optionsRefresh);
+  }
+
+  @Test
   public void shouldAddHeaders() throws JSONException {
     JSONObject headers = new JSONObject().put("foo", "bar");
 
