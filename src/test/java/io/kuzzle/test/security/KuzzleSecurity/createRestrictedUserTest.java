@@ -1,5 +1,6 @@
 package io.kuzzle.test.security.KuzzleSecurity;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -37,6 +38,11 @@ public class createRestrictedUserTest {
   @Test(expected = IllegalArgumentException.class)
   public void testCreateRestrictedUserNoID() throws JSONException {
     kuzzleSecurity.createRestrictedUser(null, new JSONObject());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCreateRestrictedWithProfileIds() throws JSONException {
+    kuzzleSecurity.createRestrictedUser("some_id", new JSONObject().put("profileIds", new JSONArray()));
   }
 
   @Test(expected = IllegalArgumentException.class)

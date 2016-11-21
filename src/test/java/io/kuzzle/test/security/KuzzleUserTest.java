@@ -153,6 +153,16 @@ public class KuzzleUserTest {
   }
 
   @Test
+  public void testSaveRestrictedNoListenerAndOptions() throws JSONException {
+    KuzzleOptions options = new KuzzleOptions();
+    stubUser.saveRestricted(options);
+    ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class));
+    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
+    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createRestrictedUser");
+  }
+
+  @Test
   public void testSaveRestricted() throws JSONException {
     doAnswer(new Answer() {
       @Override

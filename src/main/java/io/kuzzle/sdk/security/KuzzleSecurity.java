@@ -1094,7 +1094,7 @@ public class KuzzleSecurity {
     }
 
     if (content.has("profileIds")) {
-      throw new Error("KuzzleSecurity.createRestrictedUser: cannot provide profileIds");
+      throw new IllegalArgumentException("KuzzleSecurity.createRestrictedUser: cannot provide profileIds");
     }
 
     JSONObject data = new JSONObject().put("_id", id).put("body", content);
