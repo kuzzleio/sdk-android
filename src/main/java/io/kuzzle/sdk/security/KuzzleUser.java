@@ -141,6 +141,69 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
   }
 
   /**
+   * Saves this user as restricted into Kuzzle.
+   *
+   * @param options  - Optional arguments
+   * @param listener - Callback listener
+   * @return this kuzzle user
+   * @throws JSONException the json exception
+   */
+  public KuzzleUser saveRestricted(final KuzzleOptions options, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
+    JSONObject data = this.serialize();
+
+    if (listener != null) {
+      this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createRestrictedUser"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          listener.onSuccess(KuzzleUser.this);
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    }
+    else {
+      this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createRestrictedUser"), data, options);
+    }
+
+    return this;
+  }
+
+  /**
+   * Saves this user as restricted into Kuzzle.
+   *
+   * @param listener - Callback listener
+   * @return this kuzzle user
+   * @throws JSONException the json exception
+   */
+  public KuzzleUser saveRestricted(final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
+    return saveRestricted(null, listener);
+  }
+
+  /**
+   * Saves this user as restricted into Kuzzle.
+   *
+   * @param options - Optional arguments
+   * @return this kuzzle user
+   * @throws JSONException the json exception
+   */
+  public KuzzleUser saveRestricted(final KuzzleOptions options) throws JSONException {
+    return saveRestricted(options, null);
+  }
+
+  /**
+   * Saves this user as restricted into Kuzzle.
+   *
+   * @return this kuzzle user
+   * @throws JSONException the json exception
+   */
+  public KuzzleUser saveRestricted() throws JSONException {
+    return saveRestricted(null, null);
+  }
+
+  /**
    * Return a JSONObject representing a serialized version of this object
    *
    * @return serialized version of this object

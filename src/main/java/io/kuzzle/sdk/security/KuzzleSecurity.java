@@ -1077,6 +1077,97 @@ public class KuzzleSecurity {
   }
 
   /**
+   * Create a new restricted user in Kuzzle.
+   *
+   * This function will create a new user. It is not usable to update an existing user.
+   * This function allows anonymous users to create a "restricted" user with predefined rights.
+   *
+   * @param id       - ID of the user to create
+   * @param content  - Should contain a 'profile' attribute with the profile ID
+   * @param options  - Optional arguments
+   * @param listener - Callback listener
+   * @throws JSONException the json exception
+   */
+  public void createRestrictedUser(@NonNull final String id, @NonNull final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
+    if (id == null || content == null) {
+      throw new IllegalArgumentException("KuzzleSecurity.createRestrictedUser: cannot create a user with a null ID or content");
+    }
+
+    if (content.has("profileIds")) {
+      throw new IllegalArgumentException("KuzzleSecurity.createRestrictedUser: cannot provide profileIds");
+    }
+
+    JSONObject data = new JSONObject().put("_id", id).put("body", content);
+
+    if (listener != null) {
+      this.kuzzle.query(buildQueryArgs("createRestrictedUser"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            JSONObject result = response.getJSONObject("result");
+            listener.onSuccess(new KuzzleUser(KuzzleSecurity.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+          }
+          catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    }
+    else {
+      this.kuzzle.query(buildQueryArgs("createRestrictedUser"), data, options);
+    }
+  }
+
+  /**
+   * Create a new restricted user in Kuzzle.
+   *
+   * This function will create a new user. It is not usable to update an existing user.
+   * This function allows anonymous users to create a "restricted" user with predefined rights.
+   *
+   * @param id      - ID of the user to create
+   * @param content - Should contain a 'profile' attribute with the profile ID
+   * @param options - Optional arguments
+   * @throws JSONException the json exception
+   */
+  public void createRestrictedUser(@NonNull final String id, @NonNull final JSONObject content, final KuzzleOptions options) throws JSONException {
+    createRestrictedUser(id, content, options, null);
+  }
+
+  /**
+   * Create a new restricted user in Kuzzle.
+   *
+   * This function will create a new user. It is not usable to update an existing user.
+   * This function allows anonymous users to create a "restricted" user with predefined rights.
+   *
+   * @param id       - ID of the user to create
+   * @param content  - Should contain a 'profile' attribute with the profile ID
+   * @param listener - Callback listener
+   * @throws JSONException the json exception
+   */
+  public void createRestrictedUser(@NonNull final String id, @NonNull final JSONObject content, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
+    createRestrictedUser(id, content, null, listener);
+  }
+
+  /**
+   * Create a new restricted user in Kuzzle.
+   *
+   * This function will create a new user. It is not usable to update an existing user.
+   * This function allows anonymous users to create a "restricted" user with predefined rights.
+   *
+   * @param id      - ID of the user to create
+   * @param content - Should contain a 'profile' attribute with the profile ID
+   * @throws JSONException the json exception
+   */
+  public void createRestrictedUser(@NonNull final String id, @NonNull final JSONObject content) throws JSONException {
+    createRestrictedUser(id, content, null, null);
+  }
+
+  /**
    * Delete user.
    * There is a small delay between user deletion and their deletion in our advanced search layer,
    * usually a couple of seconds.
