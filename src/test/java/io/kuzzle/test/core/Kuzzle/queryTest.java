@@ -150,9 +150,7 @@ public class queryTest {
     assertEquals(request.has("index"), false);
     assertEquals(request.has("collection"), false);
     assertNotNull(request.getString("requestId"));
-
-    String token = request.getJSONObject("headers").getString("authorization");
-    assertEquals(token, "Bearer token");
+    assertEquals(request.getString("jwt"), "token");
   }
 
   @Test
