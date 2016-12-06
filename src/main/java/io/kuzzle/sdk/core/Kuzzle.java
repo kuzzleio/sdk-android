@@ -1109,10 +1109,10 @@ public class Kuzzle {
       QueryArgs args = new QueryArgs();
       args.controller = "auth";
       args.action = "logout";
-      return this.query(args, new JSONObject(), options, new OnQueryDoneListener() {
+
+      this.query(args, new JSONObject(), options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject object) {
-          Kuzzle.this.jwtToken = null;
           if (listener != null) {
             listener.onSuccess(null);
           }
@@ -1128,6 +1128,9 @@ public class Kuzzle {
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
+
+    Kuzzle.this.jwtToken = null;
+    return this;
   }
 
   /**
@@ -1281,11 +1284,7 @@ public class Kuzzle {
      * a developer simply wish to verify his token
      */
     if (this.jwtToken != null && !(queryArgs.controller.equals("auth") && queryArgs.action.equals("checkToken"))) {
-      if (!object.has("headers")) {
-        object.put("headers", new JSONObject());
-      }
-
-      object.getJSONObject("headers").put("authorization", "Bearer " + this.jwtToken);
+      object.put("jwt", this.jwtToken);
     }
 
     if (this.state == KuzzleStates.CONNECTED || (options != null && !options.isQueuable())) {
