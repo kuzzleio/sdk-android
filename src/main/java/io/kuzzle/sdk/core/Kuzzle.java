@@ -1076,10 +1076,6 @@ public class Kuzzle {
    * Does not fire a disconnected event.
    */
   public void disconnect() {
-    if (this.state == KuzzleStates.CONNECTED) {
-      this.logout();
-    }
-
     if (this.socket != null) {
       this.socket.close();
     }

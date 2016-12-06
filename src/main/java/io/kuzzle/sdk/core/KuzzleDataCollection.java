@@ -113,6 +113,7 @@ public class KuzzleDataCollection {
         @Override
         public void onSuccess(JSONObject object) {
           try {
+            KuzzleDocumentList response;
             JSONArray hits = object.getJSONObject("result").getJSONArray("hits");
             List<KuzzleDocument> docs = new ArrayList<KuzzleDocument>();
             for (int i = 0; i < hits.length(); i++) {
@@ -120,7 +121,12 @@ public class KuzzleDataCollection {
               KuzzleDocument doc = new KuzzleDocument(KuzzleDataCollection.this, hit.getString("_id"), hit.getJSONObject("_source"));
               docs.add(doc);
             }
-            KuzzleDocumentList response = new KuzzleDocumentList(docs, object.getJSONObject("result").getInt("total"));
+            if (object.getJSONObject("result").has("aggregations")) {
+              response = new KuzzleDocumentList(docs, object.getJSONObject("result").getInt("total"), object.getJSONObject("result").getJSONObject("aggregations"));
+            }
+            else {
+              response = new KuzzleDocumentList(docs, object.getJSONObject("result").getInt("total"));
+            }
             listener.onSuccess(response);
           } catch (JSONException e) {
             throw new RuntimeException(e);
