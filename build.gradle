@@ -41,7 +41,6 @@ android {
     sourceSets {
         main.setRoot('src/main')
     }
-
 }
 
 repositories {

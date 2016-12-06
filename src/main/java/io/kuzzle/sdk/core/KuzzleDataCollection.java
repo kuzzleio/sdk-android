@@ -1,7 +1,6 @@
 package io.kuzzle.sdk.core;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -69,7 +68,7 @@ public class KuzzleDataCollection {
 
   @Deprecated
   public void advancedSearch(final JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDocumentList> listener) {
-    Log.w("Kuzzle SDK", "The advancedSearch method is now deprecated, please use the search method");
+    System.out.println("The advancedSearch method is now deprecated, please use the search method");
     this.search(filters, options, listener);
   }
 
