@@ -109,7 +109,7 @@ public class getAutoRefreshTest {
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     verify(kuzzle, times(2)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "admin");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "index");
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "getAutoRefresh");
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).index, kuzzle.getDefaultIndex());
   }

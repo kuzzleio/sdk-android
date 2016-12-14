@@ -171,7 +171,7 @@ public class KuzzleRoom {
       JSONObject data = new JSONObject().put("body", new JSONObject().put("roomId", this.roomId));
       this.kuzzle.addHeaders(data, this.headers);
 
-      this.kuzzle.query(this.dataCollection.makeQueryArgs("subscribe", "count"), data, new OnQueryDoneListener() {
+      this.kuzzle.query(this.dataCollection.makeQueryArgs("realtime", "count"), data, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
           try {
@@ -323,7 +323,7 @@ public class KuzzleRoom {
         @Override
         public void run() {
           try {
-            KuzzleRoom.this.kuzzle.query(KuzzleRoom.this.dataCollection.makeQueryArgs("subscribe", "on"), subscribeQuery, options, new OnQueryDoneListener() {
+            KuzzleRoom.this.kuzzle.query(KuzzleRoom.this.dataCollection.makeQueryArgs("realtime", "subscribe"), subscribeQuery, options, new OnQueryDoneListener() {
               @Override
               public void onSuccess(JSONObject args) {
                 try {
@@ -407,7 +407,7 @@ public class KuzzleRoom {
       if (this.kuzzle.getSubscriptions(this.roomId) == null) {
         final String roomId = this.roomId;
         if (this.kuzzle.getPendingSubscriptions().isEmpty()) {
-          this.kuzzle.query(this.dataCollection.makeQueryArgs("subscribe", "off"), data);
+          this.kuzzle.query(this.dataCollection.makeQueryArgs("realtime", "unsubscribe"), data);
         } else {
           final Timer timer = new Timer(UUID.randomUUID().toString());
           unsubscribeTask(timer, roomId, data).run();
@@ -437,7 +437,7 @@ public class KuzzleRoom {
         try {
           if (KuzzleRoom.this.kuzzle.getPendingSubscriptions().isEmpty()) {
             if (KuzzleRoom.this.kuzzle.getSubscriptions(roomId) == null) {
-              KuzzleRoom.this.kuzzle.query(KuzzleRoom.this.dataCollection.makeQueryArgs("subscribe", "off"), data);
+              KuzzleRoom.this.kuzzle.query(KuzzleRoom.this.dataCollection.makeQueryArgs("realtime", "unsubscribe"), data);
             }
           } else {
             timer.schedule(unsubscribeTask(timer, roomId, data), 100);

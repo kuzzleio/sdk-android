@@ -569,7 +569,7 @@ public class Kuzzle {
     this.isValid();
     try {
       QueryArgs args = new QueryArgs();
-      args.controller = "admin";
+      args.controller = "server";
       args.action = "getAllStats";
       this.query(args, null, options, new OnQueryDoneListener() {
         @Override
@@ -617,7 +617,7 @@ public class Kuzzle {
     try {
       body.put("body", data);
       QueryArgs args = new QueryArgs();
-      args.controller = "admin";
+      args.controller = "server";
       args.action = "getLastStats";
       this.query(args, body, options, new OnQueryDoneListener() {
         @Override
@@ -669,7 +669,7 @@ public class Kuzzle {
       data.put("since", timestamp);
       body.put("body", data);
       QueryArgs args = new QueryArgs();
-      args.controller = "admin";
+      args.controller = "server";
       args.action = "getStats";
       this.query(args, body, options, new OnQueryDoneListener() {
         @Override
@@ -711,8 +711,8 @@ public class Kuzzle {
       throw new IllegalArgumentException("Kuzzle.getServerInfo: listener required");
     }
     QueryArgs args = new QueryArgs();
-    args.controller = "read";
-    args.action = "serverInfo";
+    args.controller = "server";
+    args.action = "info";
     try {
       this.query(args, null, options, new OnQueryDoneListener() {
         @Override
@@ -784,20 +784,14 @@ public class Kuzzle {
     }
     try {
       QueryArgs args = new QueryArgs();
-      args.controller = "read";
-      args.action = "listCollections";
+      args.controller = "collection";
+      args.action = "list";
       args.index = index;
       JSONObject query = new JSONObject();
       if (options == null) {
         options = new KuzzleOptions();
       }
       JSONObject body = new JSONObject().put("type", options.getCollectionType());
-      if (options.getFrom() != null) {
-        body.put("from", options.getFrom());
-      }
-      if (options.getSize() != null) {
-        body.put("size", options.getSize());
-      }
       query.put("body", body);
       this.query(args, query, options, new OnQueryDoneListener() {
         @Override
@@ -839,8 +833,8 @@ public class Kuzzle {
       throw new IllegalArgumentException("Kuzzle.listIndexes: listener required");
     }
     QueryArgs args = new QueryArgs();
-    args.controller = "read";
-    args.action = "listIndexes";
+    args.controller = "index";
+    args.action = "list";
     try {
       this.query(args, null, options, new OnQueryDoneListener() {
         @Override
@@ -1155,7 +1149,7 @@ public class Kuzzle {
     this.isValid();
     try {
       QueryArgs args = new QueryArgs();
-      args.controller = "read";
+      args.controller = "server";
       args.action = "now";
       this.query(args, null, options, new OnQueryDoneListener() {
         @Override
@@ -1217,7 +1211,7 @@ public class Kuzzle {
 
   /**
    * This is a low-level method, exposed to allow advanced SDK users to bypass high-level methods.
-   * Base method used to send read queries to Kuzzle
+   * Base method used to send queries to Kuzzle
    *
    * @param queryArgs the query args
    * @param query     - The query data
@@ -1264,6 +1258,14 @@ public class Kuzzle {
           String key = (String) iterator.next();
           meta.put(key, options.getMetadata().get(key));
         }
+      }
+
+      if (options.getFrom() != null) {
+        object.put("from", options.getFrom());
+      }
+
+      if (options.getSize() != null) {
+        object.put("size", options.getSize());
       }
     }
 
@@ -2319,8 +2321,8 @@ public class Kuzzle {
 
     QueryArgs args = new QueryArgs();
     args.index = index;
-    args.controller = "admin";
-    args.action = "refreshIndex";
+    args.controller = "index";
+    args.action = "refresh";
     JSONObject request = new JSONObject();
 
     try {
@@ -2408,7 +2410,7 @@ public class Kuzzle {
 
     QueryArgs args = new QueryArgs();
     args.index = index;
-    args.controller = "admin";
+    args.controller = "index";
     args.action = "getAutoRefresh";
     JSONObject request = new JSONObject();
 
@@ -2529,7 +2531,7 @@ public class Kuzzle {
 
     QueryArgs args = new QueryArgs();
     args.index = index;
-    args.controller = "admin";
+    args.controller = "index";
     args.action = "setAutoRefresh";
     JSONObject request;
 
