@@ -162,7 +162,7 @@ public class searchTest {
   }
 
   @Test
-  public void testAdvancedSearchWithAggregations() throws JSONException {
+  public void testSearchWithAggregations() throws JSONException {
     JSONObject filters = new JSONObject();
     doAnswer(new Answer() {
       @Override
@@ -238,7 +238,7 @@ public class searchTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    collection.advancedSearch(filters, null, new KuzzleResponseListener<KuzzleDocumentList>() {
+    collection.search(filters, null, new KuzzleResponseListener<KuzzleDocumentList>() {
       @Override
       public void onSuccess(KuzzleDocumentList result) {
         assertEquals(result.getTotal(), 2);
@@ -258,7 +258,7 @@ public class searchTest {
       public void onError(JSONObject error) {
       }
     });
-    collection.advancedSearch(filters, mock(KuzzleResponseListener.class));
+    collection.search(filters, mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "read");

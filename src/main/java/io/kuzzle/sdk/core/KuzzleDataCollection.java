@@ -61,17 +61,6 @@ public class KuzzleDataCollection {
     }
   }
 
-  @Deprecated
-  public void advancedSearch(final JSONObject filter, final KuzzleResponseListener<KuzzleDocumentList> listener) {
-    this.advancedSearch(filter, null, listener);
-  }
-
-  @Deprecated
-  public void advancedSearch(final JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDocumentList> listener) {
-    System.out.println("The advancedSearch method is now deprecated, please use the search method");
-    this.search(filters, options, listener);
-  }
-
   /**
    * Executes an advanced search on the data collection.
    * /!\ There is a small delay between documents creation and their existence in our advanced search layer,
