@@ -62,21 +62,21 @@ public class KuzzleDataCollection {
   }
 
   /**
-   * Executes an advanced search on the data collection.
-   * /!\ There is a small delay between documents creation and their existence in our advanced search layer,
+   * Executes a search on the data collection.
+   * /!\ There is a small delay between documents creation and their existence in our search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function.
    *
    * @param filter   the filter
    * @param listener the listener
    */
-  public void advancedSearch(final JSONObject filter, final KuzzleResponseListener<KuzzleDocumentList> listener) {
-    this.advancedSearch(filter, null, listener);
+  public void search(final JSONObject filter, final KuzzleResponseListener<KuzzleDocumentList> listener) {
+    this.search(filter, null, listener);
   }
 
   /**
-   * Executes an advanced search on the data collection.
-   * /!\ There is a small delay between documents creation and their existence in our advanced search layer,
+   * Executes a search on the data collection.
+   * /!\ There is a small delay between documents creation and their existence in our search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function.
    *
@@ -84,7 +84,7 @@ public class KuzzleDataCollection {
    * @param options  the options
    * @param listener the listener
    */
-  public void advancedSearch(final JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDocumentList> listener) {
+  public void search(final JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDocumentList> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("listener cannot be null");
     }
@@ -168,7 +168,7 @@ public class KuzzleDataCollection {
 
   /**
    * Returns the number of documents matching the provided set of filters.
-   * There is a small delay between documents creation and their existence in our advanced search layer,
+   * There is a small delay between documents creation and their existence in our search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
    *
@@ -475,7 +475,7 @@ public class KuzzleDataCollection {
 
   /**
    * Delete a persistent document.
-   * There is a small delay between documents creation and their existence in our advanced search layer,
+   * There is a small delay between documents creation and their existence in our search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
    *
@@ -499,7 +499,7 @@ public class KuzzleDataCollection {
 
   /**
    * Delete a persistent document.
-   * There is a small delay between documents creation and their existence in our advanced search layer,
+   * There is a small delay between documents creation and their existence in our search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
    *
@@ -528,7 +528,7 @@ public class KuzzleDataCollection {
 
   /**
    * Delete a persistent document.
-   * There is a small delay between documents creation and their existence in our advanced search layer,
+   * There is a small delay between documents creation and their existence in our search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
    *
@@ -552,7 +552,7 @@ public class KuzzleDataCollection {
 
   /**
    * Delete a persistent document.
-   * There is a small delay between documents creation and their existence in our advanced search layer,
+   * There is a small delay between documents creation and their existence in our search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
    *
@@ -581,7 +581,7 @@ public class KuzzleDataCollection {
 
   /**
    * Delete a persistent document.
-   * There is a small delay between documents creation and their existence in our advanced search layer,
+   * There is a small delay between documents creation and their existence in our search layer,
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
    *
@@ -756,7 +756,7 @@ public class KuzzleDataCollection {
       throw new IllegalArgumentException("KuzzleDataCollection.fetchAllDocuments: listener required");
     }
 
-    this.advancedSearch(new JSONObject(), options, listener);
+    this.search(new JSONObject(), options, listener);
   }
 
   /**
