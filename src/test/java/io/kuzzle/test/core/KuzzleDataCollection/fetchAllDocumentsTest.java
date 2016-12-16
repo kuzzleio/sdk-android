@@ -65,7 +65,7 @@ public class fetchAllDocumentsTest {
     collection.fetchAllDocuments(mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "read");
+    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "search");
   }
 
@@ -77,8 +77,8 @@ public class fetchAllDocumentsTest {
     collection.fetchAllDocuments(options, mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
     verify(kuzzle).query(any(Kuzzle.QueryArgs.class), (JSONObject)argument.capture(), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    assertEquals(((JSONObject) argument.getValue()).getJSONObject("body").getLong("from"), 1);
-    assertEquals(((JSONObject) argument.getValue()).getJSONObject("body").getLong("size"), 42);
+    assertEquals(((JSONObject) argument.getValue()).getLong("from"), 1);
+    assertEquals(((JSONObject) argument.getValue()).getLong("size"), 42);
   }
 
 }

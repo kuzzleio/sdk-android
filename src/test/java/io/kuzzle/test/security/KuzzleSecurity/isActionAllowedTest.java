@@ -35,16 +35,16 @@ public class isActionAllowedTest {
     kuzzle = mock(Kuzzle.class);
     kuzzleSecurity = new KuzzleSecurity(kuzzle);
     policies = new JSONArray()
-        .put(addProperties("read", "get", "*", "*", KuzzlePolicies.allowed.toString()))
-        .put(addProperties("read", "count", "*", "*", KuzzlePolicies.allowed.toString()))
-        .put(addProperties("read", "search", "*", "*", KuzzlePolicies.allowed.toString()))
-        .put(addProperties("read", "*", "index1", "collection1", KuzzlePolicies.allowed.toString()))
-        .put(addProperties("read", "*", "index1", "collection2", KuzzlePolicies.allowed.toString()))
-        .put(addProperties("write", "update", "*", "*", KuzzlePolicies.allowed.toString()))
-        .put(addProperties("write", "create", "*", "*", KuzzlePolicies.allowed.toString()))
-        .put(addProperties("write", "createOrReplace", "*", "*", KuzzlePolicies.allowed.toString()))
-        .put(addProperties("write", "delete", "*", "*", KuzzlePolicies.conditional.toString()))
-        .put(addProperties("write", "publish", "index2", "*", KuzzlePolicies.allowed.toString()))
+        .put(addProperties("document", "get", "*", "*", KuzzlePolicies.allowed.toString()))
+        .put(addProperties("document", "count", "*", "*", KuzzlePolicies.allowed.toString()))
+        .put(addProperties("document", "search", "*", "*", KuzzlePolicies.allowed.toString()))
+        .put(addProperties("document", "*", "index1", "collection1", KuzzlePolicies.allowed.toString()))
+        .put(addProperties("document", "*", "index1", "collection2", KuzzlePolicies.allowed.toString()))
+        .put(addProperties("document", "update", "*", "*", KuzzlePolicies.allowed.toString()))
+        .put(addProperties("document", "create", "*", "*", KuzzlePolicies.allowed.toString()))
+        .put(addProperties("document", "createOrReplace", "*", "*", KuzzlePolicies.allowed.toString()))
+        .put(addProperties("document", "delete", "*", "*", KuzzlePolicies.conditional.toString()))
+        .put(addProperties("realtime", "publish", "index2", "*", KuzzlePolicies.allowed.toString()))
         .put(addProperties("security", "searchUsers", "*", "*", KuzzlePolicies.allowed.toString()))
         .put(addProperties("security", "updateUser", "*", "*", KuzzlePolicies.conditional.toString()));
   }
@@ -76,32 +76,32 @@ public class isActionAllowedTest {
 
   @Test
   public void testControllerActionAllowed() {
-    assertEquals(KuzzlePolicies.allowed, kuzzleSecurity.isActionAllowed(policies, "read", "get"));
+    assertEquals(KuzzlePolicies.allowed, kuzzleSecurity.isActionAllowed(policies, "document", "get"));
   }
 
   @Test
   public void testControllerActionIndexAllowed() {
-    assertEquals(KuzzlePolicies.allowed, kuzzleSecurity.isActionAllowed(policies, "read", "count", "myIndex"));
+    assertEquals(KuzzlePolicies.allowed, kuzzleSecurity.isActionAllowed(policies, "document", "count", "myIndex"));
   }
 
   @Test
   public void testControllerActionIndexCollectionAllowed() {
-    assertEquals(KuzzlePolicies.allowed, kuzzleSecurity.isActionAllowed(policies, "read", "search", "index1", "collection1"));
+    assertEquals(KuzzlePolicies.allowed, kuzzleSecurity.isActionAllowed(policies, "document", "search", "index1", "collection1"));
   }
 
   @Test
   public void testControllerActionIndexCollection2Allowed() {
-    assertEquals(KuzzlePolicies.allowed, kuzzleSecurity.isActionAllowed(policies, "read", "search", "index1", "collection2"));
+    assertEquals(KuzzlePolicies.allowed, kuzzleSecurity.isActionAllowed(policies, "document", "search", "index1", "collection2"));
   }
 
   @Test
   public void testControllerActionDenied() {
-    assertEquals(KuzzlePolicies.denied, kuzzleSecurity.isActionAllowed(policies, "read", "replace"));
+    assertEquals(KuzzlePolicies.denied, kuzzleSecurity.isActionAllowed(policies, "document", "replace"));
   }
 
   @Test
   public void testControllerActionIndexDenied() {
-    assertEquals(KuzzlePolicies.denied, kuzzleSecurity.isActionAllowed(policies, "read", "listIndexes", "index2"));
+    assertEquals(KuzzlePolicies.denied, kuzzleSecurity.isActionAllowed(policies, "index", "list", "index2"));
   }
 
   @Test
@@ -111,14 +111,14 @@ public class isActionAllowedTest {
 
   @Test
   public void testControllerActionIndexCollectionConditional() {
-    assertEquals(KuzzlePolicies.conditional, kuzzleSecurity.isActionAllowed(policies, "write", "delete", "index1", "collection1"));
+    assertEquals(KuzzlePolicies.conditional, kuzzleSecurity.isActionAllowed(policies, "document", "delete", "index2", "collection1"));
   }
 
   @Test(expected = RuntimeException.class)
   public void testJsonException() {
     policies = spy(policies);
     doThrow(JSONException.class).when(policies).length();
-    kuzzleSecurity.isActionAllowed(policies, "write", "delete", "index1", "collection1");
+    kuzzleSecurity.isActionAllowed(policies, "document", "delete", "index1", "collection1");
   }
 
 }

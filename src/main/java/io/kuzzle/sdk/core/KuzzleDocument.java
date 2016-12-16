@@ -120,7 +120,7 @@ public class KuzzleDocument {
         throw new IllegalStateException("KuzzleDocument.delete: cannot delete a document without a document ID");
       }
 
-      this.kuzzle.query(this.dataCollection.makeQueryArgs("write", "delete"), this.serialize(), options, new OnQueryDoneListener() {
+      this.kuzzle.query(this.dataCollection.makeQueryArgs("document", "delete"), this.serialize(), options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject object) {
           setId(null);
@@ -173,7 +173,7 @@ public class KuzzleDocument {
       JSONObject content = new JSONObject();
       content.put("_id", this.getId());
 
-      this.kuzzle.query(this.dataCollection.makeQueryArgs("read", "get"), content, options, new OnQueryDoneListener() {
+      this.kuzzle.query(this.dataCollection.makeQueryArgs("document", "get"), content, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject args) {
           try {
@@ -247,7 +247,7 @@ public class KuzzleDocument {
    */
   public KuzzleDocument save(final KuzzleOptions options, final KuzzleResponseListener<KuzzleDocument> listener) {
     try {
-      kuzzle.query(this.dataCollection.makeQueryArgs("write", "createOrReplace"), this.serialize(), options, new OnQueryDoneListener() {
+      kuzzle.query(this.dataCollection.makeQueryArgs("document", "createOrReplace"), this.serialize(), options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
           try {
@@ -284,7 +284,7 @@ public class KuzzleDocument {
    */
   public KuzzleDocument publish(final KuzzleOptions options) {
     try {
-      kuzzle.query(this.dataCollection.makeQueryArgs("write", "publish"), this.serialize(), options, null);
+      kuzzle.query(this.dataCollection.makeQueryArgs("realtime", "publish"), this.serialize(), options, null);
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }

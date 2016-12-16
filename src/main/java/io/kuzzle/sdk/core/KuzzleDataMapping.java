@@ -106,7 +106,7 @@ public class KuzzleDataMapping {
       properties.put("properties", this.mapping);
       data.put("body", properties);
       this.kuzzle.addHeaders(data, this.headers);
-      this.kuzzle.query(this.dataCollection.makeQueryArgs("admin", "updateMapping"), data, options, new OnQueryDoneListener() {
+      this.kuzzle.query(this.dataCollection.makeQueryArgs("collection", "updateMapping"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
           if (listener != null) {
@@ -150,7 +150,7 @@ public class KuzzleDataMapping {
     JSONObject data = new JSONObject();
     try {
       this.kuzzle.addHeaders(data, this.headers);
-      this.kuzzle.query(this.dataCollection.makeQueryArgs("admin", "getMapping"), data, options, new OnQueryDoneListener() {
+      this.kuzzle.query(this.dataCollection.makeQueryArgs("collection", "getMapping"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject args) {
           try {
