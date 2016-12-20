@@ -14,7 +14,7 @@ import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.security.AbstractSecurityDocument;
 import io.kuzzle.sdk.security.Role;
-import io.kuzzle.sdk.security.KuzzleSecurity;
+import io.kuzzle.sdk.security.Security;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
@@ -35,7 +35,7 @@ public class AbstractKuzzleSecurityDocumentTest {
   @Before
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
-    kuzzle.security = new KuzzleSecurity(kuzzle);
+    kuzzle.security = new Security(kuzzle);
     listener = mock(ResponseListener.class);
     stubRole = new Role(kuzzle, "foo", new JSONObject("{\"foo\":\"bar\"}"));
   }

@@ -7,8 +7,8 @@ import io.kuzzle.sdk.core.MemoryStorage;
 import io.kuzzle.sdk.util.KuzzleJSONObject;
 import io.kuzzle.sdk.util.memoryStorage.Action;
 
-public class KuzzleMemoryStorageExtend extends MemoryStorage {
-  public KuzzleMemoryStorageExtend(@NonNull Kuzzle kuzzle) {
+public class MemoryStorageExtend extends MemoryStorage {
+  public MemoryStorageExtend(@NonNull Kuzzle kuzzle) {
     super(kuzzle);
   }
 

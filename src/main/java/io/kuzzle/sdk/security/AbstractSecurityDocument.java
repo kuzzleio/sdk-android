@@ -21,7 +21,7 @@ public class AbstractSecurityDocument {
   /**
    * The Kuzzle security.
    */
-  protected final KuzzleSecurity kuzzleSecurity;
+  protected final Security kuzzleSecurity;
   /**
    * The Delete action name.
    */

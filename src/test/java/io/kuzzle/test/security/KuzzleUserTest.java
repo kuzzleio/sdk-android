@@ -13,7 +13,7 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.security.KuzzleSecurity;
+import io.kuzzle.sdk.security.Security;
 import io.kuzzle.sdk.security.User;
 
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -46,7 +46,7 @@ public class KuzzleUserTest {
     );
 
     kuzzle = mock(Kuzzle.class);
-    kuzzle.security = new KuzzleSecurity(kuzzle);
+    kuzzle.security = new Security(kuzzle);
     listener = mock(ResponseListener.class);
     stubUser = new User(kuzzle, "foo", null);
   }

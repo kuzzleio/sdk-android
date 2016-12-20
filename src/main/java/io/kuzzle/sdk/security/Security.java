@@ -19,7 +19,7 @@ import io.kuzzle.sdk.responses.SecurityDocumentList;
 /**
  * The type Kuzzle security.
  */
-public class KuzzleSecurity {
+public class Security {
   private final Kuzzle kuzzle;
 
   /**
@@ -27,7 +27,7 @@ public class KuzzleSecurity {
    *
    * @param kuzzle the kuzzle
    */
-  public KuzzleSecurity(final Kuzzle kuzzle) {
+  public Security(final Kuzzle kuzzle) {
     this.kuzzle = kuzzle;
   }
 
@@ -56,11 +56,11 @@ public class KuzzleSecurity {
     JSONObject data;
 
     if (id == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.fetchRole: a role ID is required");
+      throw new IllegalArgumentException("Security.fetchRole: a role ID is required");
     }
 
     if (listener == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.fetchRole: a listener is required");
+      throw new IllegalArgumentException("Security.fetchRole: a listener is required");
     }
 
     try {
@@ -70,7 +70,7 @@ public class KuzzleSecurity {
         public void onSuccess(JSONObject response) {
           try {
             JSONObject result = response.getJSONObject("result");
-            listener.onSuccess(new Role(KuzzleSecurity.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+            listener.onSuccess(new Role(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
           }
           catch (JSONException e) {
             throw new RuntimeException(e);
@@ -111,11 +111,11 @@ public class KuzzleSecurity {
    */
   public void searchRoles(@NonNull final JSONObject filters, final Options options, @NonNull final ResponseListener<SecurityDocumentList> listener) throws JSONException {
     if (filters == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.searchRoles: filters cannot be null");
+      throw new IllegalArgumentException("Security.searchRoles: filters cannot be null");
     }
 
     if (listener == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.searchRoles: a callback listener is required");
+      throw new IllegalArgumentException("Security.searchRoles: a callback listener is required");
     }
 
     JSONObject data = new JSONObject().put("body", filters);
@@ -131,7 +131,7 @@ public class KuzzleSecurity {
 
           for (int i = 0; i < documentsLength; i++) {
             JSONObject document = documents.getJSONObject(i);
-            roles.add(new Role(KuzzleSecurity.this.kuzzle, document.getString("_id"), document.getJSONObject("_source")));
+            roles.add(new Role(Security.this.kuzzle, document.getString("_id"), document.getJSONObject("_source")));
           }
 
           listener.onSuccess(new SecurityDocumentList(roles, result.getLong("total")));
@@ -178,7 +178,7 @@ public class KuzzleSecurity {
     String action = "createRole";
 
     if (id == null || content == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.createRole: cannot create a role without an ID or a content");
+      throw new IllegalArgumentException("Security.createRole: cannot create a role without an ID or a content");
     }
 
     JSONObject data = new JSONObject().put("_id", id).put("body", content);
@@ -193,7 +193,7 @@ public class KuzzleSecurity {
         public void onSuccess(JSONObject response) {
           try {
             JSONObject result = response.getJSONObject("result");
-            listener.onSuccess(new Role(KuzzleSecurity.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+            listener.onSuccess(new Role(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
           }
           catch(JSONException e) {
             throw new RuntimeException(e);
@@ -267,12 +267,12 @@ public class KuzzleSecurity {
    * @param id       - ID of the role to delete
    * @param options  - Optional arguments
    * @param listener - Callback listener
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity deleteRole(@NonNull final String id, final Options options, final ResponseListener<String> listener) throws JSONException {
+  public Security deleteRole(@NonNull final String id, final Options options, final ResponseListener<String> listener) throws JSONException {
     if (id == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.deleteRole: cannot delete role without an ID");
+      throw new IllegalArgumentException("Security.deleteRole: cannot delete role without an ID");
     }
 
     JSONObject data = new JSONObject().put("_id", id);
@@ -310,10 +310,10 @@ public class KuzzleSecurity {
    *
    * @param id       - ID of the role to delete
    * @param listener - Callback listener
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity deleteRole(@NonNull final String id, final ResponseListener<String> listener) throws JSONException {
+  public Security deleteRole(@NonNull final String id, final ResponseListener<String> listener) throws JSONException {
     return deleteRole(id, null, listener);
   }
 
@@ -325,10 +325,10 @@ public class KuzzleSecurity {
    *
    * @param id      - ID of the role to delete
    * @param options - Optional arguments
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity deleteRole(@NonNull final String id, final Options options) throws JSONException {
+  public Security deleteRole(@NonNull final String id, final Options options) throws JSONException {
     return deleteRole(id, options, null);
   }
 
@@ -339,10 +339,10 @@ public class KuzzleSecurity {
    * That means that a role that was just been delete will be returned by this function
    *
    * @param id - ID of the role to delete
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity deleteRole(@NonNull final String id) throws JSONException {
+  public Security deleteRole(@NonNull final String id) throws JSONException {
     return deleteRole(id, null, null);
   }
 
@@ -353,12 +353,12 @@ public class KuzzleSecurity {
    * @param content  the content
    * @param options  the options
    * @param listener the listener
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity updateRole(@NonNull final String id, final JSONObject content, final Options options, final ResponseListener<Role> listener) throws JSONException {
+  public Security updateRole(@NonNull final String id, final JSONObject content, final Options options, final ResponseListener<Role> listener) throws JSONException {
     if (id == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.updateRole: cannot update role without an ID");
+      throw new IllegalArgumentException("Security.updateRole: cannot update role without an ID");
     }
 
     JSONObject data = new JSONObject().put("_id", id);
@@ -369,7 +369,7 @@ public class KuzzleSecurity {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(new Role(KuzzleSecurity.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result").getJSONObject("_source")));
+            listener.onSuccess(new Role(Security.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result").getJSONObject("_source")));
           }
           catch(JSONException e) {
             throw new RuntimeException(e);
@@ -395,10 +395,10 @@ public class KuzzleSecurity {
    * @param id       the id
    * @param content  the content
    * @param listener the listener
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity updateRole(@NonNull final String id, final JSONObject content, final ResponseListener<Role> listener) throws JSONException {
+  public Security updateRole(@NonNull final String id, final JSONObject content, final ResponseListener<Role> listener) throws JSONException {
     return updateRole(id, content, null, listener);
   }
 
@@ -408,10 +408,10 @@ public class KuzzleSecurity {
    * @param id      the id
    * @param content the content
    * @param options the options
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity updateRole(@NonNull final String id, final JSONObject content, final Options options) throws JSONException {
+  public Security updateRole(@NonNull final String id, final JSONObject content, final Options options) throws JSONException {
     return updateRole(id, content, options, null);
   }
 
@@ -422,7 +422,7 @@ public class KuzzleSecurity {
    * @param content the content
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity updateRole(@NonNull final String id, final JSONObject content) throws JSONException {
+  public Security updateRole(@NonNull final String id, final JSONObject content) throws JSONException {
     return updateRole(id, content, null, null);
   }
 
@@ -460,11 +460,11 @@ public class KuzzleSecurity {
    */
   public void fetchProfile(@NonNull final String id, final Options options, @NonNull final ResponseListener<Profile> listener) throws JSONException {
     if (id == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.fetchProfile: cannot get 'null' profile");
+      throw new IllegalArgumentException("Security.fetchProfile: cannot get 'null' profile");
     }
 
     if (listener == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.fetchProfile: a listener callback is required");
+      throw new IllegalArgumentException("Security.fetchProfile: a listener callback is required");
     }
 
     JSONObject data = new JSONObject().put("_id", id);
@@ -492,7 +492,7 @@ public class KuzzleSecurity {
           result.getJSONObject("_source").remove("policies");
           result.getJSONObject("_source").put("policies", formattedPolicies);
 
-          listener.onSuccess(new Profile(KuzzleSecurity.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+          listener.onSuccess(new Profile(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
         } catch (JSONException e) {
           throw new RuntimeException(e);
         }
@@ -531,11 +531,11 @@ public class KuzzleSecurity {
    */
   public void searchProfiles(@NonNull JSONObject filters, final Options options, @NonNull final ResponseListener<SecurityDocumentList> listener) throws JSONException {
     if (filters == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.searchProfiles: cannot perform a search on null filters");
+      throw new IllegalArgumentException("Security.searchProfiles: cannot perform a search on null filters");
     }
 
     if (listener == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.searchProfiles: a listener callback is required");
+      throw new IllegalArgumentException("Security.searchProfiles: a listener callback is required");
     }
 
     JSONObject data = new JSONObject().put("body", filters);
@@ -551,7 +551,7 @@ public class KuzzleSecurity {
 
           for (int i = 0; i < documentsLength; i++) {
             JSONObject document = documents.getJSONObject(i);
-            roles.add(new Profile(KuzzleSecurity.this.kuzzle, document.getString("_id"), document.getJSONObject("_source")));
+            roles.add(new Profile(Security.this.kuzzle, document.getString("_id"), document.getJSONObject("_source")));
           }
 
           listener.onSuccess(new SecurityDocumentList(roles, result.getLong("total")));
@@ -599,7 +599,7 @@ public class KuzzleSecurity {
     String action = "createProfile";
 
     if (id == null || content == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.createProfile: cannot create a profile with null ID or roles");
+      throw new IllegalArgumentException("Security.createProfile: cannot create a profile with null ID or roles");
     }
 
     JSONObject data = new JSONObject().put("_id", id).put("body", new JSONObject().put("roles", content));
@@ -614,7 +614,7 @@ public class KuzzleSecurity {
         public void onSuccess(JSONObject response) {
           try {
             JSONObject result = response.getJSONObject("result");
-            listener.onSuccess(new Profile(KuzzleSecurity.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+            listener.onSuccess(new Profile(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
           }
           catch(JSONException e) {
             throw new RuntimeException(e);
@@ -688,12 +688,12 @@ public class KuzzleSecurity {
    * @param id       - ID of the profile to delete
    * @param options  - Optional arguments
    * @param listener - Callback listener
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity deleteProfile(@NonNull final String id, final Options options, final ResponseListener<String> listener) throws JSONException {
+  public Security deleteProfile(@NonNull final String id, final Options options, final ResponseListener<String> listener) throws JSONException {
     if (id == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.deleteProfile: cannot delete a profile with ID null");
+      throw new IllegalArgumentException("Security.deleteProfile: cannot delete a profile with ID null");
     }
 
     JSONObject data = new JSONObject().put("_id", id);
@@ -731,10 +731,10 @@ public class KuzzleSecurity {
    *
    * @param id       - ID of the profile to delete
    * @param listener - Callback listener
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity deleteProfile(@NonNull final String id, final ResponseListener<String> listener) throws JSONException {
+  public Security deleteProfile(@NonNull final String id, final ResponseListener<String> listener) throws JSONException {
     return deleteProfile(id, null, listener);
   }
 
@@ -746,10 +746,10 @@ public class KuzzleSecurity {
    *
    * @param id      - ID of the profile to delete
    * @param options - Optional arguments
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity deleteProfile(@NonNull final String id, final Options options) throws JSONException {
+  public Security deleteProfile(@NonNull final String id, final Options options) throws JSONException {
     return deleteProfile(id, options, null);
   }
 
@@ -760,10 +760,10 @@ public class KuzzleSecurity {
    * That means that a profile that was just been delete will be returned by this function
    *
    * @param id - ID of the profile to delete
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity deleteProfile(@NonNull final String id) throws JSONException {
+  public Security deleteProfile(@NonNull final String id) throws JSONException {
     return deleteProfile(id, null, null);
   }
 
@@ -774,12 +774,12 @@ public class KuzzleSecurity {
    * @param content  the content
    * @param options  the options
    * @param listener the listener
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity updateProfile(@NonNull final String id, final JSONObject content, final Options options, final ResponseListener<Profile> listener) throws JSONException {
+  public Security updateProfile(@NonNull final String id, final JSONObject content, final Options options, final ResponseListener<Profile> listener) throws JSONException {
     if (id == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.updateProfile: cannot update a profile with ID null");
+      throw new IllegalArgumentException("Security.updateProfile: cannot update a profile with ID null");
     }
 
     JSONObject data = new JSONObject().put("_id", id);
@@ -790,7 +790,7 @@ public class KuzzleSecurity {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(new Profile(KuzzleSecurity.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result").getJSONObject("_source")));
+            listener.onSuccess(new Profile(Security.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result").getJSONObject("_source")));
           }
           catch(JSONException e) {
             throw new RuntimeException(e);
@@ -816,10 +816,10 @@ public class KuzzleSecurity {
    * @param id      the id
    * @param content the content
    * @param options the options
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity updateProfile(@NonNull final String id, final JSONObject content, final Options options) throws JSONException {
+  public Security updateProfile(@NonNull final String id, final JSONObject content, final Options options) throws JSONException {
     return updateProfile(id, content, options, null);
   }
 
@@ -829,10 +829,10 @@ public class KuzzleSecurity {
    * @param id       the id
    * @param content  the content
    * @param listener the listener
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity updateProfile(@NonNull final String id, final JSONObject content, final ResponseListener<Profile> listener) throws JSONException {
+  public Security updateProfile(@NonNull final String id, final JSONObject content, final ResponseListener<Profile> listener) throws JSONException {
     return this.updateProfile(id, content, null, listener);
   }
 
@@ -841,10 +841,10 @@ public class KuzzleSecurity {
    *
    * @param id      the id
    * @param content the content
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity updateProfile(@NonNull final String id, final JSONObject content) throws JSONException {
+  public Security updateProfile(@NonNull final String id, final JSONObject content) throws JSONException {
     return updateProfile(id, content, null, null);
   }
 
@@ -881,11 +881,11 @@ public class KuzzleSecurity {
    */
   public void fetchUser(@NonNull final String id, final Options options, @NonNull final ResponseListener<User> listener) throws JSONException {
     if (id == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.fetchUser: cannot get user with ID null");
+      throw new IllegalArgumentException("Security.fetchUser: cannot get user with ID null");
     }
 
     if (listener == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.fetchUser: a callback listener is required");
+      throw new IllegalArgumentException("Security.fetchUser: a callback listener is required");
     }
 
     JSONObject data = new JSONObject().put("_id", id);
@@ -895,7 +895,7 @@ public class KuzzleSecurity {
       public void onSuccess(JSONObject response) {
         try {
           JSONObject result = response.getJSONObject("result");
-          listener.onSuccess(new User(KuzzleSecurity.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+          listener.onSuccess(new User(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
         } catch (JSONException e) {
           throw new RuntimeException(e);
         }
@@ -933,11 +933,11 @@ public class KuzzleSecurity {
   public void searchUsers(@NonNull JSONObject filters, final Options options, @NonNull final ResponseListener<SecurityDocumentList> listener) throws JSONException {
 
     if (filters == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.searchUsers: cannot perform a search with null filters");
+      throw new IllegalArgumentException("Security.searchUsers: cannot perform a search with null filters");
     }
 
     if (listener == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.searchUsers: a callback listener is required");
+      throw new IllegalArgumentException("Security.searchUsers: a callback listener is required");
     }
 
     JSONObject data = new JSONObject().put("body", filters);
@@ -953,7 +953,7 @@ public class KuzzleSecurity {
 
           for (int i = 0; i < documentsLength; i++) {
             JSONObject document = documents.getJSONObject(i);
-            roles.add(new User(KuzzleSecurity.this.kuzzle, document.getString("_id"), document.getJSONObject("_source")));
+            roles.add(new User(Security.this.kuzzle, document.getString("_id"), document.getJSONObject("_source")));
           }
 
           listener.onSuccess(new SecurityDocumentList(roles, result.getLong("total")));
@@ -1000,7 +1000,7 @@ public class KuzzleSecurity {
   public void createUser(@NonNull final String id, @NonNull final JSONObject content, final Options options, final ResponseListener<User> listener) throws JSONException {
     String action = options != null && options.isReplaceIfExist() ? "createOrReplaceUser" : "createUser";
     if (id == null || content == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.createUser: cannot create a user with a null ID or content");
+      throw new IllegalArgumentException("Security.createUser: cannot create a user with a null ID or content");
     }
 
     JSONObject data = new JSONObject().put("_id", id).put("body", content);
@@ -1011,7 +1011,7 @@ public class KuzzleSecurity {
         public void onSuccess(JSONObject response) {
           try {
             JSONObject result = response.getJSONObject("result");
-            listener.onSuccess(new User(KuzzleSecurity.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+            listener.onSuccess(new User(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
           }
           catch (JSONException e) {
             throw new RuntimeException(e);
@@ -1090,11 +1090,11 @@ public class KuzzleSecurity {
    */
   public void createRestrictedUser(@NonNull final String id, @NonNull final JSONObject content, final Options options, final ResponseListener<User> listener) throws JSONException {
     if (id == null || content == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.createRestrictedUser: cannot create a user with a null ID or content");
+      throw new IllegalArgumentException("Security.createRestrictedUser: cannot create a user with a null ID or content");
     }
 
     if (content.has("profileIds")) {
-      throw new IllegalArgumentException("KuzzleSecurity.createRestrictedUser: cannot provide profileIds");
+      throw new IllegalArgumentException("Security.createRestrictedUser: cannot provide profileIds");
     }
 
     JSONObject data = new JSONObject().put("_id", id).put("body", content);
@@ -1105,7 +1105,7 @@ public class KuzzleSecurity {
         public void onSuccess(JSONObject response) {
           try {
             JSONObject result = response.getJSONObject("result");
-            listener.onSuccess(new User(KuzzleSecurity.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+            listener.onSuccess(new User(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
           }
           catch (JSONException e) {
             throw new RuntimeException(e);
@@ -1176,12 +1176,12 @@ public class KuzzleSecurity {
    * @param id       - ID of the user to delete
    * @param options  - Optional arguments
    * @param listener - Callback listener
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity deleteUser(@NonNull final String id, final Options options, final ResponseListener<String> listener) throws JSONException {
+  public Security deleteUser(@NonNull final String id, final Options options, final ResponseListener<String> listener) throws JSONException {
     if (id == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.deleteUser: cannot delete user with ID null");
+      throw new IllegalArgumentException("Security.deleteUser: cannot delete user with ID null");
     }
 
     JSONObject data = new JSONObject().put("_id", id);
@@ -1219,10 +1219,10 @@ public class KuzzleSecurity {
    *
    * @param id      - ID of the user to delete
    * @param options - Optional arguments
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity deleteUser(@NonNull final String id, final Options options) throws JSONException {
+  public Security deleteUser(@NonNull final String id, final Options options) throws JSONException {
     return deleteUser(id, options, null);
   }
 
@@ -1234,10 +1234,10 @@ public class KuzzleSecurity {
    *
    * @param id       - ID of the user to delete
    * @param listener - Callback listener
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity deleteUser(@NonNull final String id, final ResponseListener<String> listener) throws JSONException {
+  public Security deleteUser(@NonNull final String id, final ResponseListener<String> listener) throws JSONException {
     return deleteUser(id, null, listener);
   }
 
@@ -1248,10 +1248,10 @@ public class KuzzleSecurity {
    * That means that a user that was just been delete will be returned by this function
    *
    * @param id - ID of the user to delete
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity deleteUser(@NonNull final String id) throws JSONException {
+  public Security deleteUser(@NonNull final String id) throws JSONException {
     return deleteUser(id, null, null);
   }
 
@@ -1262,12 +1262,12 @@ public class KuzzleSecurity {
    * @param content  the content
    * @param options  the options
    * @param listener the listener
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity updateUser(@NonNull final String id, final JSONObject content, final Options options, final ResponseListener<User> listener) throws JSONException {
+  public Security updateUser(@NonNull final String id, final JSONObject content, final Options options, final ResponseListener<User> listener) throws JSONException {
     if (id == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.updateUser: cannot update user without an ID");
+      throw new IllegalArgumentException("Security.updateUser: cannot update user without an ID");
     }
 
     JSONObject data = new JSONObject().put("_id", id);
@@ -1278,7 +1278,7 @@ public class KuzzleSecurity {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(new User(KuzzleSecurity.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result").getJSONObject("_source")));
+            listener.onSuccess(new User(Security.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result").getJSONObject("_source")));
           }
           catch(JSONException e) {
             throw new RuntimeException(e);
@@ -1304,10 +1304,10 @@ public class KuzzleSecurity {
    * @param id       the id
    * @param content  the content
    * @param listener the listener
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity updateUser(@NonNull final String id, final JSONObject content, final ResponseListener<User> listener) throws JSONException {
+  public Security updateUser(@NonNull final String id, final JSONObject content, final ResponseListener<User> listener) throws JSONException {
     return updateUser(id, content, null, listener);
   }
 
@@ -1317,10 +1317,10 @@ public class KuzzleSecurity {
    * @param id      the id
    * @param content the content
    * @param options the options
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity updateUser(@NonNull final String id, final JSONObject content, final Options options) throws JSONException {
+  public Security updateUser(@NonNull final String id, final JSONObject content, final Options options) throws JSONException {
     return updateUser(id, content, options, null);
   }
 
@@ -1329,10 +1329,10 @@ public class KuzzleSecurity {
    *
    * @param id      the id
    * @param content the content
-   * @return KuzzleSecurity this object
+   * @return Security this object
    * @throws JSONException the json exception
    */
-  public KuzzleSecurity updateUser(@NonNull final String id, final JSONObject content) throws JSONException {
+  public Security updateUser(@NonNull final String id, final JSONObject content) throws JSONException {
     return updateUser(id, content, null, null);
   }
 
@@ -1401,13 +1401,13 @@ public class KuzzleSecurity {
    */
   public Policies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull final String action, final String index, final String collection) {
     if (policies == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.isActionAllowed: policies are mandatory.");
+      throw new IllegalArgumentException("Security.isActionAllowed: policies are mandatory.");
     }
     if (controller == null || controller.isEmpty()) {
-      throw new IllegalArgumentException("KuzzleSecurity.isActionAllowed: controller is mandatory.");
+      throw new IllegalArgumentException("Security.isActionAllowed: controller is mandatory.");
     }
     if (action == null || action.isEmpty()) {
-      throw new IllegalArgumentException("KuzzleSecurity.isActionAllowed: action is mandatory.");
+      throw new IllegalArgumentException("Security.isActionAllowed: action is mandatory.");
     }
 
     JSONArray filteredPolicies;
@@ -1450,9 +1450,9 @@ public class KuzzleSecurity {
    *
    * @param id
    * @param listener
-   * @return the KuzzleSecurity instance
+   * @return the Security instance
    */
-  public KuzzleSecurity getUserRights(@NonNull final String id, @NonNull final ResponseListener<JSONArray> listener) {
+  public Security getUserRights(@NonNull final String id, @NonNull final ResponseListener<JSONArray> listener) {
     return getUserRights(id, null, listener);
   }
 
@@ -1462,14 +1462,14 @@ public class KuzzleSecurity {
    * @param id
    * @param options
    * @param listener
-   * @return the KuzzleSecurity instance
+   * @return the Security instance
    */
-  public KuzzleSecurity getUserRights(@NonNull final String id, final Options options, @NonNull final ResponseListener<JSONArray> listener) {
+  public Security getUserRights(@NonNull final String id, final Options options, @NonNull final ResponseListener<JSONArray> listener) {
     if (id == null || id.isEmpty()) {
-      throw new IllegalArgumentException("KuzzleSecurity.getUserRights: id is mandatory.");
+      throw new IllegalArgumentException("Security.getUserRights: id is mandatory.");
     }
     if (listener == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.getUserRights: listener is mandatory.");
+      throw new IllegalArgumentException("Security.getUserRights: listener is mandatory.");
     }
     try {
       JSONObject data = new JSONObject()

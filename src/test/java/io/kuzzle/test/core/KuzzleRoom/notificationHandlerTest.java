@@ -19,7 +19,7 @@ import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.EventListener;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.RoomExtend;
 import io.socket.client.Socket;
@@ -97,7 +97,7 @@ public class notificationHandlerTest {
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     Socket s = mock(Socket.class);
     extended.setSocket(s);
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
     extended = spy(extended);
     RoomExtend renew = new RoomExtend(new Collection(extended, "test", "index"), options);
     renew.setListener(listener);
@@ -113,7 +113,7 @@ public class notificationHandlerTest {
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     Socket s = mock(Socket.class);
     extended.setSocket(s);
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
     extended = spy(extended);
     room = new RoomExtend(new Collection(extended, "collection", "index"));
     room.setRoomId("foobar");
@@ -170,7 +170,7 @@ public class notificationHandlerTest {
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     Socket s = mock(Socket.class);
     extended.setSocket(s);
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
     extended = spy(extended);
     RoomExtend renew = new RoomExtend(new Collection(extended, "test", "index"), options);
     mockNotif = spy(mockNotif);

@@ -15,7 +15,7 @@ import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.RoomExtend;
 import io.socket.client.Socket;
@@ -64,7 +64,7 @@ public class countTest {
     mockResponse.put("result", new JSONObject().put("channel", "channel").put("roomId", "42"));
     k = spy(new KuzzleExtend("localhost", null, null));
     k.setSocket(mock(Socket.class));
-    k.setState(KuzzleStates.CONNECTED);
+    k.setState(States.CONNECTED);
     when(k.getHeaders()).thenReturn(new JSONObject());
     room = new RoomExtend(new Collection(k, "test", "index"));
   }
@@ -80,7 +80,7 @@ public class countTest {
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
     extended = spy(extended);
     room = new RoomExtend(new Collection(extended, "test", "index"));
     room.setRoomId("foobar");
@@ -143,7 +143,7 @@ public class countTest {
 
     KuzzleExtend extended = new KuzzleExtend("localhost", null, null);
     extended.setSocket(mock(Socket.class));
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
     extended = spy(extended);
     room = new RoomExtend(new Collection(extended, "test", "index"));
     room.setRoomId("foobar");

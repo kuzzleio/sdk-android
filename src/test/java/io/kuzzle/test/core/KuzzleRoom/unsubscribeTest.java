@@ -18,7 +18,7 @@ import io.kuzzle.sdk.core.Room;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.RoomExtend;
 import io.socket.client.Socket;
@@ -67,7 +67,7 @@ public class unsubscribeTest {
     Socket s = mock(Socket.class);
 
     KuzzleExtend kuzzle = new KuzzleExtend("localhost", opts, null);
-    kuzzle.setState(KuzzleStates.CONNECTED);
+    kuzzle.setState(States.CONNECTED);
     kuzzle.setSocket(s);
 
     kuzzle = spy(kuzzle);
@@ -87,7 +87,7 @@ public class unsubscribeTest {
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
     extended = spy(extended);
     room = new RoomExtend(new Collection(extended, "test", "index"));
     room.setRoomId("foobar");
@@ -122,7 +122,7 @@ public class unsubscribeTest {
     Socket s = mock(Socket.class);
 
     KuzzleExtend kuzzle = new KuzzleExtend("localhost", opts, null);
-    kuzzle.setState(KuzzleStates.CONNECTED);
+    kuzzle.setState(States.CONNECTED);
     kuzzle.setSocket(s);
 
     kuzzle = spy(kuzzle);
@@ -142,7 +142,7 @@ public class unsubscribeTest {
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
     extended = spy(extended);
     doThrow(JSONException.class).when(extended).getSocket();
     room = new RoomExtend(new Collection(extended, "test", "index"));
@@ -156,7 +156,7 @@ public class unsubscribeTest {
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
     extended = spy(extended);
 
     room = new RoomExtend(new Collection(extended, "test", "index"));
@@ -171,7 +171,7 @@ public class unsubscribeTest {
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
     extended = spy(extended);
     doThrow(JSONException.class).when(extended).getPendingSubscriptions();
     room = new RoomExtend(new Collection(extended, "test", "index"));

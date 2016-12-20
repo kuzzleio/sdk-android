@@ -30,14 +30,14 @@ import io.kuzzle.sdk.listeners.EventListener;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.TokenValidity;
-import io.kuzzle.sdk.security.KuzzleSecurity;
+import io.kuzzle.sdk.security.Security;
 import io.kuzzle.sdk.security.User;
 import io.kuzzle.sdk.state.KuzzleQueue;
-import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.state.States;
 import io.kuzzle.sdk.util.EventList;
-import io.kuzzle.sdk.util.KuzzleOfflineQueueLoader;
-import io.kuzzle.sdk.util.KuzzleQueryObject;
-import io.kuzzle.sdk.util.KuzzleQueueFilter;
+import io.kuzzle.sdk.util.OfflineQueueLoader;
+import io.kuzzle.sdk.util.QueryObject;
+import io.kuzzle.sdk.util.QueueFilter;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -89,7 +89,7 @@ public class Kuzzle {
   /**
    * The State.
    */
-  protected KuzzleStates state = KuzzleStates.INITIALIZING;
+  protected States state = States.INITIALIZING;
   /**
    * The Reconnection delay.
    */
@@ -109,7 +109,7 @@ public class Kuzzle {
   /**
    * The Queue filter.
    */
-  protected KuzzleQueueFilter queueFilter = new KuzzleQueueFilter() {
+  protected QueueFilter queueFilter = new QueueFilter() {
     @Override
     public boolean filter(JSONObject object) {
       return true;
@@ -136,7 +136,7 @@ public class Kuzzle {
   /**
    * The Offline queue.
    */
-  protected KuzzleQueue<KuzzleQueryObject> offlineQueue = new KuzzleQueue<>();
+  protected KuzzleQueue<QueryObject> offlineQueue = new KuzzleQueue<>();
   /**
    * The Queue ttl.
    */
@@ -170,12 +170,12 @@ public class Kuzzle {
    */
   protected ConcurrentHashMap<String, ConcurrentHashMap<String, Room>> subscriptions = new ConcurrentHashMap<>();
 
-  private KuzzleOfflineQueueLoader  offlineQueueLoader;
+  private OfflineQueueLoader offlineQueueLoader;
 
   /**
    * Security static class
    */
-  public KuzzleSecurity security;
+  public Security security;
 
   private ResponseListener<JSONObject> loginCallback;
 
@@ -264,10 +264,10 @@ public class Kuzzle {
     if (opt.getConnect() == Mode.AUTO) {
       connect();
     } else {
-      this.state = KuzzleStates.READY;
+      this.state = States.READY;
     }
 
-    this.security = new KuzzleSecurity(this);
+    this.security = new Security(this);
     this.memoryStorage = new MemoryStorage(this);
     this.subscriptions.put("pending", new ConcurrentHashMap<String, Room>());
   }
@@ -402,13 +402,13 @@ public class Kuzzle {
 
     this.socket = createSocket();
 
-    Kuzzle.this.state = KuzzleStates.CONNECTING;
+    Kuzzle.this.state = States.CONNECTING;
 
     if (socket != null) {
       socket.once(Socket.EVENT_CONNECT, new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-          Kuzzle.this.state = KuzzleStates.CONNECTED;
+          Kuzzle.this.state = States.CONNECTED;
 
           Kuzzle.this.renewSubscriptions();
           Kuzzle.this.dequeue();
@@ -425,7 +425,7 @@ public class Kuzzle {
       socket.once(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-          Kuzzle.this.state = KuzzleStates.ERROR;
+          Kuzzle.this.state = States.ERROR;
           Kuzzle.this.emitEvent(Event.error, args);
 
           if (connectionCallback != null) {
@@ -446,7 +446,7 @@ public class Kuzzle {
       socket.once(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-          Kuzzle.this.state = KuzzleStates.OFFLINE;
+          Kuzzle.this.state = States.OFFLINE;
           if (!Kuzzle.this.autoReconnect) {
             Kuzzle.this.disconnect();
           }
@@ -463,7 +463,7 @@ public class Kuzzle {
       socket.once(Socket.EVENT_RECONNECT, new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-          Kuzzle.this.state = KuzzleStates.CONNECTED;
+          Kuzzle.this.state = States.CONNECTED;
 
           if (Kuzzle.this.jwtToken != null) {
             Kuzzle.this.checkToken(jwtToken, new ResponseListener<TokenValidity>() {
@@ -1075,7 +1075,7 @@ public class Kuzzle {
 
     this.socket = null;
     this.collections.clear();
-    this.state = KuzzleStates.DISCONNECTED;
+    this.state = States.DISCONNECTED;
   }
 
   /**
@@ -1240,7 +1240,7 @@ public class Kuzzle {
 
     // Metadata for this query
     if (options != null) {
-      if (!options.isQueuable() && this.state != KuzzleStates.CONNECTED) {
+      if (!options.isQueuable() && this.state != States.CONNECTED) {
         if (listener != null) {
           listener.onError(new JSONObject().put("message", "Unable to execute request: not connected to a Kuzzle server.\\nDiscarded request: " + object.toString()));
         }
@@ -1288,7 +1288,7 @@ public class Kuzzle {
       object.put("jwt", this.jwtToken);
     }
 
-    if (this.state == KuzzleStates.CONNECTED || (options != null && !options.isQueuable())) {
+    if (this.state == States.CONNECTED || (options != null && !options.isQueuable())) {
       emitRequest(object, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -1304,11 +1304,11 @@ public class Kuzzle {
           }
         }
       });
-    } else if (this.queuing || this.state == KuzzleStates.INITIALIZING || this.state == KuzzleStates.CONNECTING) {
+    } else if (this.queuing || this.state == States.INITIALIZING || this.state == States.CONNECTING) {
       cleanQueue();
 
       if (queueFilter.filter(object)) {
-        KuzzleQueryObject o = new KuzzleQueryObject();
+        QueryObject o = new QueryObject();
         o.setTimestamp(new Date());
         o.setCb(listener);
         o.setQuery(object);
@@ -1379,7 +1379,7 @@ public class Kuzzle {
    * @return kuzzle kuzzle
    */
   public Kuzzle replayQueue() {
-    if (this.state != KuzzleStates.OFFLINE && !this.autoReplay) {
+    if (this.state != States.OFFLINE && !this.autoReplay) {
       this.cleanQueue();
       this.dequeue();
     }
@@ -1435,7 +1435,7 @@ public class Kuzzle {
    * @return kuzzle kuzzle
    */
   public Kuzzle startQueuing() {
-    if (this.state == KuzzleStates.OFFLINE && !this.autoQueue) {
+    if (this.state == States.OFFLINE && !this.autoQueue) {
       this.queuing = true;
     }
     return this;
@@ -1447,7 +1447,7 @@ public class Kuzzle {
    * @return kuzzle kuzzle
    */
   public Kuzzle stopQueuing() {
-    if (this.state == KuzzleStates.OFFLINE && !this.autoQueue) {
+    if (this.state == States.OFFLINE && !this.autoQueue) {
       this.queuing = false;
     }
     return this;
@@ -1550,7 +1550,7 @@ public class Kuzzle {
    * Helper function ensuring that this Kuzzle object is still valid before performing a query
    */
   protected void isValid() {
-    if (this.state == KuzzleStates.DISCONNECTED) {
+    if (this.state == States.DISCONNECTED) {
       throw new IllegalStateException("This Kuzzle object has been invalidated. Did you try to access it after a disconnect call?");
     }
   }
@@ -1685,7 +1685,7 @@ public class Kuzzle {
    * @param object the object
    * @return the offline queue
    */
-  public Kuzzle setOfflineQueue(final KuzzleQueryObject object) {
+  public Kuzzle setOfflineQueue(final QueryObject object) {
     this.offlineQueue.addToQueue(object);
     return this;
   }
@@ -1695,7 +1695,7 @@ public class Kuzzle {
    *
    * @return offline queue
    */
-  public Queue<KuzzleQueryObject> getOfflineQueue() {
+  public Queue<QueryObject> getOfflineQueue() {
     return this.offlineQueue.getQueue();
   }
 
@@ -1706,7 +1706,7 @@ public class Kuzzle {
    * @param queueFilter the queue filter
    * @return queue filter
    */
-  public Kuzzle setQueueFilter(KuzzleQueueFilter queueFilter) {
+  public Kuzzle setQueueFilter(QueueFilter queueFilter) {
     this.queueFilter = queueFilter;
     return this;
   }
@@ -1716,7 +1716,7 @@ public class Kuzzle {
    *
    * @return queue filter
    */
-  public KuzzleQueueFilter getQueueFilter() {
+  public QueueFilter getQueueFilter() {
     return this.queueFilter;
   }
 
@@ -1831,8 +1831,8 @@ public class Kuzzle {
     cal.add(Calendar.MILLISECOND, -queueTTL);
 
     if (this.queueTTL > 0) {
-      KuzzleQueryObject o;
-      while ((o = (KuzzleQueryObject) offlineQueue.getQueue().peek()) != null) {
+      QueryObject o;
+      while ((o = (QueryObject) offlineQueue.getQueue().peek()) != null) {
         if (o.getTimestamp().before(cal.getTime())) {
           offlineQueue.getQueue().poll();
         } else {
@@ -1852,10 +1852,10 @@ public class Kuzzle {
   }
 
   private void  mergeOfflineQueueWithLoader() {
-    KuzzleQueue<KuzzleQueryObject> additionalOfflineQueue = this.offlineQueueLoader.load();
+    KuzzleQueue<QueryObject> additionalOfflineQueue = this.offlineQueueLoader.load();
     try {
-      for (KuzzleQueryObject additionalQuery : additionalOfflineQueue) {
-        for (KuzzleQueryObject offlineQuery : this.offlineQueue) {
+      for (QueryObject additionalQuery : additionalOfflineQueue) {
+        for (QueryObject offlineQuery : this.offlineQueue) {
           if (additionalQuery.getQuery() != null && additionalQuery.getQuery().has("requestId") && additionalQuery.getQuery().has("action") && additionalQuery.getQuery().has("controller")) {
             if (!offlineQuery.getQuery().getString("requestId").equals(additionalQuery.getQuery().getString("requestId"))) {
               this.offlineQueue.addToQueue(additionalOfflineQueue.dequeue());
@@ -1881,7 +1881,7 @@ public class Kuzzle {
     }
     if (this.offlineQueue.getQueue().size() > 0) {
       try {
-        KuzzleQueryObject query = (KuzzleQueryObject) this.offlineQueue.getQueue().poll();
+        QueryObject query = (QueryObject) this.offlineQueue.getQueue().poll();
         this.emitRequest(query.getQuery(), query.getCb());
         this.emitEvent(Event.offlineQueuePop, query);
       } catch (JSONException e) {
@@ -2119,7 +2119,7 @@ public class Kuzzle {
    *
    * @param offlineQueueLoader the offline queue loader
    */
-  public void setOfflineQueueLoader(KuzzleOfflineQueueLoader  offlineQueueLoader) {
+  public void setOfflineQueueLoader(OfflineQueueLoader offlineQueueLoader) {
     this.offlineQueueLoader = offlineQueueLoader;
   }
 
@@ -2567,7 +2567,7 @@ public class Kuzzle {
    * Gets the rights array of the currently logged user.
    *
    * @param listener
-   * @return the KuzzleSecurity instance
+   * @return the Security instance
    */
   public Kuzzle getMyRights(@NonNull final ResponseListener<JSONArray> listener) {
     return getMyRights(null, listener);
@@ -2578,11 +2578,11 @@ public class Kuzzle {
    *
    * @param options
    * @param listener
-   * @return the KuzzleSecurity instance
+   * @return the Security instance
    */
   public Kuzzle getMyRights(final Options options, @NonNull final ResponseListener<JSONArray> listener) {
     if (listener == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.getMyRights: listener is mandatory.");
+      throw new IllegalArgumentException("Security.getMyRights: listener is mandatory.");
     }
     try {
       Kuzzle.this.query(buildQueryArgs("getMyRights"), new JSONObject(), options, new OnQueryDoneListener() {

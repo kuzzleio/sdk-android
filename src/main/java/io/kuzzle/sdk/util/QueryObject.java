@@ -10,7 +10,7 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 /**
  * The type Query object.
  */
-public class KuzzleQueryObject {
+public class QueryObject {
 
   private JSONObject query;
   private String action;

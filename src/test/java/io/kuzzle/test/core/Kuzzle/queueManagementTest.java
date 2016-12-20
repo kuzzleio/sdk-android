@@ -14,8 +14,8 @@ import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.state.KuzzleStates;
-import io.kuzzle.sdk.util.KuzzleQueryObject;
+import io.kuzzle.sdk.state.States;
+import io.kuzzle.sdk.util.QueryObject;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.QueryArgsHelper;
 import io.socket.client.Socket;
@@ -68,7 +68,7 @@ public class queueManagementTest {
     options.setOfflineMode(Mode.AUTO);
 
     kuzzle = new KuzzleExtend("localhost", options, null);
-    KuzzleQueryObject o = new KuzzleQueryObject();
+    QueryObject o = new QueryObject();
     o.setTimestamp(new Date());
     o.setAction("test");
     o.setQuery(new JSONObject("{\"controller\":\"test\",\"metadata\":{},\"requestId\":\"a476ae61-497e-4338-b4dd-751ac22c6b61\",\"action\":\"test\",\"collection\":\"test\"}"));
@@ -91,7 +91,7 @@ public class queueManagementTest {
     options.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", options, null);
     extended.setSocket(s);
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
 
     doAnswer(new Answer() {
       @Override
@@ -186,7 +186,7 @@ public class queueManagementTest {
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
     kuzzle.connect();
 
-    KuzzleQueryObject o = new KuzzleQueryObject();
+    QueryObject o = new QueryObject();
     o.setTimestamp(new Date());
     o.setAction("test");
 

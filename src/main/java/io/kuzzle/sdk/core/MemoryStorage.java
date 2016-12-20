@@ -12,7 +12,7 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.util.KuzzleJSONObject;
 import io.kuzzle.sdk.util.memoryStorage.Action;
 import io.kuzzle.sdk.util.memoryStorage.BitOP;
-import io.kuzzle.sdk.util.memoryStorage.KuzzleMemoryStorageCommands;
+import io.kuzzle.sdk.util.memoryStorage.MemoryStorageCommands;
 import io.kuzzle.sdk.util.memoryStorage.ObjectCommand;
 import io.kuzzle.sdk.util.memoryStorage.Position;
 import io.kuzzle.sdk.util.memoryStorage.SetParams;
@@ -28,7 +28,7 @@ import io.kuzzle.sdk.util.memoryStorage.ZParams;
  *
  */
 
-public class MemoryStorage implements KuzzleMemoryStorageCommands {
+public class MemoryStorage implements MemoryStorageCommands {
 
   private Kuzzle  kuzzle;
   private Kuzzle.QueryArgs  queryArgs = new Kuzzle.QueryArgs();

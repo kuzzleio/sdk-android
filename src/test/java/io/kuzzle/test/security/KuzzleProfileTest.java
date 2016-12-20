@@ -14,7 +14,7 @@ import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.security.Profile;
-import io.kuzzle.sdk.security.KuzzleSecurity;
+import io.kuzzle.sdk.security.Security;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -36,7 +36,7 @@ public class KuzzleProfileTest {
   @Before
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
-    kuzzle.security = new KuzzleSecurity(kuzzle);
+    kuzzle.security = new Security(kuzzle);
     listener = mock(ResponseListener.class);
     stubProfile = new Profile(kuzzle, "foo", null);
   }

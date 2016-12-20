@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.enums.Policies;
-import io.kuzzle.sdk.security.KuzzleSecurity;
+import io.kuzzle.sdk.security.Security;
 
 import static junit.framework.Assert.assertEquals;
 import static org.mockito.Mockito.doThrow;
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.spy;
 public class isActionAllowedTest {
 
   private Kuzzle kuzzle;
-  private KuzzleSecurity kuzzleSecurity;
+  private Security kuzzleSecurity;
   private JSONArray policies;
 
   private JSONObject addProperties(final String ctrl, final String action, final String idx, final String collection, final String value) throws JSONException {
@@ -33,7 +33,7 @@ public class isActionAllowedTest {
   @Before
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
-    kuzzleSecurity = new KuzzleSecurity(kuzzle);
+    kuzzleSecurity = new Security(kuzzle);
     policies = new JSONArray()
         .put(addProperties("document", "get", "*", "*", Policies.allowed.toString()))
         .put(addProperties("document", "count", "*", "*", Policies.allowed.toString()))

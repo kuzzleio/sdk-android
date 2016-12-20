@@ -4,7 +4,7 @@ import java.util.Map;
 
 import io.kuzzle.sdk.core.MemoryStorage;
 
-public interface KuzzleMemoryStorageCommands {
+public interface MemoryStorageCommands {
 
   MemoryStorage append(final String key, final String value);
 

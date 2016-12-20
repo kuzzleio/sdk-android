@@ -12,9 +12,9 @@ import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.state.KuzzleStates;
-import io.kuzzle.sdk.util.KuzzleQueryObject;
-import io.kuzzle.sdk.util.KuzzleQueueFilter;
+import io.kuzzle.sdk.state.States;
+import io.kuzzle.sdk.util.QueryObject;
+import io.kuzzle.sdk.util.QueueFilter;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.QueryArgsHelper;
 import io.socket.client.Socket;
@@ -123,7 +123,7 @@ public class constructorTest {
     options.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", options, null);
     extended.setSocket(s);
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
 
 
     JSONObject meta = new JSONObject();
@@ -150,7 +150,7 @@ public class constructorTest {
     options.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", options, null);
     extended.setSocket(s);
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
     extended.query(QueryArgsHelper.makeQueryArgs("controller", "action"), jsonObj, options);
     verify(s).emit(eq("kuzzle"), eq(jsonObj));
     assertEquals(jsonObj.getJSONObject("metadata").getString("foo"), "bar");
@@ -199,14 +199,14 @@ public class constructorTest {
 
   @Test
   public void exposeOfflineQueueGetterSetter() {
-    KuzzleQueryObject query = new KuzzleQueryObject();
+    QueryObject query = new QueryObject();
     assertThat(kuzzle.setOfflineQueue(query), instanceOf(KuzzleExtend.class));
     assertEquals(kuzzle.getOfflineQueue().peek(), query);
   }
 
   @Test
   public void exposeQueueFilterGetterSetter() {
-    KuzzleQueueFilter qf = new KuzzleQueueFilter() {
+    QueueFilter qf = new QueueFilter() {
       @Override
       public boolean filter(JSONObject object) {
         return false;

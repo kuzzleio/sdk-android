@@ -22,7 +22,7 @@ import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.SubscribeListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.NotificationResponse;
-import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.state.States;
 import io.socket.emitter.Emitter;
 
 /**
@@ -282,7 +282,7 @@ public class Room {
       If not yet connected, registers itself into the subscriptions list and wait for the
       main Kuzzle object to renew subscriptions once online
      */
-    if (this.kuzzle.state != KuzzleStates.CONNECTED) {
+    if (this.kuzzle.state != States.CONNECTED) {
       this.listener = listener;
       this.doneListener = subscribeResponseListener;
       this.kuzzle.addPendingSubscription(this.id, this);
@@ -617,6 +617,6 @@ public class Room {
   }
 
   private boolean isReady() {
-    return this.kuzzle.state == KuzzleStates.CONNECTED && !this.subscribing;
+    return this.kuzzle.state == States.CONNECTED && !this.subscribing;
   }
 }

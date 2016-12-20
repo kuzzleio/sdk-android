@@ -13,7 +13,7 @@ import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.security.Role;
-import io.kuzzle.sdk.security.KuzzleSecurity;
+import io.kuzzle.sdk.security.Security;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -24,14 +24,14 @@ import static org.mockito.Mockito.verify;
 
 public class updateRoleTest {
   private Kuzzle kuzzle;
-  private KuzzleSecurity kuzzleSecurity;
+  private Security kuzzleSecurity;
   private ResponseListener listener;
   private JSONObject  content;
 
   @Before
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
-    kuzzleSecurity = new KuzzleSecurity(kuzzle);
+    kuzzleSecurity = new Security(kuzzle);
     listener = mock(ResponseListener.class);
     content = new JSONObject()
         .put("foo", "bar");

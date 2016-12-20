@@ -5,7 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.test.testUtils.KuzzleMemoryStorageExtend;
+import io.kuzzle.test.testUtils.MemoryStorageExtend;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -13,12 +13,12 @@ import static org.mockito.Mockito.spy;
 public class constructorTest {
 
   Kuzzle kuzzle;
-  KuzzleMemoryStorageExtend ms;
+  MemoryStorageExtend ms;
 
   @Before
   public void setUp() {
     kuzzle = mock(Kuzzle.class);
-    ms = spy(new KuzzleMemoryStorageExtend(kuzzle));
+    ms = spy(new MemoryStorageExtend(kuzzle));
   }
 
   @Test

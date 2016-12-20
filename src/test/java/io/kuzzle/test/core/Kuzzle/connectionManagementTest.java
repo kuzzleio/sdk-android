@@ -23,8 +23,8 @@ import io.kuzzle.sdk.listeners.EventListener;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.TokenValidity;
-import io.kuzzle.sdk.state.KuzzleStates;
-import io.kuzzle.sdk.util.KuzzleQueryObject;
+import io.kuzzle.sdk.state.States;
+import io.kuzzle.sdk.util.QueryObject;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -80,7 +80,7 @@ public class connectionManagementTest {
     options.setOfflineMode(Mode.AUTO);
     options.setAutoReconnect(true);
 
-    KuzzleQueryObject o = new KuzzleQueryObject();
+    QueryObject o = new QueryObject();
     o.setTimestamp(new Date());
     o.setAction("test");
     JSONObject query = new JSONObject("{\"controller\":\"test3\",\"metadata\":{},\"requestId\":\"a476ae61-497e-4338-b4dd-751ac22c6b61\",\"action\":\"test3\",\"collection\":\"test3\"}");
@@ -124,7 +124,7 @@ public class connectionManagementTest {
     options.setOfflineMode(Mode.AUTO);
     KuzzleExtend extended = new KuzzleExtend("localhost", options, null);
     extended.setSocket(s);
-    extended.setState(KuzzleStates.INITIALIZING);
+    extended.setState(States.INITIALIZING);
     final Kuzzle kuzzleSpy = spy(extended);
 
     Room
@@ -192,7 +192,7 @@ public class connectionManagementTest {
   @Test
   public void testConnectNotValid() throws URISyntaxException {
     listener = spy(listener);
-    kuzzle.setState(KuzzleStates.LOGGED_OUT);
+    kuzzle.setState(States.LOGGED_OUT);
     kuzzle.setListener(listener);
     kuzzle = spy(kuzzle);
     kuzzle.connect();
@@ -238,7 +238,7 @@ public class connectionManagementTest {
 
   @Test
   public void testDisconnect() {
-    kuzzle.setState(KuzzleStates.CONNECTED);
+    kuzzle.setState(States.CONNECTED);
     assertNotNull(kuzzle.getSocket());
     kuzzle.disconnect();
     assertNull(kuzzle.getSocket());

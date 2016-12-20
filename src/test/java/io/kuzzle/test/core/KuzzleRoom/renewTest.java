@@ -20,7 +20,7 @@ import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.NotificationResponse;
-import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.RoomExtend;
 import io.socket.client.Socket;
@@ -76,7 +76,7 @@ public class renewTest {
     options.setConnect(Mode.MANUAL);
     Socket s = mock(Socket.class);
     KuzzleExtend kuzzle = new KuzzleExtend("localhost", options, null);
-    kuzzle.setState(KuzzleStates.CONNECTED);
+    kuzzle.setState(States.CONNECTED);
     kuzzle.setSocket(s);
 
     final Kuzzle kuzzleSpy = spy(kuzzle);
@@ -116,7 +116,7 @@ public class renewTest {
     Options options = new Options();
     options.setConnect(Mode.MANUAL);
     KuzzleExtend kuzzle = new KuzzleExtend("localhost", options, null);
-    kuzzle.setState(KuzzleStates.CONNECTED);
+    kuzzle.setState(States.CONNECTED);
     kuzzle.setSocket(mock(Socket.class));
 
     final Kuzzle kuzzleSpy = spy(kuzzle);
@@ -146,7 +146,7 @@ public class renewTest {
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
     extended = spy(extended);
     room = new RoomExtend(new Collection(extended, "test", "index"));
     room.setRoomId("foobar");

@@ -16,8 +16,8 @@ import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.EventListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.state.KuzzleStates;
-import io.kuzzle.sdk.util.KuzzleQueueFilter;
+import io.kuzzle.sdk.state.States;
+import io.kuzzle.sdk.util.QueueFilter;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -46,7 +46,7 @@ public class queryTest {
     options.setConnect(Mode.MANUAL);
 
     kuzzle = new KuzzleExtend("localhost", options, null);
-    kuzzle.setState(KuzzleStates.CONNECTED);
+    kuzzle.setState(States.CONNECTED);
     kuzzle.setSocket(socket);
 
     args = new Kuzzle.QueryArgs();
@@ -67,14 +67,14 @@ public class queryTest {
 
   @Test(expected = IllegalStateException.class)
   public void shouldThrowIfDisconnected() throws JSONException {
-    kuzzle.setState(KuzzleStates.DISCONNECTED);
+    kuzzle.setState(States.DISCONNECTED);
     kuzzle.query(args, new JSONObject());
   }
 
   @Test
   public void shouldDoNothingIfOfflineAndNotQueuable() throws JSONException {
     Options opts = new Options().setQueuable(false);
-    kuzzle.setState(KuzzleStates.OFFLINE);
+    kuzzle.setState(States.OFFLINE);
     kuzzle = spy(kuzzle);
     doThrow(RuntimeException.class)
       .when(kuzzle)
@@ -224,7 +224,7 @@ public class queryTest {
   @Test
   public void shouldEmitRequestIfConnected() throws JSONException {
     Options opts = new Options().setQueuable(false);
-    kuzzle.setState(KuzzleStates.CONNECTED);
+    kuzzle.setState(States.CONNECTED);
     KuzzleExtend kuzzleSpy = spy(kuzzle);
     kuzzleSpy.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
     verify(kuzzleSpy).emitRequest(any(JSONObject.class), any(OnQueryDoneListener.class));
@@ -234,7 +234,7 @@ public class queryTest {
   @Test
   public void shouldQueueRequestsIfNotConnected() throws JSONException {
     Options opts = new Options().setQueuable(true);
-    kuzzle.setState(KuzzleStates.OFFLINE);
+    kuzzle.setState(States.OFFLINE);
     kuzzle.startQueuing();
 
     KuzzleExtend kuzzleSpy = spy(kuzzle);
@@ -246,7 +246,7 @@ public class queryTest {
   @Test
   public void shouldFilterRequestBeforeQueuingIt() throws JSONException {
     Options opts = new Options().setQueuable(true);
-    KuzzleQueueFilter filter = spy(new KuzzleQueueFilter() {
+    QueueFilter filter = spy(new QueueFilter() {
       @Override
       public boolean filter(JSONObject object) {
         return false;
@@ -254,7 +254,7 @@ public class queryTest {
     });
 
     kuzzle.setQueueFilter(filter);
-    kuzzle.setState(KuzzleStates.OFFLINE);
+    kuzzle.setState(States.OFFLINE);
     kuzzle.startQueuing();
 
     KuzzleExtend kuzzleSpy = spy(kuzzle);

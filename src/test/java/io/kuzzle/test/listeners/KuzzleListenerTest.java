@@ -15,8 +15,8 @@ import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.state.KuzzleStates;
-import io.kuzzle.sdk.util.KuzzleQueryObject;
+import io.kuzzle.sdk.state.States;
+import io.kuzzle.sdk.util.QueryObject;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -100,16 +100,16 @@ public class KuzzleListenerTest {
     kuzzleExtend.addListener(Event.offlineQueuePush, event);
 
     Options opts = new Options().setQueuable(true);
-    kuzzleExtend.setState(KuzzleStates.OFFLINE);
+    kuzzleExtend.setState(States.OFFLINE);
     kuzzleExtend.startQueuing();
 
     Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
     args.controller = "foo";
     args.action = "bar";
     kuzzleExtend.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
-    ArgumentCaptor argument = ArgumentCaptor.forClass(KuzzleQueryObject.class);
+    ArgumentCaptor argument = ArgumentCaptor.forClass(QueryObject.class);
     verify(event).trigger(argument.capture());
-    assertEquals(((KuzzleQueryObject) argument.getValue()).getQuery().getString("action"), "bar");
+    assertEquals(((QueryObject) argument.getValue()).getQuery().getString("action"), "bar");
   }
 
   @Test
@@ -120,7 +120,7 @@ public class KuzzleListenerTest {
     mockAnswer(Socket.EVENT_RECONNECT);
 
     Options opts = new Options().setQueuable(true);
-    kuzzleExtend.setState(KuzzleStates.OFFLINE);
+    kuzzleExtend.setState(States.OFFLINE);
     kuzzleExtend.startQueuing();
 
     Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
@@ -129,8 +129,8 @@ public class KuzzleListenerTest {
     kuzzleExtend.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
 
     kuzzleExtend.connect();
-    ArgumentCaptor argument = ArgumentCaptor.forClass(KuzzleQueryObject.class);
+    ArgumentCaptor argument = ArgumentCaptor.forClass(QueryObject.class);
     verify(event).trigger(argument.capture());
-    assertEquals(((KuzzleQueryObject) argument.getValue()).getQuery().getString("action"), "bar");
+    assertEquals(((QueryObject) argument.getValue()).getQuery().getString("action"), "bar");
   }
 }

@@ -9,7 +9,7 @@ import org.mockito.ArgumentCaptor;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.util.KuzzleJSONObject;
 import io.kuzzle.sdk.util.memoryStorage.Action;
-import io.kuzzle.test.testUtils.KuzzleMemoryStorageExtend;
+import io.kuzzle.test.testUtils.MemoryStorageExtend;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
@@ -20,13 +20,13 @@ import static org.mockito.Mockito.verify;
 public class keykeyTest {
 
   Kuzzle kuzzle;
-  KuzzleMemoryStorageExtend ms;
+  MemoryStorageExtend ms;
   ArgumentCaptor argument;
 
   @Before
   public void setUp() {
     kuzzle = mock(Kuzzle.class);
-    ms = spy(new KuzzleMemoryStorageExtend(kuzzle));
+    ms = spy(new MemoryStorageExtend(kuzzle));
     argument = ArgumentCaptor.forClass(JSONObject.class);
   }
 

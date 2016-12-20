@@ -17,7 +17,7 @@ import io.kuzzle.sdk.core.Room;
 import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.state.States;
 import io.kuzzle.sdk.util.EventList;
 import io.socket.client.Socket;
 
@@ -42,7 +42,7 @@ public class KuzzleExtend extends Kuzzle {
     super(host, options, connectionCallback);
   }
 
-  public void setState(KuzzleStates newState) {
+  public void setState(States newState) {
     this.state = newState;
   }
 
