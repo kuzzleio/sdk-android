@@ -38,7 +38,7 @@ public class KuzzleRoom {
   /**
    * The Data collection.
    */
-  protected KuzzleDataCollection dataCollection;
+  protected Collection dataCollection;
   /**
    * The Filters.
    */
@@ -102,7 +102,7 @@ public class KuzzleRoom {
    *
    * @param kuzzleDataCollection the kuzzle data collection
    */
-  public KuzzleRoom(@NonNull final KuzzleDataCollection kuzzleDataCollection) {
+  public KuzzleRoom(@NonNull final Collection kuzzleDataCollection) {
     this(kuzzleDataCollection, null);
   }
 
@@ -116,7 +116,7 @@ public class KuzzleRoom {
    * @param kuzzleDataCollection the kuzzle data collection
    * @param options              the options
    */
-  public KuzzleRoom(@NonNull final KuzzleDataCollection kuzzleDataCollection, final KuzzleRoomOptions options) {
+  public KuzzleRoom(@NonNull final Collection kuzzleDataCollection, final KuzzleRoomOptions options) {
     KuzzleRoomOptions opts = options != null ? options : new KuzzleRoomOptions();
 
     if (kuzzleDataCollection == null) {

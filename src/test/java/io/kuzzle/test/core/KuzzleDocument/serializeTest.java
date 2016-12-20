@@ -7,8 +7,8 @@ import org.junit.Test;
 
 import java.net.URISyntaxException;
 
+import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.Mode;
@@ -32,7 +32,7 @@ public class serializeTest {
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setState(KuzzleStates.CONNECTED);
     k = spy(extended);
-    doc = new KuzzleDocument(new KuzzleDataCollection(k, "test", "index"));
+    doc = new KuzzleDocument(new Collection(k, "test", "index"));
   }
 
   @Test(expected = RuntimeException.class)

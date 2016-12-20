@@ -19,7 +19,7 @@ public class KuzzleDataMapping {
   private JSONObject mapping;
   private Kuzzle kuzzle;
   private String collection;
-  private KuzzleDataCollection  dataCollection;
+  private Collection dataCollection;
 
   /**
    * When creating a new data collection in the persistent data storage layer, Kuzzle uses a default mapping.
@@ -30,7 +30,7 @@ public class KuzzleDataMapping {
    *
    * @param kuzzleDataCollection the kuzzle data collection
    */
-  public KuzzleDataMapping(final KuzzleDataCollection kuzzleDataCollection) {
+  public KuzzleDataMapping(final Collection kuzzleDataCollection) {
     this(kuzzleDataCollection, null);
   }
 
@@ -40,7 +40,7 @@ public class KuzzleDataMapping {
    * @param kuzzleDataCollection the kuzzle data collection
    * @param mapping              the mapping
    */
-  public KuzzleDataMapping(final KuzzleDataCollection kuzzleDataCollection, final JSONObject mapping) {
+  public KuzzleDataMapping(final Collection kuzzleDataCollection, final JSONObject mapping) {
     try {
       this.headers = new JSONObject(kuzzleDataCollection.getHeaders().toString());
     }

@@ -7,8 +7,8 @@ import org.junit.Test;
 
 import java.net.URISyntaxException;
 
+import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 
 public class constructorTest {
   private Kuzzle kuzzle;
-  private KuzzleDataCollection collection;
+  private Collection collection;
   private KuzzleResponseListener listener;
 
   @Before
@@ -42,7 +42,7 @@ public class constructorTest {
     kuzzle = spy(extended);
     when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
-    collection = new KuzzleDataCollection(kuzzle, "test", "index");
+    collection = new Collection(kuzzle, "test", "index");
     listener = mock(KuzzleResponseListener.class);
   }
 
@@ -80,22 +80,22 @@ public class constructorTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowIfNoKuzzleInstanceProvided() {
-    new KuzzleDataCollection(null, "foo", "bar");
+    new Collection(null, "foo", "bar");
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowIfNoIndexProvided() {
-    new KuzzleDataCollection(mock(Kuzzle.class), "foo", null);
+    new Collection(mock(Kuzzle.class), "foo", null);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowIfNoCollectionProvided() {
-    new KuzzleDataCollection(mock(Kuzzle.class), null, "foo");
+    new Collection(mock(Kuzzle.class), null, "foo");
   }
 
   @Test(expected = RuntimeException.class)
   public void testConstructorException() {
     doThrow(JSONException.class).when(kuzzle).getHeaders();
-    new KuzzleDataCollection(kuzzle, "collections", "foo");
+    new Collection(kuzzle, "collections", "foo");
   }
 }

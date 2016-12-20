@@ -12,8 +12,8 @@ import org.mockito.stubbing.Answer;
 
 import java.net.URISyntaxException;
 
+import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.core.KuzzleRoom;
 import io.kuzzle.sdk.enums.Mode;
@@ -60,7 +60,7 @@ public class renewTest {
     mockResponse.put("result", new JSONObject().put("channel", "channel").put("roomId", "42"));
     k = mock(Kuzzle.class);
     when(k.getHeaders()).thenReturn(new JSONObject());
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(k, "text", "index"));
+    room = new KuzzleRoomExtend(new Collection(k, "text", "index"));
 
     MockitoAnnotations.initMocks(this);
   }
@@ -80,7 +80,7 @@ public class renewTest {
     kuzzle.setSocket(s);
 
     final Kuzzle kuzzleSpy = spy(kuzzle);
-    KuzzleRoom testRoom = new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "collection", "index"));
+    KuzzleRoom testRoom = new KuzzleRoom(new Collection(kuzzleSpy, "collection", "index"));
 
     doAnswer(new Answer() {
       @Override
@@ -120,7 +120,7 @@ public class renewTest {
     kuzzle.setSocket(mock(Socket.class));
 
     final Kuzzle kuzzleSpy = spy(kuzzle);
-    KuzzleRoomExtend testRoom = new KuzzleRoomExtend(new KuzzleDataCollection(kuzzleSpy, "collection", "index"));
+    KuzzleRoomExtend testRoom = new KuzzleRoomExtend(new Collection(kuzzleSpy, "collection", "index"));
     testRoom.setRoomId("foobar");
     doAnswer(new Answer() {
       @Override
@@ -148,7 +148,7 @@ public class renewTest {
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "test", "index"));
+    room = new KuzzleRoomExtend(new Collection(extended, "test", "index"));
     room.setRoomId("foobar");
     room.setSubscribing(true);
     room.renew(listener);

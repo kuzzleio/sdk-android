@@ -16,7 +16,7 @@ import io.kuzzle.sdk.responses.KuzzleNotificationResponse;
  * The type Kuzzle document.
  */
 public class KuzzleDocument {
-  private final KuzzleDataCollection dataCollection;
+  private final Collection dataCollection;
   private final String collection;
   private final Kuzzle kuzzle;
   private JSONObject headers;
@@ -29,14 +29,14 @@ public class KuzzleDocument {
    * Kuzzle handles documents either as realtime messages or as stored documents.
    * KuzzleDocument is the object representation of one of these documents.
    *
-   * @param kuzzleDataCollection - an instanciated KuzzleDataCollection object
+   * @param kuzzleDataCollection - an instanciated Collection object
    * @param id                   the id
    * @param content              the content
    * @throws JSONException the json exception
    */
-  public KuzzleDocument(@NonNull final KuzzleDataCollection kuzzleDataCollection, final String id, final JSONObject content) throws JSONException {
+  public KuzzleDocument(@NonNull final Collection kuzzleDataCollection, final String id, final JSONObject content) throws JSONException {
     if (kuzzleDataCollection == null) {
-      throw new IllegalArgumentException("KuzzleDocument: KuzzleDataCollection argument missing");
+      throw new IllegalArgumentException("KuzzleDocument: Collection argument missing");
     }
 
     this.dataCollection = kuzzleDataCollection;
@@ -54,7 +54,7 @@ public class KuzzleDocument {
    * @param kuzzleDataCollection the kuzzle data collection
    * @throws JSONException the json exception
    */
-  public KuzzleDocument(final KuzzleDataCollection kuzzleDataCollection) throws JSONException {
+  public KuzzleDocument(final Collection kuzzleDataCollection) throws JSONException {
     this(kuzzleDataCollection, null, null);
   }
 
@@ -67,7 +67,7 @@ public class KuzzleDocument {
    * @param id                   the id
    * @throws JSONException the json exception
    */
-  public KuzzleDocument(final KuzzleDataCollection kuzzleDataCollection, final String id) throws JSONException {
+  public KuzzleDocument(final Collection kuzzleDataCollection, final String id) throws JSONException {
     this(kuzzleDataCollection, id, null);
   }
 
@@ -79,7 +79,7 @@ public class KuzzleDocument {
    * @param content              the content
    * @throws JSONException the json exception
    */
-  public KuzzleDocument(final KuzzleDataCollection kuzzleDataCollection, final JSONObject content) throws JSONException {
+  public KuzzleDocument(final Collection kuzzleDataCollection, final JSONObject content) throws JSONException {
     this(kuzzleDataCollection, null, content);
   }
 

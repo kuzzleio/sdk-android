@@ -3,8 +3,8 @@ package io.kuzzle.sdk.responses;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.enums.Scope;
 import io.kuzzle.sdk.enums.State;
@@ -40,7 +40,7 @@ public class KuzzleNotificationResponse {
       this.scope = (object.isNull("scope") ? null : Scope.valueOf(object.getString("scope").toUpperCase()));
       this.users = (object.isNull("user") ? null : Users.valueOf(object.getString("user").toUpperCase()));
       if (!object.getJSONObject("result").isNull("_source")) {
-        this.document = new KuzzleDocument(new KuzzleDataCollection(kuzzle, this.collection, this.index), object.getJSONObject("result"));
+        this.document = new KuzzleDocument(new Collection(kuzzle, this.collection, this.index), object.getJSONObject("result"));
         this.document.setId(this.result.getString("_id"));
       }
     } catch (JSONException e) {

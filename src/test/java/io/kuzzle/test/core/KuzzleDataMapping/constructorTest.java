@@ -5,8 +5,8 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleDataMapping;
 
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 
 public class constructorTest {
   private Kuzzle k;
-  private KuzzleDataCollection dataCollection;
+  private Collection dataCollection;
   private KuzzleDataMapping dataMapping;
 
   @Before
@@ -28,13 +28,13 @@ public class constructorTest {
     k = mock(Kuzzle.class);
     when(k.getDefaultIndex()).thenReturn("index");
     when(k.getHeaders()).thenReturn(new JSONObject());
-    dataCollection = new KuzzleDataCollection(k, "test", "index");
+    dataCollection = new Collection(k, "test", "index");
     dataMapping = new KuzzleDataMapping(dataCollection);
   }
 
   @Test(expected = RuntimeException.class)
   public void testConstructorException() {
-    KuzzleDataCollection fake = spy(new KuzzleDataCollection(k, "test", "index"));
+    Collection fake = spy(new Collection(k, "test", "index"));
     doThrow(JSONException.class).when(fake).getHeaders();
     dataMapping = new KuzzleDataMapping(fake);
   }

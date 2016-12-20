@@ -62,7 +62,7 @@ public class Kuzzle {
   /**
    * The Collections.
    */
-  protected Map<String, Map<String, KuzzleDataCollection>> collections = new ConcurrentHashMap<>();
+  protected Map<String, Map<String, Collection>> collections = new ConcurrentHashMap<>();
   /**
    * The Auto reconnect.
    */
@@ -505,31 +505,31 @@ public class Kuzzle {
    * @param collection the collection
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection collection(@NonNull final String collection) {
+  public Collection collection(@NonNull final String collection) {
     this.isValid();
     if (this.defaultIndex == null) {
-      throw new IllegalArgumentException("KuzzleDataCollection: unable to create a new data collection object: no index specified");
+      throw new IllegalArgumentException("Collection: unable to create a new data collection object: no index specified");
     }
 
     return this.collection(collection, this.defaultIndex);
   }
 
   /**
-   * Create a new instance of a KuzzleDataCollection object
+   * Create a new instance of a Collection object
    *
    * @param collection - The name of the data collection you want to manipulate
    * @param index      the index
-   * @return {object} A KuzzleDataCollection instance
+   * @return {object} A Collection instance
    */
-  public KuzzleDataCollection collection(@NonNull final String collection, @NonNull final String index) {
+  public Collection collection(@NonNull final String collection, @NonNull final String index) {
     this.isValid();
     if (index == null && this.defaultIndex == null) {
-      throw new IllegalArgumentException("KuzzleDataCollection: unable to create a new data collection object: no index specified");
+      throw new IllegalArgumentException("Collection: unable to create a new data collection object: no index specified");
     }
 
     if (!this.collections.containsKey(collection)) {
-      Map<String, KuzzleDataCollection> col = new ConcurrentHashMap<>();
-      col.put(collection, new KuzzleDataCollection(this, collection, index));
+      Map<String, Collection> col = new ConcurrentHashMap<>();
+      col.put(collection, new Collection(this, collection, index));
       this.collections.put(index, col);
     }
     return this.collections.get(index).get(collection);

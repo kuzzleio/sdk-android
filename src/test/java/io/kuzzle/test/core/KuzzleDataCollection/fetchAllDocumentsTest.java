@@ -8,8 +8,8 @@ import org.mockito.ArgumentCaptor;
 
 import java.net.URISyntaxException;
 
+import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 
 public class fetchAllDocumentsTest {
   private Kuzzle kuzzle;
-  private KuzzleDataCollection collection;
+  private Collection collection;
   private KuzzleResponseListener listener;
 
   @Before
@@ -43,7 +43,7 @@ public class fetchAllDocumentsTest {
     kuzzle = spy(extended);
     when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
-    collection = new KuzzleDataCollection(kuzzle, "test", "index");
+    collection = new Collection(kuzzle, "test", "index");
     listener = mock(KuzzleResponseListener.class);
   }
 

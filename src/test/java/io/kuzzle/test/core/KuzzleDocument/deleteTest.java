@@ -10,8 +10,8 @@ import org.mockito.stubbing.Answer;
 
 import java.net.URISyntaxException;
 
+import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.Mode;
@@ -43,7 +43,7 @@ public class deleteTest {
     extended.setState(KuzzleStates.CONNECTED);
     extended.setSocket(mock(Socket.class));
     k = spy(extended);
-    doc = new KuzzleDocument(new KuzzleDataCollection(k, "test", "index"));
+    doc = new KuzzleDocument(new Collection(k, "test", "index"));
   }
 
   @Test

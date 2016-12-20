@@ -10,8 +10,8 @@ import org.mockito.stubbing.Answer;
 
 import java.net.URISyntaxException;
 
+import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.core.KuzzleRoomOptions;
@@ -35,7 +35,7 @@ import static org.mockito.Mockito.verify;
 public class subscribeTest {
   private Kuzzle k;
   private KuzzleDocument doc;
-  private KuzzleDataCollection mockCollection;
+  private Collection mockCollection;
 
   @Before
   public void setUp() throws URISyntaxException, JSONException {
@@ -45,8 +45,8 @@ public class subscribeTest {
     extended.setState(KuzzleStates.CONNECTED);
     extended.setSocket(mock(Socket.class));
     k = spy(extended);
-    mockCollection = mock(KuzzleDataCollection.class);
-    doc = new KuzzleDocument(new KuzzleDataCollection(k, "test", "index"));
+    mockCollection = mock(Collection.class);
+    doc = new KuzzleDocument(new Collection(k, "test", "index"));
   }
 
   @Test

@@ -5,7 +5,7 @@ import org.json.JSONObject;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import io.kuzzle.sdk.core.KuzzleDataCollection;
+import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.KuzzleRoom;
 import io.kuzzle.sdk.core.KuzzleRoomOptions;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -15,11 +15,11 @@ import io.kuzzle.sdk.listeners.KuzzleResponseListener;
  */
 public class KuzzleRoomExtend extends KuzzleRoom {
 
-  public KuzzleRoomExtend(KuzzleDataCollection kuzzleDataCollection) {
+  public KuzzleRoomExtend(Collection kuzzleDataCollection) {
     super(kuzzleDataCollection);
   }
 
-  public KuzzleRoomExtend(KuzzleDataCollection kuzzleDataCollection, KuzzleRoomOptions options) {
+  public KuzzleRoomExtend(Collection kuzzleDataCollection, KuzzleRoomOptions options) {
     super(kuzzleDataCollection, options);
   }
 

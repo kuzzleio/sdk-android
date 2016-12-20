@@ -13,8 +13,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.core.KuzzleRoom;
 import io.kuzzle.sdk.enums.KuzzleEvent;
@@ -128,8 +128,8 @@ public class connectionManagementTest {
     final Kuzzle kuzzleSpy = spy(extended);
 
     KuzzleRoom
-      room1 = new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "test", "index")),
-      room2 = new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "test2", "index"));
+      room1 = new KuzzleRoom(new Collection(kuzzleSpy, "test", "index")),
+      room2 = new KuzzleRoom(new Collection(kuzzleSpy, "test2", "index"));
 
     room1.renew(listener);
     room2.renew(listener);

@@ -5,8 +5,8 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
 import io.kuzzle.sdk.core.KuzzleRoom;
 import io.kuzzle.sdk.core.KuzzleRoomOptions;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -42,7 +42,7 @@ public class constructorTest {
     mockResponse.put("result", new JSONObject().put("channel", "channel").put("roomId", "42"));
     k = mock(Kuzzle.class);
     when(k.getHeaders()).thenReturn(new JSONObject());
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test", "index"));
+    room = new KuzzleRoomExtend(new Collection(k, "test", "index"));
   }
 
   @Test
@@ -51,7 +51,7 @@ public class constructorTest {
     meta.put("foo", "bar");
     KuzzleRoomOptions options = new KuzzleRoomOptions();
     options.setSubscribeToSelf(false);
-    KuzzleRoom room = new KuzzleRoom(new KuzzleDataCollection(k, "test", "index"), options);
+    KuzzleRoom room = new KuzzleRoom(new Collection(k, "test", "index"), options);
     assertEquals(room.isSubscribeToSelf(), false);
     room.setSubscribeToSelf(true);
     assertEquals(room.isSubscribeToSelf(), true);
@@ -59,7 +59,7 @@ public class constructorTest {
 
   @Test(expected = RuntimeException.class)
   public void testConstructorException() {
-    KuzzleDataCollection fake = spy(new KuzzleDataCollection(k, "test", "index"));
+    Collection fake = spy(new Collection(k, "test", "index"));
     doThrow(JSONException.class).when(fake).getHeaders();
     room = new KuzzleRoomExtend(fake);
   }
@@ -113,7 +113,7 @@ public class constructorTest {
     meta.put("foo", "bar");
     KuzzleRoomOptions options = new KuzzleRoomOptions();
     options.setMetadata(meta);
-    KuzzleRoom room = new KuzzleRoom(new KuzzleDataCollection(k, "test", "index"), options);
+    KuzzleRoom room = new KuzzleRoom(new Collection(k, "test", "index"), options);
     assertEquals(room.getMetadata().get("foo"), "bar");
     JSONObject meta2 = new JSONObject();
     meta2.put("oof", "rab");
@@ -129,7 +129,7 @@ public class constructorTest {
 
   @Test
   public void testCollection() {
-    KuzzleDataCollection collection = new KuzzleDataCollection(k, "test", "index");
+    Collection collection = new Collection(k, "test", "index");
     KuzzleRoom room = new KuzzleRoom(collection);
     assertEquals(room.getCollection(), collection.getCollection());
   }
