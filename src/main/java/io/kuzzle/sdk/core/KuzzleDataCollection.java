@@ -458,7 +458,7 @@ public class KuzzleDataCollection {
    *
    * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping dataMappingFactory() {
+  public KuzzleDataMapping collectionMapping() {
     return new KuzzleDataMapping(this);
   }
 
@@ -468,7 +468,7 @@ public class KuzzleDataCollection {
    * @param mapping the mapping
    * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping dataMappingFactory(JSONObject mapping) {
+  public KuzzleDataMapping collectionMapping(JSONObject mapping) {
     return new KuzzleDataMapping(this, mapping);
   }
 
@@ -645,7 +645,7 @@ public class KuzzleDataCollection {
    * @return the kuzzle document
    * @throws JSONException the json exception
    */
-  public KuzzleDocument documentFactory() throws JSONException {
+  public KuzzleDocument document() throws JSONException {
     return new KuzzleDocument(this);
   }
 
@@ -656,7 +656,7 @@ public class KuzzleDataCollection {
    * @return the kuzzle document
    * @throws JSONException the json exception
    */
-  public KuzzleDocument documentFactory(final String id) throws JSONException {
+  public KuzzleDocument document(final String id) throws JSONException {
     return new KuzzleDocument(this, id);
   }
 
@@ -667,7 +667,7 @@ public class KuzzleDataCollection {
    * @return the kuzzle document
    * @throws JSONException the json exception
    */
-  public KuzzleDocument documentFactory(final JSONObject content) throws JSONException {
+  public KuzzleDocument document(final JSONObject content) throws JSONException {
     return new KuzzleDocument(this, content);
   }
 
@@ -679,7 +679,7 @@ public class KuzzleDataCollection {
    * @return the kuzzle document
    * @throws JSONException the json exception
    */
-  public KuzzleDocument documentFactory(final String id, final JSONObject content) throws JSONException {
+  public KuzzleDocument document(final String id, final JSONObject content) throws JSONException {
     return new KuzzleDocument(this, id, content);
   }
 
@@ -985,8 +985,8 @@ public class KuzzleDataCollection {
    *
    * @return the kuzzle room
    */
-  public KuzzleRoom roomFactory() {
-    return this.roomFactory(null);
+  public KuzzleRoom room() {
+    return this.room(null);
   }
 
   /**
@@ -995,7 +995,7 @@ public class KuzzleDataCollection {
    * @param options the options
    * @return the kuzzle room
    */
-  public KuzzleRoom roomFactory(KuzzleRoomOptions options) {
+  public KuzzleRoom room(KuzzleRoomOptions options) {
     return new KuzzleRoom(this, options);
   }
 

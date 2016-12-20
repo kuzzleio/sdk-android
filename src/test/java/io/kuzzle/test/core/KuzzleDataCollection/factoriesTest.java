@@ -25,7 +25,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -51,21 +50,21 @@ public class factoriesTest {
 
   @Test
   public void testRoomFactory() {
-    assertThat(collection.roomFactory(mock(KuzzleRoomOptions.class)), instanceOf(KuzzleRoom.class));
-    assertThat(collection.roomFactory(), instanceOf(KuzzleRoom.class));
+    assertThat(collection.room(mock(KuzzleRoomOptions.class)), instanceOf(KuzzleRoom.class));
+    assertThat(collection.room(), instanceOf(KuzzleRoom.class));
   }
 
   @Test
   public void testDocumentFactory() throws JSONException {
-    assertThat(collection.documentFactory(), instanceOf(KuzzleDocument.class));
-    assertThat(collection.documentFactory("id"), instanceOf(KuzzleDocument.class));
-    assertThat(collection.documentFactory("id", new JSONObject()), instanceOf(KuzzleDocument.class));
-    assertThat(collection.documentFactory(new JSONObject()), instanceOf(KuzzleDocument.class));
+    assertThat(collection.document(), instanceOf(KuzzleDocument.class));
+    assertThat(collection.document("id"), instanceOf(KuzzleDocument.class));
+    assertThat(collection.document("id", new JSONObject()), instanceOf(KuzzleDocument.class));
+    assertThat(collection.document(new JSONObject()), instanceOf(KuzzleDocument.class));
   }
 
   @Test
   public void testDataMappingFactory() {
-    assertThat(collection.dataMappingFactory(), instanceOf(KuzzleDataMapping.class));
-    assertThat(collection.dataMappingFactory(new JSONObject()), instanceOf(KuzzleDataMapping.class));
+    assertThat(collection.collectionMapping(), instanceOf(KuzzleDataMapping.class));
+    assertThat(collection.collectionMapping(new JSONObject()), instanceOf(KuzzleDataMapping.class));
   }
 }
