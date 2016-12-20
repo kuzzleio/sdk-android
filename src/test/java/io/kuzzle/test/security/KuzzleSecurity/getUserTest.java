@@ -36,12 +36,12 @@ public class getUserTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetUserNoID() throws JSONException {
-    kuzzleSecurity.getUser(null, new KuzzleOptions(), listener);
+    kuzzleSecurity.fetchUser(null, new KuzzleOptions(), listener);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetUserNoListener() throws JSONException {
-    kuzzleSecurity.getUser("foo", null);
+    kuzzleSecurity.fetchUser("foo", null);
   }
 
   @Test
@@ -63,7 +63,7 @@ public class getUserTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.getUser("foobar", new KuzzleResponseListener<KuzzleUser>() {
+    kuzzleSecurity.fetchUser("foobar", new KuzzleResponseListener<KuzzleUser>() {
       @Override
       public void onSuccess(KuzzleUser response) {
         assertEquals(response.id, "foobar");
@@ -82,7 +82,7 @@ public class getUserTest {
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "getUser");
+    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "fetchUser");
   }
 
   @Test(expected = RuntimeException.class)
@@ -97,6 +97,6 @@ public class getUserTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.getUser("foobar", listener);
+    kuzzleSecurity.fetchUser("foobar", listener);
   }
 }

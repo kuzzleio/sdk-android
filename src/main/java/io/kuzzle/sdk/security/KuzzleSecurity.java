@@ -52,20 +52,20 @@ public class KuzzleSecurity {
    * @param options  - optional query arguments
    * @param listener - response callback
    */
-  public void getRole(@NonNull final String id, KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleRole> listener) {
+  public void fetchRole(@NonNull final String id, KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleRole> listener) {
     JSONObject data;
 
     if (id == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.getRole: a role ID is required");
+      throw new IllegalArgumentException("KuzzleSecurity.fetchRole: a role ID is required");
     }
 
     if (listener == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.getRole: a listener is required");
+      throw new IllegalArgumentException("KuzzleSecurity.fetchRole: a listener is required");
     }
 
     try {
       data = new JSONObject().put("_id", id);
-      this.kuzzle.query(buildQueryArgs("getRole"), data, options, new OnQueryDoneListener() {
+      this.kuzzle.query(buildQueryArgs("fetchRole"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
           try {
@@ -93,8 +93,8 @@ public class KuzzleSecurity {
    * @param id       - unique role ID
    * @param listener - response callback
    */
-  public void getRole(@NonNull final String id, @NonNull final KuzzleResponseListener<KuzzleRole> listener) {
-    getRole(id, null, listener);
+  public void fetchRole(@NonNull final String id, @NonNull final KuzzleResponseListener<KuzzleRole> listener) {
+    fetchRole(id, null, listener);
   }
 
 
@@ -434,7 +434,7 @@ public class KuzzleSecurity {
    * @return a new KuzzleRole object
    * @throws JSONException the json exception
    */
-  public KuzzleRole roleFactory(@NonNull final String id, final JSONObject content) throws JSONException {
+  public KuzzleRole role(@NonNull final String id, final JSONObject content) throws JSONException {
     return new KuzzleRole(this.kuzzle, id, content);
   }
 
@@ -445,7 +445,7 @@ public class KuzzleSecurity {
    * @return a new KuzzleRole object
    * @throws JSONException the json exception
    */
-  public KuzzleRole roleFactory(@NonNull final String id) throws JSONException {
+  public KuzzleRole role(@NonNull final String id) throws JSONException {
     return new KuzzleRole(this.kuzzle, id, null);
   }
 
@@ -458,18 +458,18 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException the json exception
    */
-  public void getProfile(@NonNull final String id, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
+  public void fetchProfile(@NonNull final String id, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     if (id == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.getProfile: cannot get 'null' profile");
+      throw new IllegalArgumentException("KuzzleSecurity.fetchProfile: cannot get 'null' profile");
     }
 
     if (listener == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.getProfile: a listener callback is required");
+      throw new IllegalArgumentException("KuzzleSecurity.fetchProfile: a listener callback is required");
     }
 
     JSONObject data = new JSONObject().put("_id", id);
 
-    this.kuzzle.query(buildQueryArgs("getProfile"), data, options, new OnQueryDoneListener() {
+    this.kuzzle.query(buildQueryArgs("fetchProfile"), data, options, new OnQueryDoneListener() {
       @Override
       public void onSuccess(JSONObject response) {
         try {
@@ -513,8 +513,8 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException the json exception
    */
-  public void getProfile(@NonNull final String id, @NonNull final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
-    getProfile(id, null, listener);
+  public void fetchProfile(@NonNull final String id, @NonNull final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
+    fetchProfile(id, null, listener);
   }
 
   /**
@@ -856,7 +856,7 @@ public class KuzzleSecurity {
    * @return a new KuzzleProfile object
    * @throws JSONException the json exception
    */
-  public KuzzleProfile profileFactory(@NonNull final String id, final JSONObject content) throws JSONException {
+  public KuzzleProfile profile(@NonNull final String id, final JSONObject content) throws JSONException {
     return new KuzzleProfile(this.kuzzle, id, content);
   }
 
@@ -867,7 +867,7 @@ public class KuzzleSecurity {
    * @return a new KuzzleProfile object
    * @throws JSONException the json exception
    */
-  public KuzzleProfile profileFactory(@NonNull final String id) throws JSONException {
+  public KuzzleProfile profile(@NonNull final String id) throws JSONException {
     return new KuzzleProfile(this.kuzzle, id, null);
   }
 
@@ -879,18 +879,18 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException the json exception
    */
-  public void getUser(@NonNull final String id, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
+  public void fetchUser(@NonNull final String id, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     if (id == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.getUser: cannot get user with ID null");
+      throw new IllegalArgumentException("KuzzleSecurity.fetchUser: cannot get user with ID null");
     }
 
     if (listener == null) {
-      throw new IllegalArgumentException("KuzzleSecurity.getUser: a callback listener is required");
+      throw new IllegalArgumentException("KuzzleSecurity.fetchUser: a callback listener is required");
     }
 
     JSONObject data = new JSONObject().put("_id", id);
 
-    this.kuzzle.query(buildQueryArgs("getUser"), data, options, new OnQueryDoneListener() {
+    this.kuzzle.query(buildQueryArgs("fetchUser"), data, options, new OnQueryDoneListener() {
       @Override
       public void onSuccess(JSONObject response) {
         try {
@@ -915,8 +915,8 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException the json exception
    */
-  public void getUser(@NonNull final String id, @NonNull final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
-    getUser(id, null, listener);
+  public void fetchUser(@NonNull final String id, @NonNull final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
+    fetchUser(id, null, listener);
   }
 
   /**
@@ -1344,7 +1344,7 @@ public class KuzzleSecurity {
    * @return a new KuzzleUser object
    * @throws JSONException the json exception
    */
-  public KuzzleUser userFactory(@NonNull final String id, final JSONObject content) throws JSONException {
+  public KuzzleUser user(@NonNull final String id, final JSONObject content) throws JSONException {
     return new KuzzleUser(this.kuzzle, id, content);
   }
 
@@ -1355,7 +1355,7 @@ public class KuzzleSecurity {
    * @return a new KuzzleUser object
    * @throws JSONException the json exception
    */
-  public KuzzleUser userFactory(@NonNull final String id) throws JSONException {
+  public KuzzleUser user(@NonNull final String id) throws JSONException {
     return new KuzzleUser(this.kuzzle, id, null);
   }
 

@@ -37,12 +37,12 @@ public class getRoleTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetRoleNoID() {
-    kuzzleSecurity.getRole(null, listener);
+    kuzzleSecurity.fetchRole(null, listener);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetRoleNoListener() {
-    kuzzleSecurity.getRole("foobar", null);
+    kuzzleSecurity.fetchRole("foobar", null);
   }
 
   @Test
@@ -66,7 +66,7 @@ public class getRoleTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.getRole("foobar", null, new KuzzleResponseListener<KuzzleRole>() {
+    kuzzleSecurity.fetchRole("foobar", null, new KuzzleResponseListener<KuzzleRole>() {
       @Override
       public void onSuccess(KuzzleRole response) {
         assertEquals(response.id, "foobar");
@@ -86,13 +86,13 @@ public class getRoleTest {
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "getRole");
+    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "fetchRole");
   }
 
   @Test(expected = RuntimeException.class)
   public void testGetRoleInvalid() throws JSONException {
     doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    kuzzleSecurity.getRole("foobar", null, listener);
+    kuzzleSecurity.fetchRole("foobar", null, listener);
   }
 
   @Test(expected = RuntimeException.class)
@@ -106,6 +106,6 @@ public class getRoleTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.getRole("foobar", null, listener);
+    kuzzleSecurity.fetchRole("foobar", null, listener);
   }
 }

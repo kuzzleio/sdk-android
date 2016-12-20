@@ -30,19 +30,19 @@ public class factoriesTest {
 
   @Test
   public void testRoleFactory() throws JSONException {
-    assertThat(kuzzleSecurity.roleFactory("id"), instanceOf(KuzzleRole.class));
-    assertThat(kuzzleSecurity.roleFactory("id", new JSONObject()), instanceOf(KuzzleRole.class));
+    assertThat(kuzzleSecurity.role("id"), instanceOf(KuzzleRole.class));
+    assertThat(kuzzleSecurity.role("id", new JSONObject()), instanceOf(KuzzleRole.class));
   }
 
   @Test
   public void testProfileFactory() throws JSONException {
-    assertThat(kuzzleSecurity.profileFactory("id"), instanceOf(KuzzleProfile.class));
-    assertThat(kuzzleSecurity.profileFactory("id", new JSONObject()), instanceOf(KuzzleProfile.class));
+    assertThat(kuzzleSecurity.profile("id"), instanceOf(KuzzleProfile.class));
+    assertThat(kuzzleSecurity.profile("id", new JSONObject()), instanceOf(KuzzleProfile.class));
   }
 
   @Test
   public void testUserFactory() throws JSONException {
-    assertThat(kuzzleSecurity.userFactory("id"), instanceOf(KuzzleUser.class));
-    assertThat(kuzzleSecurity.userFactory("id", new JSONObject()), instanceOf(KuzzleUser.class));
+    assertThat(kuzzleSecurity.user("id"), instanceOf(KuzzleUser.class));
+    assertThat(kuzzleSecurity.user("id", new JSONObject()), instanceOf(KuzzleUser.class));
   }
 }
