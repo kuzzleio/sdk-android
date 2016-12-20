@@ -13,7 +13,7 @@ import java.net.URISyntaxException;
 import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Collection;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
@@ -38,7 +38,7 @@ public class replaceDocumentTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
@@ -58,10 +58,10 @@ public class replaceDocumentTest {
     collection = spy(collection);
 
     collection.replaceDocument(id, content);
-    collection.replaceDocument(id, content, mock(KuzzleOptions.class));
+    collection.replaceDocument(id, content, mock(Options.class));
     collection.replaceDocument(id, content, listener);
 
-    verify(collection, times(3)).replaceDocument(any(String.class), any(JSONObject.class), any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+    verify(collection, times(3)).replaceDocument(any(String.class), any(JSONObject.class), any(Options.class), any(KuzzleResponseListener.class));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -71,7 +71,7 @@ public class replaceDocumentTest {
 
   @Test(expected = RuntimeException.class)
   public void testReplaceDocumentQueryException() throws JSONException {
-    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     collection.replaceDocument("id", mock(JSONObject.class), listener);
   }
 
@@ -83,7 +83,7 @@ public class replaceDocumentTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("_id", "id-42")));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     doThrow(JSONException.class).when(listener).onSuccess(any(String.class));
     collection.replaceDocument("id", mock(JSONObject.class), listener);
   }
@@ -103,13 +103,13 @@ public class replaceDocumentTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     Document doc = new Document(collection);
     doc.setContent("foo", "bar");
     collection.replaceDocument("42", doc.serialize(), listener);
-    collection.replaceDocument("42", mock(JSONObject.class), mock(KuzzleOptions.class));
+    collection.replaceDocument("42", mock(JSONObject.class), mock(Options.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");
   }
 

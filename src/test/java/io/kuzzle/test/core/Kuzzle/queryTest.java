@@ -11,7 +11,7 @@ import org.mockito.stubbing.Answer;
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.IKuzzleEventListener;
@@ -42,7 +42,7 @@ public class queryTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
 
     kuzzle = new KuzzleExtend("localhost", options, null);
@@ -60,9 +60,9 @@ public class queryTest {
     OnQueryDoneListener queryListener = mock(OnQueryDoneListener.class);
     kuzzle = spy(kuzzle);
     kuzzle.query(args, query);
-    kuzzle.query(args, query, new KuzzleOptions());
+    kuzzle.query(args, query, new Options());
     kuzzle.query(args, query, queryListener);
-    verify(kuzzle, times(3)).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(3)).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
   }
 
   @Test(expected = IllegalStateException.class)
@@ -73,7 +73,7 @@ public class queryTest {
 
   @Test
   public void shouldDoNothingIfOfflineAndNotQueuable() throws JSONException {
-    KuzzleOptions opts = new KuzzleOptions().setQueuable(false);
+    Options opts = new Options().setQueuable(false);
     kuzzle.setState(KuzzleStates.OFFLINE);
     kuzzle = spy(kuzzle);
     doThrow(RuntimeException.class)
@@ -178,7 +178,7 @@ public class queryTest {
     JSONObject
       kuzzleMetadata = new JSONObject().put("foo", "foo").put("bar", "bar"),
       optionsMetadata = new JSONObject().put("qux", "qux").put("foo", "bar");
-    KuzzleOptions opts = new KuzzleOptions().setMetadata(optionsMetadata);
+    Options opts = new Options().setMetadata(optionsMetadata);
 
     kuzzle.setMetadata(kuzzleMetadata);
     kuzzle.query(args, new JSONObject(), opts);
@@ -196,7 +196,7 @@ public class queryTest {
   @Test
   public void shouldAddRefresh() throws JSONException {
     String optionsRefresh = "foo";
-    KuzzleOptions opts = new KuzzleOptions().setRefresh(optionsRefresh);
+    Options opts = new Options().setRefresh(optionsRefresh);
 
     kuzzle.query(args, new JSONObject(), opts);
 
@@ -223,7 +223,7 @@ public class queryTest {
 
   @Test
   public void shouldEmitRequestIfConnected() throws JSONException {
-    KuzzleOptions opts = new KuzzleOptions().setQueuable(false);
+    Options opts = new Options().setQueuable(false);
     kuzzle.setState(KuzzleStates.CONNECTED);
     KuzzleExtend kuzzleSpy = spy(kuzzle);
     kuzzleSpy.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
@@ -233,7 +233,7 @@ public class queryTest {
 
   @Test
   public void shouldQueueRequestsIfNotConnected() throws JSONException {
-    KuzzleOptions opts = new KuzzleOptions().setQueuable(true);
+    Options opts = new Options().setQueuable(true);
     kuzzle.setState(KuzzleStates.OFFLINE);
     kuzzle.startQueuing();
 
@@ -245,7 +245,7 @@ public class queryTest {
 
   @Test
   public void shouldFilterRequestBeforeQueuingIt() throws JSONException {
-    KuzzleOptions opts = new KuzzleOptions().setQueuable(true);
+    Options opts = new Options().setQueuable(true);
     KuzzleQueueFilter filter = spy(new KuzzleQueueFilter() {
       @Override
       public boolean filter(JSONObject object) {

@@ -12,8 +12,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.core.KuzzleRoom;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.core.Room;
 import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
@@ -38,7 +38,7 @@ public class KuzzleExtend extends Kuzzle {
     return new KuzzleWebViewClient();
   }
 
-  public KuzzleExtend(@NonNull final String host, final KuzzleOptions options, final KuzzleResponseListener<Void> connectionCallback) throws URISyntaxException {
+  public KuzzleExtend(@NonNull final String host, final Options options, final KuzzleResponseListener<Void> connectionCallback) throws URISyntaxException {
     super(host, options, connectionCallback);
   }
 
@@ -78,7 +78,7 @@ public class KuzzleExtend extends Kuzzle {
    *
    * @return
    */
-  public Map<String, ConcurrentHashMap<String, KuzzleRoom>> getSubscriptions() {
+  public Map<String, ConcurrentHashMap<String, Room>> getSubscriptions() {
     return this.subscriptions;
   }
 
@@ -106,7 +106,7 @@ public class KuzzleExtend extends Kuzzle {
     return super.getRequestHistory();
   }
 
-  public Map<String, KuzzleRoom> getPendingSubscriptions() {
+  public Map<String, Room> getPendingSubscriptions() {
     return super.getPendingSubscriptions();
   }
 

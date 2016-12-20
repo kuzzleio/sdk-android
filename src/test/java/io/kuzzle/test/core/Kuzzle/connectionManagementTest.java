@@ -15,8 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.core.KuzzleRoom;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.core.Room;
 import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.IKuzzleEventListener;
@@ -50,7 +50,7 @@ public class connectionManagementTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
@@ -72,7 +72,7 @@ public class connectionManagementTest {
 
   @Test
   public void testMaxTTLWithReconnectListener() throws JSONException, URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setQueueTTL(1);
     options.setReplayInterval(1);
     options.setAutoReplay(true);
@@ -115,7 +115,7 @@ public class connectionManagementTest {
 
   @Test
   public void testRenewSubscriptionsAfterReconnection() throws URISyntaxException, JSONException, InterruptedException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setAutoReconnect(true);
     options.setQueueTTL(1);
     options.setAutoReplay(true);
@@ -127,15 +127,15 @@ public class connectionManagementTest {
     extended.setState(KuzzleStates.INITIALIZING);
     final Kuzzle kuzzleSpy = spy(extended);
 
-    KuzzleRoom
-      room1 = new KuzzleRoom(new Collection(kuzzleSpy, "test", "index")),
-      room2 = new KuzzleRoom(new Collection(kuzzleSpy, "test2", "index"));
+    Room
+      room1 = new Room(new Collection(kuzzleSpy, "test", "index")),
+      room2 = new Room(new Collection(kuzzleSpy, "test2", "index"));
 
     room1.renew(listener);
     room2.renew(listener);
 
-    Map<String, ConcurrentHashMap<String, KuzzleRoom>> subscriptions = kuzzle.getSubscriptions();
-    subscriptions.put("room", new ConcurrentHashMap<String, KuzzleRoom>());
+    Map<String, ConcurrentHashMap<String, Room>> subscriptions = kuzzle.getSubscriptions();
+    subscriptions.put("room", new ConcurrentHashMap<String, Room>());
     subscriptions.get("room").put("42", room1);
     subscriptions.get("room").put("43", room2);
 
@@ -159,14 +159,14 @@ public class connectionManagementTest {
 
     Thread.sleep(2);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzleSpy, atLeastOnce()).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzleSpy, atLeastOnce()).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "realtime");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "subscribe");
   }
 
   @Test
   public void testAutoReconnect() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     options.setAutoReconnect(false);
 

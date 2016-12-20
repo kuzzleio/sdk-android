@@ -6,7 +6,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
@@ -103,7 +103,7 @@ public class AbstractKuzzleSecurityDocument {
    * @param listener - Optional response callback
    * @throws JSONException the json exception
    */
-  public void delete(final KuzzleOptions options, final KuzzleResponseListener<String> listener) throws JSONException {
+  public void delete(final Options options, final KuzzleResponseListener<String> listener) throws JSONException {
     JSONObject data = new JSONObject().put("_id", this.id);
 
     if (listener != null) {
@@ -144,7 +144,7 @@ public class AbstractKuzzleSecurityDocument {
    * @param options - Optional configuration
    * @throws JSONException the json exception
    */
-  public void delete(final KuzzleOptions options) throws JSONException {
+  public void delete(final Options options) throws JSONException {
     this.delete(options, null);
   }
 
@@ -194,7 +194,7 @@ public class AbstractKuzzleSecurityDocument {
    * @return AbstractKuzzleSecurityDocument this object
    * @throws JSONException - JSONException
    */
-  public AbstractKuzzleSecurityDocument update(final JSONObject content, final KuzzleOptions options) throws JSONException {
+  public AbstractKuzzleSecurityDocument update(final JSONObject content, final Options options) throws JSONException {
     return this.update(content, options, null);
   }
 
@@ -219,7 +219,7 @@ public class AbstractKuzzleSecurityDocument {
    * @return AbstractKuzzleSecurityDocument this object
    * @throws JSONException the json exception
    */
-  public AbstractKuzzleSecurityDocument update(final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<AbstractKuzzleSecurityDocument> listener) throws JSONException {
+  public AbstractKuzzleSecurityDocument update(final JSONObject content, final Options options, final KuzzleResponseListener<AbstractKuzzleSecurityDocument> listener) throws JSONException {
     JSONObject data = new JSONObject()
       .put("_id", this.id)
       .put("body", content);

@@ -10,7 +10,7 @@ import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
@@ -34,7 +34,7 @@ public class fetchAllDocumentsTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
@@ -51,7 +51,7 @@ public class fetchAllDocumentsTest {
   public void checkSignaturesVariants() {
     collection = spy(collection);
     collection.fetchAllDocuments(listener);
-    verify(collection).fetchAllDocuments(eq((KuzzleOptions)null), eq(listener));
+    verify(collection).fetchAllDocuments(eq((Options)null), eq(listener));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -61,22 +61,22 @@ public class fetchAllDocumentsTest {
 
   @Test
   public void testFetchAllDocuments() throws JSONException {
-    collection.fetchAllDocuments(new KuzzleOptions(), mock(KuzzleResponseListener.class));
+    collection.fetchAllDocuments(new Options(), mock(KuzzleResponseListener.class));
     collection.fetchAllDocuments(mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "search");
   }
 
   @Test
   public void testPagination() throws JSONException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setFrom(1L);
     options.setSize(42L);
     collection.fetchAllDocuments(options, mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
-    verify(kuzzle).query(any(Kuzzle.QueryArgs.class), (JSONObject)argument.capture(), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle).query(any(Kuzzle.QueryArgs.class), (JSONObject)argument.capture(), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((JSONObject) argument.getValue()).getLong("from"), 1);
     assertEquals(((JSONObject) argument.getValue()).getLong("size"), 42);
   }

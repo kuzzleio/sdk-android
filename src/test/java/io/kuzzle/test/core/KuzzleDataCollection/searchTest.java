@@ -12,7 +12,7 @@ import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Collection;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
@@ -39,7 +39,7 @@ public class searchTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
@@ -55,7 +55,7 @@ public class searchTest {
   public void checkSignaturesVariants() {
     collection = spy(collection);
     collection.search(new JSONObject(), listener);
-    verify(collection).search(any(JSONObject.class), eq((KuzzleOptions)null), eq(listener));
+    verify(collection).search(any(JSONObject.class), eq((Options)null), eq(listener));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -65,7 +65,7 @@ public class searchTest {
 
   @Test(expected = RuntimeException.class)
   public void testSearchQueryException() throws JSONException {
-    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     collection.search(null, listener);
   }
 
@@ -77,7 +77,7 @@ public class searchTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("count", 42)));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     doThrow(JSONException.class).when(listener).onSuccess(any(Integer.class));
     collection.search(null, listener);
   }
@@ -137,7 +137,7 @@ public class searchTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject());
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
     collection.search(filters, null, new KuzzleResponseListener<KuzzleDocumentList>() {
       @Override
@@ -156,7 +156,7 @@ public class searchTest {
     });
     collection.search(filters, mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "search");
   }
@@ -236,7 +236,7 @@ public class searchTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject());
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
     collection.search(filters, null, new KuzzleResponseListener<KuzzleDocumentList>() {
       @Override
@@ -260,7 +260,7 @@ public class searchTest {
     });
     collection.search(filters, mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "search");
   }

@@ -88,7 +88,7 @@ public class Document {
    *
    * @param options the options
    */
-  public void delete(final KuzzleOptions options) {
+  public void delete(final Options options) {
     this.delete(options, null);
   }
 
@@ -114,7 +114,7 @@ public class Document {
    * @param options  the options
    * @param listener the listener
    */
-  public void delete(final KuzzleOptions options, final KuzzleResponseListener<String> listener) {
+  public void delete(final Options options, final KuzzleResponseListener<String> listener) {
     try {
       if (this.id == null) {
         throw new IllegalStateException("Document.delete: cannot delete a document without a document ID");
@@ -160,7 +160,7 @@ public class Document {
    * @param options  the options
    * @param listener the listener
    */
-  public void refresh(final KuzzleOptions options, @NonNull final KuzzleResponseListener<Document> listener) {
+  public void refresh(final Options options, @NonNull final KuzzleResponseListener<Document> listener) {
     if (this.id == null) {
       throw new IllegalStateException("Document.refresh: cannot retrieve a document if no id has been provided");
     }
@@ -220,7 +220,7 @@ public class Document {
    * @param options the options
    * @return the kuzzle document
    */
-  public Document save(final KuzzleOptions options) {
+  public Document save(final Options options) {
     return this.save(options, null);
   }
 
@@ -245,7 +245,7 @@ public class Document {
    * @param listener the listener
    * @return kuzzle document
    */
-  public Document save(final KuzzleOptions options, final KuzzleResponseListener<Document> listener) {
+  public Document save(final Options options, final KuzzleResponseListener<Document> listener) {
     try {
       kuzzle.query(this.dataCollection.makeQueryArgs("document", "createOrReplace"), this.serialize(), options, new OnQueryDoneListener() {
         @Override
@@ -282,7 +282,7 @@ public class Document {
    * @param options the options
    * @return kuzzle document
    */
-  public Document publish(final KuzzleOptions options) {
+  public Document publish(final Options options) {
     try {
       kuzzle.query(this.dataCollection.makeQueryArgs("realtime", "publish"), this.serialize(), options, null);
     } catch (JSONException e) {
@@ -379,7 +379,7 @@ public class Document {
    * @param listener the listener
    * @return kuzzle document
    */
-  public KuzzleSubscribeListener subscribe(final KuzzleRoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public KuzzleSubscribeListener subscribe(final RoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
     if (this.id == null) {
       throw new IllegalStateException("Document.subscribe: cannot subscribe to a document if no ID has been provided");
     }

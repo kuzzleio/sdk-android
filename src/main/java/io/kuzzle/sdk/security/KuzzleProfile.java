@@ -7,7 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
@@ -49,7 +49,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle profile
    * @throws JSONException the json exception
    */
-  public KuzzleProfile save(final KuzzleOptions options, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
+  public KuzzleProfile save(final Options options, final KuzzleResponseListener<KuzzleProfile> listener) throws JSONException {
     JSONObject data;
 
     if (this.policies.length() == 0) {
@@ -96,7 +96,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle profile
    * @throws JSONException the json exception
    */
-  public KuzzleProfile save(final KuzzleOptions options) throws JSONException {
+  public KuzzleProfile save(final Options options) throws JSONException {
     return this.save(options, null);
   }
 

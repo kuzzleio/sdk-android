@@ -7,10 +7,10 @@ import org.junit.Test;
 
 import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleRoom;
-import io.kuzzle.sdk.core.KuzzleRoomOptions;
+import io.kuzzle.sdk.core.Room;
+import io.kuzzle.sdk.core.RoomOptions;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
-import io.kuzzle.test.testUtils.KuzzleRoomExtend;
+import io.kuzzle.test.testUtils.RoomExtend;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -24,7 +24,7 @@ public class constructorTest {
   private JSONObject mockNotif = new JSONObject();
   private JSONObject  mockResponse = new JSONObject();
   private Kuzzle k;
-  private KuzzleRoomExtend room;
+  private RoomExtend room;
 
   @Before
   public void setUp() throws JSONException {
@@ -42,16 +42,16 @@ public class constructorTest {
     mockResponse.put("result", new JSONObject().put("channel", "channel").put("roomId", "42"));
     k = mock(Kuzzle.class);
     when(k.getHeaders()).thenReturn(new JSONObject());
-    room = new KuzzleRoomExtend(new Collection(k, "test", "index"));
+    room = new RoomExtend(new Collection(k, "test", "index"));
   }
 
   @Test
   public void setSubscribeToSelfThroughConstructor() throws JSONException {
     JSONObject meta = new JSONObject();
     meta.put("foo", "bar");
-    KuzzleRoomOptions options = new KuzzleRoomOptions();
+    RoomOptions options = new RoomOptions();
     options.setSubscribeToSelf(false);
-    KuzzleRoom room = new KuzzleRoom(new Collection(k, "test", "index"), options);
+    Room room = new Room(new Collection(k, "test", "index"), options);
     assertEquals(room.isSubscribeToSelf(), false);
     room.setSubscribeToSelf(true);
     assertEquals(room.isSubscribeToSelf(), true);
@@ -61,7 +61,7 @@ public class constructorTest {
   public void testConstructorException() {
     Collection fake = spy(new Collection(k, "test", "index"));
     doThrow(JSONException.class).when(fake).getHeaders();
-    room = new KuzzleRoomExtend(fake);
+    room = new RoomExtend(fake);
   }
 
   @Test
@@ -111,9 +111,9 @@ public class constructorTest {
   public void setMetadataThroughConstructor() throws JSONException {
     JSONObject meta = new JSONObject();
     meta.put("foo", "bar");
-    KuzzleRoomOptions options = new KuzzleRoomOptions();
+    RoomOptions options = new RoomOptions();
     options.setMetadata(meta);
-    KuzzleRoom room = new KuzzleRoom(new Collection(k, "test", "index"), options);
+    Room room = new Room(new Collection(k, "test", "index"), options);
     assertEquals(room.getMetadata().get("foo"), "bar");
     JSONObject meta2 = new JSONObject();
     meta2.put("oof", "rab");
@@ -124,13 +124,13 @@ public class constructorTest {
   @Test(expected = IllegalArgumentException.class)
   public void testConstructorWithNullCollection() {
     // Should throw an exception
-    new KuzzleRoom(null);
+    new Room(null);
   }
 
   @Test
   public void testCollection() {
     Collection collection = new Collection(k, "test", "index");
-    KuzzleRoom room = new KuzzleRoom(collection);
+    Room room = new Room(collection);
     assertEquals(room.getCollection(), collection.getCollection());
   }
 }

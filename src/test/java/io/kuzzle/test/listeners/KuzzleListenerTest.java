@@ -11,7 +11,7 @@ import org.mockito.stubbing.Answer;
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
@@ -38,7 +38,7 @@ public class KuzzleListenerTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     s = mock(Socket.class);
     KuzzleExtend extended = new KuzzleExtend("localhost", options, null);
@@ -100,7 +100,7 @@ public class KuzzleListenerTest {
     event = mock(Event.class);
     kuzzleExtend.addListener(KuzzleEvent.offlineQueuePush, event);
 
-    KuzzleOptions opts = new KuzzleOptions().setQueuable(true);
+    Options opts = new Options().setQueuable(true);
     kuzzleExtend.setState(KuzzleStates.OFFLINE);
     kuzzleExtend.startQueuing();
 
@@ -120,7 +120,7 @@ public class KuzzleListenerTest {
     kuzzleExtend.addListener(KuzzleEvent.offlineQueuePop, event);
     mockAnswer(Socket.EVENT_RECONNECT);
 
-    KuzzleOptions opts = new KuzzleOptions().setQueuable(true);
+    Options opts = new Options().setQueuable(true);
     kuzzleExtend.setState(KuzzleStates.OFFLINE);
     kuzzleExtend.startQueuing();
 

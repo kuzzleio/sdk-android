@@ -9,7 +9,7 @@ import org.mockito.stubbing.Answer;
 
 import java.net.URISyntaxException;
 
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.IKuzzleEventListener;
@@ -38,7 +38,7 @@ public class eventSystemTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 

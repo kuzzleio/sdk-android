@@ -11,7 +11,7 @@ import org.mockito.stubbing.Answer;
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleQueue;
@@ -38,7 +38,7 @@ public class offlineQueueLoaderTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     s = mock(Socket.class);
     KuzzleExtend extended = new KuzzleExtend("localhost", options, null);
@@ -65,7 +65,7 @@ public class offlineQueueLoaderTest {
     kuzzleExtend.setAutoReplay(true);
     mockAnswer(Socket.EVENT_RECONNECT);
 
-    KuzzleOptions opts = new KuzzleOptions().setQueuable(true);
+    Options opts = new Options().setQueuable(true);
     kuzzleExtend.setState(KuzzleStates.OFFLINE);
     kuzzleExtend.startQueuing();
 
@@ -104,7 +104,7 @@ public class offlineQueueLoaderTest {
     kuzzleExtend.setAutoReplay(true);
     mockAnswer(Socket.EVENT_RECONNECT);
 
-    KuzzleOptions opts = new KuzzleOptions().setQueuable(true);
+    Options opts = new Options().setQueuable(true);
     kuzzleExtend.setState(KuzzleStates.OFFLINE);
     kuzzleExtend.startQueuing();
 
@@ -138,7 +138,7 @@ public class offlineQueueLoaderTest {
     kuzzleExtend.setAutoReplay(true);
     mockAnswer(Socket.EVENT_RECONNECT);
 
-    KuzzleOptions opts = new KuzzleOptions().setQueuable(true);
+    Options opts = new Options().setQueuable(true);
     kuzzleExtend.setState(KuzzleStates.OFFLINE);
     kuzzleExtend.startQueuing();
 
@@ -172,7 +172,7 @@ public class offlineQueueLoaderTest {
     kuzzleExtend.setAutoReplay(true);
     mockAnswer(Socket.EVENT_RECONNECT);
 
-    KuzzleOptions opts = new KuzzleOptions().setQueuable(true);
+    Options opts = new Options().setQueuable(true);
     kuzzleExtend.setState(KuzzleStates.OFFLINE);
     kuzzleExtend.startQueuing();
 
@@ -206,7 +206,7 @@ public class offlineQueueLoaderTest {
     kuzzleExtend.setAutoReplay(true);
     mockAnswer(Socket.EVENT_RECONNECT);
 
-    KuzzleOptions opts = new KuzzleOptions().setQueuable(true);
+    Options opts = new Options().setQueuable(true);
     kuzzleExtend.setState(KuzzleStates.OFFLINE);
     kuzzleExtend.startQueuing();
 

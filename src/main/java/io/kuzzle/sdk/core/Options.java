@@ -8,7 +8,7 @@ import io.kuzzle.sdk.enums.Mode;
 /**
  * The type Kuzzle options.
  */
-public class KuzzleOptions {
+public class Options {
   // Default values
   private boolean autoQueue = false;
   private boolean autoReconnect = true;
@@ -49,7 +49,7 @@ public class KuzzleOptions {
    * @param autoReconnect the auto reconnect
    * @return the auto reconnect
    */
-  public KuzzleOptions setAutoReconnect(boolean autoReconnect) {
+  public Options setAutoReconnect(boolean autoReconnect) {
     this.autoReconnect = autoReconnect;
     return this;
   }
@@ -69,7 +69,7 @@ public class KuzzleOptions {
    * @param headers the headers
    * @return the headers
    */
-  public KuzzleOptions setHeaders(JSONObject headers) {
+  public Options setHeaders(JSONObject headers) {
     this.headers = headers;
     return this;
   }
@@ -89,7 +89,7 @@ public class KuzzleOptions {
    * @param updateIfExists the update if exists
    * @return the update if exists
    */
-  public KuzzleOptions setUpdateIfExists(boolean updateIfExists) {
+  public Options setUpdateIfExists(boolean updateIfExists) {
     this.updateIfExists = updateIfExists;
     return this;
   }
@@ -109,7 +109,7 @@ public class KuzzleOptions {
    * @param metadata the metadata
    * @return the metadata
    */
-  public KuzzleOptions setMetadata(JSONObject metadata) {
+  public Options setMetadata(JSONObject metadata) {
     this.metadata = metadata;
     return this;
   }
@@ -129,7 +129,7 @@ public class KuzzleOptions {
    * @param connect the connect
    * @return the connect
    */
-  public KuzzleOptions setConnect(Mode connect) {
+  public Options setConnect(Mode connect) {
     this.connect = connect;
     return this;
   }
@@ -149,7 +149,7 @@ public class KuzzleOptions {
    * @param reconnectionDelay the reconnection delay
    * @return the reconnection delay
    */
-  public KuzzleOptions setReconnectionDelay(long reconnectionDelay) {
+  public Options setReconnectionDelay(long reconnectionDelay) {
     this.reconnectionDelay = reconnectionDelay;
     return this;
   }
@@ -169,7 +169,7 @@ public class KuzzleOptions {
    * @param offlineMode the offline mode
    * @return the offline mode
    */
-  public KuzzleOptions setOfflineMode(Mode offlineMode) {
+  public Options setOfflineMode(Mode offlineMode) {
     this.offlineMode = offlineMode;
     return this;
   }
@@ -189,7 +189,7 @@ public class KuzzleOptions {
    * @param queueTTL the queue ttl
    * @return the queue ttl
    */
-  public KuzzleOptions setQueueTTL(int queueTTL) {
+  public Options setQueueTTL(int queueTTL) {
     this.queueTTL = queueTTL;
     return this;
   }
@@ -209,7 +209,7 @@ public class KuzzleOptions {
    * @param autoReplay the auto replay
    * @return the auto replay
    */
-  public KuzzleOptions setAutoReplay(boolean autoReplay) {
+  public Options setAutoReplay(boolean autoReplay) {
     this.autoReplay = autoReplay;
     return this;
   }
@@ -229,7 +229,7 @@ public class KuzzleOptions {
    * @param queuable the queuable
    * @return the queuable
    */
-  public KuzzleOptions setQueuable(boolean queuable) {
+  public Options setQueuable(boolean queuable) {
     this.queuable = queuable;
     return this;
   }
@@ -249,7 +249,7 @@ public class KuzzleOptions {
    * @param queueMaxSize the queue max size
    * @return the queue max size
    */
-  public KuzzleOptions setQueueMaxSize(int queueMaxSize) {
+  public Options setQueueMaxSize(int queueMaxSize) {
     this.queueMaxSize = queueMaxSize;
     return this;
   }
@@ -269,7 +269,7 @@ public class KuzzleOptions {
    * @param replayInterval the replay interval
    * @return the replay interval
    */
-  public KuzzleOptions setReplayInterval(int replayInterval) {
+  public Options setReplayInterval(int replayInterval) {
     this.replayInterval = replayInterval;
     return this;
   }
@@ -289,7 +289,7 @@ public class KuzzleOptions {
    * @param autoResubscribe the auto resubscribe
    * @return the auto resubscribe
    */
-  public KuzzleOptions setAutoResubscribe(boolean autoResubscribe) {
+  public Options setAutoResubscribe(boolean autoResubscribe) {
     this.autoResubscribe = autoResubscribe;
     return this;
   }
@@ -309,7 +309,7 @@ public class KuzzleOptions {
    * @param type the type
    * @return the collection type
    */
-  public KuzzleOptions setCollectionType(KuzzleCollectionType type) {
+  public Options setCollectionType(KuzzleCollectionType type) {
     this.collectionType = type;
     return this;
   }
@@ -320,7 +320,7 @@ public class KuzzleOptions {
    * @param index the index
    * @return the default index
    */
-  public KuzzleOptions setDefaultIndex(final String index) {
+  public Options setDefaultIndex(final String index) {
     this.defaultIndex = index;
     return this;
   }
@@ -340,7 +340,7 @@ public class KuzzleOptions {
    * @param autoQueue the auto queue
    * @return the auto queue
    */
-  public KuzzleOptions setAutoQueue(boolean autoQueue) {
+  public Options setAutoQueue(boolean autoQueue) {
     this.autoQueue = autoQueue;
     return this;
   }
@@ -360,7 +360,7 @@ public class KuzzleOptions {
    * @param replace the replace
    * @return the replace if exist
    */
-  public KuzzleOptions setReplaceIfExist(boolean replace) {
+  public Options setReplaceIfExist(boolean replace) {
     this.replaceIfExist = replace;
     return this;
   }
@@ -378,7 +378,7 @@ public class KuzzleOptions {
     return from;
   }
 
-  public KuzzleOptions setFrom(Long from) {
+  public Options setFrom(Long from) {
     this.from = from;
     return this;
   }
@@ -387,12 +387,12 @@ public class KuzzleOptions {
     return size;
   }
 
-  public KuzzleOptions setSize(Long size) {
+  public Options setSize(Long size) {
     this.size = size;
     return this;
   }
 
-  public KuzzleOptions setPort(Integer port) {
+  public Options setPort(Integer port) {
     this.port = port;
     return this;
   }
@@ -405,7 +405,7 @@ public class KuzzleOptions {
     return refresh;
   }
 
-  public KuzzleOptions setRefresh(String refresh) {
+  public Options setRefresh(String refresh) {
     this.refresh = refresh;
     return this;
   }

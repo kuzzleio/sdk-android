@@ -10,7 +10,7 @@ import org.mockito.stubbing.Answer;
 import java.net.URISyntaxException;
 import java.util.Date;
 
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
@@ -37,7 +37,7 @@ public class queueManagementTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
@@ -60,7 +60,7 @@ public class queueManagementTest {
 
   @Test
   public void testFlushQueue() throws URISyntaxException, JSONException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setQueueTTL(1);
     options.setAutoReplay(true);
     options.setConnect(Mode.MANUAL);
@@ -82,7 +82,7 @@ public class queueManagementTest {
 
   @Test
   public void testManualQueuing() throws URISyntaxException, JSONException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setAutoReconnect(true);
     options.setAutoQueue(false);
     options.setDefaultIndex("testIndex");
@@ -122,7 +122,7 @@ public class queueManagementTest {
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setAutoReconnect(false);
     options.setDefaultIndex("testIndex");
     kuzzle = new KuzzleExtend("localhost", options, null);
@@ -137,7 +137,7 @@ public class queueManagementTest {
 
   @Test
   public void testQueueMaxSize() throws URISyntaxException, JSONException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setAutoReconnect(true);
     options.setAutoQueue(true);
     options.setQueueTTL(1000);
@@ -167,7 +167,7 @@ public class queueManagementTest {
 
   @Test
   public void testDequeue() throws URISyntaxException, JSONException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setAutoReconnect(true);
     options.setQueueTTL(10000);
     options.setAutoReplay(true);

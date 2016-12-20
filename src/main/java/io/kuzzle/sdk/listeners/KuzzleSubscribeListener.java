@@ -5,14 +5,14 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.kuzzle.sdk.core.KuzzleRoom;
+import io.kuzzle.sdk.core.Room;
 
 public class KuzzleSubscribeListener {
   private JSONObject  error;
-  private KuzzleRoom  room;
-  private List<KuzzleResponseListener<KuzzleRoom>>  cbs = new ArrayList<>();
+  private Room room;
+  private List<KuzzleResponseListener<Room>>  cbs = new ArrayList<>();
 
-  public void onDone(KuzzleResponseListener<KuzzleRoom> cb) {
+  public void onDone(KuzzleResponseListener<Room> cb) {
     if (this.error != null) {
       cb.onError(this.error);
     } else if (this.room != null) {
@@ -22,11 +22,11 @@ public class KuzzleSubscribeListener {
     }
   }
 
-  public KuzzleSubscribeListener done(JSONObject error, KuzzleRoom room) {
+  public KuzzleSubscribeListener done(JSONObject error, Room room) {
     this.error = error;
     this.room = room;
 
-    for (KuzzleResponseListener<KuzzleRoom> cb : cbs) {
+    for (KuzzleResponseListener<Room> cb : cbs) {
       if (this.error != null) {
         cb.onError(this.error);
       } else if (this.room != null) {
@@ -40,7 +40,7 @@ public class KuzzleSubscribeListener {
     return error;
   }
 
-  public KuzzleRoom getRoom() {
+  public Room getRoom() {
     return room;
   }
 }

@@ -13,7 +13,7 @@ import java.net.URISyntaxException;
 import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
@@ -39,7 +39,7 @@ public class refreshTest {
 
   @Before
   public void setUp() throws URISyntaxException, JSONException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setState(KuzzleStates.CONNECTED);
@@ -54,7 +54,7 @@ public class refreshTest {
     doc.setId("foo");
     doc = spy(doc);
     doc.refresh(mockListener);
-    verify(doc).refresh(eq((KuzzleOptions)null), eq(mockListener));
+    verify(doc).refresh(eq((Options)null), eq(mockListener));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -66,7 +66,7 @@ public class refreshTest {
   @Test(expected = RuntimeException.class)
   public void testRefreshQueryException() throws JSONException {
     doc.setId("42");
-    doThrow(JSONException.class).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     doc.refresh(mockListener);
   }
 
@@ -84,7 +84,7 @@ public class refreshTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(result);
         return null;
       }
-    }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     doThrow(JSONException.class).when(mockListener).onSuccess(any(Document.class));
     doc.refresh(mockListener);
   }
@@ -108,7 +108,7 @@ public class refreshTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(null);
         return null;
       }
-    }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     doc.setId("42");
     doc.setContent("foo", "baz");
     doc.refresh(new KuzzleResponseListener<Document>() {
@@ -129,9 +129,9 @@ public class refreshTest {
       }
     });
     doc.refresh(mockListener);
-    doc.refresh(mock(KuzzleOptions.class), mockListener);
+    doc.refresh(mock(Options.class), mockListener);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(k, times(3)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(k, times(3)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "get");
 

@@ -6,20 +6,20 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import io.kuzzle.sdk.core.Collection;
-import io.kuzzle.sdk.core.KuzzleRoom;
-import io.kuzzle.sdk.core.KuzzleRoomOptions;
+import io.kuzzle.sdk.core.Room;
+import io.kuzzle.sdk.core.RoomOptions;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 
 /**
  * Created by scottinet on 19/02/16.
  */
-public class KuzzleRoomExtend extends KuzzleRoom {
+public class RoomExtend extends Room {
 
-  public KuzzleRoomExtend(Collection kuzzleDataCollection) {
+  public RoomExtend(Collection kuzzleDataCollection) {
     super(kuzzleDataCollection);
   }
 
-  public KuzzleRoomExtend(Collection kuzzleDataCollection, KuzzleRoomOptions options) {
+  public RoomExtend(Collection kuzzleDataCollection, RoomOptions options) {
     super(kuzzleDataCollection, options);
   }
 
@@ -44,12 +44,12 @@ public class KuzzleRoomExtend extends KuzzleRoom {
   }
 
   @Override
-  public KuzzleRoom unsubscribe() {
+  public Room unsubscribe() {
     // do nothing
     return this;
   }
 
-  public KuzzleRoom superUnsubscribe() {
+  public Room superUnsubscribe() {
     return super.unsubscribe();
   }
 
@@ -57,7 +57,7 @@ public class KuzzleRoomExtend extends KuzzleRoom {
     return super.unsubscribeTask(timer, roomId, data);
   }
 
-  public KuzzleRoom makeHeadersNull() {
+  public Room makeHeadersNull() {
     super.headers = null;
     return this;
   }

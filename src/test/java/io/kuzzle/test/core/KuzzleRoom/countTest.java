@@ -11,13 +11,13 @@ import org.mockito.stubbing.Answer;
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Collection;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.test.testUtils.KuzzleExtend;
-import io.kuzzle.test.testUtils.KuzzleRoomExtend;
+import io.kuzzle.test.testUtils.RoomExtend;
 import io.socket.client.Socket;
 
 import static org.junit.Assert.assertEquals;
@@ -46,7 +46,7 @@ public class countTest {
   private JSONObject mockNotif = new JSONObject();
   private JSONObject  mockResponse = new JSONObject();
   private KuzzleExtend k;
-  private KuzzleRoomExtend room;
+  private RoomExtend room;
 
   @Before
   public void setUp() throws JSONException, URISyntaxException {
@@ -66,7 +66,7 @@ public class countTest {
     k.setSocket(mock(Socket.class));
     k.setState(KuzzleStates.CONNECTED);
     when(k.getHeaders()).thenReturn(new JSONObject());
-    room = new KuzzleRoomExtend(new Collection(k, "test", "index"));
+    room = new RoomExtend(new Collection(k, "test", "index"));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -76,13 +76,13 @@ public class countTest {
 
   @Test
   public void testCountWhileSubscribing() throws JSONException, URISyntaxException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
-    room = new KuzzleRoomExtend(new Collection(extended, "test", "index"));
+    room = new RoomExtend(new Collection(extended, "test", "index"));
     room.setRoomId("foobar");
     room.setSubscribing(true);
     room.count(spyListener);
@@ -106,7 +106,7 @@ public class countTest {
         }
         return null;
       }
-    }).when(extended).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(extended).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     room.renew(listener);
   }
 
@@ -145,7 +145,7 @@ public class countTest {
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
-    room = new KuzzleRoomExtend(new Collection(extended, "test", "index"));
+    room = new RoomExtend(new Collection(extended, "test", "index"));
     room.setRoomId("foobar");
 
     doAnswer(new Answer() {

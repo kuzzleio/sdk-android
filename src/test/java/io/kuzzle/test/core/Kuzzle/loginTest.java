@@ -11,7 +11,7 @@ import org.mockito.stubbing.Answer;
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.IKuzzleEventListener;
@@ -36,7 +36,7 @@ public class loginTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
@@ -84,12 +84,12 @@ public class loginTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     kuzzle.login("local", new JSONObject().put("username", "username").put("password", "password"));
     kuzzle.login("local", new JSONObject().put("username", "username").put("password", "password"), 42);
     kuzzle.login("local", new JSONObject().put("username", "username").put("password", "password"), 42, listenerSpy);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(3)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(3)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "auth");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "login");
   }
@@ -110,7 +110,7 @@ public class loginTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     kuzzle.login("local", new JSONObject());
     verify(kuzzle, times(2)).emitEvent(any(KuzzleEvent.class), any(Object.class));
   }
@@ -118,7 +118,7 @@ public class loginTest {
   @Test(expected = RuntimeException.class)
   public void testLoginQueryException() throws JSONException {
     kuzzle = spy(kuzzle);
-    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     kuzzle.login("local", new JSONObject());
   }
 
@@ -131,7 +131,7 @@ public class loginTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("jwt", "token")));
         return null;
       }
-    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     doThrow(JSONException.class).when(kuzzle).setJwtToken(any(String.class));
     kuzzle.login("local", new JSONObject());
   }
@@ -145,7 +145,7 @@ public class loginTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     doThrow(JSONException.class).when(kuzzle).emitEvent(any(KuzzleEvent.class), any(Object.class));
     kuzzle.login("local", new JSONObject());
   }

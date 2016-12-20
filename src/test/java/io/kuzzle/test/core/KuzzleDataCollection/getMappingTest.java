@@ -10,7 +10,7 @@ import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Collection;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
@@ -34,7 +34,7 @@ public class getMappingTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
@@ -50,7 +50,7 @@ public class getMappingTest {
   public void checkSignaturesVariants() {
     collection = spy(collection);
     collection.getMapping(listener);
-    verify(collection).getMapping(eq((KuzzleOptions)null), eq(listener));
+    verify(collection).getMapping(eq((Options)null), eq(listener));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -60,10 +60,10 @@ public class getMappingTest {
 
   @Test
   public void testGetMapping() throws JSONException {
-    collection.getMapping(mock(KuzzleOptions.class), mock(KuzzleResponseListener.class));
+    collection.getMapping(mock(Options.class), mock(KuzzleResponseListener.class));
     collection.getMapping(mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "collection");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "getMapping");
   }

@@ -10,11 +10,8 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.net.URISyntaxException;
-import java.security.Timestamp;
-import java.util.Date;
 
-import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
@@ -27,7 +24,6 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class getStatisticsTest {
@@ -36,7 +32,7 @@ public class getStatisticsTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
@@ -62,8 +58,8 @@ public class getStatisticsTest {
     listener = spy(listener);
     kuzzle.getStatistics(listener);
     kuzzle.getStatistics(System.currentTimeMillis(), listener);
-    verify(kuzzle).getStatistics(any(KuzzleOptions.class), any(KuzzleResponseListener.class));
-    verify(kuzzle).getStatistics(any(long.class), any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+    verify(kuzzle).getStatistics(any(Options.class), any(KuzzleResponseListener.class));
+    verify(kuzzle).getStatistics(any(long.class), any(Options.class), any(KuzzleResponseListener.class));
   }
 
   @Test(expected = RuntimeException.class)
@@ -77,14 +73,14 @@ public class getStatisticsTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("hits", mock(JSONArray.class))));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     kuzzle.getStatistics(System.currentTimeMillis(), listener);
   }
 
   @Test(expected = RuntimeException.class)
   public void testGetStatisticsQueryException() throws JSONException {
     kuzzle = spy(kuzzle);
-    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     kuzzle.getStatistics(System.currentTimeMillis(), listener);
   }
 
@@ -129,10 +125,10 @@ public class getStatisticsTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     kuzzle.getStatistics(System.currentTimeMillis(), mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "server");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "getStats");
   }

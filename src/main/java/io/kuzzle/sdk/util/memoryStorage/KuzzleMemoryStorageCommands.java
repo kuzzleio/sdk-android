@@ -2,250 +2,250 @@ package io.kuzzle.sdk.util.memoryStorage;
 
 import java.util.Map;
 
-import io.kuzzle.sdk.core.KuzzleMemoryStorage;
+import io.kuzzle.sdk.core.MemoryStorage;
 
 public interface KuzzleMemoryStorageCommands {
 
-  KuzzleMemoryStorage append(final String key, final String value);
+  MemoryStorage append(final String key, final String value);
 
-  KuzzleMemoryStorage bgrewriteaof();
+  MemoryStorage bgrewriteaof();
 
-  KuzzleMemoryStorage bgsave();
+  MemoryStorage bgsave();
 
-  KuzzleMemoryStorage bitcount(final String key);
+  MemoryStorage bitcount(final String key);
 
-  KuzzleMemoryStorage bitcount(final String key, long start, long end);
+  MemoryStorage bitcount(final String key, long start, long end);
 
-  KuzzleMemoryStorage bitop(final BitOP op, final String destKey, final String... srcKeys);
+  MemoryStorage bitop(final BitOP op, final String destKey, final String... srcKeys);
 
-  KuzzleMemoryStorage bitpos(final String id, final long bit);
+  MemoryStorage bitpos(final String id, final long bit);
 
-  KuzzleMemoryStorage bitpos(final String id, final long bit, final long start);
+  MemoryStorage bitpos(final String id, final long bit, final long start);
 
-  KuzzleMemoryStorage bitpos(final String id, final long bit, final long start, final long end);
+  MemoryStorage bitpos(final String id, final long bit, final long start, final long end);
 
-  KuzzleMemoryStorage blpop(final String[] args, final long timeout);
+  MemoryStorage blpop(final String[] args, final long timeout);
 
-  KuzzleMemoryStorage brpoplpush(final String source, final String destination, final int timeout);
+  MemoryStorage brpoplpush(final String source, final String destination, final int timeout);
 
-  KuzzleMemoryStorage dbsize();
+  MemoryStorage dbsize();
 
-  KuzzleMemoryStorage decrby(final String key, final long integer);
+  MemoryStorage decrby(final String key, final long integer);
 
-  KuzzleMemoryStorage discard();
+  MemoryStorage discard();
 
-  KuzzleMemoryStorage exec();
+  MemoryStorage exec();
 
-  KuzzleMemoryStorage expire(final String key, final int seconds);
+  MemoryStorage expire(final String key, final int seconds);
 
-  KuzzleMemoryStorage expireat(final String key, final long unixTime);
+  MemoryStorage expireat(final String key, final long unixTime);
 
-  KuzzleMemoryStorage flushdb();
+  MemoryStorage flushdb();
 
-  KuzzleMemoryStorage getbit(String key, long offset);
+  MemoryStorage getbit(String key, long offset);
 
-  KuzzleMemoryStorage getrange(String key, long startOffset, long endOffset);
+  MemoryStorage getrange(String key, long startOffset, long endOffset);
 
-  KuzzleMemoryStorage hdel(final String key, final String... fields);
+  MemoryStorage hdel(final String key, final String... fields);
 
-  KuzzleMemoryStorage hexists(final String key, final String field);
+  MemoryStorage hexists(final String key, final String field);
 
-  KuzzleMemoryStorage hincrby(final String key, final String field, final double value);
+  MemoryStorage hincrby(final String key, final String field, final double value);
 
-  KuzzleMemoryStorage hmset(final String key, final Map<String, String> hash);
+  MemoryStorage hmset(final String key, final Map<String, String> hash);
 
-  KuzzleMemoryStorage hset(final String key, final String field, final String value);
+  MemoryStorage hset(final String key, final String field, final String value);
 
-  KuzzleMemoryStorage info(final String section);
+  MemoryStorage info(final String section);
 
-  KuzzleMemoryStorage keys(final String pattern);
+  MemoryStorage keys(final String pattern);
 
-  KuzzleMemoryStorage lastsave();
+  MemoryStorage lastsave();
 
-  KuzzleMemoryStorage lindex(final String key, final long index);
+  MemoryStorage lindex(final String key, final long index);
 
-  KuzzleMemoryStorage linsert(final String key, final Position where, final String pivot, final String value);
+  MemoryStorage linsert(final String key, final Position where, final String pivot, final String value);
 
-  KuzzleMemoryStorage lpush(final String key, final String... values);
+  MemoryStorage lpush(final String key, final String... values);
 
-  KuzzleMemoryStorage lrange(final String key, final long start, final long end);
+  MemoryStorage lrange(final String key, final long start, final long end);
 
-  KuzzleMemoryStorage lrem(final String key, final long count, final String value);
+  MemoryStorage lrem(final String key, final long count, final String value);
 
-  KuzzleMemoryStorage lset(final String key, final long index, final String value);
+  MemoryStorage lset(final String key, final long index, final String value);
 
-  KuzzleMemoryStorage ltrim(final String key, final long start, final long end);
+  MemoryStorage ltrim(final String key, final long start, final long end);
 
-  KuzzleMemoryStorage mset(final String... keysvalues);
+  MemoryStorage mset(final String... keysvalues);
 
-  KuzzleMemoryStorage multi();
+  MemoryStorage multi();
 
-  KuzzleMemoryStorage object(final ObjectCommand subcommand, final String args);
+  MemoryStorage object(final ObjectCommand subcommand, final String args);
 
-  KuzzleMemoryStorage pexpire(final String key, final long milliseconds);
+  MemoryStorage pexpire(final String key, final long milliseconds);
 
-  KuzzleMemoryStorage pexpireat(final String key, final long timestamp);
+  MemoryStorage pexpireat(final String key, final long timestamp);
 
-  KuzzleMemoryStorage pfadd(final String key, final String... elements);
+  MemoryStorage pfadd(final String key, final String... elements);
 
-  KuzzleMemoryStorage pfmerge(final String destKey, final String... sourceKeys);
+  MemoryStorage pfmerge(final String destKey, final String... sourceKeys);
 
-  KuzzleMemoryStorage ping();
+  MemoryStorage ping();
 
-  KuzzleMemoryStorage psetex(final String key, final long milliseconds, final String value);
+  MemoryStorage psetex(final String key, final long milliseconds, final String value);
 
-  KuzzleMemoryStorage publish(final String channel, final String message);
+  MemoryStorage publish(final String channel, final String message);
 
-  KuzzleMemoryStorage randomkey();
+  MemoryStorage randomkey();
 
-  KuzzleMemoryStorage rename(final String oldkey, final String newkey);
+  MemoryStorage rename(final String oldkey, final String newkey);
 
-  KuzzleMemoryStorage renamenx(final String oldkey, final String newkey);
+  MemoryStorage renamenx(final String oldkey, final String newkey);
 
-  KuzzleMemoryStorage restore(final String key, final long ttl, final String content);
+  MemoryStorage restore(final String key, final long ttl, final String content);
 
-  KuzzleMemoryStorage rpoplpush(final String srckey, final String dstkey);
+  MemoryStorage rpoplpush(final String srckey, final String dstkey);
 
-  KuzzleMemoryStorage sadd(final String key, final String... members);
+  MemoryStorage sadd(final String key, final String... members);
 
-  KuzzleMemoryStorage save();
+  MemoryStorage save();
 
-  KuzzleMemoryStorage sdiffstore(final String dstkey, final String... keys);
+  MemoryStorage sdiffstore(final String dstkey, final String... keys);
 
-  KuzzleMemoryStorage set(final String key, final String value, final SetParams params);
+  MemoryStorage set(final String key, final String value, final SetParams params);
 
-  KuzzleMemoryStorage setbit(final String key, final long offset, final Object value);
+  MemoryStorage setbit(final String key, final long offset, final Object value);
 
-  KuzzleMemoryStorage setex(final String key, final int seconds, final String value);
+  MemoryStorage setex(final String key, final int seconds, final String value);
 
-  KuzzleMemoryStorage setrange(final String key, final long offset, final String value);
+  MemoryStorage setrange(final String key, final long offset, final String value);
 
-  KuzzleMemoryStorage sinterstore(final String dstkey, final String... keys);
+  MemoryStorage sinterstore(final String dstkey, final String... keys);
 
-  KuzzleMemoryStorage sismember(final String key, final String member);
+  MemoryStorage sismember(final String key, final String member);
 
-  KuzzleMemoryStorage smove(final String srckey, final String dstkey, final String member);
+  MemoryStorage smove(final String srckey, final String dstkey, final String member);
 
-  KuzzleMemoryStorage spop(final String key);
+  MemoryStorage spop(final String key);
 
-  KuzzleMemoryStorage spop(final String key, final long count);
+  MemoryStorage spop(final String key, final long count);
 
-  KuzzleMemoryStorage srem(final String key, final String... members);
+  MemoryStorage srem(final String key, final String... members);
 
-  KuzzleMemoryStorage sunionstore(final String dstkey, final String... keys);
+  MemoryStorage sunionstore(final String dstkey, final String... keys);
 
-  KuzzleMemoryStorage unwatch();
+  MemoryStorage unwatch();
 
-  KuzzleMemoryStorage wait(final int replicas, final long timeout);
+  MemoryStorage wait(final int replicas, final long timeout);
 
-  KuzzleMemoryStorage zcount(final String key, final Object min, final Object max);
+  MemoryStorage zcount(final String key, final Object min, final Object max);
 
-  KuzzleMemoryStorage zincrby(final String key, final double score, final String member);
+  MemoryStorage zincrby(final String key, final double score, final String member);
 
-  KuzzleMemoryStorage zinterstore(final String destination, final String[] sets, final ZParams.Aggregate aggregate, final Object... weights);
+  MemoryStorage zinterstore(final String destination, final String[] sets, final ZParams.Aggregate aggregate, final Object... weights);
 
-  KuzzleMemoryStorage zlexcount(final String key, final long min, final long max);
+  MemoryStorage zlexcount(final String key, final long min, final long max);
 
-  KuzzleMemoryStorage zrange(final String key, final long start, final long end, boolean withscores);
+  MemoryStorage zrange(final String key, final long start, final long end, boolean withscores);
 
-  KuzzleMemoryStorage zrangebylex(final String key, final long min, final long max, final long offset, final long count);
+  MemoryStorage zrangebylex(final String key, final long min, final long max, final long offset, final long count);
 
-  KuzzleMemoryStorage zrangebyscore(final String key, final long min, final long max, final boolean withscores, final long offset, final long count);
+  MemoryStorage zrangebyscore(final String key, final long min, final long max, final boolean withscores, final long offset, final long count);
 
-  KuzzleMemoryStorage zrem(final String key, final String... members);
+  MemoryStorage zrem(final String key, final String... members);
 
-  KuzzleMemoryStorage zremrangebylex(final String key, final long min, final long max, final long offset, final long count);
+  MemoryStorage zremrangebylex(final String key, final long min, final long max, final long offset, final long count);
 
-  KuzzleMemoryStorage zrevrangebyscore(final String key, final long min, final long max, final boolean withscores, final long offset, final long count);
+  MemoryStorage zrevrangebyscore(final String key, final long min, final long max, final boolean withscores, final long offset, final long count);
 
-  KuzzleMemoryStorage zrevrank(final String key, final String member);
+  MemoryStorage zrevrank(final String key, final String member);
 
   // Unique argument key
-  KuzzleMemoryStorage decr(final String key);
+  MemoryStorage decr(final String key);
 
-  KuzzleMemoryStorage get(final String key);
+  MemoryStorage get(final String key);
 
-  KuzzleMemoryStorage dump(final String key);
+  MemoryStorage dump(final String key);
 
-  KuzzleMemoryStorage hgetall(final String key);
+  MemoryStorage hgetall(final String key);
 
-  KuzzleMemoryStorage hkeys(final String key);
+  MemoryStorage hkeys(final String key);
 
-  KuzzleMemoryStorage hlen(final String key);
+  MemoryStorage hlen(final String key);
 
-  KuzzleMemoryStorage hstrlen(final String key);
+  MemoryStorage hstrlen(final String key);
 
-  KuzzleMemoryStorage hvals(final String key);
+  MemoryStorage hvals(final String key);
 
-  KuzzleMemoryStorage incr(final String key);
+  MemoryStorage incr(final String key);
 
-  KuzzleMemoryStorage llen(final String key);
+  MemoryStorage llen(final String key);
 
-  KuzzleMemoryStorage lpop(final String key);
+  MemoryStorage lpop(final String key);
 
-  KuzzleMemoryStorage persist(final String key);
+  MemoryStorage persist(final String key);
 
-  KuzzleMemoryStorage pttl(final String key);
+  MemoryStorage pttl(final String key);
 
-  KuzzleMemoryStorage rpop(final String key);
+  MemoryStorage rpop(final String key);
 
-  KuzzleMemoryStorage scard(final String key);
+  MemoryStorage scard(final String key);
 
-  KuzzleMemoryStorage smembers(final String key);
+  MemoryStorage smembers(final String key);
 
-  KuzzleMemoryStorage strlen(final String key);
+  MemoryStorage strlen(final String key);
 
-  KuzzleMemoryStorage ttl(final String key);
+  MemoryStorage ttl(final String key);
 
-  KuzzleMemoryStorage type(final String key);
+  MemoryStorage type(final String key);
 
-  KuzzleMemoryStorage zcard(final String key);
+  MemoryStorage zcard(final String key);
 
   // key value
-  KuzzleMemoryStorage getset(final String key, final String value);
+  MemoryStorage getset(final String key, final String value);
 
-  KuzzleMemoryStorage lpushx(final String key, final String value);
+  MemoryStorage lpushx(final String key, final String value);
 
   // key key...
-  KuzzleMemoryStorage mget(final String... keys);
+  MemoryStorage mget(final String... keys);
 
-  KuzzleMemoryStorage pfcount(final String... keys);
+  MemoryStorage pfcount(final String... keys);
 
-  KuzzleMemoryStorage del(final String... keys);
+  MemoryStorage del(final String... keys);
 
-  KuzzleMemoryStorage exists(final String... keys);
+  MemoryStorage exists(final String... keys);
 
-  KuzzleMemoryStorage sdiff(final String... keys);
+  MemoryStorage sdiff(final String... keys);
 
-  KuzzleMemoryStorage sinter(final String... keys);
+  MemoryStorage sinter(final String... keys);
 
-  KuzzleMemoryStorage sunion(final String... keys);
+  MemoryStorage sunion(final String... keys);
 
-  KuzzleMemoryStorage watch(final String... keys);
+  MemoryStorage watch(final String... keys);
 
 
-  KuzzleMemoryStorage incrby(final String key, final long value);
+  MemoryStorage incrby(final String key, final long value);
 
-  KuzzleMemoryStorage incrbyfloat(final String key, final double value);
+  MemoryStorage incrbyfloat(final String key, final double value);
 
-  KuzzleMemoryStorage brpop(final String[] args, final long timeout);
+  MemoryStorage brpop(final String[] args, final long timeout);
 
-  KuzzleMemoryStorage hget(final String key, final String field);
+  MemoryStorage hget(final String key, final String field);
 
-  KuzzleMemoryStorage hmget(final String key, final String... fields);
+  MemoryStorage hmget(final String key, final String... fields);
 
-  KuzzleMemoryStorage hsetnx(final String key, final String field, final String value);
+  MemoryStorage hsetnx(final String key, final String field, final String value);
 
-  KuzzleMemoryStorage msetnx(final String... keysvalues);
+  MemoryStorage msetnx(final String... keysvalues);
 
-  KuzzleMemoryStorage rpush(final String key, final String... strings);
+  MemoryStorage rpush(final String key, final String... strings);
 
-  KuzzleMemoryStorage hincrbyfloat(final String key, final String field, final double value);
+  MemoryStorage hincrbyfloat(final String key, final String field, final double value);
 
-  KuzzleMemoryStorage srandmember(final String key, final long count);
+  MemoryStorage srandmember(final String key, final long count);
 
-  KuzzleMemoryStorage zrevrange(final String key, final long start, final long end, boolean withscores);
+  MemoryStorage zrevrange(final String key, final long start, final long end, boolean withscores);
 
-  KuzzleMemoryStorage zscore(final String key, final String member);
+  MemoryStorage zscore(final String key, final String member);
 
 }

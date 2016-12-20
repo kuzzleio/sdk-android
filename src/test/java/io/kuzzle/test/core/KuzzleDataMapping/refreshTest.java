@@ -11,7 +11,7 @@ import org.mockito.stubbing.Answer;
 import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.CollectionMapping;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
@@ -44,7 +44,7 @@ public class refreshTest {
   public void checkSignaturesVariants() {
     dataMapping = spy(dataMapping);
     dataMapping.refresh(mock(KuzzleResponseListener.class));
-    verify(dataMapping).refresh(any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+    verify(dataMapping).refresh(any(Options.class), any(KuzzleResponseListener.class));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -54,7 +54,7 @@ public class refreshTest {
 
   @Test(expected = RuntimeException.class)
   public void testException() throws JSONException {
-    doThrow(JSONException.class).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     dataMapping.refresh(mock(KuzzleResponseListener.class));
   }
 
@@ -86,7 +86,7 @@ public class refreshTest {
           "}"));
         return null;
       }
-    }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     KuzzleResponseListener mockListener = mock(KuzzleResponseListener.class);
     doThrow(JSONException.class).when(mockListener).onSuccess(any(CollectionMapping.class));
     dataMapping.refresh(mockListener);
@@ -120,7 +120,7 @@ public class refreshTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(null);
         return null;
       }
-    }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     when(k.getDefaultIndex()).thenReturn("index");
 
     dataMapping.refresh(new KuzzleResponseListener<CollectionMapping>() {
@@ -143,9 +143,9 @@ public class refreshTest {
 
       }
     });
-    dataMapping.refresh(new KuzzleOptions(), mock(KuzzleResponseListener.class));
+    dataMapping.refresh(new Options(), mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(k, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(k, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "collection");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "getMapping");
   }

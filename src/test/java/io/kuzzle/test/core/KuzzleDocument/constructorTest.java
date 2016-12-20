@@ -10,7 +10,7 @@ import java.net.URISyntaxException;
 import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.test.testUtils.KuzzleExtend;
@@ -33,7 +33,7 @@ public class constructorTest {
 
   @Before
   public void setUp() throws URISyntaxException, JSONException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setState(KuzzleStates.CONNECTED);

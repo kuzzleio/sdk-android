@@ -4,7 +4,7 @@ import org.json.JSONObject;
 
 import java.util.Date;
 
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
 /**
@@ -14,7 +14,7 @@ public class KuzzleQueryObject {
 
   private JSONObject query;
   private String action;
-  private KuzzleOptions options;
+  private Options options;
   private OnQueryDoneListener cb;
   private Date  timestamp;
 
@@ -44,11 +44,11 @@ public class KuzzleQueryObject {
     this.action = action;
   }
 
-  public KuzzleOptions getOptions() {
+  public Options getOptions() {
     return options;
   }
 
-  public void setOptions(KuzzleOptions options) {
+  public void setOptions(Options options) {
     this.options = options;
   }
 

@@ -78,7 +78,7 @@ public class CollectionMapping {
    * @param options the options
    * @return the kuzzle data mapping
    */
-  public CollectionMapping apply(final KuzzleOptions options) {
+  public CollectionMapping apply(final Options options) {
     return this.apply(options, null);
   }
 
@@ -99,7 +99,7 @@ public class CollectionMapping {
    * @param listener the cb
    * @return the kuzzle data mapping
    */
-  public CollectionMapping apply(final KuzzleOptions options, final KuzzleResponseListener<CollectionMapping> listener) {
+  public CollectionMapping apply(final Options options, final KuzzleResponseListener<CollectionMapping> listener) {
     JSONObject data = new JSONObject();
     JSONObject properties = new JSONObject();
     try {
@@ -142,7 +142,7 @@ public class CollectionMapping {
    * @param options  the options
    * @param listener the listener
    */
-  public void refresh(final KuzzleOptions options, @NonNull final KuzzleResponseListener<CollectionMapping> listener) {
+  public void refresh(final Options options, @NonNull final KuzzleResponseListener<CollectionMapping> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("CollectionMapping.refresh: listener callback missing");
     }

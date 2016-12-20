@@ -11,9 +11,9 @@ import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.CollectionMapping;
 import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.core.KuzzleRoom;
-import io.kuzzle.sdk.core.KuzzleRoomOptions;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.core.Room;
+import io.kuzzle.sdk.core.RoomOptions;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.state.KuzzleStates;
@@ -35,7 +35,7 @@ public class factoriesTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
@@ -50,8 +50,8 @@ public class factoriesTest {
 
   @Test
   public void testRoomFactory() {
-    assertThat(collection.room(mock(KuzzleRoomOptions.class)), instanceOf(KuzzleRoom.class));
-    assertThat(collection.room(), instanceOf(KuzzleRoom.class));
+    assertThat(collection.room(mock(RoomOptions.class)), instanceOf(Room.class));
+    assertThat(collection.room(), instanceOf(Room.class));
   }
 
   @Test

@@ -7,14 +7,14 @@ import org.junit.Test;
 import java.net.URISyntaxException;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.core.KuzzleRoom;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.core.Room;
 import io.kuzzle.sdk.enums.KuzzleEvent;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.test.testUtils.KuzzleDataCollectionExtend;
 import io.kuzzle.test.testUtils.KuzzleExtend;
-import io.kuzzle.test.testUtils.KuzzleRoomExtend;
+import io.kuzzle.test.testUtils.RoomExtend;
 import io.socket.client.Socket;
 
 import static org.junit.Assert.assertEquals;
@@ -27,13 +27,13 @@ import static org.mockito.Mockito.verify;
 public class unsetJwtTokenTest {
   private KuzzleExtend kuzzle;
   private Socket s;
-  private ConcurrentHashMap<String, KuzzleRoom> chp = new ConcurrentHashMap<>();
-  private KuzzleRoom  room;
+  private ConcurrentHashMap<String, Room> chp = new ConcurrentHashMap<>();
+  private Room room;
 
   @Before
   public void setUp() throws URISyntaxException {
-    kuzzle = new KuzzleExtend("host", mock(KuzzleOptions.class), mock(KuzzleResponseListener.class));
-    KuzzleOptions options = new KuzzleOptions();
+    kuzzle = new KuzzleExtend("host", mock(Options.class), mock(KuzzleResponseListener.class));
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
@@ -44,7 +44,7 @@ public class unsetJwtTokenTest {
 
     kuzzle = spy(kuzzle);
     doNothing().when(kuzzle).emitEvent(any(KuzzleEvent.class), any(JSONObject.class));
-    room = spy(new KuzzleRoomExtend(new KuzzleDataCollectionExtend(kuzzle, "index", "collection")));
+    room = spy(new RoomExtend(new KuzzleDataCollectionExtend(kuzzle, "index", "collection")));
     chp.put("2", room);
   }
 

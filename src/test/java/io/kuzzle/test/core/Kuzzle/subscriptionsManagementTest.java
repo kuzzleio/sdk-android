@@ -6,14 +6,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.core.KuzzleRoom;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.core.Room;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
@@ -28,7 +26,7 @@ public class subscriptionsManagementTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
@@ -50,12 +48,12 @@ public class subscriptionsManagementTest {
 
   @Test
   public void testDeleteSubscription() throws JSONException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-    Map<String, ConcurrentHashMap<String, KuzzleRoom>> subscriptions = kuzzle.getSubscriptions();
+    Map<String, ConcurrentHashMap<String, Room>> subscriptions = kuzzle.getSubscriptions();
 
-    subscriptions.put("foo", new ConcurrentHashMap<String, KuzzleRoom>());
-    subscriptions.get("foo").put("bar", mock(KuzzleRoom.class));
-    subscriptions.get("foo").put("baz", mock(KuzzleRoom.class));
-    subscriptions.get("foo").put("qux", mock(KuzzleRoom.class));
+    subscriptions.put("foo", new ConcurrentHashMap<String, Room>());
+    subscriptions.get("foo").put("bar", mock(Room.class));
+    subscriptions.get("foo").put("baz", mock(Room.class));
+    subscriptions.get("foo").put("qux", mock(Room.class));
 
     kuzzle.deleteSubscription("foobar", "whatever");
 

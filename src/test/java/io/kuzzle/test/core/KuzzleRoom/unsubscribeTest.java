@@ -13,14 +13,14 @@ import java.util.Timer;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Collection;
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.core.KuzzleRoom;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.core.Room;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.test.testUtils.KuzzleExtend;
-import io.kuzzle.test.testUtils.KuzzleRoomExtend;
+import io.kuzzle.test.testUtils.RoomExtend;
 import io.socket.client.Socket;
 
 import static org.junit.Assert.assertEquals;
@@ -39,7 +39,7 @@ public class unsubscribeTest {
   private JSONObject mockNotif = new JSONObject();
   private JSONObject  mockResponse = new JSONObject();
   private Kuzzle k;
-  private KuzzleRoomExtend room;
+  private RoomExtend room;
 
   @Before
   public void setUp() throws JSONException {
@@ -57,12 +57,12 @@ public class unsubscribeTest {
     mockResponse.put("result", new JSONObject().put("channel", "channel").put("roomId", "42"));
     k = mock(Kuzzle.class);
     when(k.getHeaders()).thenReturn(new JSONObject());
-    room = new KuzzleRoomExtend(new Collection(k, "test", "index"));
+    room = new RoomExtend(new Collection(k, "test", "index"));
   }
 
   @Test
   public void testUnsubscribe() throws JSONException, URISyntaxException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     Socket s = mock(Socket.class);
 
@@ -71,25 +71,25 @@ public class unsubscribeTest {
     kuzzle.setSocket(s);
 
     kuzzle = spy(kuzzle);
-    room = new KuzzleRoomExtend(new Collection(kuzzle, "test", "index"));
+    room = new RoomExtend(new Collection(kuzzle, "test", "index"));
     room.setRoomId("42");
     room.superUnsubscribe();
     assertEquals(room.getRoomId(), null);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "realtime");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "unsubscribe");
   }
 
   @Test
   public void testUnsubscribeWhileSubscribing() throws JSONException, URISyntaxException, InterruptedException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
-    room = new KuzzleRoomExtend(new Collection(extended, "test", "index"));
+    room = new RoomExtend(new Collection(extended, "test", "index"));
     room.setRoomId("foobar");
     room.setSubscribing(true);
     room.superUnsubscribe();
@@ -111,13 +111,13 @@ public class unsubscribeTest {
         verify(room).dequeue();
         return null;
       }
-    }).when(extended).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(extended).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     room.renew(listener);
   }
 
   @Test
   public void testUnsubscribeWithPendingSubscriptions() throws URISyntaxException, JSONException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     Socket s = mock(Socket.class);
 
@@ -126,55 +126,55 @@ public class unsubscribeTest {
     kuzzle.setSocket(s);
 
     kuzzle = spy(kuzzle);
-    kuzzle.getPendingSubscriptions().put("42", mock(KuzzleRoom.class));
+    kuzzle.getPendingSubscriptions().put("42", mock(Room.class));
 
-    room = new KuzzleRoomExtend(new Collection(kuzzle, "test", "index"));
+    room = new RoomExtend(new Collection(kuzzle, "test", "index"));
     room.setRoomId("42");
     room.superUnsubscribe();
 
     assertEquals(room.getRoomId(), null);
-    verify(kuzzle, never()).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, never()).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
   }
 
   @Test(expected = RuntimeException.class)
   public void testUnsubscribeException() throws URISyntaxException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
     doThrow(JSONException.class).when(extended).getSocket();
-    room = new KuzzleRoomExtend(new Collection(extended, "test", "index"));
+    room = new RoomExtend(new Collection(extended, "test", "index"));
     room.setRoomId("foobar");
     room.superUnsubscribe();
   }
 
   @Test
   public void testUnsubscribeTask() throws URISyntaxException, JSONException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
 
-    room = new KuzzleRoomExtend(new Collection(extended, "test", "index"));
+    room = new RoomExtend(new Collection(extended, "test", "index"));
     room.setRoomId("foobar");
     room.unsubscribeTask(new Timer(), room.getRoomId(), new JSONObject()).run();
-    verify(extended).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(extended).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
   }
 
   @Test(expected = RuntimeException.class)
   public void testUnsubscribeTaskException() throws URISyntaxException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
     extended.setState(KuzzleStates.CONNECTED);
     extended = spy(extended);
     doThrow(JSONException.class).when(extended).getPendingSubscriptions();
-    room = new KuzzleRoomExtend(new Collection(extended, "test", "index"));
+    room = new RoomExtend(new Collection(extended, "test", "index"));
     room.setRoomId("foobar");
     room.unsubscribeTask(new Timer(), room.getRoomId(), new JSONObject()).run();
   }

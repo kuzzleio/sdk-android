@@ -6,7 +6,7 @@ import io.kuzzle.sdk.enums.Scope;
 import io.kuzzle.sdk.enums.State;
 import io.kuzzle.sdk.enums.Users;
 
-public class KuzzleRoomOptions {
+public class RoomOptions {
 
   private boolean subscribeToSelf = true;
   private JSONObject  metadata = new JSONObject();

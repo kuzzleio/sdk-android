@@ -8,7 +8,7 @@ import org.junit.Test;
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
@@ -35,7 +35,7 @@ public class constructorTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     options.setPort(12345);
     options.setDefaultIndex("testIndex");
@@ -66,7 +66,7 @@ public class constructorTest {
   public void checkSignaturesVariants() throws URISyntaxException {
     Kuzzle k = new Kuzzle("localhost");
     assertNotNull(k);
-    k = new Kuzzle("localhost", new KuzzleOptions());
+    k = new Kuzzle("localhost", new Options());
     assertNotNull(k);
     k = new Kuzzle("localhost", listener);
     assertNotNull(k);
@@ -77,7 +77,7 @@ public class constructorTest {
     kuzzle = spy(kuzzle);
     assertEquals(kuzzle.getDefaultIndex(), "testIndex");
     assertNotNull(kuzzle);
-    verify(kuzzle, never()).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, never()).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
   }
 
   @Test
@@ -118,7 +118,7 @@ public class constructorTest {
 
   @Test
   public void testMetadataOptions() throws URISyntaxException, JSONException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setQueuable(false);
     options.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", options, null);
@@ -144,7 +144,7 @@ public class constructorTest {
     jsonObj.put("requestId", "42");
     JSONObject meta = new JSONObject();
     meta.put("foo", "bar");
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setMetadata(meta);
     options.setQueuable(false);
     options.setConnect(Mode.MANUAL);

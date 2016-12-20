@@ -6,11 +6,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
@@ -85,7 +84,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public KuzzleUser save(final KuzzleOptions options, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
+  public KuzzleUser save(final Options options, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     JSONObject data = this.serialize();
 
     if (listener != null) {
@@ -126,7 +125,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public KuzzleUser save(final KuzzleOptions options) throws JSONException {
+  public KuzzleUser save(final Options options) throws JSONException {
     return save(options, null);
   }
 
@@ -148,7 +147,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public KuzzleUser saveRestricted(final KuzzleOptions options, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
+  public KuzzleUser saveRestricted(final Options options, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
     JSONObject data = this.serialize();
 
     if (listener != null) {
@@ -189,7 +188,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public KuzzleUser saveRestricted(final KuzzleOptions options) throws JSONException {
+  public KuzzleUser saveRestricted(final Options options) throws JSONException {
     return saveRestricted(options, null);
   }
 

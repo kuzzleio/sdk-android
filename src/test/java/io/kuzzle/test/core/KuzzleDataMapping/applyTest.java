@@ -11,7 +11,7 @@ import org.mockito.stubbing.Answer;
 import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.CollectionMapping;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
@@ -43,14 +43,14 @@ public class applyTest {
   public void checkSignaturesVariants() {
     dataMapping = spy(dataMapping);
     dataMapping.apply();
-    dataMapping.apply(mock(KuzzleOptions.class));
+    dataMapping.apply(mock(Options.class));
     dataMapping.apply(mock(KuzzleResponseListener.class));
-    verify(dataMapping, times(3)).apply(any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+    verify(dataMapping, times(3)).apply(any(Options.class), any(KuzzleResponseListener.class));
   }
 
   @Test(expected = RuntimeException.class)
   public void testApplyQueryException() throws JSONException {
-    doThrow(JSONException.class).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     dataMapping.apply();
   }
 
@@ -62,7 +62,7 @@ public class applyTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(mock(JSONObject.class));
         return null;
       }
-    }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     KuzzleResponseListener mockListener = mock(KuzzleResponseListener.class);
     doThrow(JSONException.class).when(mockListener).onSuccess(any(CollectionMapping.class));
     dataMapping.apply(mockListener);
@@ -84,13 +84,13 @@ public class applyTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(null);
         return null;
       }
-    }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     dataMapping.apply();
-    dataMapping.apply(new KuzzleOptions());
+    dataMapping.apply(new Options());
     dataMapping.apply(mock(KuzzleResponseListener.class));
-    dataMapping.apply(new KuzzleOptions(), mock(KuzzleResponseListener.class));
+    dataMapping.apply(new Options(), mock(KuzzleResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(k, times(4)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(k, times(4)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "collection");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "updateMapping");
   }

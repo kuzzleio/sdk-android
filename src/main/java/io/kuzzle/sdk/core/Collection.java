@@ -24,9 +24,9 @@ public class Collection {
   private final Kuzzle kuzzle;
   private final String collection;
   private final String index;
-  private KuzzleResponseListener<KuzzleRoom> subscribeCallback;
+  private KuzzleResponseListener<Room> subscribeCallback;
   private JSONObject subscribeError = null;
-  private KuzzleRoom  subscribeRoom = null;
+  private Room subscribeRoom = null;
 
   /**
    * The Headers.
@@ -84,7 +84,7 @@ public class Collection {
    * @param options  the options
    * @param listener the listener
    */
-  public void search(final JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDocumentList> listener) {
+  public void search(final JSONObject filters, final Options options, @NonNull final KuzzleResponseListener<KuzzleDocumentList> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("listener cannot be null");
     }
@@ -176,7 +176,7 @@ public class Collection {
    * @param options  the options
    * @param listener the cb
    */
-  public void count(final JSONObject filters, final KuzzleOptions options, @NonNull final KuzzleResponseListener<Integer> listener) {
+  public void count(final JSONObject filters, final Options options, @NonNull final KuzzleResponseListener<Integer> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Collection.count: listener required");
     }
@@ -211,7 +211,7 @@ public class Collection {
    * @param options the options
    * @return the kuzzle data collection
    */
-  public Collection create(final KuzzleOptions options) {
+  public Collection create(final Options options) {
     return this.create(options, null);
   }
 
@@ -244,7 +244,7 @@ public class Collection {
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public Collection create(final KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener) {
+  public Collection create(final Options options, final KuzzleResponseListener<JSONObject> listener) {
     JSONObject data = new JSONObject();
     try {
       this.kuzzle.addHeaders(data, this.getHeaders());
@@ -294,7 +294,7 @@ public class Collection {
    * @return this object
    * @throws JSONException the json exception
    */
-  public Collection createDocument(final String id, @NonNull final JSONObject content, KuzzleOptions opts) throws JSONException {
+  public Collection createDocument(final String id, @NonNull final JSONObject content, Options opts) throws JSONException {
     return this.createDocument(id, content, opts, null);
   }
 
@@ -330,7 +330,7 @@ public class Collection {
    * @return this object
    * @throws JSONException the json exception
    */
-  public Collection createDocument(@NonNull final JSONObject content, KuzzleOptions opts) throws JSONException {
+  public Collection createDocument(@NonNull final JSONObject content, Options opts) throws JSONException {
     return this.createDocument(null, content, opts, null);
   }
 
@@ -355,7 +355,7 @@ public class Collection {
    * @return this object
    * @throws JSONException the json exception
    */
-  public Collection createDocument(@NonNull final JSONObject content, KuzzleOptions opts, final KuzzleResponseListener<Document> listener) throws JSONException {
+  public Collection createDocument(@NonNull final JSONObject content, Options opts, final KuzzleResponseListener<Document> listener) throws JSONException {
     return this.createDocument(null, content, opts, listener);
   }
 
@@ -369,7 +369,7 @@ public class Collection {
    * @return this object
    * @throws JSONException the json exception
    */
-  public Collection createDocument(final String id, @NonNull final JSONObject content, KuzzleOptions opts, final KuzzleResponseListener<Document> listener) throws JSONException {
+  public Collection createDocument(final String id, @NonNull final JSONObject content, Options opts, final KuzzleResponseListener<Document> listener) throws JSONException {
     if (content == null) {
       throw new IllegalArgumentException("Cannot create an empty document");
     }
@@ -395,7 +395,7 @@ public class Collection {
    * @param options  the options
    * @return the kuzzle data collection
    */
-  public Collection createDocument(final Document document, final KuzzleOptions options) {
+  public Collection createDocument(final Document document, final Options options) {
     return this.createDocument(document, options, null);
   }
 
@@ -418,7 +418,7 @@ public class Collection {
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public Collection createDocument(final Document document, final KuzzleOptions options, final KuzzleResponseListener<Document> listener) {
+  public Collection createDocument(final Document document, final Options options, final KuzzleResponseListener<Document> listener) {
     String action = (options != null && options.isUpdateIfExists()) ? "createOrReplace" : "create";
     JSONObject data = document.serialize();
 
@@ -493,7 +493,7 @@ public class Collection {
    * @param options    the options
    * @return the kuzzle data collection
    */
-  public Collection deleteDocument(@NonNull final String documentId, KuzzleOptions options) {
+  public Collection deleteDocument(@NonNull final String documentId, Options options) {
     return this.deleteDocument(documentId, options, null);
   }
 
@@ -519,7 +519,7 @@ public class Collection {
    * @param listener   the listener
    * @return the kuzzle data collection
    */
-  public Collection deleteDocument(@NonNull final String documentId, final KuzzleOptions options, final KuzzleResponseListener<String> listener) {
+  public Collection deleteDocument(@NonNull final String documentId, final Options options, final KuzzleResponseListener<String> listener) {
     if (documentId == null) {
       throw new IllegalArgumentException("Collection.deleteDocument: documentId required");
     }
@@ -546,7 +546,7 @@ public class Collection {
    * @param options the options
    * @return the kuzzle data collection
    */
-  public Collection deleteDocument(@NonNull final JSONObject filters, final KuzzleOptions options) {
+  public Collection deleteDocument(@NonNull final JSONObject filters, final Options options) {
     return this.deleteDocument(filters, options, null);
   }
 
@@ -572,7 +572,7 @@ public class Collection {
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public Collection deleteDocument(@NonNull final JSONObject filters, final KuzzleOptions options, final KuzzleResponseListener<String[]> listener) {
+  public Collection deleteDocument(@NonNull final JSONObject filters, final Options options, final KuzzleResponseListener<String[]> listener) {
     if (filters == null) {
       throw new IllegalArgumentException("Collection.deleteDocument: filters required");
     }
@@ -592,7 +592,7 @@ public class Collection {
    * @param listener2  the listener 2
    * @return Collection kuzzle data collection
    */
-  protected Collection deleteDocument(final String documentId, final JSONObject filter, final KuzzleOptions options, final KuzzleResponseListener<String> listener, final KuzzleResponseListener<String[]> listener2) {
+  protected Collection deleteDocument(final String documentId, final JSONObject filter, final Options options, final KuzzleResponseListener<String> listener, final KuzzleResponseListener<String[]> listener2) {
     JSONObject data = new JSONObject();
     String action;
     try {
@@ -700,7 +700,7 @@ public class Collection {
    * @param options    the options
    * @param listener   the listener
    */
-  public void fetchDocument(@NonNull final String documentId, final KuzzleOptions options, final KuzzleResponseListener<Document> listener) {
+  public void fetchDocument(@NonNull final String documentId, final Options options, final KuzzleResponseListener<Document> listener) {
     if (documentId == null) {
       throw new IllegalArgumentException("Collection.fetchDocument: documentId required");
     }
@@ -751,7 +751,7 @@ public class Collection {
    * @param options  the options
    * @param listener the listener
    */
-  public void fetchAllDocuments(final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDocumentList> listener) {
+  public void fetchAllDocuments(final Options options, @NonNull final KuzzleResponseListener<KuzzleDocumentList> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Collection.fetchAllDocuments: listener required");
     }
@@ -774,7 +774,7 @@ public class Collection {
    * @param options  the options
    * @param listener the listener
    */
-  public void getMapping(final KuzzleOptions options, @NonNull final KuzzleResponseListener<CollectionMapping> listener) {
+  public void getMapping(final Options options, @NonNull final KuzzleResponseListener<CollectionMapping> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Collection.getMapping: listener required");
     }
@@ -811,7 +811,7 @@ public class Collection {
    * @param listener response callback
    * @return the kuzzle data collection
    */
-  public Collection publishMessage(@NonNull final Document document, final KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener) {
+  public Collection publishMessage(@NonNull final Document document, final Options options, final KuzzleResponseListener<JSONObject> listener) {
     if (document == null) {
       throw new IllegalArgumentException("Cannot publish a null document");
     }
@@ -826,7 +826,7 @@ public class Collection {
    * @param options  the options
    * @return the kuzzle data collection
    */
-  public Collection publishMessage(@NonNull final Document document, final KuzzleOptions options) {
+  public Collection publishMessage(@NonNull final Document document, final Options options) {
     return this.publishMessage(document, options, null);
   }
 
@@ -859,7 +859,7 @@ public class Collection {
    * @param options the options
    * @return the kuzzle data collection
    */
-  public Collection publishMessage(@NonNull final JSONObject content, final KuzzleOptions options) {
+  public Collection publishMessage(@NonNull final JSONObject content, final Options options) {
     return this.publishMessage(content, options, null);
   }
 
@@ -871,7 +871,7 @@ public class Collection {
    * @param listener response callback
    * @return the kuzzle data collection
    */
-  public Collection publishMessage(@NonNull final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener) {
+  public Collection publishMessage(@NonNull final JSONObject content, final Options options, final KuzzleResponseListener<JSONObject> listener) {
     if (content == null) {
       throw new IllegalArgumentException("Cannot publish null content");
     }
@@ -931,7 +931,7 @@ public class Collection {
    * @param options    the options
    * @return the kuzzle data collection
    */
-  public Collection replaceDocument(@NonNull final String documentId, final JSONObject content, final KuzzleOptions options) {
+  public Collection replaceDocument(@NonNull final String documentId, final JSONObject content, final Options options) {
     return this.replaceDocument(documentId, content, options, null);
   }
 
@@ -944,7 +944,7 @@ public class Collection {
    * @param listener   the listener
    * @return Collection kuzzle data collection
    */
-  public Collection replaceDocument(@NonNull final String documentId, final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<Document> listener) {
+  public Collection replaceDocument(@NonNull final String documentId, final JSONObject content, final Options options, final KuzzleResponseListener<Document> listener) {
     if (documentId == null) {
       throw new IllegalArgumentException("Collection.replaceDocument: documentId required");
     }
@@ -985,7 +985,7 @@ public class Collection {
    *
    * @return the kuzzle room
    */
-  public KuzzleRoom room() {
+  public Room room() {
     return this.room(null);
   }
 
@@ -995,8 +995,8 @@ public class Collection {
    * @param options the options
    * @return the kuzzle room
    */
-  public KuzzleRoom room(KuzzleRoomOptions options) {
-    return new KuzzleRoom(this, options);
+  public Room room(RoomOptions options) {
+    return new Room(this, options);
   }
 
   /**
@@ -1060,7 +1060,7 @@ public class Collection {
    * @param listener the listener
    * @return the kuzzle room
    */
-  public KuzzleSubscribeListener subscribe(final KuzzleRoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public KuzzleSubscribeListener subscribe(final RoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
     return this.subscribe(null, options, listener);
   }
 
@@ -1073,12 +1073,12 @@ public class Collection {
    * @param listener the listener
    * @return kuzzle room
    */
-  public KuzzleSubscribeListener subscribe(final JSONObject filters, final KuzzleRoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public KuzzleSubscribeListener subscribe(final JSONObject filters, final RoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Collection.subscribe: listener required");
     }
     this.kuzzle.isValid();
-    final KuzzleRoom room = new KuzzleRoom(this, options);
+    final Room room = new Room(this, options);
     final KuzzleSubscribeListener subscribeResponseListener = new KuzzleSubscribeListener();
 
     room.renew(filters, listener, subscribeResponseListener);
@@ -1103,7 +1103,7 @@ public class Collection {
    * @param options the options
    * @return the kuzzle data collection
    */
-  public Collection truncate(final KuzzleOptions options) {
+  public Collection truncate(final Options options) {
     return this.truncate(options, null);
   }
 
@@ -1126,7 +1126,7 @@ public class Collection {
    * @param listener the listener
    * @return the kuzzle data collection
    */
-  public Collection truncate(final KuzzleOptions options, final KuzzleResponseListener<JSONObject> listener) {
+  public Collection truncate(final Options options, final KuzzleResponseListener<JSONObject> listener) {
     JSONObject  data = new JSONObject();
     try {
       this.kuzzle.addHeaders(data, this.getHeaders());
@@ -1174,7 +1174,7 @@ public class Collection {
    * @param options    the options
    * @return the kuzzle data collection
    */
-  public Collection updateDocument(@NonNull final String documentId, @NonNull final JSONObject content, final KuzzleOptions options) {
+  public Collection updateDocument(@NonNull final String documentId, @NonNull final JSONObject content, final Options options) {
     return this.updateDocument(documentId, content, options, null);
   }
 
@@ -1199,7 +1199,7 @@ public class Collection {
    * @param listener   the listener
    * @return kuzzle data collection
    */
-  public Collection updateDocument(@NonNull final String documentId, @NonNull final JSONObject content, final KuzzleOptions options, final KuzzleResponseListener<Document> listener) {
+  public Collection updateDocument(@NonNull final String documentId, @NonNull final JSONObject content, final Options options, final KuzzleResponseListener<Document> listener) {
     if (documentId == null) {
       throw new IllegalArgumentException("Collection.updateDocument: documentId required");
     }
