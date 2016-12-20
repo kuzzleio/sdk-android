@@ -5,8 +5,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import io.kuzzle.sdk.core.Room;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
-import io.kuzzle.sdk.listeners.KuzzleSubscribeListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
+import io.kuzzle.sdk.listeners.SubscribeListener;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -15,14 +15,14 @@ import static org.mockito.Mockito.verify;
 
 public class KuzzleSubscribeListenerTest {
 
-  private KuzzleSubscribeListener subListener;
-  private KuzzleResponseListener<Room> callback;
+  private SubscribeListener subListener;
+  private ResponseListener<Room> callback;
   private JSONObject  json = new JSONObject();
 
   @Before
   public void setUp() {
-    subListener = new KuzzleSubscribeListener();
-    callback = spy(new KuzzleResponseListener<Room>() {
+    subListener = new SubscribeListener();
+    callback = spy(new ResponseListener<Room>() {
       @Override
       public void onSuccess(Room response) {
 

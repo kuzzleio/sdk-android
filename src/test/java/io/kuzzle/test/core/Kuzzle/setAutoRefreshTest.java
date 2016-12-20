@@ -14,7 +14,7 @@ import java.net.URISyntaxException;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.verify;
 
 public class setAutoRefreshTest {
   private KuzzleExtend kuzzle;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
 
   @Before
@@ -42,7 +42,7 @@ public class setAutoRefreshTest {
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(mock(Socket.class));
 
-    listener = mock(KuzzleResponseListener.class);
+    listener = mock(ResponseListener.class);
   }
 
   @Test
@@ -58,7 +58,7 @@ public class setAutoRefreshTest {
     kuzzle.setAutoRefresh("foo", true, options);
     kuzzle.setAutoRefresh("foo", true, listener);
 
-    verify(kuzzle, times(6)).setAutoRefresh(any(String.class), any(Boolean.class), any(Options.class), any(KuzzleResponseListener.class));
+    verify(kuzzle, times(6)).setAutoRefresh(any(String.class), any(Boolean.class), any(Options.class), any(ResponseListener.class));
   }
 
   @Test(expected = RuntimeException.class)

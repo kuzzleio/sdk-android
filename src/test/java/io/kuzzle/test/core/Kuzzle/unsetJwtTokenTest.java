@@ -11,7 +11,7 @@ import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.core.Room;
 import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.test.testUtils.KuzzleDataCollectionExtend;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.RoomExtend;
@@ -32,7 +32,7 @@ public class unsetJwtTokenTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    kuzzle = new KuzzleExtend("host", mock(Options.class), mock(KuzzleResponseListener.class));
+    kuzzle = new KuzzleExtend("host", mock(Options.class), mock(ResponseListener.class));
     Options options = new Options();
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");

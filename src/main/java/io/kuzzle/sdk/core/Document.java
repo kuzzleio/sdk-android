@@ -7,8 +7,8 @@ import org.json.JSONObject;
 
 import java.util.Iterator;
 
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
-import io.kuzzle.sdk.listeners.KuzzleSubscribeListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
+import io.kuzzle.sdk.listeners.SubscribeListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleNotificationResponse;
 
@@ -97,7 +97,7 @@ public class Document {
    *
    * @param listener the listener
    */
-  public void delete(final KuzzleResponseListener<String> listener) {
+  public void delete(final ResponseListener<String> listener) {
     this.delete(null, listener);
   }
 
@@ -114,7 +114,7 @@ public class Document {
    * @param options  the options
    * @param listener the listener
    */
-  public void delete(final Options options, final KuzzleResponseListener<String> listener) {
+  public void delete(final Options options, final ResponseListener<String> listener) {
     try {
       if (this.id == null) {
         throw new IllegalStateException("Document.delete: cannot delete a document without a document ID");
@@ -150,7 +150,7 @@ public class Document {
    *
    * @param listener the listener
    */
-  public void refresh(@NonNull final KuzzleResponseListener<Document> listener) {
+  public void refresh(@NonNull final ResponseListener<Document> listener) {
     this.refresh(null, listener);
   }
 
@@ -160,13 +160,13 @@ public class Document {
    * @param options  the options
    * @param listener the listener
    */
-  public void refresh(final Options options, @NonNull final KuzzleResponseListener<Document> listener) {
+  public void refresh(final Options options, @NonNull final ResponseListener<Document> listener) {
     if (this.id == null) {
       throw new IllegalStateException("Document.refresh: cannot retrieve a document if no id has been provided");
     }
 
     if (listener == null) {
-      throw new IllegalArgumentException("Document.refresh: a valid KuzzleResponseListener object is required");
+      throw new IllegalArgumentException("Document.refresh: a valid ResponseListener object is required");
     }
 
     try {
@@ -232,7 +232,7 @@ public class Document {
    * @param listener the listener
    * @return the kuzzle document
    */
-  public Document save(final KuzzleResponseListener<Document> listener) {
+  public Document save(final ResponseListener<Document> listener) {
     return save(null, listener);
   }
 
@@ -245,7 +245,7 @@ public class Document {
    * @param listener the listener
    * @return kuzzle document
    */
-  public Document save(final Options options, final KuzzleResponseListener<Document> listener) {
+  public Document save(final Options options, final ResponseListener<Document> listener) {
     try {
       kuzzle.query(this.dataCollection.makeQueryArgs("document", "createOrReplace"), this.serialize(), options, new OnQueryDoneListener() {
         @Override
@@ -367,7 +367,7 @@ public class Document {
    * @param listener the listener
    * @return the kuzzle document
    */
-  public KuzzleSubscribeListener subscribe(@NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public SubscribeListener subscribe(@NonNull final ResponseListener<KuzzleNotificationResponse> listener) {
     return this.subscribe(null, listener);
   }
 
@@ -379,12 +379,12 @@ public class Document {
    * @param listener the listener
    * @return kuzzle document
    */
-  public KuzzleSubscribeListener subscribe(final RoomOptions options, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public SubscribeListener subscribe(final RoomOptions options, @NonNull final ResponseListener<KuzzleNotificationResponse> listener) {
     if (this.id == null) {
       throw new IllegalStateException("Document.subscribe: cannot subscribe to a document if no ID has been provided");
     }
 
-    KuzzleSubscribeListener returnValue;
+    SubscribeListener returnValue;
 
     try {
       JSONObject filters = new JSONObject("{" +

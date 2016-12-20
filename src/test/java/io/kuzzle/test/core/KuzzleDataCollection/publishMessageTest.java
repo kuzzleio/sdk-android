@@ -17,7 +17,7 @@ import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.test.testUtils.KuzzleExtend;
@@ -33,7 +33,7 @@ public class publishMessageTest {
   private Collection collection;
 
   @Mock
-  private KuzzleResponseListener<JSONObject> listener;
+  private ResponseListener<JSONObject> listener;
 
 
   @Before
@@ -67,7 +67,7 @@ public class publishMessageTest {
     collection.publishMessage(mock(JSONObject.class), listener);
     collection.publishMessage(mock(JSONObject.class), mock(Options.class));
     collection.publishMessage(mock(JSONObject.class), mock(Options.class), listener);
-    verify(collection, times(8)).publishMessage(any(JSONObject.class), any(Options.class), any(KuzzleResponseListener.class));
+    verify(collection, times(8)).publishMessage(any(JSONObject.class), any(Options.class), any(ResponseListener.class));
   }
 
 

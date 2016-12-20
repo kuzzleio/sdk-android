@@ -12,7 +12,7 @@ import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
 import static junit.framework.Assert.assertEquals;
@@ -28,13 +28,13 @@ public class updateSelfTest {
 
   Kuzzle kuzzle;
   ArgumentCaptor argument;
-  KuzzleResponseListener<JSONObject> listener;
+  ResponseListener<JSONObject> listener;
 
   @Before
   public void setUp() throws URISyntaxException {
     kuzzle = spy(new Kuzzle("localhost"));
     argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
-    listener = spy(new KuzzleResponseListener<JSONObject>() {
+    listener = spy(new ResponseListener<JSONObject>() {
       @Override
       public void onSuccess(JSONObject response) {
 

@@ -12,8 +12,8 @@ import java.net.URISyntaxException;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.IKuzzleEventListener;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.EventListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.util.EventList;
 import io.kuzzle.test.testUtils.KuzzleExtend;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.verify;
 public class eventSystemTest {
   private KuzzleExtend kuzzle;
   private Socket s;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -46,7 +46,7 @@ public class eventSystemTest {
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
 
-    listener = new KuzzleResponseListener<Object>() {
+    listener = new ResponseListener<Object>() {
       @Override
       public void onSuccess(Object object) {
 
@@ -62,7 +62,7 @@ public class eventSystemTest {
   @Test
   public void testAddListener() {
     assertEquals(kuzzle.getEventListeners(Event.connected), null);
-    kuzzle.addListener(Event.connected, mock(IKuzzleEventListener.class));
+    kuzzle.addListener(Event.connected, mock(EventListener.class));
     assertThat(kuzzle.getEventListeners(Event.connected), instanceOf(EventList.class));
   }
 
@@ -119,8 +119,8 @@ public class eventSystemTest {
 
   @Test
   public void testRemoveListener() {
-    String id = kuzzle.addListener(Event.disconnected, mock(IKuzzleEventListener.class));
-    String id2 = kuzzle.addListener(Event.connected, mock(IKuzzleEventListener.class));
+    String id = kuzzle.addListener(Event.disconnected, mock(EventListener.class));
+    String id2 = kuzzle.addListener(Event.connected, mock(EventListener.class));
     assertEquals(kuzzle.getEventListeners(Event.disconnected).get(id).getType(), Event.disconnected);
     assertEquals(kuzzle.getEventListeners(Event.connected).get(id2).getType(), Event.connected);
     kuzzle.removeListener(Event.connected, id2);

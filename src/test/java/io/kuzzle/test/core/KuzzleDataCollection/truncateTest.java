@@ -14,7 +14,7 @@ import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.test.testUtils.KuzzleExtend;
@@ -33,7 +33,7 @@ import static org.mockito.Mockito.when;
 public class truncateTest {
   private Kuzzle kuzzle;
   private Collection collection;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -47,7 +47,7 @@ public class truncateTest {
     when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
     collection = new Collection(kuzzle, "test", "index");
-    listener = mock(KuzzleResponseListener.class);
+    listener = mock(ResponseListener.class);
   }
 
   @Test
@@ -56,7 +56,7 @@ public class truncateTest {
     collection.truncate();
     collection.truncate(mock(Options.class));
     collection.truncate(listener);
-    verify(collection, times(3)).truncate(any(Options.class), any(KuzzleResponseListener.class));
+    verify(collection, times(3)).truncate(any(Options.class), any(ResponseListener.class));
   }
 
 
@@ -91,8 +91,8 @@ public class truncateTest {
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     collection.truncate();
     collection.truncate(new Options());
-    collection.truncate(mock(KuzzleResponseListener.class));
-    collection.truncate(new Options(), mock(KuzzleResponseListener.class));
+    collection.truncate(mock(ResponseListener.class));
+    collection.truncate(new Options(), mock(ResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(4)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "collection");

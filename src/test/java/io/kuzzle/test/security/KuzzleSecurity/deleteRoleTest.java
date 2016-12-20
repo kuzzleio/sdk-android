@@ -10,7 +10,7 @@ import org.mockito.stubbing.Answer;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.security.KuzzleSecurity;
 
@@ -24,13 +24,13 @@ import static org.mockito.Mockito.verify;
 public class deleteRoleTest {
   private Kuzzle kuzzle;
   private KuzzleSecurity kuzzleSecurity;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() {
     kuzzle = mock(Kuzzle.class);
     kuzzleSecurity = new KuzzleSecurity(kuzzle);
-    listener = mock(KuzzleResponseListener.class);
+    listener = mock(ResponseListener.class);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -65,7 +65,7 @@ public class deleteRoleTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.deleteRole("foobar", new KuzzleResponseListener<String>() {
+    kuzzleSecurity.deleteRole("foobar", new ResponseListener<String>() {
       @Override
       public void onSuccess(String response) {
         assertEquals(response, "foobar");

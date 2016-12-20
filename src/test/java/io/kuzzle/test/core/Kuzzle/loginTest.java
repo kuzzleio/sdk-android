@@ -14,8 +14,8 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.IKuzzleEventListener;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.EventListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.verify;
 public class loginTest {
   private KuzzleExtend kuzzle;
   private Socket s;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -44,7 +44,7 @@ public class loginTest {
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
 
-    listener = new KuzzleResponseListener<Object>() {
+    listener = new ResponseListener<Object>() {
       @Override
       public void onSuccess(Object object) {
 
@@ -69,14 +69,14 @@ public class loginTest {
     kuzzle.login("foo", 42);
     kuzzle.login("foo", 42, listener);
     kuzzle.login("foo", listener);
-    verify(kuzzle, times(7)).login(any(String.class), any(JSONObject.class), any(int.class), any(KuzzleResponseListener.class));
+    verify(kuzzle, times(7)).login(any(String.class), any(JSONObject.class), any(int.class), any(ResponseListener.class));
   }
 
   @Test
   public void testLogin() throws JSONException {
     kuzzle = spy(kuzzle);
 
-    KuzzleResponseListener listenerSpy = spy(listener);
+    ResponseListener listenerSpy = spy(listener);
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -102,7 +102,7 @@ public class loginTest {
   @Test
   public void testLoginAttemptEvent() throws JSONException {
     kuzzle = spy(kuzzle);
-    kuzzle.addListener(Event.loginAttempt, mock(IKuzzleEventListener.class));
+    kuzzle.addListener(Event.loginAttempt, mock(EventListener.class));
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {

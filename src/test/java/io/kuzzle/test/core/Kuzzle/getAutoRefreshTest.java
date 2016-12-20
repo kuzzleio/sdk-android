@@ -15,7 +15,7 @@ import org.mockito.stubbing.Answer;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.verify;
 
 public class getAutoRefreshTest {
   private KuzzleExtend kuzzle;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
 
   @Before
@@ -43,7 +43,7 @@ public class getAutoRefreshTest {
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(mock(Socket.class));
 
-    listener = mock(KuzzleResponseListener.class);
+    listener = mock(ResponseListener.class);
   }
 
   @Test
@@ -56,7 +56,7 @@ public class getAutoRefreshTest {
     kuzzle.getAutoRefresh(options, listener);
     kuzzle.getAutoRefresh("foo", listener);
 
-    verify(kuzzle, times(3)).getAutoRefresh(any(String.class), any(Options.class), any(KuzzleResponseListener.class));
+    verify(kuzzle, times(3)).getAutoRefresh(any(String.class), any(Options.class), any(ResponseListener.class));
   }
 
   @Test(expected = IllegalArgumentException.class)

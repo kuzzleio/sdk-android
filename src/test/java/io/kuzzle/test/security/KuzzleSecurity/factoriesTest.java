@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.security.KuzzleProfile;
 import io.kuzzle.sdk.security.KuzzleRole;
 import io.kuzzle.sdk.security.KuzzleSecurity;
@@ -19,13 +19,13 @@ import static org.mockito.Mockito.mock;
 public class factoriesTest {
   private Kuzzle kuzzle;
   private KuzzleSecurity kuzzleSecurity;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() {
     kuzzle = mock(Kuzzle.class);
     kuzzleSecurity = new KuzzleSecurity(kuzzle);
-    listener = mock(KuzzleResponseListener.class);
+    listener = mock(ResponseListener.class);
   }
 
   @Test

@@ -18,8 +18,8 @@ import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Scope;
 import io.kuzzle.sdk.enums.State;
 import io.kuzzle.sdk.enums.Users;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
-import io.kuzzle.sdk.listeners.KuzzleSubscribeListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
+import io.kuzzle.sdk.listeners.SubscribeListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleNotificationResponse;
 import io.kuzzle.sdk.state.KuzzleStates;
@@ -82,7 +82,7 @@ public class Room {
   /**
    * The Listener.
    */
-  protected KuzzleResponseListener<KuzzleNotificationResponse> listener;
+  protected ResponseListener<KuzzleNotificationResponse> listener;
 
   // Used to avoid subscription renewals to trigger multiple times because of
   // multiple but similar events
@@ -95,7 +95,7 @@ public class Room {
 // Used to delay method calls when subscription is in progress
   protected boolean subscribing = false;
   private ArrayList<Runnable> queue = new ArrayList<>();
-  private KuzzleSubscribeListener doneListener;
+  private SubscribeListener doneListener;
 
   /**
    * Instantiates a new Kuzzle room.
@@ -147,7 +147,7 @@ public class Room {
    *
    * @param listener the listener
    */
-  public void count(@NonNull final KuzzleResponseListener<Integer> listener) {
+  public void count(@NonNull final ResponseListener<Integer> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Room.count: a callback listener is required");
     }
@@ -238,7 +238,7 @@ public class Room {
    * @param listener the listener
    * @return kuzzle room
    */
-  public Room renew(@NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener) {
+  public Room renew(@NonNull final ResponseListener<KuzzleNotificationResponse> listener) {
     return this.renew(null, listener, null);
   }
 
@@ -250,7 +250,7 @@ public class Room {
    * @param subscribeResponseListener
    * @return kuzzle room
    */
-  public Room renew(@NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener, final KuzzleSubscribeListener subscribeResponseListener) {
+  public Room renew(@NonNull final ResponseListener<KuzzleNotificationResponse> listener, final SubscribeListener subscribeResponseListener) {
     return this.renew(null, listener, subscribeResponseListener);
   }
 
@@ -262,7 +262,7 @@ public class Room {
    * @param listener the listener
    * @return kuzzle room
    */
-  public Room renew(final JSONObject filters, @NonNull final KuzzleResponseListener<KuzzleNotificationResponse> listener, final KuzzleSubscribeListener subscribeResponseListener) {
+  public Room renew(final JSONObject filters, @NonNull final ResponseListener<KuzzleNotificationResponse> listener, final SubscribeListener subscribeResponseListener) {
     long now = System.currentTimeMillis();
 
     if (listener == null) {
@@ -583,11 +583,11 @@ public class Room {
    *
    * @return listener
    */
-  public KuzzleResponseListener<KuzzleNotificationResponse> getListener() {
+  public ResponseListener<KuzzleNotificationResponse> getListener() {
     return this.listener;
   }
 
-  public KuzzleSubscribeListener  getSubscribeListener() {
+  public SubscribeListener getSubscribeListener() {
     return doneListener;
   }
 

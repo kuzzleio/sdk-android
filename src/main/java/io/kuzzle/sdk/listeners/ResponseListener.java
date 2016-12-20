@@ -5,7 +5,7 @@ import org.json.JSONObject;
 /**
  * The interface Response listener.
  */
-public interface KuzzleResponseListener<T> {
+public interface ResponseListener<T> {
   /**
    * On success.
    *

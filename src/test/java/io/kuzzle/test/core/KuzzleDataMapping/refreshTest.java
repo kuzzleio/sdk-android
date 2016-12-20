@@ -12,7 +12,7 @@ import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.CollectionMapping;
 import io.kuzzle.sdk.core.Options;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
 import static org.junit.Assert.assertEquals;
@@ -43,8 +43,8 @@ public class refreshTest {
   @Test
   public void checkSignaturesVariants() {
     dataMapping = spy(dataMapping);
-    dataMapping.refresh(mock(KuzzleResponseListener.class));
-    verify(dataMapping).refresh(any(Options.class), any(KuzzleResponseListener.class));
+    dataMapping.refresh(mock(ResponseListener.class));
+    verify(dataMapping).refresh(any(Options.class), any(ResponseListener.class));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -55,7 +55,7 @@ public class refreshTest {
   @Test(expected = RuntimeException.class)
   public void testException() throws JSONException {
     doThrow(JSONException.class).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    dataMapping.refresh(mock(KuzzleResponseListener.class));
+    dataMapping.refresh(mock(ResponseListener.class));
   }
 
   @Test(expected = RuntimeException.class)
@@ -87,7 +87,7 @@ public class refreshTest {
         return null;
       }
     }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    KuzzleResponseListener mockListener = mock(KuzzleResponseListener.class);
+    ResponseListener mockListener = mock(ResponseListener.class);
     doThrow(JSONException.class).when(mockListener).onSuccess(any(CollectionMapping.class));
     dataMapping.refresh(mockListener);
   }
@@ -123,7 +123,7 @@ public class refreshTest {
     }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     when(k.getDefaultIndex()).thenReturn("index");
 
-    dataMapping.refresh(new KuzzleResponseListener<CollectionMapping>() {
+    dataMapping.refresh(new ResponseListener<CollectionMapping>() {
       @Override
       public void onSuccess(CollectionMapping response) {
         assertNotEquals(dataMapping, response);
@@ -143,7 +143,7 @@ public class refreshTest {
 
       }
     });
-    dataMapping.refresh(new Options(), mock(KuzzleResponseListener.class));
+    dataMapping.refresh(new Options(), mock(ResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(k, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "collection");

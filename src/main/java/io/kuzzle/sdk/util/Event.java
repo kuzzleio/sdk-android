@@ -2,12 +2,12 @@ package io.kuzzle.sdk.util;
 
 import java.util.UUID;
 
-import io.kuzzle.sdk.listeners.IKuzzleEventListener;
+import io.kuzzle.sdk.listeners.EventListener;
 
 /**
  * The type Event.
  */
-public abstract class Event implements IKuzzleEventListener {
+public abstract class Event implements EventListener {
   private UUID id;
   private io.kuzzle.sdk.enums.Event type;
 

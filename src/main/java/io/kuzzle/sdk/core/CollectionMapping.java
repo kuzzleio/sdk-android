@@ -7,7 +7,7 @@ import org.json.JSONObject;
 
 import java.util.Iterator;
 
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
 /**
@@ -88,7 +88,7 @@ public class CollectionMapping {
    * @param listener the listener
    * @return the kuzzle data mapping
    */
-  public CollectionMapping apply(final KuzzleResponseListener<CollectionMapping> listener) {
+  public CollectionMapping apply(final ResponseListener<CollectionMapping> listener) {
     return this.apply(null, listener);
   }
 
@@ -99,7 +99,7 @@ public class CollectionMapping {
    * @param listener the cb
    * @return the kuzzle data mapping
    */
-  public CollectionMapping apply(final Options options, final KuzzleResponseListener<CollectionMapping> listener) {
+  public CollectionMapping apply(final Options options, final ResponseListener<CollectionMapping> listener) {
     JSONObject data = new JSONObject();
     JSONObject properties = new JSONObject();
     try {
@@ -132,7 +132,7 @@ public class CollectionMapping {
    *
    * @param listener the listener
    */
-  public void refresh(final KuzzleResponseListener<CollectionMapping> listener) {
+  public void refresh(final ResponseListener<CollectionMapping> listener) {
     refresh(null, listener);
   }
 
@@ -142,7 +142,7 @@ public class CollectionMapping {
    * @param options  the options
    * @param listener the listener
    */
-  public void refresh(final Options options, @NonNull final KuzzleResponseListener<CollectionMapping> listener) {
+  public void refresh(final Options options, @NonNull final ResponseListener<CollectionMapping> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("CollectionMapping.refresh: listener callback missing");
     }

@@ -26,8 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.IKuzzleEventListener;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.EventListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleTokenValidity;
 import io.kuzzle.sdk.security.KuzzleSecurity;
@@ -85,7 +85,7 @@ public class Kuzzle {
   /**
    * The Connection callback.
    */
-  protected KuzzleResponseListener<Void> connectionCallback;
+  protected ResponseListener<Void> connectionCallback;
   /**
    * The State.
    */
@@ -177,7 +177,7 @@ public class Kuzzle {
    */
   public KuzzleSecurity security;
 
-  private KuzzleResponseListener<JSONObject>  loginCallback;
+  private ResponseListener<JSONObject> loginCallback;
 
   public MemoryStorage memoryStorage;
 
@@ -234,7 +234,7 @@ public class Kuzzle {
    * @param connectionCallback the connection callback
    * @throws URISyntaxException the uri syntax exception
    */
-  public Kuzzle(@NonNull final String host, final Options options, final KuzzleResponseListener<Void> connectionCallback) throws URISyntaxException {
+  public Kuzzle(@NonNull final String host, final Options options, final ResponseListener<Void> connectionCallback) throws URISyntaxException {
     if (host == null || host.isEmpty()) {
       throw new IllegalArgumentException("Host name/address can't be empty");
     }
@@ -289,7 +289,7 @@ public class Kuzzle {
    * @param cb  the cb
    * @throws URISyntaxException the uri syntax exception
    */
-  public Kuzzle(@NonNull final String host, final KuzzleResponseListener<Void> cb) throws URISyntaxException {
+  public Kuzzle(@NonNull final String host, final ResponseListener<Void> cb) throws URISyntaxException {
     this(host, null, cb);
   }
 
@@ -313,7 +313,7 @@ public class Kuzzle {
    * @param listener    the event listener
    * @return {string} Unique listener ID
    */
-  public String addListener(final Event kuzzleEvent, final IKuzzleEventListener listener) {
+  public String addListener(final Event kuzzleEvent, final EventListener listener) {
     this.isValid();
 
     io.kuzzle.sdk.util.Event e = new io.kuzzle.sdk.util.Event(kuzzleEvent) {
@@ -338,7 +338,7 @@ public class Kuzzle {
    * @param token    the token
    * @param listener the listener
    */
-  public void checkToken(@NonNull final String token, @NonNull final KuzzleResponseListener<KuzzleTokenValidity> listener) {
+  public void checkToken(@NonNull final String token, @NonNull final ResponseListener<KuzzleTokenValidity> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.checkToken: listener required");
     }
@@ -466,7 +466,7 @@ public class Kuzzle {
           Kuzzle.this.state = KuzzleStates.CONNECTED;
 
           if (Kuzzle.this.jwtToken != null) {
-            Kuzzle.this.checkToken(jwtToken, new KuzzleResponseListener<KuzzleTokenValidity>() {
+            Kuzzle.this.checkToken(jwtToken, new ResponseListener<KuzzleTokenValidity>() {
               @Override
               public void onSuccess(KuzzleTokenValidity response) {
                 if (!response.isValid()) {
@@ -549,7 +549,7 @@ public class Kuzzle {
    *
    * @param listener the listener
    */
-  public void getAllStatistics(@NonNull final KuzzleResponseListener<JSONArray> listener) {
+  public void getAllStatistics(@NonNull final ResponseListener<JSONArray> listener) {
     this.getAllStatistics(null, listener);
   }
 
@@ -560,7 +560,7 @@ public class Kuzzle {
    * @param options  the options
    * @param listener the listener
    */
-  public void getAllStatistics(final Options options, @NonNull final KuzzleResponseListener<JSONArray> listener) {
+  public void getAllStatistics(final Options options, @NonNull final ResponseListener<JSONArray> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.getAllStatistics: listener required");
     }
@@ -595,7 +595,7 @@ public class Kuzzle {
    *
    * @param listener the listener
    */
-  public void getStatistics(@NonNull final KuzzleResponseListener<JSONObject> listener) {
+  public void getStatistics(@NonNull final ResponseListener<JSONObject> listener) {
     this.getStatistics(null, listener);
   }
 
@@ -606,7 +606,7 @@ public class Kuzzle {
    * @param options  the options
    * @param listener the listener
    */
-  public void getStatistics(final Options options, @NonNull final KuzzleResponseListener<JSONObject> listener) {
+  public void getStatistics(final Options options, @NonNull final ResponseListener<JSONObject> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.getStatistics: listener required");
     }
@@ -645,7 +645,7 @@ public class Kuzzle {
    * @param listener  the listener
    * @return the statistics
    */
-  public void getStatistics(long timestamp, @NonNull final KuzzleResponseListener<JSONArray> listener) {
+  public void getStatistics(long timestamp, @NonNull final ResponseListener<JSONArray> listener) {
     this.getStatistics(timestamp, null, listener);
   }
 
@@ -656,7 +656,7 @@ public class Kuzzle {
    * @param options   the options
    * @param listener  the listener
    */
-  public void getStatistics(long timestamp, final Options options, @NonNull final KuzzleResponseListener<JSONArray> listener) {
+  public void getStatistics(long timestamp, final Options options, @NonNull final ResponseListener<JSONArray> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.getStatistics: listener required");
     }
@@ -695,7 +695,7 @@ public class Kuzzle {
    *
    * @param listener the listener
    */
-  public void getServerInfo(@NonNull final KuzzleResponseListener<JSONObject> listener) {
+  public void getServerInfo(@NonNull final ResponseListener<JSONObject> listener) {
     this.getServerInfo(null, listener);
   }
 
@@ -705,7 +705,7 @@ public class Kuzzle {
    * @param options  the options
    * @param listener the listener
    */
-  public void getServerInfo(final Options options, @NonNull final KuzzleResponseListener<JSONObject> listener) {
+  public void getServerInfo(final Options options, @NonNull final ResponseListener<JSONObject> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.getServerInfo: listener required");
     }
@@ -738,7 +738,7 @@ public class Kuzzle {
    *
    * @param listener the listener
    */
-  public void listCollections(@NonNull final KuzzleResponseListener<JSONObject> listener) {
+  public void listCollections(@NonNull final ResponseListener<JSONObject> listener) {
     this.listCollections(null, null, listener);
   }
 
@@ -749,7 +749,7 @@ public class Kuzzle {
    * @param listener the listener
    * @return the kuzzle
    */
-  public void listCollections(String index, @NonNull final KuzzleResponseListener<JSONObject> listener) {
+  public void listCollections(String index, @NonNull final ResponseListener<JSONObject> listener) {
     this.listCollections(index, null, listener);
   }
 
@@ -759,7 +759,7 @@ public class Kuzzle {
    * @param options  the options
    * @param listener the listener
    */
-  public void listCollections(Options options, @NonNull final KuzzleResponseListener<JSONObject> listener) {
+  public void listCollections(Options options, @NonNull final ResponseListener<JSONObject> listener) {
     this.listCollections(null, options, listener);
   }
 
@@ -770,7 +770,7 @@ public class Kuzzle {
    * @param options  the options
    * @param listener the listener
    */
-  public void listCollections(String index, Options options, @NonNull final KuzzleResponseListener<JSONObject> listener) {
+  public void listCollections(String index, Options options, @NonNull final ResponseListener<JSONObject> listener) {
     if (index == null) {
       if (this.defaultIndex == null) {
         throw new IllegalArgumentException("Kuzzle.listCollections: index required");
@@ -817,7 +817,7 @@ public class Kuzzle {
    *
    * @param listener the listener
    */
-  public void listIndexes(@NonNull final KuzzleResponseListener<String[]> listener) {
+  public void listIndexes(@NonNull final ResponseListener<String[]> listener) {
     this.listIndexes(null, listener);
   }
 
@@ -827,7 +827,7 @@ public class Kuzzle {
    * @param options  the options
    * @param listener the listener
    */
-  public void listIndexes(final Options options, @NonNull final KuzzleResponseListener<String[]> listener) {
+  public void listIndexes(final Options options, @NonNull final ResponseListener<String[]> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.listIndexes: listener required");
     }
@@ -908,7 +908,7 @@ public class Kuzzle {
    * @param credentials login credentials
    * @param listener    the listener
    */
-  public void login(@NonNull final String strategy, final JSONObject credentials, final KuzzleResponseListener<JSONObject> listener) {
+  public void login(@NonNull final String strategy, final JSONObject credentials, final ResponseListener<JSONObject> listener) {
     this.login(strategy, credentials, -1, listener);
   }
 
@@ -918,7 +918,7 @@ public class Kuzzle {
    * @param strategy the strategy
    * @param listener the listener
    */
-  public void login(@NonNull final String strategy, final KuzzleResponseListener<JSONObject> listener) {
+  public void login(@NonNull final String strategy, final ResponseListener<JSONObject> listener) {
     this.login(strategy, null, -1, listener);
   }
 
@@ -929,7 +929,7 @@ public class Kuzzle {
    * @param expiresIn the expires in
    * @param listener  the listener
    */
-  public void login(@NonNull final String strategy, final int expiresIn, final KuzzleResponseListener<JSONObject> listener) {
+  public void login(@NonNull final String strategy, final int expiresIn, final ResponseListener<JSONObject> listener) {
     this.login(strategy, null, expiresIn, listener);
   }
 
@@ -941,7 +941,7 @@ public class Kuzzle {
    * @param expiresIn   the expires in
    * @param listener    callback called when strategy's redirectUri is received
    */
-  public void login(@NonNull final String strategy, final JSONObject credentials, int expiresIn, final KuzzleResponseListener<JSONObject> listener) {
+  public void login(@NonNull final String strategy, final JSONObject credentials, int expiresIn, final ResponseListener<JSONObject> listener) {
     if (strategy == null) {
       throw new IllegalArgumentException("Kuzzle.login: cannot authenticate to Kuzzle without an authentication strategy");
     }
@@ -1093,7 +1093,7 @@ public class Kuzzle {
    * @param listener the listener
    * @return the kuzzle
    */
-  public Kuzzle logout(final KuzzleResponseListener<Void> listener) {
+  public Kuzzle logout(final ResponseListener<Void> listener) {
     Options options = new Options();
 
     options.setQueuable(false);
@@ -1131,7 +1131,7 @@ public class Kuzzle {
    *
    * @param listener the listener
    */
-  public void now(@NonNull final KuzzleResponseListener<Date> listener) {
+  public void now(@NonNull final ResponseListener<Date> listener) {
     this.now(null, listener);
   }
 
@@ -1141,7 +1141,7 @@ public class Kuzzle {
    * @param options  the options
    * @param listener the listener
    */
-  public void now(final Options options, @NonNull final KuzzleResponseListener<Date> listener) {
+  public void now(final Options options, @NonNull final ResponseListener<Date> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.now: listener required");
     }
@@ -2151,7 +2151,7 @@ public class Kuzzle {
    * @param listener
    * @return itself
    */
-  public Kuzzle updateSelf(final JSONObject content, final KuzzleResponseListener listener) {
+  public Kuzzle updateSelf(final JSONObject content, final ResponseListener listener) {
     return updateSelf(content, null, listener);
   }
 
@@ -2163,7 +2163,7 @@ public class Kuzzle {
    * @param listener
    * @return itself
    */
-  public Kuzzle updateSelf(final JSONObject content, final Options options, final KuzzleResponseListener<JSONObject> listener) {
+  public Kuzzle updateSelf(final JSONObject content, final Options options, final ResponseListener<JSONObject> listener) {
     QueryArgs args = new QueryArgs();
     args.controller = "auth";
     args.action = "updateSelf";
@@ -2197,7 +2197,7 @@ public class Kuzzle {
    *
    * @param listener the listener
    */
-  public void whoAmI(@NonNull final KuzzleResponseListener<KuzzleUser> listener) {
+  public void whoAmI(@NonNull final ResponseListener<KuzzleUser> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.whoAmI: listener required");
     }
@@ -2255,7 +2255,7 @@ public class Kuzzle {
    * @param listener
    * @return itself
    */
-  public Kuzzle refreshIndex(String index, final KuzzleResponseListener<JSONObject> listener) {
+  public Kuzzle refreshIndex(String index, final ResponseListener<JSONObject> listener) {
     return this.refreshIndex(index, null, listener);
   }
 
@@ -2287,7 +2287,7 @@ public class Kuzzle {
    * @param listener
    * @return itself
    */
-  public Kuzzle refreshIndex(final Options options, final KuzzleResponseListener<JSONObject> listener) {
+  public Kuzzle refreshIndex(final Options options, final ResponseListener<JSONObject> listener) {
     return this.refreshIndex(null, options, listener);
   }
 
@@ -2297,7 +2297,7 @@ public class Kuzzle {
    * @param listener
    * @return itself
    */
-  public Kuzzle refreshIndex(final KuzzleResponseListener<JSONObject> listener) {
+  public Kuzzle refreshIndex(final ResponseListener<JSONObject> listener) {
     return this.refreshIndex(null, null, listener);
   }
 
@@ -2309,7 +2309,7 @@ public class Kuzzle {
    * @param listener
    * @return itself
    */
-  public Kuzzle refreshIndex(String index, final Options options, final KuzzleResponseListener<JSONObject> listener) {
+  public Kuzzle refreshIndex(String index, final Options options, final ResponseListener<JSONObject> listener) {
     if (index == null) {
       if (this.defaultIndex == null) {
         throw new IllegalArgumentException("Kuzzle.refreshIndex: index required");
@@ -2363,7 +2363,7 @@ public class Kuzzle {
    *
    * @param listener
    */
-  public void getAutoRefresh(@NonNull final KuzzleResponseListener<Boolean> listener) {
+  public void getAutoRefresh(@NonNull final ResponseListener<Boolean> listener) {
     this.getAutoRefresh(null, null, listener);
   }
 
@@ -2373,7 +2373,7 @@ public class Kuzzle {
    * @param index
    * @param listener
    */
-  public void getAutoRefresh(String index, @NonNull final KuzzleResponseListener<Boolean> listener) {
+  public void getAutoRefresh(String index, @NonNull final ResponseListener<Boolean> listener) {
     this.getAutoRefresh(index, null, listener);
   }
 
@@ -2383,7 +2383,7 @@ public class Kuzzle {
    * @param options
    * @param listener
    */
-  public void getAutoRefresh(Options options, @NonNull final KuzzleResponseListener<Boolean> listener) {
+  public void getAutoRefresh(Options options, @NonNull final ResponseListener<Boolean> listener) {
     this.getAutoRefresh(null, options, listener);
   }
 
@@ -2394,7 +2394,7 @@ public class Kuzzle {
    * @param options
    * @param listener
    */
-  public void getAutoRefresh(String index, final Options options, @NonNull final KuzzleResponseListener<Boolean> listener) {
+  public void getAutoRefresh(String index, final Options options, @NonNull final ResponseListener<Boolean> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.getAutoRefresh: listener required");
     }
@@ -2448,7 +2448,7 @@ public class Kuzzle {
    * @param listener
    * @return itself
    */
-  public Kuzzle setAutoRefresh(final boolean autoRefresh, final KuzzleResponseListener<Boolean> listener) {
+  public Kuzzle setAutoRefresh(final boolean autoRefresh, final ResponseListener<Boolean> listener) {
     return this.setAutoRefresh(null, autoRefresh, null, listener);
   }
 
@@ -2494,7 +2494,7 @@ public class Kuzzle {
    * @param listener
    * @return itself
    */
-  public Kuzzle setAutoRefresh(String index, final boolean autoRefresh, final KuzzleResponseListener<Boolean> listener) {
+  public Kuzzle setAutoRefresh(String index, final boolean autoRefresh, final ResponseListener<Boolean> listener) {
     return this.setAutoRefresh(index, autoRefresh, null, listener);
   }
 
@@ -2506,7 +2506,7 @@ public class Kuzzle {
    * @param listener
    * @return itself
    */
-  public Kuzzle setAutoRefresh(final boolean autoRefresh, final Options options, final KuzzleResponseListener<Boolean> listener) {
+  public Kuzzle setAutoRefresh(final boolean autoRefresh, final Options options, final ResponseListener<Boolean> listener) {
     return this.setAutoRefresh(null, autoRefresh, options, listener);
   }
 
@@ -2519,7 +2519,7 @@ public class Kuzzle {
    * @param listener
    * @return itself
    */
-  public Kuzzle setAutoRefresh(String index, final boolean autoRefresh, final Options options, final KuzzleResponseListener<Boolean> listener) {
+  public Kuzzle setAutoRefresh(String index, final boolean autoRefresh, final Options options, final ResponseListener<Boolean> listener) {
     if (index == null) {
       if (this.defaultIndex == null) {
         throw new IllegalArgumentException("Kuzzle.setAutoRefresh: index required");
@@ -2569,7 +2569,7 @@ public class Kuzzle {
    * @param listener
    * @return the KuzzleSecurity instance
    */
-  public Kuzzle getMyRights(@NonNull final KuzzleResponseListener<JSONArray> listener) {
+  public Kuzzle getMyRights(@NonNull final ResponseListener<JSONArray> listener) {
     return getMyRights(null, listener);
   }
 
@@ -2580,7 +2580,7 @@ public class Kuzzle {
    * @param listener
    * @return the KuzzleSecurity instance
    */
-  public Kuzzle getMyRights(final Options options, @NonNull final KuzzleResponseListener<JSONArray> listener) {
+  public Kuzzle getMyRights(final Options options, @NonNull final ResponseListener<JSONArray> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("KuzzleSecurity.getMyRights: listener is mandatory.");
     }

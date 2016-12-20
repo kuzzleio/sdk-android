@@ -14,7 +14,7 @@ import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.test.testUtils.KuzzleExtend;
@@ -33,7 +33,7 @@ import static org.mockito.Mockito.when;
 public class updateDocumentTest {
   private Kuzzle kuzzle;
   private Collection collection;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -47,7 +47,7 @@ public class updateDocumentTest {
     when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
     collection = new Collection(kuzzle, "test", "index");
-    listener = mock(KuzzleResponseListener.class);
+    listener = mock(ResponseListener.class);
   }
 
   @Test
@@ -60,7 +60,7 @@ public class updateDocumentTest {
     collection.updateDocument(id, content, mock(Options.class));
     collection.updateDocument(id, content, listener);
 
-    verify(collection, times(3)).updateDocument(any(String.class), any(JSONObject.class), any(Options.class), any(KuzzleResponseListener.class));
+    verify(collection, times(3)).updateDocument(any(String.class), any(JSONObject.class), any(Options.class), any(ResponseListener.class));
   }
 
 
@@ -115,7 +115,7 @@ public class updateDocumentTest {
     Document doc = new Document(collection);
     collection.updateDocument("42", doc.serialize());
     collection.updateDocument("42", doc.serialize(), new Options());
-    collection.updateDocument("42", doc.serialize(), new KuzzleResponseListener<Document>() {
+    collection.updateDocument("42", doc.serialize(), new ResponseListener<Document>() {
       @Override
       public void onSuccess(Document document) {
         assertEquals(document.getId(), "42");
@@ -127,7 +127,7 @@ public class updateDocumentTest {
 
       }
     });
-    collection.updateDocument("42", doc.serialize(), new Options(), new KuzzleResponseListener<Document>() {
+    collection.updateDocument("42", doc.serialize(), new Options(), new ResponseListener<Document>() {
       @Override
       public void onSuccess(Document document) {
         assertEquals(document.getId(), "42");

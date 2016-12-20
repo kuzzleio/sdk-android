@@ -16,8 +16,8 @@ import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.core.RoomOptions;
 import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.IKuzzleEventListener;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.EventListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.test.testUtils.KuzzleExtend;
@@ -36,7 +36,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class notificationHandlerTest {
-  private KuzzleResponseListener listener = mock(KuzzleResponseListener.class);
+  private ResponseListener listener = mock(ResponseListener.class);
   private JSONObject mockNotif = new JSONObject();
   private JSONObject  mockResponse = new JSONObject();
   private Kuzzle k;
@@ -73,7 +73,7 @@ public class notificationHandlerTest {
     RoomExtend renew = new RoomExtend(new Collection(k, "test", "index"));
     JSONObject errorResponse = new JSONObject();
     errorResponse.put("error", "error");
-    KuzzleResponseListener listener = mock(KuzzleResponseListener.class);
+    ResponseListener listener = mock(ResponseListener.class);
     renew.setListener(listener);
     renew.callAfterRenew(errorResponse);
     verify(listener, atLeastOnce()).onError(any(JSONObject.class));
@@ -146,7 +146,7 @@ public class notificationHandlerTest {
   @Test
   public void testJwtTokenExpiredNotification() throws JSONException, URISyntaxException {
     k = new Kuzzle("localhost");
-    IKuzzleEventListener listener = spy(new IKuzzleEventListener() {
+    EventListener listener = spy(new EventListener() {
       @Override
       public void trigger(Object... args) {
 
@@ -154,7 +154,7 @@ public class notificationHandlerTest {
     });
     k.addListener(Event.jwtTokenExpired, listener);
     RoomExtend renew = new RoomExtend(new Collection(k, "test", "index"));
-    renew.setListener(mock(KuzzleResponseListener.class));
+    renew.setListener(mock(ResponseListener.class));
     JSONObject mockResponse = new JSONObject().put("result", new JSONObject());
     mockResponse.put("requestId", "42");
     mockNotif.put("action", "jwtTokenExpired");

@@ -8,7 +8,7 @@ import java.util.TimerTask;
 import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Room;
 import io.kuzzle.sdk.core.RoomOptions;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 
 /**
  * Created by scottinet on 19/02/16.
@@ -27,7 +27,7 @@ public class RoomExtend extends Room {
     super.callAfterRenew(args);
   }
 
-  public void setListener(final KuzzleResponseListener listener) {
+  public void setListener(final ResponseListener listener) {
     this.listener = listener;
   }
 

@@ -15,7 +15,7 @@ import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.test.testUtils.KuzzleExtend;
@@ -52,8 +52,8 @@ public class deleteTest {
     doc = spy(doc);
     doc.delete();
     doc.delete(mock(Options.class));
-    doc.delete(mock(KuzzleResponseListener.class));
-    verify(doc, times(3)).delete(any(Options.class), any(KuzzleResponseListener.class));
+    doc.delete(mock(ResponseListener.class));
+    verify(doc, times(3)).delete(any(Options.class), any(ResponseListener.class));
   }
 
   @Test(expected = IllegalStateException.class)
@@ -81,7 +81,7 @@ public class deleteTest {
       }
     }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     doc.setId("id-42");
-    doc.delete(mock(KuzzleResponseListener.class));
+    doc.delete(mock(ResponseListener.class));
     doc.setId("id-42");
     doc.delete();
     doc.setId("id-42");

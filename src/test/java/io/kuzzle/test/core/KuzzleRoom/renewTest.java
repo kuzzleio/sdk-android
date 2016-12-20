@@ -17,7 +17,7 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.core.Room;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleNotificationResponse;
 import io.kuzzle.sdk.state.KuzzleStates;
@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
 
 public class renewTest {
   @Mock
-  private KuzzleResponseListener<KuzzleNotificationResponse> listener;
+  private ResponseListener<KuzzleNotificationResponse> listener;
 
   private JSONObject mockNotif = new JSONObject();
   private JSONObject  mockResponse = new JSONObject();

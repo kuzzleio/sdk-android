@@ -11,7 +11,7 @@ import org.mockito.stubbing.Answer;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.security.KuzzleSecurity;
 import io.kuzzle.sdk.security.KuzzleUser;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.verify;
 public class KuzzleUserTest {
   private Kuzzle kuzzle;
   private KuzzleUser stubUser;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
   JSONObject stubProfile;
 
   @Before
@@ -47,7 +47,7 @@ public class KuzzleUserTest {
 
     kuzzle = mock(Kuzzle.class);
     kuzzle.security = new KuzzleSecurity(kuzzle);
-    listener = mock(KuzzleResponseListener.class);
+    listener = mock(ResponseListener.class);
     stubUser = new KuzzleUser(kuzzle, "foo", null);
   }
 
@@ -119,7 +119,7 @@ public class KuzzleUserTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    stubUser.save(new KuzzleResponseListener<KuzzleUser>() {
+    stubUser.save(new ResponseListener<KuzzleUser>() {
       @Override
       public void onSuccess(KuzzleUser response) {
         assertEquals(response, stubUser);
@@ -173,7 +173,7 @@ public class KuzzleUserTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    stubUser.saveRestricted(new KuzzleResponseListener<KuzzleUser>() {
+    stubUser.saveRestricted(new ResponseListener<KuzzleUser>() {
       @Override
       public void onSuccess(KuzzleUser response) {
         assertEquals(response, stubUser);

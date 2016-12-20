@@ -16,7 +16,7 @@ import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.core.Room;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.test.testUtils.KuzzleExtend;
@@ -35,7 +35,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class unsubscribeTest {
-  private KuzzleResponseListener listener = mock(KuzzleResponseListener.class);
+  private ResponseListener listener = mock(ResponseListener.class);
   private JSONObject mockNotif = new JSONObject();
   private JSONObject  mockResponse = new JSONObject();
   private Kuzzle k;

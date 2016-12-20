@@ -12,7 +12,7 @@ import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.verify;
 
 public class getServerInfoTest {
   private KuzzleExtend kuzzle;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -39,7 +39,7 @@ public class getServerInfoTest {
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(mock(Socket.class));
 
-    listener = new KuzzleResponseListener<Object>() {
+    listener = new ResponseListener<Object>() {
       @Override
       public void onSuccess(Object object) {
 
@@ -60,8 +60,8 @@ public class getServerInfoTest {
   @Test
   public void testGetServerInfoNoOptions() {
     kuzzle = spy(kuzzle);
-    kuzzle.getServerInfo(mock(KuzzleResponseListener.class));
-    verify(kuzzle).getServerInfo(any(Options.class), any(KuzzleResponseListener.class));
+    kuzzle.getServerInfo(mock(ResponseListener.class));
+    verify(kuzzle).getServerInfo(any(Options.class), any(ResponseListener.class));
   }
 
   @Test(expected = RuntimeException.class)

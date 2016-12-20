@@ -14,7 +14,7 @@ import java.util.Iterator;
 
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.QueryArgsHelper;
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.verify;
 
 public class getAllStatisticsTest {
   private KuzzleExtend kuzzle;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -43,7 +43,7 @@ public class getAllStatisticsTest {
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(mock(Socket.class));
 
-    listener = new KuzzleResponseListener<Object>() {
+    listener = new ResponseListener<Object>() {
       @Override
       public void onSuccess(Object object) {
 
@@ -65,7 +65,7 @@ public class getAllStatisticsTest {
   public void testGetAllStatisticsNoOptions() {
     kuzzle = spy(kuzzle);
     kuzzle.getAllStatistics(listener);
-    verify(kuzzle).getAllStatistics(any(Options.class), any(KuzzleResponseListener.class));
+    verify(kuzzle).getAllStatistics(any(Options.class), any(ResponseListener.class));
   }
 
   @Test(expected = RuntimeException.class)
@@ -124,7 +124,7 @@ public class getAllStatisticsTest {
         return null;
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    kuzzle.getAllStatistics(new KuzzleResponseListener<JSONArray>() {
+    kuzzle.getAllStatistics(new ResponseListener<JSONArray>() {
       @Override
       public void onSuccess(JSONArray result) {
         try {
@@ -163,7 +163,7 @@ public class getAllStatisticsTest {
         return null;
       }
     }).when(kuzzle).query(eq(QueryArgsHelper.makeQueryArgs("server", "getAllStats")), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    kuzzle.getAllStatistics(new KuzzleResponseListener<JSONArray>() {
+    kuzzle.getAllStatistics(new ResponseListener<JSONArray>() {
       @Override
       public void onSuccess(JSONArray object) {
       }

@@ -13,7 +13,7 @@ import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.verify;
 public class logoutTest {
   private KuzzleExtend kuzzle;
   private Socket s;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -42,7 +42,7 @@ public class logoutTest {
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
 
-    listener = new KuzzleResponseListener<Object>() {
+    listener = new ResponseListener<Object>() {
       @Override
       public void onSuccess(Object object) {
 
@@ -59,7 +59,7 @@ public class logoutTest {
   public void checkAllSignaturesVariants() {
     kuzzle = spy(kuzzle);
     kuzzle.logout();
-    verify(kuzzle).logout(any(KuzzleResponseListener.class));
+    verify(kuzzle).logout(any(ResponseListener.class));
   }
 
   @Test(expected = RuntimeException.class)
@@ -101,7 +101,7 @@ public class logoutTest {
 
     kuzzle.login("local", new JSONObject().put("username", "username").put("password", "password"));
     kuzzle.logout();
-    kuzzle.logout(mock(KuzzleResponseListener.class));
+    kuzzle.logout(mock(ResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(3)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "auth");

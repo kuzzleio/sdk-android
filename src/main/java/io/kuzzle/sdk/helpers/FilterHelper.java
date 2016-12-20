@@ -5,7 +5,7 @@ import org.json.JSONObject;
 /**
  * The type Kuzzle filter helper.
  */
-public class KuzzleFilterHelper {
+public class FilterHelper {
 
   private JSONObject filter = new JSONObject();
 
@@ -14,7 +14,7 @@ public class KuzzleFilterHelper {
    *
    * @return the kuzzle filter helper
    */
-  public KuzzleFilterHelper and() {
+  public FilterHelper and() {
     return this;
   }
 

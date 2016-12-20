@@ -10,7 +10,7 @@ import org.mockito.stubbing.Answer;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.security.KuzzleRole;
 import io.kuzzle.sdk.security.KuzzleSecurity;
@@ -53,7 +53,7 @@ public class KuzzleRoleTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    stubRole.save(new KuzzleResponseListener<KuzzleRole>() {
+    stubRole.save(new ResponseListener<KuzzleRole>() {
       @Override
       public void onSuccess(KuzzleRole response) {
         assertEquals(response, stubRole);

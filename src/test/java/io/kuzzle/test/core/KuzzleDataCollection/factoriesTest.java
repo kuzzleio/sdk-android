@@ -15,7 +15,7 @@ import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.core.Room;
 import io.kuzzle.sdk.core.RoomOptions;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 public class factoriesTest {
   private Kuzzle kuzzle;
   private Collection collection;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -45,7 +45,7 @@ public class factoriesTest {
     when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
     collection = new Collection(kuzzle, "test", "index");
-    listener = mock(KuzzleResponseListener.class);
+    listener = mock(ResponseListener.class);
   }
 
   @Test

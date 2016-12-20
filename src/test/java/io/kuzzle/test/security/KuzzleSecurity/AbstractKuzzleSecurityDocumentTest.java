@@ -10,7 +10,7 @@ import org.mockito.stubbing.Answer;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.security.AbstractKuzzleSecurityDocument;
 import io.kuzzle.sdk.security.KuzzleRole;
@@ -30,13 +30,13 @@ import static org.mockito.Mockito.verify;
 public class AbstractKuzzleSecurityDocumentTest {
   private Kuzzle kuzzle;
   private KuzzleRole stubRole;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
     kuzzle.security = new KuzzleSecurity(kuzzle);
-    listener = mock(KuzzleResponseListener.class);
+    listener = mock(ResponseListener.class);
     stubRole = new KuzzleRole(kuzzle, "foo", new JSONObject("{\"foo\":\"bar\"}"));
   }
 
@@ -89,7 +89,7 @@ public class AbstractKuzzleSecurityDocumentTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    stubRole.delete(new KuzzleResponseListener<String>() {
+    stubRole.delete(new ResponseListener<String>() {
       @Override
       public void onSuccess(String response) {
         assertEquals(response, "foo");
@@ -144,7 +144,7 @@ public class AbstractKuzzleSecurityDocumentTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    stubRole.update(content, new KuzzleResponseListener<AbstractKuzzleSecurityDocument>() {
+    stubRole.update(content, new ResponseListener<AbstractKuzzleSecurityDocument>() {
       @Override
       public void onSuccess(AbstractKuzzleSecurityDocument response) {
         assertEquals(response.getId(), "foo");

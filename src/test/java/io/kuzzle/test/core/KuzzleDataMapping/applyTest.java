@@ -12,7 +12,7 @@ import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.CollectionMapping;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
 import static org.junit.Assert.assertEquals;
@@ -44,8 +44,8 @@ public class applyTest {
     dataMapping = spy(dataMapping);
     dataMapping.apply();
     dataMapping.apply(mock(Options.class));
-    dataMapping.apply(mock(KuzzleResponseListener.class));
-    verify(dataMapping, times(3)).apply(any(Options.class), any(KuzzleResponseListener.class));
+    dataMapping.apply(mock(ResponseListener.class));
+    verify(dataMapping, times(3)).apply(any(Options.class), any(ResponseListener.class));
   }
 
   @Test(expected = RuntimeException.class)
@@ -63,7 +63,7 @@ public class applyTest {
         return null;
       }
     }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    KuzzleResponseListener mockListener = mock(KuzzleResponseListener.class);
+    ResponseListener mockListener = mock(ResponseListener.class);
     doThrow(JSONException.class).when(mockListener).onSuccess(any(CollectionMapping.class));
     dataMapping.apply(mockListener);
   }
@@ -87,8 +87,8 @@ public class applyTest {
     }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     dataMapping.apply();
     dataMapping.apply(new Options());
-    dataMapping.apply(mock(KuzzleResponseListener.class));
-    dataMapping.apply(new Options(), mock(KuzzleResponseListener.class));
+    dataMapping.apply(mock(ResponseListener.class));
+    dataMapping.apply(new Options(), mock(ResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(k, times(4)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "collection");

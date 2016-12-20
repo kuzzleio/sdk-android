@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
 /**
@@ -84,7 +84,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public KuzzleUser save(final Options options, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
+  public KuzzleUser save(final Options options, final ResponseListener<KuzzleUser> listener) throws JSONException {
     JSONObject data = this.serialize();
 
     if (listener != null) {
@@ -114,7 +114,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public KuzzleUser save(final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
+  public KuzzleUser save(final ResponseListener<KuzzleUser> listener) throws JSONException {
     return save(null, listener);
   }
 
@@ -147,7 +147,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public KuzzleUser saveRestricted(final Options options, final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
+  public KuzzleUser saveRestricted(final Options options, final ResponseListener<KuzzleUser> listener) throws JSONException {
     JSONObject data = this.serialize();
 
     if (listener != null) {
@@ -177,7 +177,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public KuzzleUser saveRestricted(final KuzzleResponseListener<KuzzleUser> listener) throws JSONException {
+  public KuzzleUser saveRestricted(final ResponseListener<KuzzleUser> listener) throws JSONException {
     return saveRestricted(null, listener);
   }
 

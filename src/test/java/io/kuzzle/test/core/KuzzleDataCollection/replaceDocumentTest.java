@@ -15,7 +15,7 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.test.testUtils.KuzzleExtend;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
 public class replaceDocumentTest {
   private Kuzzle kuzzle;
   private Collection collection;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -48,7 +48,7 @@ public class replaceDocumentTest {
     when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
     collection = new Collection(kuzzle, "test", "index");
-    listener = mock(KuzzleResponseListener.class);
+    listener = mock(ResponseListener.class);
   }
 
   @Test
@@ -61,7 +61,7 @@ public class replaceDocumentTest {
     collection.replaceDocument(id, content, mock(Options.class));
     collection.replaceDocument(id, content, listener);
 
-    verify(collection, times(3)).replaceDocument(any(String.class), any(JSONObject.class), any(Options.class), any(KuzzleResponseListener.class));
+    verify(collection, times(3)).replaceDocument(any(String.class), any(JSONObject.class), any(Options.class), any(ResponseListener.class));
   }
 
   @Test(expected = IllegalArgumentException.class)

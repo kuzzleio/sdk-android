@@ -8,7 +8,7 @@ import org.json.JSONObject;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
 /**
@@ -37,7 +37,7 @@ public class KuzzleRole extends AbstractKuzzleSecurityDocument {
    * @return KuzzleRole this object
    * @throws JSONException the json exception
    */
-  public KuzzleRole save(final Options options, final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
+  public KuzzleRole save(final Options options, final ResponseListener<KuzzleRole> listener) throws JSONException {
     JSONObject data = this.serialize();
 
     if (listener != null) {
@@ -67,7 +67,7 @@ public class KuzzleRole extends AbstractKuzzleSecurityDocument {
    * @return KuzzleRole this object
    * @throws JSONException the json exception
    */
-  public KuzzleRole save(final KuzzleResponseListener<KuzzleRole> listener) throws JSONException {
+  public KuzzleRole save(final ResponseListener<KuzzleRole> listener) throws JSONException {
     return this.save(null, listener);
   }
 

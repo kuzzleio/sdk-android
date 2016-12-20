@@ -15,7 +15,7 @@ import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.test.testUtils.KuzzleExtend;
@@ -35,7 +35,7 @@ import static org.mockito.Mockito.verify;
 public class refreshTest {
   private Kuzzle k;
   private Document doc;
-  private KuzzleResponseListener mockListener;
+  private ResponseListener mockListener;
 
   @Before
   public void setUp() throws URISyntaxException, JSONException {
@@ -45,7 +45,7 @@ public class refreshTest {
     extended.setState(KuzzleStates.CONNECTED);
     extended.setSocket(mock(Socket.class));
     k = spy(extended);
-    mockListener = mock(KuzzleResponseListener.class);
+    mockListener = mock(ResponseListener.class);
     doc = new Document(new Collection(k, "test", "index"));
   }
 
@@ -111,7 +111,7 @@ public class refreshTest {
     }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     doc.setId("42");
     doc.setContent("foo", "baz");
-    doc.refresh(new KuzzleResponseListener<Document>() {
+    doc.refresh(new ResponseListener<Document>() {
       @Override
       public void onSuccess(Document object) {
         try {

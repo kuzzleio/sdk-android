@@ -13,7 +13,7 @@ import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.verify;
 
 public class getStatisticsTest {
   private KuzzleExtend kuzzle;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -39,7 +39,7 @@ public class getStatisticsTest {
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(mock(Socket.class));
 
-    listener = new KuzzleResponseListener<Object>() {
+    listener = new ResponseListener<Object>() {
       @Override
       public void onSuccess(Object object) {
 
@@ -58,8 +58,8 @@ public class getStatisticsTest {
     listener = spy(listener);
     kuzzle.getStatistics(listener);
     kuzzle.getStatistics(System.currentTimeMillis(), listener);
-    verify(kuzzle).getStatistics(any(Options.class), any(KuzzleResponseListener.class));
-    verify(kuzzle).getStatistics(any(long.class), any(Options.class), any(KuzzleResponseListener.class));
+    verify(kuzzle).getStatistics(any(Options.class), any(ResponseListener.class));
+    verify(kuzzle).getStatistics(any(long.class), any(Options.class), any(ResponseListener.class));
   }
 
   @Test(expected = RuntimeException.class)
@@ -126,7 +126,7 @@ public class getStatisticsTest {
         return null;
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    kuzzle.getStatistics(System.currentTimeMillis(), mock(KuzzleResponseListener.class));
+    kuzzle.getStatistics(System.currentTimeMillis(), mock(ResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "server");

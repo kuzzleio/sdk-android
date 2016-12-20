@@ -12,7 +12,7 @@ import java.util.Date;
 
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.sdk.util.KuzzleQueryObject;
@@ -33,7 +33,7 @@ import static org.mockito.Mockito.verify;
 public class queueManagementTest {
   private KuzzleExtend kuzzle;
   private Socket s;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -45,7 +45,7 @@ public class queueManagementTest {
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
 
-    listener = new KuzzleResponseListener<Object>() {
+    listener = new ResponseListener<Object>() {
       @Override
       public void onSuccess(Object object) {
 
@@ -127,11 +127,11 @@ public class queueManagementTest {
     options.setDefaultIndex("testIndex");
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.connect();
-    kuzzle.listCollections(mock(KuzzleResponseListener.class));
+    kuzzle.listCollections(mock(ResponseListener.class));
     assertEquals(kuzzle.getOfflineQueue().size(), 1);
     kuzzle.flushQueue();
     options.setQueuable(false);
-    kuzzle.listCollections(options, mock(KuzzleResponseListener.class));
+    kuzzle.listCollections(options, mock(ResponseListener.class));
     assertEquals(kuzzle.getOfflineQueue().size(), 0);
   }
 

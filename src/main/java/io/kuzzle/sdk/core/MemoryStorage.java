@@ -7,7 +7,7 @@ import org.json.JSONObject;
 
 import java.util.Map;
 
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.util.KuzzleJSONObject;
 import io.kuzzle.sdk.util.memoryStorage.Action;
@@ -32,7 +32,7 @@ public class MemoryStorage implements KuzzleMemoryStorageCommands {
 
   private Kuzzle  kuzzle;
   private Kuzzle.QueryArgs  queryArgs = new Kuzzle.QueryArgs();
-  private KuzzleResponseListener<JSONObject> listener;
+  private ResponseListener<JSONObject> listener;
   private Options options;
 
   public MemoryStorage(@NonNull final Kuzzle kuzzle) {
@@ -68,7 +68,7 @@ public class MemoryStorage implements KuzzleMemoryStorageCommands {
     return this;
   }
 
-  public MemoryStorage setListener(final KuzzleResponseListener<JSONObject> listener) {
+  public MemoryStorage setListener(final ResponseListener<JSONObject> listener) {
     this.listener = listener;
     return this;
   }

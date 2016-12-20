@@ -15,7 +15,7 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.core.Room;
 import io.kuzzle.sdk.enums.Event;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.sdk.util.EventList;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.spy;
 public class KuzzleExtend extends Kuzzle {
   protected Socket savedSocket = null;
 
-  public KuzzleResponseListener loginCallback;
+  public ResponseListener loginCallback;
 
   public class KuzzleWebViewClient extends Kuzzle.KuzzleWebViewClient {
     public boolean shouldOverrideUrlLoading(WebView view, final String url) {
@@ -38,7 +38,7 @@ public class KuzzleExtend extends Kuzzle {
     return new KuzzleWebViewClient();
   }
 
-  public KuzzleExtend(@NonNull final String host, final Options options, final KuzzleResponseListener<Void> connectionCallback) throws URISyntaxException {
+  public KuzzleExtend(@NonNull final String host, final Options options, final ResponseListener<Void> connectionCallback) throws URISyntaxException {
     super(host, options, connectionCallback);
   }
 
@@ -50,7 +50,7 @@ public class KuzzleExtend extends Kuzzle {
     this.socket = this.savedSocket = s;
   }
 
-  public void setListener(KuzzleResponseListener listener) {
+  public void setListener(ResponseListener listener) {
     this.connectionCallback = listener;
   }
 
@@ -114,7 +114,7 @@ public class KuzzleExtend extends Kuzzle {
     return super.isValidState();
   }
 
-  public KuzzleResponseListener<Void> spyAndGetConnectionCallback() {
+  public ResponseListener<Void> spyAndGetConnectionCallback() {
     super.connectionCallback = spy(super.connectionCallback);
     return super.connectionCallback;
   }

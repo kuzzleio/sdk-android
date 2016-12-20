@@ -11,7 +11,7 @@ import org.mockito.stubbing.Answer;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.security.KuzzleProfile;
 import io.kuzzle.sdk.security.KuzzleSecurity;
@@ -31,13 +31,13 @@ import static org.mockito.Mockito.verify;
 public class KuzzleProfileTest {
   private Kuzzle kuzzle;
   private KuzzleProfile stubProfile;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
     kuzzle.security = new KuzzleSecurity(kuzzle);
-    listener = mock(KuzzleResponseListener.class);
+    listener = mock(ResponseListener.class);
     stubProfile = new KuzzleProfile(kuzzle, "foo", null);
   }
 
@@ -131,7 +131,7 @@ public class KuzzleProfileTest {
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
     stubProfile.addPolicy("baz");
-    stubProfile.save(new KuzzleResponseListener<KuzzleProfile>() {
+    stubProfile.save(new ResponseListener<KuzzleProfile>() {
       @Override
       public void onSuccess(KuzzleProfile response) {
         assertEquals(response, stubProfile);

@@ -13,7 +13,7 @@ import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.verify;
 
 public class listIndexesTest {
   private KuzzleExtend kuzzle;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -40,7 +40,7 @@ public class listIndexesTest {
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(mock(Socket.class));
 
-    listener = new KuzzleResponseListener<Object>() {
+    listener = new ResponseListener<Object>() {
       @Override
       public void onSuccess(Object object) {
 
@@ -57,7 +57,7 @@ public class listIndexesTest {
   public void testAllSignaturesVariant() {
     kuzzle = spy(kuzzle);
     kuzzle.listIndexes(spy(listener));
-    verify(kuzzle).listIndexes(any(Options.class), any(KuzzleResponseListener.class));
+    verify(kuzzle).listIndexes(any(Options.class), any(ResponseListener.class));
   }
 
   @Test(expected = IllegalArgumentException.class)

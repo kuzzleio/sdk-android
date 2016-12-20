@@ -16,7 +16,7 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.core.RoomOptions;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.test.testUtils.KuzzleExtend;
@@ -53,21 +53,21 @@ public class subscribeTest {
   public void checkSignaturesVariants() {
     doc.setId("foo");
     doc = spy(doc);
-    doc.subscribe(mock(KuzzleResponseListener.class));
-    verify(doc).subscribe(eq((RoomOptions)null), any(KuzzleResponseListener.class));
+    doc.subscribe(mock(ResponseListener.class));
+    verify(doc).subscribe(eq((RoomOptions)null), any(ResponseListener.class));
   }
 
   @Test(expected = RuntimeException.class)
   public void testSubscribeException() throws JSONException {
     doc = new Document(mockCollection);
     doc.setId("42");
-    doThrow(JSONException.class).when(mockCollection).subscribe(any(JSONObject.class), any(RoomOptions.class), any(KuzzleResponseListener.class));
-    doc.subscribe(mock(KuzzleResponseListener.class));
+    doThrow(JSONException.class).when(mockCollection).subscribe(any(JSONObject.class), any(RoomOptions.class), any(ResponseListener.class));
+    doc.subscribe(mock(ResponseListener.class));
   }
 
   @Test(expected = IllegalStateException.class)
   public void testSubscribeNullId() {
-    doc.subscribe(mock(KuzzleResponseListener.class));
+    doc.subscribe(mock(ResponseListener.class));
   }
 
   @Test
@@ -90,8 +90,8 @@ public class subscribeTest {
       }
     }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     doc.setId("42");
-    doc.subscribe(mock(KuzzleResponseListener.class));
-    doc.subscribe(new RoomOptions(), mock(KuzzleResponseListener.class));
+    doc.subscribe(mock(ResponseListener.class));
+    doc.subscribe(new RoomOptions(), mock(ResponseListener.class));
   }
 
 }

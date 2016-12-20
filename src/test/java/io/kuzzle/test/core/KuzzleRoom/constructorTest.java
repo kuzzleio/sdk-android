@@ -9,7 +9,7 @@ import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Room;
 import io.kuzzle.sdk.core.RoomOptions;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.test.testUtils.RoomExtend;
 
 import static org.junit.Assert.assertEquals;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 public class constructorTest {
-  private KuzzleResponseListener listener = mock(KuzzleResponseListener.class);
+  private ResponseListener listener = mock(ResponseListener.class);
   private JSONObject mockNotif = new JSONObject();
   private JSONObject  mockResponse = new JSONObject();
   private Kuzzle k;

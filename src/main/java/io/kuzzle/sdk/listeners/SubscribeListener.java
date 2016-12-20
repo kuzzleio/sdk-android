@@ -7,12 +7,12 @@ import java.util.List;
 
 import io.kuzzle.sdk.core.Room;
 
-public class KuzzleSubscribeListener {
+public class SubscribeListener {
   private JSONObject  error;
   private Room room;
-  private List<KuzzleResponseListener<Room>>  cbs = new ArrayList<>();
+  private List<ResponseListener<Room>>  cbs = new ArrayList<>();
 
-  public void onDone(KuzzleResponseListener<Room> cb) {
+  public void onDone(ResponseListener<Room> cb) {
     if (this.error != null) {
       cb.onError(this.error);
     } else if (this.room != null) {
@@ -22,11 +22,11 @@ public class KuzzleSubscribeListener {
     }
   }
 
-  public KuzzleSubscribeListener done(JSONObject error, Room room) {
+  public SubscribeListener done(JSONObject error, Room room) {
     this.error = error;
     this.room = room;
 
-    for (KuzzleResponseListener<Room> cb : cbs) {
+    for (ResponseListener<Room> cb : cbs) {
       if (this.error != null) {
         cb.onError(this.error);
       } else if (this.room != null) {

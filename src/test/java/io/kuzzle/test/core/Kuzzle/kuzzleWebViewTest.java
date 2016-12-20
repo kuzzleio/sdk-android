@@ -10,7 +10,7 @@ import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
 
@@ -23,7 +23,7 @@ public class kuzzleWebViewTest {
   private KuzzleExtend kuzzle;
   private KuzzleExtend.KuzzleWebViewClient webViewClient;
   private Socket s;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -36,7 +36,7 @@ public class kuzzleWebViewTest {
     kuzzle.setSocket(s);
     webViewClient = kuzzle.getKuzzleWebViewClient();
 
-    listener = new KuzzleResponseListener<Object>() {
+    listener = new ResponseListener<Object>() {
       @Override
       public void onSuccess(Object object) {
 

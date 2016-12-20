@@ -10,7 +10,7 @@ import org.mockito.stubbing.Answer;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.security.KuzzleSecurity;
 import io.kuzzle.sdk.security.KuzzleUser;
@@ -25,14 +25,14 @@ import static org.mockito.Mockito.verify;
 public class updateUserTest {
   private Kuzzle kuzzle;
   private KuzzleSecurity kuzzleSecurity;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
   private JSONObject  content;
 
   @Before
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
     kuzzleSecurity = new KuzzleSecurity(kuzzle);
-    listener = mock(KuzzleResponseListener.class);
+    listener = mock(ResponseListener.class);
     content = new JSONObject()
         .put("foo", "bar");
   }
@@ -65,7 +65,7 @@ public class updateUserTest {
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.updateUser("foobar", content, new KuzzleResponseListener<KuzzleUser>() {
+    kuzzleSecurity.updateUser("foobar", content, new ResponseListener<KuzzleUser>() {
       @Override
       public void onSuccess(KuzzleUser response) {
         assertEquals(response.getId(), "foobar");

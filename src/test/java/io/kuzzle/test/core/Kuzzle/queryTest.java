@@ -14,7 +14,7 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.IKuzzleEventListener;
+import io.kuzzle.sdk.listeners.EventListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.sdk.util.KuzzleQueueFilter;
@@ -266,7 +266,7 @@ public class queryTest {
 
   @Test
   public void shouldTriggerJwtTokenExpiredEvent() throws JSONException {
-    IKuzzleEventListener fake = spy(new IKuzzleEventListener() {
+    EventListener fake = spy(new EventListener() {
       @Override
       public void trigger(Object... args) {
 
