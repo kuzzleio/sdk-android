@@ -11,8 +11,8 @@ import org.mockito.stubbing.Answer;
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Collection;
+import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.core.KuzzleRoomOptions;
 import io.kuzzle.sdk.enums.Mode;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.verify;
 
 public class subscribeTest {
   private Kuzzle k;
-  private KuzzleDocument doc;
+  private Document doc;
   private Collection mockCollection;
 
   @Before
@@ -46,7 +46,7 @@ public class subscribeTest {
     extended.setSocket(mock(Socket.class));
     k = spy(extended);
     mockCollection = mock(Collection.class);
-    doc = new KuzzleDocument(new Collection(k, "test", "index"));
+    doc = new Document(new Collection(k, "test", "index"));
   }
 
   @Test
@@ -59,7 +59,7 @@ public class subscribeTest {
 
   @Test(expected = RuntimeException.class)
   public void testSubscribeException() throws JSONException {
-    doc = new KuzzleDocument(mockCollection);
+    doc = new Document(mockCollection);
     doc.setId("42");
     doThrow(JSONException.class).when(mockCollection).subscribe(any(JSONObject.class), any(KuzzleRoomOptions.class), any(KuzzleResponseListener.class));
     doc.subscribe(mock(KuzzleResponseListener.class));

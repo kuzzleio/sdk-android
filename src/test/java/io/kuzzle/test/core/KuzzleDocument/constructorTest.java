@@ -8,8 +8,8 @@ import org.junit.Test;
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Collection;
+import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.state.KuzzleStates;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 
 public class constructorTest {
   private Kuzzle k;
-  private KuzzleDocument doc;
+  private Document doc;
 
   @Before
   public void setUp() throws URISyntaxException, JSONException {
@@ -38,17 +38,17 @@ public class constructorTest {
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setState(KuzzleStates.CONNECTED);
     k = spy(extended);
-    doc = new KuzzleDocument(new Collection(k, "test", "index"));
+    doc = new Document(new Collection(k, "test", "index"));
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testConstructorIllegalDataCollection() throws JSONException {
-    new KuzzleDocument(null, null, null);
+    new Document(null, null, null);
   }
 
   @Test
   public void testConstructor() throws JSONException {
-    doc = new KuzzleDocument(new Collection(k, "test", "index"), "42");
+    doc = new Document(new Collection(k, "test", "index"), "42");
     assertEquals(doc.getId(), "42");
   }
 
@@ -57,7 +57,7 @@ public class constructorTest {
     Kuzzle k = mock(Kuzzle.class);
     when(k.getHeaders()).thenReturn(new JSONObject());
     Collection collection = new Collection(k, "test", "index");
-    KuzzleDocument doc = new KuzzleDocument(collection);
+    Document doc = new Document(collection);
     assertEquals(doc.getCollection(), collection.getCollection());
   }
 
@@ -66,7 +66,7 @@ public class constructorTest {
     JSONObject content = new JSONObject();
     content.put("foo", "bar");
 
-    doc = new KuzzleDocument(new Collection(k, "test", "index"), content);
+    doc = new Document(new Collection(k, "test", "index"), content);
     assertEquals(doc.getContent().getString("foo"), "bar");
   }
 

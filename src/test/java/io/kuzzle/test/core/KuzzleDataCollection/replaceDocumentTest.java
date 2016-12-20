@@ -10,9 +10,9 @@ import org.mockito.stubbing.Answer;
 
 import java.net.URISyntaxException;
 
+import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Collection;
-import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -104,7 +104,7 @@ public class replaceDocumentTest {
         return null;
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    KuzzleDocument doc = new KuzzleDocument(collection);
+    Document doc = new Document(collection);
     doc.setContent("foo", "bar");
     collection.replaceDocument("42", doc.serialize(), listener);
     collection.replaceDocument("42", mock(JSONObject.class), mock(KuzzleOptions.class));

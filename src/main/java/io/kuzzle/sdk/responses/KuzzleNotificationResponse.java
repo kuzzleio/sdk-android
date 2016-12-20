@@ -5,7 +5,7 @@ import org.json.JSONObject;
 
 import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDocument;
+import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.enums.Scope;
 import io.kuzzle.sdk.enums.State;
 import io.kuzzle.sdk.enums.Users;
@@ -22,7 +22,7 @@ public class KuzzleNotificationResponse {
   private Users   users;
   private JSONObject  metadata;
   private String requestId;
-  private KuzzleDocument document;
+  private Document document;
   private JSONObject  result;
 
   public KuzzleNotificationResponse(final Kuzzle kuzzle, final JSONObject object) {
@@ -40,7 +40,7 @@ public class KuzzleNotificationResponse {
       this.scope = (object.isNull("scope") ? null : Scope.valueOf(object.getString("scope").toUpperCase()));
       this.users = (object.isNull("user") ? null : Users.valueOf(object.getString("user").toUpperCase()));
       if (!object.getJSONObject("result").isNull("_source")) {
-        this.document = new KuzzleDocument(new Collection(kuzzle, this.collection, this.index), object.getJSONObject("result"));
+        this.document = new Document(new Collection(kuzzle, this.collection, this.index), object.getJSONObject("result"));
         this.document.setId(this.result.getString("_id"));
       }
     } catch (JSONException e) {
@@ -108,11 +108,11 @@ public class KuzzleNotificationResponse {
     this.requestId = requestId;
   }
 
-  public KuzzleDocument getDocument() {
+  public Document getDocument() {
     return document;
   }
 
-  public void setDocument(KuzzleDocument document) {
+  public void setDocument(Document document) {
     this.document = document;
   }
 

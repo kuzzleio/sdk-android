@@ -10,9 +10,9 @@ import org.mockito.stubbing.Answer;
 
 import java.net.URISyntaxException;
 
+import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Collection;
-import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -53,7 +53,7 @@ public class createDocumentTest {
 
   @Test
   public void checkSignaturesVariants() throws JSONException {
-    KuzzleDocument doc = mock(KuzzleDocument.class);
+    Document doc = mock(Document.class);
     JSONObject content = new JSONObject();
     String id = "foo";
     KuzzleOptions opts = mock(KuzzleOptions.class);
@@ -75,13 +75,13 @@ public class createDocumentTest {
     collection.createDocument(content, listener);
     collection.createDocument(content, opts, listener);
 
-    verify(collection, times(12)).createDocument(any(KuzzleDocument.class), any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+    verify(collection, times(12)).createDocument(any(Document.class), any(KuzzleOptions.class), any(KuzzleResponseListener.class));
   }
 
   @Test(expected = RuntimeException.class)
   public void testCreateDocumentQueryException() throws JSONException {
     doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    collection.createDocument(mock(KuzzleDocument.class), listener);
+    collection.createDocument(mock(Document.class), listener);
   }
 
   @Test(expected = RuntimeException.class)
@@ -94,7 +94,7 @@ public class createDocumentTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     doThrow(JSONException.class).when(listener).onSuccess(any(JSONObject.class));
-    collection.createDocument(mock(KuzzleDocument.class), listener);
+    collection.createDocument(mock(Document.class), listener);
   }
 
   @Test
@@ -113,7 +113,7 @@ public class createDocumentTest {
         return null;
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    KuzzleDocument doc = new KuzzleDocument(collection);
+    Document doc = new Document(collection);
     doc.setContent("foo", "bar");
     collection.createDocument(doc);
     collection.createDocument(doc, mock(KuzzleResponseListener.class));
@@ -125,7 +125,7 @@ public class createDocumentTest {
 
   @Test
   public void testCreateDocumentWithOptions() throws JSONException {
-    KuzzleDocument doc = new KuzzleDocument(collection);
+    Document doc = new Document(collection);
     doc.setContent("foo", "bar");
     KuzzleOptions options = new KuzzleOptions();
     options.setUpdateIfExists(true);

@@ -9,8 +9,8 @@ import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.CollectionMapping;
+import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.core.KuzzleRoom;
 import io.kuzzle.sdk.core.KuzzleRoomOptions;
@@ -56,10 +56,10 @@ public class factoriesTest {
 
   @Test
   public void testDocumentFactory() throws JSONException {
-    assertThat(collection.document(), instanceOf(KuzzleDocument.class));
-    assertThat(collection.document("id"), instanceOf(KuzzleDocument.class));
-    assertThat(collection.document("id", new JSONObject()), instanceOf(KuzzleDocument.class));
-    assertThat(collection.document(new JSONObject()), instanceOf(KuzzleDocument.class));
+    assertThat(collection.document(), instanceOf(Document.class));
+    assertThat(collection.document("id"), instanceOf(Document.class));
+    assertThat(collection.document("id", new JSONObject()), instanceOf(Document.class));
+    assertThat(collection.document(new JSONObject()), instanceOf(Document.class));
   }
 
   @Test

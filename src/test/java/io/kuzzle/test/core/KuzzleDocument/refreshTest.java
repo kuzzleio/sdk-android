@@ -11,8 +11,8 @@ import org.mockito.stubbing.Answer;
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Collection;
+import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.verify;
 
 public class refreshTest {
   private Kuzzle k;
-  private KuzzleDocument doc;
+  private Document doc;
   private KuzzleResponseListener mockListener;
 
   @Before
@@ -46,7 +46,7 @@ public class refreshTest {
     extended.setSocket(mock(Socket.class));
     k = spy(extended);
     mockListener = mock(KuzzleResponseListener.class);
-    doc = new KuzzleDocument(new Collection(k, "test", "index"));
+    doc = new Document(new Collection(k, "test", "index"));
   }
 
   @Test
@@ -85,7 +85,7 @@ public class refreshTest {
         return null;
       }
     }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    doThrow(JSONException.class).when(mockListener).onSuccess(any(KuzzleDocument.class));
+    doThrow(JSONException.class).when(mockListener).onSuccess(any(Document.class));
     doc.refresh(mockListener);
   }
 
@@ -111,9 +111,9 @@ public class refreshTest {
     }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     doc.setId("42");
     doc.setContent("foo", "baz");
-    doc.refresh(new KuzzleResponseListener<KuzzleDocument>() {
+    doc.refresh(new KuzzleResponseListener<Document>() {
       @Override
-      public void onSuccess(KuzzleDocument object) {
+      public void onSuccess(Document object) {
         try {
           assertEquals(1337, object.getVersion());
           assertEquals("bar", object.getContent().getString("foo"));

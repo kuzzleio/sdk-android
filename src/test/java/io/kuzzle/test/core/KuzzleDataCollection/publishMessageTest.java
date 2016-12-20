@@ -13,8 +13,8 @@ import org.mockito.stubbing.Answer;
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Collection;
+import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -54,7 +54,7 @@ public class publishMessageTest {
 
   @Test
   public void checkSignaturesVariants() {
-    KuzzleDocument doc = mock(KuzzleDocument.class);
+    Document doc = mock(Document.class);
 
     when(doc.getContent()).thenReturn(new JSONObject());
     collection = spy(collection);
@@ -73,7 +73,7 @@ public class publishMessageTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void publishWithNoDocument() {
-    collection.publishMessage((KuzzleDocument) null);
+    collection.publishMessage((Document) null);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -84,12 +84,12 @@ public class publishMessageTest {
   @Test(expected = RuntimeException.class)
   public void testPublishMessageException() throws JSONException {
     doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    collection.publishMessage(mock(KuzzleDocument.class), mock(KuzzleOptions.class));
+    collection.publishMessage(mock(Document.class), mock(KuzzleOptions.class));
   }
 
   @Test
   public void testPublishMessage() throws JSONException {
-    KuzzleDocument doc = new KuzzleDocument(collection);
+    Document doc = new Document(collection);
     doc.setContent("foo", "bar");
     collection.publishMessage(doc);
     collection.publishMessage(doc, new KuzzleOptions());

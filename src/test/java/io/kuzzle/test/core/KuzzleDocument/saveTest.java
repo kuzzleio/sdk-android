@@ -11,8 +11,8 @@ import org.mockito.stubbing.Answer;
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Collection;
+import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.verify;
 
 public class saveTest {
   private Kuzzle k;
-  private KuzzleDocument doc;
+  private Document doc;
   private KuzzleResponseListener mockListener;
 
   @Before
@@ -44,7 +44,7 @@ public class saveTest {
     extended.setSocket(mock(Socket.class));
     k = spy(extended);
     mockListener = mock(KuzzleResponseListener.class);
-    doc = new KuzzleDocument(new Collection(k, "test", "index"));
+    doc = new Document(new Collection(k, "test", "index"));
   }
 
   @Test
@@ -74,7 +74,7 @@ public class saveTest {
         return null;
       }
     }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    doThrow(JSONException.class).when(mockListener).onSuccess(any(KuzzleDocument.class));
+    doThrow(JSONException.class).when(mockListener).onSuccess(any(Document.class));
     doc.save(mockListener);
   }
 
@@ -94,9 +94,9 @@ public class saveTest {
     }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     doc.save();
     doc.save(new KuzzleOptions());
-    doc.save(new KuzzleResponseListener<KuzzleDocument>() {
+    doc.save(new KuzzleResponseListener<Document>() {
       @Override
-      public void onSuccess(KuzzleDocument object) {
+      public void onSuccess(Document object) {
         assertEquals(object.getId(), "id-42");
       }
 

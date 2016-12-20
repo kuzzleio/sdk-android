@@ -10,7 +10,7 @@ import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Collection;
-import io.kuzzle.sdk.core.KuzzleDocument;
+import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.verify;
 
 public class publishTest {
   private Kuzzle k;
-  private KuzzleDocument doc;
+  private Document doc;
 
   @Before
   public void setUp() throws URISyntaxException, JSONException {
@@ -39,7 +39,7 @@ public class publishTest {
     extended.setState(KuzzleStates.CONNECTED);
     extended.setSocket(mock(Socket.class));
     k = spy(extended);
-    doc = new KuzzleDocument(new Collection(k, "test", "index"));
+    doc = new Document(new Collection(k, "test", "index"));
   }
 
   @Test

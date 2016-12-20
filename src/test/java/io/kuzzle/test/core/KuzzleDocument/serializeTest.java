@@ -9,7 +9,7 @@ import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDocument;
+import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.state.KuzzleStates;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.spy;
 public class serializeTest {
 
   private Kuzzle k;
-  private KuzzleDocument doc;
+  private Document doc;
 
   @Before
   public void setUp() throws URISyntaxException, JSONException {
@@ -32,7 +32,7 @@ public class serializeTest {
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setState(KuzzleStates.CONNECTED);
     k = spy(extended);
-    doc = new KuzzleDocument(new Collection(k, "test", "index"));
+    doc = new Document(new Collection(k, "test", "index"));
   }
 
   @Test(expected = RuntimeException.class)
