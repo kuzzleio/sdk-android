@@ -3,7 +3,7 @@ package io.kuzzle.sdk.enums;
 /**
  * The enum Event type.
  */
-public enum KuzzleEvent {
+public enum Event {
   disconnected,
   reconnected,
   connected,

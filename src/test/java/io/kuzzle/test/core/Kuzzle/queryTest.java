@@ -12,7 +12,7 @@ import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
-import io.kuzzle.sdk.enums.KuzzleEvent;
+import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.IKuzzleEventListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
@@ -272,7 +272,7 @@ public class queryTest {
 
       }
     });
-    kuzzle.addListener(KuzzleEvent.jwtTokenExpired, fake);
+    kuzzle.addListener(Event.jwtTokenExpired, fake);
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {

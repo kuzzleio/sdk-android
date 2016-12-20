@@ -14,7 +14,7 @@ import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.core.RoomOptions;
-import io.kuzzle.sdk.enums.KuzzleEvent;
+import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.IKuzzleEventListener;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -152,7 +152,7 @@ public class notificationHandlerTest {
 
       }
     });
-    k.addListener(KuzzleEvent.jwtTokenExpired, listener);
+    k.addListener(Event.jwtTokenExpired, listener);
     RoomExtend renew = new RoomExtend(new Collection(k, "test", "index"));
     renew.setListener(mock(KuzzleResponseListener.class));
     JSONObject mockResponse = new JSONObject().put("result", new JSONObject());

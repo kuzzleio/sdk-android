@@ -12,11 +12,10 @@ import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
-import io.kuzzle.sdk.enums.KuzzleEvent;
+import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
-import io.kuzzle.sdk.util.Event;
 import io.kuzzle.sdk.util.KuzzleQueryObject;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
@@ -34,7 +33,7 @@ public class KuzzleListenerTest {
   private Kuzzle kuzzle;
   private KuzzleExtend kuzzleExtend;
   private Socket s;
-  private Event event;
+  private io.kuzzle.sdk.util.Event event;
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -62,8 +61,8 @@ public class KuzzleListenerTest {
   @Test
   public void testCONNECTEDevent() throws URISyntaxException {
     mockAnswer(Socket.EVENT_CONNECT);
-    event = mock(Event.class);
-    kuzzle.addListener(KuzzleEvent.connected, event);
+    event = mock(io.kuzzle.sdk.util.Event.class);
+    kuzzle.addListener(Event.connected, event);
     kuzzle.connect();
     verify(event, times(1)).trigger();
   }
@@ -71,8 +70,8 @@ public class KuzzleListenerTest {
   @Test
   public void testERRORevent() throws URISyntaxException {
     mockAnswer(Socket.EVENT_CONNECT_ERROR);
-    event = mock(Event.class);
-    kuzzle.addListener(KuzzleEvent.error, event);
+    event = mock(io.kuzzle.sdk.util.Event.class);
+    kuzzle.addListener(Event.error, event);
     kuzzle.connect();
     verify(event, times(1)).trigger(null, null);
   }
@@ -80,8 +79,8 @@ public class KuzzleListenerTest {
   @Test
   public void testDISCONNECTevent() throws URISyntaxException {
     mockAnswer(Socket.EVENT_DISCONNECT);
-    event = mock(Event.class);
-    kuzzle.addListener(KuzzleEvent.disconnected, event);
+    event = mock(io.kuzzle.sdk.util.Event.class);
+    kuzzle.addListener(Event.disconnected, event);
     kuzzle.connect();
     verify(event, times(1)).trigger();
   }
@@ -89,16 +88,16 @@ public class KuzzleListenerTest {
   @Test
   public void testRECONNECTevent() throws URISyntaxException {
     mockAnswer(Socket.EVENT_RECONNECT);
-    event = mock(Event.class);
-    kuzzle.addListener(KuzzleEvent.reconnected, event);
+    event = mock(io.kuzzle.sdk.util.Event.class);
+    kuzzle.addListener(Event.reconnected, event);
     kuzzle.connect();
     verify(event, times(1)).trigger();
   }
 
   @Test
   public void testOfflineQueuePush() throws JSONException {
-    event = mock(Event.class);
-    kuzzleExtend.addListener(KuzzleEvent.offlineQueuePush, event);
+    event = mock(io.kuzzle.sdk.util.Event.class);
+    kuzzleExtend.addListener(Event.offlineQueuePush, event);
 
     Options opts = new Options().setQueuable(true);
     kuzzleExtend.setState(KuzzleStates.OFFLINE);
@@ -115,9 +114,9 @@ public class KuzzleListenerTest {
 
   @Test
   public void testOfflineQueuePop() throws JSONException, URISyntaxException {
-    event = mock(Event.class);
+    event = mock(io.kuzzle.sdk.util.Event.class);
     kuzzleExtend.setAutoReplay(true);
-    kuzzleExtend.addListener(KuzzleEvent.offlineQueuePop, event);
+    kuzzleExtend.addListener(Event.offlineQueuePop, event);
     mockAnswer(Socket.EVENT_RECONNECT);
 
     Options opts = new Options().setQueuable(true);

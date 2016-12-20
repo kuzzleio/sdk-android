@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import io.kuzzle.sdk.enums.KuzzleEvent;
+import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Scope;
 import io.kuzzle.sdk.enums.State;
 import io.kuzzle.sdk.enums.Users;
@@ -210,7 +210,7 @@ public class Room {
 
         if (((JSONObject) args).getString("action").equals("jwtTokenExpired")) {
           Room.this.kuzzle.jwtToken = null;
-          Room.this.kuzzle.emitEvent(KuzzleEvent.jwtTokenExpired);
+          Room.this.kuzzle.emitEvent(Event.jwtTokenExpired);
         }
 
         if (Room.this.kuzzle.getRequestHistory().containsKey(key)) {

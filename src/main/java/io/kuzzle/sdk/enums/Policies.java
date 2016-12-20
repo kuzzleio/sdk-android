@@ -1,5 +1,5 @@
 package io.kuzzle.sdk.enums;
 
-public enum KuzzlePolicies {
+public enum Policies {
   allowed, denied, conditional
 }

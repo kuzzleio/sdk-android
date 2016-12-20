@@ -12,7 +12,7 @@ import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
-import io.kuzzle.sdk.enums.KuzzleEvent;
+import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.IKuzzleEventListener;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -102,7 +102,7 @@ public class loginTest {
   @Test
   public void testLoginAttemptEvent() throws JSONException {
     kuzzle = spy(kuzzle);
-    kuzzle.addListener(KuzzleEvent.loginAttempt, mock(IKuzzleEventListener.class));
+    kuzzle.addListener(Event.loginAttempt, mock(IKuzzleEventListener.class));
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -112,7 +112,7 @@ public class loginTest {
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     kuzzle.login("local", new JSONObject());
-    verify(kuzzle, times(2)).emitEvent(any(KuzzleEvent.class), any(Object.class));
+    verify(kuzzle, times(2)).emitEvent(any(Event.class), any(Object.class));
   }
 
   @Test(expected = RuntimeException.class)
@@ -146,14 +146,14 @@ public class loginTest {
         return null;
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    doThrow(JSONException.class).when(kuzzle).emitEvent(any(KuzzleEvent.class), any(Object.class));
+    doThrow(JSONException.class).when(kuzzle).emitEvent(any(Event.class), any(Object.class));
     kuzzle.login("local", new JSONObject());
   }
 
   @Test(expected = RuntimeException.class)
   public void testSetJwtTokenException() {
     kuzzle = spy(kuzzle);
-    doThrow(JSONException.class).when(kuzzle).emitEvent(any(KuzzleEvent.class), any(Object.class));
+    doThrow(JSONException.class).when(kuzzle).emitEvent(any(Event.class), any(Object.class));
     kuzzle.setJwtToken("foo");
   }
 }

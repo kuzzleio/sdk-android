@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.core.Room;
-import io.kuzzle.sdk.enums.KuzzleEvent;
+import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleStates;
@@ -69,7 +69,7 @@ public class KuzzleExtend extends Kuzzle {
    *
    * @param event
    */
-  public EventList getEventListeners(KuzzleEvent event) {
+  public EventList getEventListeners(Event event) {
     return this.eventListeners.get(event);
   }
 
@@ -123,7 +123,7 @@ public class KuzzleExtend extends Kuzzle {
     super.defaultIndex = index;
   }
 
-  public void emitEvent(final KuzzleEvent event, final Object... args) {
+  public void emitEvent(final Event event, final Object... args) {
     super.emitEvent(event, args);
   }
 

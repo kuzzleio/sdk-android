@@ -1,6 +1,6 @@
 package io.kuzzle.sdk.enums;
 
-public enum KuzzleCollectionType {
+public enum CollectionType {
   STORED,
   REALTIME,
   ALL

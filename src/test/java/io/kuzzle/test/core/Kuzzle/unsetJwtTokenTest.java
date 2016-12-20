@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.core.Room;
-import io.kuzzle.sdk.enums.KuzzleEvent;
+import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.test.testUtils.KuzzleDataCollectionExtend;
@@ -43,7 +43,7 @@ public class unsetJwtTokenTest {
     kuzzle.setSocket(s);
 
     kuzzle = spy(kuzzle);
-    doNothing().when(kuzzle).emitEvent(any(KuzzleEvent.class), any(JSONObject.class));
+    doNothing().when(kuzzle).emitEvent(any(Event.class), any(JSONObject.class));
     room = spy(new RoomExtend(new KuzzleDataCollectionExtend(kuzzle, "index", "collection")));
     chp.put("2", room);
   }

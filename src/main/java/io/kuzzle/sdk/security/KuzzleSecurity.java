@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
-import io.kuzzle.sdk.enums.KuzzlePolicies;
+import io.kuzzle.sdk.enums.Policies;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.KuzzleSecurityDocumentList;
@@ -1368,7 +1368,7 @@ public class KuzzleSecurity {
    * @param action
    * @return the KuzzleSecurityObject
    */
-  public KuzzlePolicies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull final String action) {
+  public Policies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull final String action) {
     return this.isActionAllowed(policies, controller, action, null, null);
   }
 
@@ -1383,7 +1383,7 @@ public class KuzzleSecurity {
    * @param index
    * @return the KuzzleSecurityObject
    */
-  public KuzzlePolicies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller,@NonNull  final String action, final String index) {
+  public Policies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull  final String action, final String index) {
     return this.isActionAllowed(policies, controller, action, index, null);
   }
 
@@ -1399,7 +1399,7 @@ public class KuzzleSecurity {
    * @param collection
    * @return the KuzzleSecurityObject
    */
-  public KuzzlePolicies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull final String action, final String index, final String collection) {
+  public Policies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull final String action, final String index, final String collection) {
     if (policies == null) {
       throw new IllegalArgumentException("KuzzleSecurity.isActionAllowed: policies are mandatory.");
     }
@@ -1417,19 +1417,19 @@ public class KuzzleSecurity {
       filteredPolicies = filterPolicy(filteredPolicies, "index", index);
       filteredPolicies = filterPolicy(filteredPolicies, "collection", collection);
       for (int i = 0; i < filteredPolicies.length(); i++) {
-        if (filteredPolicies.getJSONObject(i).getString("value").equals(KuzzlePolicies.allowed.toString())) {
-          return KuzzlePolicies.allowed;
+        if (filteredPolicies.getJSONObject(i).getString("value").equals(Policies.allowed.toString())) {
+          return Policies.allowed;
         }
       }
       for (int i = 0; i < filteredPolicies.length(); i++) {
-        if (filteredPolicies.getJSONObject(i).getString("value").equals(KuzzlePolicies.conditional.toString())) {
-          return KuzzlePolicies.conditional;
+        if (filteredPolicies.getJSONObject(i).getString("value").equals(Policies.conditional.toString())) {
+          return Policies.conditional;
         }
       }
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
-    return KuzzlePolicies.denied;
+    return Policies.denied;
   }
 
   private JSONArray  filterPolicy(final JSONArray policies, final String attr, final String attrInput) throws JSONException {

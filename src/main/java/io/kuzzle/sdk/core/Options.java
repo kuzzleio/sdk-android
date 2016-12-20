@@ -2,7 +2,7 @@ package io.kuzzle.sdk.core;
 
 import org.json.JSONObject;
 
-import io.kuzzle.sdk.enums.KuzzleCollectionType;
+import io.kuzzle.sdk.enums.CollectionType;
 import io.kuzzle.sdk.enums.Mode;
 
 /**
@@ -32,7 +32,7 @@ public class Options {
   private Integer port = 7512;
 
   // Used for getting collections
-  private KuzzleCollectionType  collectionType = KuzzleCollectionType.ALL;
+  private CollectionType collectionType = CollectionType.ALL;
 
   /**
    * Is auto reconnect boolean.
@@ -299,7 +299,7 @@ public class Options {
    *
    * @return the collection type
    */
-  public KuzzleCollectionType getCollectionType() {
+  public CollectionType getCollectionType() {
     return collectionType;
   }
 
@@ -309,7 +309,7 @@ public class Options {
    * @param type the type
    * @return the collection type
    */
-  public Options setCollectionType(KuzzleCollectionType type) {
+  public Options setCollectionType(CollectionType type) {
     this.collectionType = type;
     return this;
   }

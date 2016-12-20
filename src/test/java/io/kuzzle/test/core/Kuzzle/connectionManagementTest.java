@@ -17,7 +17,7 @@ import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.core.Room;
-import io.kuzzle.sdk.enums.KuzzleEvent;
+import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.IKuzzleEventListener;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
@@ -108,7 +108,7 @@ public class connectionManagementTest {
     kuzzle.setOfflineQueue(o);
 
     IKuzzleEventListener listener = mock(IKuzzleEventListener.class);
-    kuzzle.addListener(KuzzleEvent.reconnected, listener);
+    kuzzle.addListener(Event.reconnected, listener);
     kuzzle.connect();
     verify(listener, times(1)).trigger();
   }
