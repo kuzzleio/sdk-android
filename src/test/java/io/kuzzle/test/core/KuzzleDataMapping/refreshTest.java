@@ -10,7 +10,7 @@ import org.mockito.stubbing.Answer;
 
 import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataMapping;
+import io.kuzzle.sdk.core.CollectionMapping;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.listeners.KuzzleResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 public class refreshTest {
   private Kuzzle k;
   private Collection dataCollection;
-  private KuzzleDataMapping dataMapping;
+  private CollectionMapping dataMapping;
 
   @Before
   public void setUp() {
@@ -37,7 +37,7 @@ public class refreshTest {
     when(k.getDefaultIndex()).thenReturn("index");
     when(k.getHeaders()).thenReturn(new JSONObject());
     dataCollection = new Collection(k, "test", "index");
-    dataMapping = new KuzzleDataMapping(dataCollection);
+    dataMapping = new CollectionMapping(dataCollection);
   }
 
   @Test
@@ -88,7 +88,7 @@ public class refreshTest {
       }
     }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     KuzzleResponseListener mockListener = mock(KuzzleResponseListener.class);
-    doThrow(JSONException.class).when(mockListener).onSuccess(any(KuzzleDataMapping.class));
+    doThrow(JSONException.class).when(mockListener).onSuccess(any(CollectionMapping.class));
     dataMapping.refresh(mockListener);
   }
 
@@ -123,9 +123,9 @@ public class refreshTest {
     }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
     when(k.getDefaultIndex()).thenReturn("index");
 
-    dataMapping.refresh(new KuzzleResponseListener<KuzzleDataMapping>() {
+    dataMapping.refresh(new KuzzleResponseListener<CollectionMapping>() {
       @Override
-      public void onSuccess(KuzzleDataMapping response) {
+      public void onSuccess(CollectionMapping response) {
         assertNotEquals(dataMapping, response);
         try {
           assertEquals(

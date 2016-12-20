@@ -8,8 +8,8 @@ import org.junit.Test;
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Collection;
+import io.kuzzle.sdk.core.CollectionMapping;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataMapping;
 import io.kuzzle.sdk.core.KuzzleDocument;
 import io.kuzzle.sdk.core.KuzzleOptions;
 import io.kuzzle.sdk.core.KuzzleRoom;
@@ -64,7 +64,7 @@ public class factoriesTest {
 
   @Test
   public void testDataMappingFactory() {
-    assertThat(collection.collectionMapping(), instanceOf(KuzzleDataMapping.class));
-    assertThat(collection.collectionMapping(new JSONObject()), instanceOf(KuzzleDataMapping.class));
+    assertThat(collection.collectionMapping(), instanceOf(CollectionMapping.class));
+    assertThat(collection.collectionMapping(new JSONObject()), instanceOf(CollectionMapping.class));
   }
 }

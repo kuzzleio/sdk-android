@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataMapping;
+import io.kuzzle.sdk.core.CollectionMapping;
 
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.junit.MatcherAssert.assertThat;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 public class constructorTest {
   private Kuzzle k;
   private Collection dataCollection;
-  private KuzzleDataMapping dataMapping;
+  private CollectionMapping dataMapping;
 
   @Before
   public void setUp() {
@@ -29,22 +29,22 @@ public class constructorTest {
     when(k.getDefaultIndex()).thenReturn("index");
     when(k.getHeaders()).thenReturn(new JSONObject());
     dataCollection = new Collection(k, "test", "index");
-    dataMapping = new KuzzleDataMapping(dataCollection);
+    dataMapping = new CollectionMapping(dataCollection);
   }
 
   @Test(expected = RuntimeException.class)
   public void testConstructorException() {
     Collection fake = spy(new Collection(k, "test", "index"));
     doThrow(JSONException.class).when(fake).getHeaders();
-    dataMapping = new KuzzleDataMapping(fake);
+    dataMapping = new CollectionMapping(fake);
   }
 
   @Test
   public void testConstructor() throws JSONException {
     JSONObject mapping = new JSONObject();
     mapping.put("type", "string");
-    dataMapping = new KuzzleDataMapping(dataCollection, mapping);
-    dataMapping = new KuzzleDataMapping(dataMapping);
+    dataMapping = new CollectionMapping(dataCollection, mapping);
+    dataMapping = new CollectionMapping(dataMapping);
   }
 
   @Test
@@ -80,7 +80,7 @@ public class constructorTest {
   @Test
   public void testSet() throws JSONException {
     JSONObject mapping = mock(JSONObject.class);
-    assertThat(dataMapping.set("foo", mapping), instanceOf(KuzzleDataMapping.class));
+    assertThat(dataMapping.set("foo", mapping), instanceOf(CollectionMapping.class));
     assertEquals(dataMapping.getMapping().getJSONObject("foo"), mapping);
   }
 }

@@ -13,7 +13,7 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 /**
  * The type Kuzzle data mapping.
  */
-public class KuzzleDataMapping {
+public class CollectionMapping {
 
   private JSONObject headers;
   private JSONObject mapping;
@@ -26,11 +26,11 @@ public class KuzzleDataMapping {
    * It means that, by default, you won't be able to exploit the full capabilities of our persistent data storage layer
    * (currently handled by ElasticSearch), and your searches may suffer from below-average performances, depending on
    * the amount of data you stored in a collection and the complexity of your database.
-   * The KuzzleDataMapping object allow to get the current mapping of a data collection and to modify it if needed.
+   * The CollectionMapping object allow to get the current mapping of a data collection and to modify it if needed.
    *
    * @param kuzzleDataCollection the kuzzle data collection
    */
-  public KuzzleDataMapping(final Collection kuzzleDataCollection) {
+  public CollectionMapping(final Collection kuzzleDataCollection) {
     this(kuzzleDataCollection, null);
   }
 
@@ -40,7 +40,7 @@ public class KuzzleDataMapping {
    * @param kuzzleDataCollection the kuzzle data collection
    * @param mapping              the mapping
    */
-  public KuzzleDataMapping(final Collection kuzzleDataCollection, final JSONObject mapping) {
+  public CollectionMapping(final Collection kuzzleDataCollection, final JSONObject mapping) {
     try {
       this.headers = new JSONObject(kuzzleDataCollection.getHeaders().toString());
     }
@@ -57,9 +57,9 @@ public class KuzzleDataMapping {
   /**
    * Copy constructor
    *
-   * @param kuzzleDataMapping the KuzzleDataMapping object to copy
+   * @param kuzzleDataMapping the CollectionMapping object to copy
    */
-  public KuzzleDataMapping(final KuzzleDataMapping kuzzleDataMapping) {
+  public CollectionMapping(final CollectionMapping kuzzleDataMapping) {
     this(kuzzleDataMapping.dataCollection, kuzzleDataMapping.mapping);
   }
 
@@ -68,7 +68,7 @@ public class KuzzleDataMapping {
    *
    * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping  apply() {
+  public CollectionMapping apply() {
     return this.apply(null, null);
   }
 
@@ -78,7 +78,7 @@ public class KuzzleDataMapping {
    * @param options the options
    * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping  apply(final KuzzleOptions options) {
+  public CollectionMapping apply(final KuzzleOptions options) {
     return this.apply(options, null);
   }
 
@@ -88,7 +88,7 @@ public class KuzzleDataMapping {
    * @param listener the listener
    * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping  apply(final KuzzleResponseListener<KuzzleDataMapping> listener) {
+  public CollectionMapping apply(final KuzzleResponseListener<CollectionMapping> listener) {
     return this.apply(null, listener);
   }
 
@@ -99,7 +99,7 @@ public class KuzzleDataMapping {
    * @param listener the cb
    * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping apply(final KuzzleOptions options, final KuzzleResponseListener<KuzzleDataMapping> listener) {
+  public CollectionMapping apply(final KuzzleOptions options, final KuzzleResponseListener<CollectionMapping> listener) {
     JSONObject data = new JSONObject();
     JSONObject properties = new JSONObject();
     try {
@@ -110,7 +110,7 @@ public class KuzzleDataMapping {
         @Override
         public void onSuccess(JSONObject response) {
           if (listener != null) {
-            listener.onSuccess(KuzzleDataMapping.this);
+            listener.onSuccess(CollectionMapping.this);
           }
         }
 
@@ -132,7 +132,7 @@ public class KuzzleDataMapping {
    *
    * @param listener the listener
    */
-  public void refresh(final KuzzleResponseListener<KuzzleDataMapping> listener) {
+  public void refresh(final KuzzleResponseListener<CollectionMapping> listener) {
     refresh(null, listener);
   }
 
@@ -142,9 +142,9 @@ public class KuzzleDataMapping {
    * @param options  the options
    * @param listener the listener
    */
-  public void refresh(final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDataMapping> listener) {
+  public void refresh(final KuzzleOptions options, @NonNull final KuzzleResponseListener<CollectionMapping> listener) {
     if (listener == null) {
-      throw new IllegalArgumentException("KuzzleDataMapping.refresh: listener callback missing");
+      throw new IllegalArgumentException("CollectionMapping.refresh: listener callback missing");
     }
 
     JSONObject data = new JSONObject();
@@ -154,9 +154,9 @@ public class KuzzleDataMapping {
         @Override
         public void onSuccess(JSONObject args) {
           try {
-            KuzzleDataMapping newMapping = new KuzzleDataMapping(KuzzleDataMapping.this.dataCollection);
-            JSONObject mappings = args.getJSONObject(KuzzleDataMapping.this.dataCollection.getIndex()).getJSONObject("mappings");
-            newMapping.mapping = mappings.getJSONObject(KuzzleDataMapping.this.collection);
+            CollectionMapping newMapping = new CollectionMapping(CollectionMapping.this.dataCollection);
+            JSONObject mappings = args.getJSONObject(CollectionMapping.this.dataCollection.getIndex()).getJSONObject("mappings");
+            newMapping.mapping = mappings.getJSONObject(CollectionMapping.this.collection);
 
             listener.onSuccess(newMapping);
           } catch (JSONException e) {
@@ -181,9 +181,9 @@ public class KuzzleDataMapping {
    * @param field the field
    * @return kuzzle data mapping
    */
-  public KuzzleDataMapping remove(final String field) {
+  public CollectionMapping remove(final String field) {
     if (this.mapping.has(field)) {
-      KuzzleDataMapping.this.mapping.remove(field);
+      CollectionMapping.this.mapping.remove(field);
     }
 
     return this;
@@ -197,7 +197,7 @@ public class KuzzleDataMapping {
    * @return the kuzzle data mapping
    * @throws JSONException the json exception
    */
-  public KuzzleDataMapping set(final String field, final JSONObject mapping) throws JSONException {
+  public CollectionMapping set(final String field, final JSONObject mapping) throws JSONException {
     this.mapping.put(field, mapping);
     return this;
   }
@@ -219,7 +219,7 @@ public class KuzzleDataMapping {
    * @param content the headers
    * @return the headers
    */
-  public KuzzleDataMapping setHeaders(final JSONObject content) {
+  public CollectionMapping setHeaders(final JSONObject content) {
     return this.setHeaders(content, false);
   }
 
@@ -232,7 +232,7 @@ public class KuzzleDataMapping {
    * @param replace - default: false = append the content. If true: replace the current headers with tj
    * @return the headers
    */
-  public KuzzleDataMapping setHeaders(final JSONObject content, final boolean replace) {
+  public CollectionMapping setHeaders(final JSONObject content, final boolean replace) {
     try {
       if (content == null) {
         if (replace) {

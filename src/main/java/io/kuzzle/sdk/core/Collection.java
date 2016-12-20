@@ -458,8 +458,8 @@ public class Collection {
    *
    * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping collectionMapping() {
-    return new KuzzleDataMapping(this);
+  public CollectionMapping collectionMapping() {
+    return new CollectionMapping(this);
   }
 
   /**
@@ -468,8 +468,8 @@ public class Collection {
    * @param mapping the mapping
    * @return the kuzzle data mapping
    */
-  public KuzzleDataMapping collectionMapping(JSONObject mapping) {
-    return new KuzzleDataMapping(this, mapping);
+  public CollectionMapping collectionMapping(JSONObject mapping) {
+    return new CollectionMapping(this, mapping);
   }
 
 
@@ -760,25 +760,25 @@ public class Collection {
   }
 
   /**
-   * Instantiates a KuzzleDataMapping object containing the current mapping of this collection.
+   * Instantiates a CollectionMapping object containing the current mapping of this collection.
    *
    * @param listener the listener
    */
-  public void getMapping(@NonNull final KuzzleResponseListener<KuzzleDataMapping> listener) {
+  public void getMapping(@NonNull final KuzzleResponseListener<CollectionMapping> listener) {
     this.getMapping(null, listener);
   }
 
   /**
-   * Instantiates a KuzzleDataMapping object containing the current mapping of this collection.
+   * Instantiates a CollectionMapping object containing the current mapping of this collection.
    *
    * @param options  the options
    * @param listener the listener
    */
-  public void getMapping(final KuzzleOptions options, @NonNull final KuzzleResponseListener<KuzzleDataMapping> listener) {
+  public void getMapping(final KuzzleOptions options, @NonNull final KuzzleResponseListener<CollectionMapping> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Collection.getMapping: listener required");
     }
-    new KuzzleDataMapping(this).refresh(options, listener);
+    new CollectionMapping(this).refresh(options, listener);
   }
 
   /**

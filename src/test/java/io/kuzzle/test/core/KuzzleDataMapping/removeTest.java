@@ -5,9 +5,9 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.kuzzle.sdk.core.CollectionMapping;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Collection;
-import io.kuzzle.sdk.core.KuzzleDataMapping;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -17,7 +17,7 @@ import static org.mockito.Mockito.when;
 public class removeTest {
   private Kuzzle k;
   private Collection dataCollection;
-  private KuzzleDataMapping dataMapping;
+  private CollectionMapping dataMapping;
 
   @Before
   public void setUp() {
@@ -25,7 +25,7 @@ public class removeTest {
     when(k.getDefaultIndex()).thenReturn("index");
     when(k.getHeaders()).thenReturn(new JSONObject());
     dataCollection = new Collection(k, "test", "index");
-    dataMapping = new KuzzleDataMapping(dataCollection);
+    dataMapping = new CollectionMapping(dataCollection);
   }
 
   @Test
