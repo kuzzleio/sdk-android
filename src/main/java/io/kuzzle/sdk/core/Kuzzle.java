@@ -505,13 +505,13 @@ public class Kuzzle {
    * @param collection the collection
    * @return the kuzzle data collection
    */
-  public KuzzleDataCollection dataCollectionFactory(@NonNull final String collection) {
+  public KuzzleDataCollection collection(@NonNull final String collection) {
     this.isValid();
     if (this.defaultIndex == null) {
       throw new IllegalArgumentException("KuzzleDataCollection: unable to create a new data collection object: no index specified");
     }
 
-    return this.dataCollectionFactory(collection, this.defaultIndex);
+    return this.collection(collection, this.defaultIndex);
   }
 
   /**
@@ -521,7 +521,7 @@ public class Kuzzle {
    * @param index      the index
    * @return {object} A KuzzleDataCollection instance
    */
-  public KuzzleDataCollection dataCollectionFactory(@NonNull final String collection, @NonNull final String index) {
+  public KuzzleDataCollection collection(@NonNull final String collection, @NonNull final String index) {
     this.isValid();
     if (index == null && this.defaultIndex == null) {
       throw new IllegalArgumentException("KuzzleDataCollection: unable to create a new data collection object: no index specified");

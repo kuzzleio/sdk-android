@@ -45,19 +45,19 @@ public class factoriesTest {
 
   @Test
   public void testDataCollectionFactory() {
-    assertEquals(kuzzle.dataCollectionFactory("test").getCollection(), "test");
-    assertEquals(kuzzle.dataCollectionFactory("test2").getCollection(), "test2");
+    assertEquals(kuzzle.collection("test").getCollection(), "test");
+    assertEquals(kuzzle.collection("test2").getCollection(), "test2");
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testIllegalDefaultIndex() {
     kuzzle.setSuperDefaultIndex(null);
-    kuzzle.dataCollectionFactory("foo");
+    kuzzle.collection("foo");
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testIllegalIndex() {
     kuzzle.setSuperDefaultIndex(null);
-    kuzzle.dataCollectionFactory("collection", null);
+    kuzzle.collection("collection", null);
   }
 }
