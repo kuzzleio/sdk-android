@@ -10,7 +10,7 @@ import java.util.Iterator;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.SubscribeListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.responses.KuzzleNotificationResponse;
+import io.kuzzle.sdk.responses.NotificationResponse;
 
 /**
  * The type Kuzzle document.
@@ -367,7 +367,7 @@ public class Document {
    * @param listener the listener
    * @return the kuzzle document
    */
-  public SubscribeListener subscribe(@NonNull final ResponseListener<KuzzleNotificationResponse> listener) {
+  public SubscribeListener subscribe(@NonNull final ResponseListener<NotificationResponse> listener) {
     return this.subscribe(null, listener);
   }
 
@@ -379,7 +379,7 @@ public class Document {
    * @param listener the listener
    * @return kuzzle document
    */
-  public SubscribeListener subscribe(final RoomOptions options, @NonNull final ResponseListener<KuzzleNotificationResponse> listener) {
+  public SubscribeListener subscribe(final RoomOptions options, @NonNull final ResponseListener<NotificationResponse> listener) {
     if (this.id == null) {
       throw new IllegalStateException("Document.subscribe: cannot subscribe to a document if no ID has been provided");
     }

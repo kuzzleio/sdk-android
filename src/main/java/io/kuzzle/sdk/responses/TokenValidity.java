@@ -2,7 +2,7 @@ package io.kuzzle.sdk.responses;
 
 import java.util.Date;
 
-public class KuzzleTokenValidity {
+public class TokenValidity {
   private boolean valid;
   private String  state;
   private Date  expiresAt;

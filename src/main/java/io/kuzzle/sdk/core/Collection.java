@@ -13,8 +13,8 @@ import java.util.List;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.SubscribeListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.responses.KuzzleDocumentList;
-import io.kuzzle.sdk.responses.KuzzleNotificationResponse;
+import io.kuzzle.sdk.responses.DocumentList;
+import io.kuzzle.sdk.responses.NotificationResponse;
 
 /**
  * The type Kuzzle data collection.
@@ -70,7 +70,7 @@ public class Collection {
    * @param filter   the filter
    * @param listener the listener
    */
-  public void search(final JSONObject filter, final ResponseListener<KuzzleDocumentList> listener) {
+  public void search(final JSONObject filter, final ResponseListener<DocumentList> listener) {
     this.search(filter, null, listener);
   }
 
@@ -84,7 +84,7 @@ public class Collection {
    * @param options  the options
    * @param listener the listener
    */
-  public void search(final JSONObject filters, final Options options, @NonNull final ResponseListener<KuzzleDocumentList> listener) {
+  public void search(final JSONObject filters, final Options options, @NonNull final ResponseListener<DocumentList> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("listener cannot be null");
     }
@@ -101,7 +101,7 @@ public class Collection {
         @Override
         public void onSuccess(JSONObject object) {
           try {
-            KuzzleDocumentList response;
+            DocumentList response;
             JSONArray hits = object.getJSONObject("result").getJSONArray("hits");
             List<Document> docs = new ArrayList<Document>();
             for (int i = 0; i < hits.length(); i++) {
@@ -110,10 +110,10 @@ public class Collection {
               docs.add(doc);
             }
             if (object.getJSONObject("result").has("aggregations")) {
-              response = new KuzzleDocumentList(docs, object.getJSONObject("result").getInt("total"), object.getJSONObject("result").getJSONObject("aggregations"));
+              response = new DocumentList(docs, object.getJSONObject("result").getInt("total"), object.getJSONObject("result").getJSONObject("aggregations"));
             }
             else {
-              response = new KuzzleDocumentList(docs, object.getJSONObject("result").getInt("total"));
+              response = new DocumentList(docs, object.getJSONObject("result").getInt("total"));
             }
             listener.onSuccess(response);
           } catch (JSONException e) {
@@ -741,7 +741,7 @@ public class Collection {
    *
    * @param listener the listener
    */
-  public void fetchAllDocuments(@NonNull final ResponseListener<KuzzleDocumentList> listener) {
+  public void fetchAllDocuments(@NonNull final ResponseListener<DocumentList> listener) {
     this.fetchAllDocuments(null, listener);
   }
 
@@ -751,7 +751,7 @@ public class Collection {
    * @param options  the options
    * @param listener the listener
    */
-  public void fetchAllDocuments(final Options options, @NonNull final ResponseListener<KuzzleDocumentList> listener) {
+  public void fetchAllDocuments(final Options options, @NonNull final ResponseListener<DocumentList> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Collection.fetchAllDocuments: listener required");
     }
@@ -1048,7 +1048,7 @@ public class Collection {
    * @param listener the listener
    * @return the kuzzle room
    */
-  public SubscribeListener subscribe(final JSONObject filters, @NonNull final ResponseListener<KuzzleNotificationResponse> listener) {
+  public SubscribeListener subscribe(final JSONObject filters, @NonNull final ResponseListener<NotificationResponse> listener) {
     return this.subscribe(filters, null, listener);
   }
 
@@ -1060,7 +1060,7 @@ public class Collection {
    * @param listener the listener
    * @return the kuzzle room
    */
-  public SubscribeListener subscribe(final RoomOptions options, @NonNull final ResponseListener<KuzzleNotificationResponse> listener) {
+  public SubscribeListener subscribe(final RoomOptions options, @NonNull final ResponseListener<NotificationResponse> listener) {
     return this.subscribe(null, options, listener);
   }
 
@@ -1073,7 +1073,7 @@ public class Collection {
    * @param listener the listener
    * @return kuzzle room
    */
-  public SubscribeListener subscribe(final JSONObject filters, final RoomOptions options, @NonNull final ResponseListener<KuzzleNotificationResponse> listener) {
+  public SubscribeListener subscribe(final JSONObject filters, final RoomOptions options, @NonNull final ResponseListener<NotificationResponse> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Collection.subscribe: listener required");
     }

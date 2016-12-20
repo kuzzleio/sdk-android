@@ -22,7 +22,7 @@ import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.EventListener;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.responses.KuzzleTokenValidity;
+import io.kuzzle.sdk.responses.TokenValidity;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.sdk.util.KuzzleQueryObject;
 import io.kuzzle.test.testUtils.KuzzleExtend;
@@ -263,12 +263,12 @@ public class connectionManagementTest {
     }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
     kuzzle = spy(kuzzle);
     kuzzle.setJwtToken("foo");
-    KuzzleTokenValidity tokenValidity = spy(new KuzzleTokenValidity());
+    TokenValidity tokenValidity = spy(new TokenValidity());
     doReturn(false).when(tokenValidity).isValid();
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((ResponseListener) invocation.getArguments()[1]).onSuccess(mock(KuzzleTokenValidity.class));
+        ((ResponseListener) invocation.getArguments()[1]).onSuccess(mock(TokenValidity.class));
         return null;
       }
     }).when(kuzzle).checkToken(eq("foo"), any(ResponseListener.class));

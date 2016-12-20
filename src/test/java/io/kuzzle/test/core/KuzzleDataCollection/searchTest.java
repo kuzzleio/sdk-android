@@ -16,7 +16,7 @@ import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.responses.KuzzleDocumentList;
+import io.kuzzle.sdk.responses.DocumentList;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
@@ -139,9 +139,9 @@ public class searchTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    collection.search(filters, null, new ResponseListener<KuzzleDocumentList>() {
+    collection.search(filters, null, new ResponseListener<DocumentList>() {
       @Override
-      public void onSuccess(KuzzleDocumentList result) {
+      public void onSuccess(DocumentList result) {
         assertEquals(result.getTotal(), 2);
         try {
           assertEquals(result.getDocuments().get(1).getContent("sibling"), "none");
@@ -238,9 +238,9 @@ public class searchTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    collection.search(filters, null, new ResponseListener<KuzzleDocumentList>() {
+    collection.search(filters, null, new ResponseListener<DocumentList>() {
       @Override
-      public void onSuccess(KuzzleDocumentList result) {
+      public void onSuccess(DocumentList result) {
         assertEquals(result.getTotal(), 2);
         try {
           assertEquals(result.getAggregations().getJSONObject("aggs_name").getJSONArray("buckets").getJSONObject(0).getString("key"), "i");

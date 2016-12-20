@@ -29,7 +29,7 @@ import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.EventListener;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.responses.KuzzleTokenValidity;
+import io.kuzzle.sdk.responses.TokenValidity;
 import io.kuzzle.sdk.security.KuzzleSecurity;
 import io.kuzzle.sdk.security.KuzzleUser;
 import io.kuzzle.sdk.state.KuzzleQueue;
@@ -338,7 +338,7 @@ public class Kuzzle {
    * @param token    the token
    * @param listener the listener
    */
-  public void checkToken(@NonNull final String token, @NonNull final ResponseListener<KuzzleTokenValidity> listener) {
+  public void checkToken(@NonNull final String token, @NonNull final ResponseListener<TokenValidity> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.checkToken: listener required");
     }
@@ -358,7 +358,7 @@ public class Kuzzle {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            KuzzleTokenValidity validity = new KuzzleTokenValidity();
+            TokenValidity validity = new TokenValidity();
             JSONObject result = response.getJSONObject("result");
             validity.setValid(result.getBoolean("valid"));
             if (validity.isValid()) {
@@ -466,9 +466,9 @@ public class Kuzzle {
           Kuzzle.this.state = KuzzleStates.CONNECTED;
 
           if (Kuzzle.this.jwtToken != null) {
-            Kuzzle.this.checkToken(jwtToken, new ResponseListener<KuzzleTokenValidity>() {
+            Kuzzle.this.checkToken(jwtToken, new ResponseListener<TokenValidity>() {
               @Override
-              public void onSuccess(KuzzleTokenValidity response) {
+              public void onSuccess(TokenValidity response) {
                 if (!response.isValid()) {
                   Kuzzle.this.jwtToken = null;
                   Kuzzle.this.emitEvent(Event.jwtTokenExpired);

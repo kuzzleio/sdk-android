@@ -10,7 +10,7 @@ import io.kuzzle.sdk.enums.Scope;
 import io.kuzzle.sdk.enums.State;
 import io.kuzzle.sdk.enums.Users;
 
-public class KuzzleNotificationResponse {
+public class NotificationResponse {
   private int status;
   private JSONObject error;
   private String  index;
@@ -25,7 +25,7 @@ public class KuzzleNotificationResponse {
   private Document document;
   private JSONObject  result;
 
-  public KuzzleNotificationResponse(final Kuzzle kuzzle, final JSONObject object) {
+  public NotificationResponse(final Kuzzle kuzzle, final JSONObject object) {
     try {
       this.status = object.getInt("status");
       this.error = (object.isNull("error") ? null : object.getJSONObject("error"));

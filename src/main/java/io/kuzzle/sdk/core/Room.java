@@ -21,7 +21,7 @@ import io.kuzzle.sdk.enums.Users;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.SubscribeListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.responses.KuzzleNotificationResponse;
+import io.kuzzle.sdk.responses.NotificationResponse;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.socket.emitter.Emitter;
 
@@ -82,7 +82,7 @@ public class Room {
   /**
    * The Listener.
    */
-  protected ResponseListener<KuzzleNotificationResponse> listener;
+  protected ResponseListener<NotificationResponse> listener;
 
   // Used to avoid subscription renewals to trigger multiple times because of
   // multiple but similar events
@@ -215,11 +215,11 @@ public class Room {
 
         if (Room.this.kuzzle.getRequestHistory().containsKey(key)) {
           if (Room.this.subscribeToSelf) {
-            listener.onSuccess(new KuzzleNotificationResponse(kuzzle, (JSONObject) args));
+            listener.onSuccess(new NotificationResponse(kuzzle, (JSONObject) args));
           }
           Room.this.kuzzle.getRequestHistory().remove(key);
         } else {
-          listener.onSuccess(new KuzzleNotificationResponse(kuzzle, (JSONObject) args));
+          listener.onSuccess(new NotificationResponse(kuzzle, (JSONObject) args));
         }
       }
     } catch (JSONException e) {
@@ -238,7 +238,7 @@ public class Room {
    * @param listener the listener
    * @return kuzzle room
    */
-  public Room renew(@NonNull final ResponseListener<KuzzleNotificationResponse> listener) {
+  public Room renew(@NonNull final ResponseListener<NotificationResponse> listener) {
     return this.renew(null, listener, null);
   }
 
@@ -250,7 +250,7 @@ public class Room {
    * @param subscribeResponseListener
    * @return kuzzle room
    */
-  public Room renew(@NonNull final ResponseListener<KuzzleNotificationResponse> listener, final SubscribeListener subscribeResponseListener) {
+  public Room renew(@NonNull final ResponseListener<NotificationResponse> listener, final SubscribeListener subscribeResponseListener) {
     return this.renew(null, listener, subscribeResponseListener);
   }
 
@@ -262,7 +262,7 @@ public class Room {
    * @param listener the listener
    * @return kuzzle room
    */
-  public Room renew(final JSONObject filters, @NonNull final ResponseListener<KuzzleNotificationResponse> listener, final SubscribeListener subscribeResponseListener) {
+  public Room renew(final JSONObject filters, @NonNull final ResponseListener<NotificationResponse> listener, final SubscribeListener subscribeResponseListener) {
     long now = System.currentTimeMillis();
 
     if (listener == null) {
@@ -583,7 +583,7 @@ public class Room {
    *
    * @return listener
    */
-  public ResponseListener<KuzzleNotificationResponse> getListener() {
+  public ResponseListener<NotificationResponse> getListener() {
     return this.listener;
   }
 

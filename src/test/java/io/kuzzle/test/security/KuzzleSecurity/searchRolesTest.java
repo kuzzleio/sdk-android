@@ -12,7 +12,7 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.responses.KuzzleSecurityDocumentList;
+import io.kuzzle.sdk.responses.SecurityDocumentList;
 import io.kuzzle.sdk.security.KuzzleSecurity;
 
 import static org.junit.Assert.assertEquals;
@@ -71,9 +71,9 @@ public class searchRolesTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.searchRoles(new JSONObject(), null, new ResponseListener<KuzzleSecurityDocumentList>() {
+    kuzzleSecurity.searchRoles(new JSONObject(), null, new ResponseListener<SecurityDocumentList>() {
       @Override
-      public void onSuccess(KuzzleSecurityDocumentList response) {
+      public void onSuccess(SecurityDocumentList response) {
         assertEquals(response.getTotal(), 1);
         assertEquals(response.getDocuments().get(0).id, "foobar");
       }

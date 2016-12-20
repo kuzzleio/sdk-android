@@ -13,7 +13,7 @@ import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Policies;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.responses.KuzzleSecurityDocumentList;
+import io.kuzzle.sdk.responses.SecurityDocumentList;
 
 
 /**
@@ -109,7 +109,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException the json exception
    */
-  public void searchRoles(@NonNull final JSONObject filters, final Options options, @NonNull final ResponseListener<KuzzleSecurityDocumentList> listener) throws JSONException {
+  public void searchRoles(@NonNull final JSONObject filters, final Options options, @NonNull final ResponseListener<SecurityDocumentList> listener) throws JSONException {
     if (filters == null) {
       throw new IllegalArgumentException("KuzzleSecurity.searchRoles: filters cannot be null");
     }
@@ -134,7 +134,7 @@ public class KuzzleSecurity {
             roles.add(new KuzzleRole(KuzzleSecurity.this.kuzzle, document.getString("_id"), document.getJSONObject("_source")));
           }
 
-          listener.onSuccess(new KuzzleSecurityDocumentList(roles, result.getLong("total")));
+          listener.onSuccess(new SecurityDocumentList(roles, result.getLong("total")));
         } catch (JSONException e) {
           throw new RuntimeException(e);
         }
@@ -157,7 +157,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException the json exception
    */
-  public void searchRoles(@NonNull final JSONObject filters, @NonNull final ResponseListener<KuzzleSecurityDocumentList> listener) throws JSONException {
+  public void searchRoles(@NonNull final JSONObject filters, @NonNull final ResponseListener<SecurityDocumentList> listener) throws JSONException {
     searchRoles(filters, null, listener);
   }
 
@@ -529,7 +529,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException the json exception
    */
-  public void searchProfiles(@NonNull JSONObject filters, final Options options, @NonNull final ResponseListener<KuzzleSecurityDocumentList> listener) throws JSONException {
+  public void searchProfiles(@NonNull JSONObject filters, final Options options, @NonNull final ResponseListener<SecurityDocumentList> listener) throws JSONException {
     if (filters == null) {
       throw new IllegalArgumentException("KuzzleSecurity.searchProfiles: cannot perform a search on null filters");
     }
@@ -554,7 +554,7 @@ public class KuzzleSecurity {
             roles.add(new KuzzleProfile(KuzzleSecurity.this.kuzzle, document.getString("_id"), document.getJSONObject("_source")));
           }
 
-          listener.onSuccess(new KuzzleSecurityDocumentList(roles, result.getLong("total")));
+          listener.onSuccess(new SecurityDocumentList(roles, result.getLong("total")));
         } catch (JSONException e) {
           throw new RuntimeException(e);
         }
@@ -578,7 +578,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException the json exception
    */
-  public void searchProfiles(@NonNull JSONObject filters, @NonNull final ResponseListener<KuzzleSecurityDocumentList> listener) throws JSONException {
+  public void searchProfiles(@NonNull JSONObject filters, @NonNull final ResponseListener<SecurityDocumentList> listener) throws JSONException {
     searchProfiles(filters, null, listener);
   }
 
@@ -930,7 +930,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException the json exception
    */
-  public void searchUsers(@NonNull JSONObject filters, final Options options, @NonNull final ResponseListener<KuzzleSecurityDocumentList> listener) throws JSONException {
+  public void searchUsers(@NonNull JSONObject filters, final Options options, @NonNull final ResponseListener<SecurityDocumentList> listener) throws JSONException {
 
     if (filters == null) {
       throw new IllegalArgumentException("KuzzleSecurity.searchUsers: cannot perform a search with null filters");
@@ -956,7 +956,7 @@ public class KuzzleSecurity {
             roles.add(new KuzzleUser(KuzzleSecurity.this.kuzzle, document.getString("_id"), document.getJSONObject("_source")));
           }
 
-          listener.onSuccess(new KuzzleSecurityDocumentList(roles, result.getLong("total")));
+          listener.onSuccess(new SecurityDocumentList(roles, result.getLong("total")));
         } catch (JSONException e) {
           throw new RuntimeException(e);
         }
@@ -980,7 +980,7 @@ public class KuzzleSecurity {
    * @param listener - Callback listener
    * @throws JSONException the json exception
    */
-  public void searchUsers(@NonNull JSONObject filters, @NonNull final ResponseListener<KuzzleSecurityDocumentList> listener) throws JSONException {
+  public void searchUsers(@NonNull JSONObject filters, @NonNull final ResponseListener<SecurityDocumentList> listener) throws JSONException {
     searchUsers(filters, null, listener);
   }
 
