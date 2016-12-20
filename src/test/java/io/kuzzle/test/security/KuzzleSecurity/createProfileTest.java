@@ -13,7 +13,7 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.security.KuzzleProfile;
+import io.kuzzle.sdk.security.Profile;
 import io.kuzzle.sdk.security.KuzzleSecurity;
 
 import static org.junit.Assert.assertEquals;
@@ -86,9 +86,9 @@ public class createProfileTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.createProfile("foobar", new JSONArray(), new ResponseListener<KuzzleProfile>() {
+    kuzzleSecurity.createProfile("foobar", new JSONArray(), new ResponseListener<Profile>() {
       @Override
-      public void onSuccess(KuzzleProfile response) {
+      public void onSuccess(Profile response) {
         assertEquals(response.id, "foobar");
       }
 

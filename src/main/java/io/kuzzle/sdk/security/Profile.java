@@ -14,7 +14,7 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 /**
  * This class handles profiles management in Kuzzle
  */
-public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
+public class Profile extends AbstractSecurityDocument {
   private JSONArray policies = new JSONArray();
 
   /**
@@ -25,7 +25,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @param content the content
    * @throws JSONException the json exception
    */
-  public KuzzleProfile(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
+  public Profile(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
     super(kuzzle, id, null);
     this.deleteActionName = "deleteProfile";
     this.updateActionName = "updateProfile";
@@ -49,7 +49,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle profile
    * @throws JSONException the json exception
    */
-  public KuzzleProfile save(final Options options, final ResponseListener<KuzzleProfile> listener) throws JSONException {
+  public Profile save(final Options options, final ResponseListener<Profile> listener) throws JSONException {
     JSONObject data;
 
     if (this.policies.length() == 0) {
@@ -62,7 +62,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
       this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createOrReplaceProfile"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
-          listener.onSuccess(KuzzleProfile.this);
+          listener.onSuccess(Profile.this);
         }
 
         @Override
@@ -85,7 +85,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle profile
    * @throws JSONException the json exception
    */
-  public KuzzleProfile save(final ResponseListener<KuzzleProfile> listener) throws JSONException {
+  public Profile save(final ResponseListener<Profile> listener) throws JSONException {
     return this.save(null, listener);
   }
 
@@ -96,7 +96,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle profile
    * @throws JSONException the json exception
    */
-  public KuzzleProfile save(final Options options) throws JSONException {
+  public Profile save(final Options options) throws JSONException {
     return this.save(options, null);
   }
 
@@ -106,7 +106,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle profile
    * @throws JSONException the json exception
    */
-  public KuzzleProfile save() throws JSONException {
+  public Profile save() throws JSONException {
     return this.save(null, null);
   }
 
@@ -117,7 +117,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle profile
    * @throws IllegalArgumentException
    */
-  public KuzzleProfile addPolicy(final JSONObject policy) throws IllegalArgumentException {
+  public Profile addPolicy(final JSONObject policy) throws IllegalArgumentException {
     if (!policy.has("roleId")) {
       throw new IllegalArgumentException("The policy must have, at least, a roleId set.");
     }
@@ -132,7 +132,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @param  roleId - Name of the role to add to this profile
    * @return this kuzzle profile
    */
-  public KuzzleProfile addPolicy(final String roleId) {
+  public Profile addPolicy(final String roleId) {
     JSONObject policy = new JSONObject();
     try {
       policy.put("roleId", roleId);
@@ -150,7 +150,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @return this roles
    * @throws IllegalArgumentException
    */
-  public KuzzleProfile setPolicies(final JSONArray policies) throws IllegalArgumentException {
+  public Profile setPolicies(final JSONArray policies) throws IllegalArgumentException {
     try {
       for (int i = 0; i < policies.length(); i++) {
         if (!policies.getJSONObject(i).has("roleId")) {
@@ -172,7 +172,7 @@ public class KuzzleProfile extends AbstractKuzzleSecurityDocument {
    * @param rolesIds - New roles list
    * @return this roles
    */
-  public KuzzleProfile setPolicies(final String rolesIds[]) {
+  public Profile setPolicies(final String rolesIds[]) {
     try {
       for (int i = 0; i < rolesIds.length; i++) {
         JSONObject policy = new JSONObject();

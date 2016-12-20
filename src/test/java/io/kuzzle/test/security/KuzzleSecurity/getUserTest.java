@@ -13,7 +13,7 @@ import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.security.KuzzleSecurity;
-import io.kuzzle.sdk.security.KuzzleUser;
+import io.kuzzle.sdk.security.User;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -63,9 +63,9 @@ public class getUserTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.fetchUser("foobar", new ResponseListener<KuzzleUser>() {
+    kuzzleSecurity.fetchUser("foobar", new ResponseListener<User>() {
       @Override
-      public void onSuccess(KuzzleUser response) {
+      public void onSuccess(User response) {
         assertEquals(response.id, "foobar");
       }
 

@@ -31,7 +31,7 @@ import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.TokenValidity;
 import io.kuzzle.sdk.security.KuzzleSecurity;
-import io.kuzzle.sdk.security.KuzzleUser;
+import io.kuzzle.sdk.security.User;
 import io.kuzzle.sdk.state.KuzzleQueue;
 import io.kuzzle.sdk.state.KuzzleStates;
 import io.kuzzle.sdk.util.EventList;
@@ -2197,7 +2197,7 @@ public class Kuzzle {
    *
    * @param listener the listener
    */
-  public void whoAmI(@NonNull final ResponseListener<KuzzleUser> listener) {
+  public void whoAmI(@NonNull final ResponseListener<User> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.whoAmI: listener required");
     }
@@ -2213,7 +2213,7 @@ public class Kuzzle {
         public void onSuccess(JSONObject response) {
           try {
             JSONObject result = response.getJSONObject("result");
-            listener.onSuccess(new KuzzleUser(Kuzzle.this, result.getString("_id"), result.getJSONObject("_source")));
+            listener.onSuccess(new User(Kuzzle.this, result.getString("_id"), result.getJSONObject("_source")));
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }

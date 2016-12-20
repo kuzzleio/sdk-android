@@ -3,18 +3,18 @@ package io.kuzzle.sdk.responses;
 
 import java.util.List;
 
-import io.kuzzle.sdk.security.AbstractKuzzleSecurityDocument;
+import io.kuzzle.sdk.security.AbstractSecurityDocument;
 
-public class SecurityDocumentList implements KuzzleList<AbstractKuzzleSecurityDocument> {
-  private List<AbstractKuzzleSecurityDocument> documents;
+public class SecurityDocumentList implements KuzzleList<AbstractSecurityDocument> {
+  private List<AbstractSecurityDocument> documents;
   private long total;
 
-  public SecurityDocumentList(List<AbstractKuzzleSecurityDocument> roles, long total) {
+  public SecurityDocumentList(List<AbstractSecurityDocument> roles, long total) {
     this.documents = roles;
     this.total = total;
   }
 
-  public List<AbstractKuzzleSecurityDocument> getDocuments() {
+  public List<AbstractSecurityDocument> getDocuments() {
     return documents;
   }
 

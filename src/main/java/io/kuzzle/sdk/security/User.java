@@ -16,7 +16,7 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 /**
  * This class handles users management in Kuzzle
  */
-public class KuzzleUser extends AbstractKuzzleSecurityDocument {
+public class User extends AbstractSecurityDocument {
   /**
    * The Profiles Ids List.
    */
@@ -30,7 +30,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @param content the content
    * @throws JSONException the json exception
    */
-  public KuzzleUser(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
+  public User(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
     super(kuzzle, id, null);
     this.deleteActionName = "deleteUser";
     this.updateActionName = "updateUser";
@@ -50,9 +50,9 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @param profileIds - Strings array of profiles IDs
    * @return this profiles
    */
-  public KuzzleUser setProfiles(@NonNull final String[] profileIds) {
+  public User setProfiles(@NonNull final String[] profileIds) {
     if (profileIds == null) {
-      throw new IllegalArgumentException("KuzzleUser.setProfiles: you must provide an array of profiles IDs strings");
+      throw new IllegalArgumentException("User.setProfiles: you must provide an array of profiles IDs strings");
     }
 
     this.profileIds = new JSONArray(Arrays.asList(profileIds));
@@ -66,9 +66,9 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @param profile - String
    * @return this profiles
    */
-  public KuzzleUser addProfile(@NonNull final String profile) {
+  public User addProfile(@NonNull final String profile) {
     if (profile == null) {
-      throw new IllegalArgumentException("KuzzleUser.addProfile: you must provide a string");
+      throw new IllegalArgumentException("User.addProfile: you must provide a string");
     }
 
     this.profileIds.put(profile);
@@ -84,14 +84,14 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public KuzzleUser save(final Options options, final ResponseListener<KuzzleUser> listener) throws JSONException {
+  public User save(final Options options, final ResponseListener<User> listener) throws JSONException {
     JSONObject data = this.serialize();
 
     if (listener != null) {
       this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createOrReplaceUser"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
-          listener.onSuccess(KuzzleUser.this);
+          listener.onSuccess(User.this);
         }
 
         @Override
@@ -114,7 +114,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public KuzzleUser save(final ResponseListener<KuzzleUser> listener) throws JSONException {
+  public User save(final ResponseListener<User> listener) throws JSONException {
     return save(null, listener);
   }
 
@@ -125,7 +125,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public KuzzleUser save(final Options options) throws JSONException {
+  public User save(final Options options) throws JSONException {
     return save(options, null);
   }
 
@@ -135,7 +135,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public KuzzleUser save() throws JSONException {
+  public User save() throws JSONException {
     return save(null, null);
   }
 
@@ -147,14 +147,14 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public KuzzleUser saveRestricted(final Options options, final ResponseListener<KuzzleUser> listener) throws JSONException {
+  public User saveRestricted(final Options options, final ResponseListener<User> listener) throws JSONException {
     JSONObject data = this.serialize();
 
     if (listener != null) {
       this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createRestrictedUser"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
-          listener.onSuccess(KuzzleUser.this);
+          listener.onSuccess(User.this);
         }
 
         @Override
@@ -177,7 +177,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public KuzzleUser saveRestricted(final ResponseListener<KuzzleUser> listener) throws JSONException {
+  public User saveRestricted(final ResponseListener<User> listener) throws JSONException {
     return saveRestricted(null, listener);
   }
 
@@ -188,7 +188,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public KuzzleUser saveRestricted(final Options options) throws JSONException {
+  public User saveRestricted(final Options options) throws JSONException {
     return saveRestricted(options, null);
   }
 
@@ -198,7 +198,7 @@ public class KuzzleUser extends AbstractKuzzleSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public KuzzleUser saveRestricted() throws JSONException {
+  public User saveRestricted() throws JSONException {
     return saveRestricted(null, null);
   }
 

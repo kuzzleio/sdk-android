@@ -14,7 +14,7 @@ import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.security.KuzzleSecurity;
-import io.kuzzle.sdk.security.KuzzleUser;
+import io.kuzzle.sdk.security.User;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -91,9 +91,9 @@ public class createRestrictedUserTest {
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.createRestrictedUser("foobar", new JSONObject(), new ResponseListener<KuzzleUser>() {
+    kuzzleSecurity.createRestrictedUser("foobar", new JSONObject(), new ResponseListener<User>() {
       @Override
-      public void onSuccess(KuzzleUser response) {
+      public void onSuccess(User response) {
         assertEquals(response.id, "foobar");
       }
 

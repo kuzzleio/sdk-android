@@ -12,7 +12,7 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.security.KuzzleRole;
+import io.kuzzle.sdk.security.Role;
 import io.kuzzle.sdk.security.KuzzleSecurity;
 
 import static org.junit.Assert.assertEquals;
@@ -85,9 +85,9 @@ public class createRoleTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.createRole("foobar", new JSONObject(), new ResponseListener<KuzzleRole>() {
+    kuzzleSecurity.createRole("foobar", new JSONObject(), new ResponseListener<Role>() {
       @Override
-      public void onSuccess(KuzzleRole response) {
+      public void onSuccess(Role response) {
         assertEquals(response.id, "foobar");
       }
 

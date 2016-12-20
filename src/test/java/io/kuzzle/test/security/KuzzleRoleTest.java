@@ -12,7 +12,7 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.security.KuzzleRole;
+import io.kuzzle.sdk.security.Role;
 import io.kuzzle.sdk.security.KuzzleSecurity;
 
 import static org.junit.Assert.assertEquals;
@@ -24,13 +24,13 @@ import static org.mockito.Mockito.verify;
 
 public class KuzzleRoleTest {
   private Kuzzle kuzzle;
-  private KuzzleRole stubRole;
+  private Role stubRole;
 
   @Before
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
     kuzzle.security = new KuzzleSecurity(kuzzle);
-    stubRole = new KuzzleRole(kuzzle, "foo", null);
+    stubRole = new Role(kuzzle, "foo", null);
   }
 
   @Test
@@ -53,9 +53,9 @@ public class KuzzleRoleTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    stubRole.save(new ResponseListener<KuzzleRole>() {
+    stubRole.save(new ResponseListener<Role>() {
       @Override
-      public void onSuccess(KuzzleRole response) {
+      public void onSuccess(Role response) {
         assertEquals(response, stubRole);
       }
 

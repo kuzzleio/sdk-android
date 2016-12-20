@@ -14,7 +14,7 @@ import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.security.KuzzleSecurity;
-import io.kuzzle.sdk.security.KuzzleUser;
+import io.kuzzle.sdk.security.User;
 
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.verify;
 
 public class KuzzleUserTest {
   private Kuzzle kuzzle;
-  private KuzzleUser stubUser;
+  private User stubUser;
   private ResponseListener listener;
   JSONObject stubProfile;
 
@@ -48,12 +48,12 @@ public class KuzzleUserTest {
     kuzzle = mock(Kuzzle.class);
     kuzzle.security = new KuzzleSecurity(kuzzle);
     listener = mock(ResponseListener.class);
-    stubUser = new KuzzleUser(kuzzle, "foo", null);
+    stubUser = new User(kuzzle, "foo", null);
   }
 
   @Test
   public void testKuzzleUserConstructorNoContent() throws JSONException {
-    KuzzleUser user = new KuzzleUser(kuzzle, "foo", null);
+    User user = new User(kuzzle, "foo", null);
     assertEquals(user.id, "foo");
     assertEquals(user.getProfiles(), null);
     assertThat(user.content, instanceOf(JSONObject.class));
@@ -67,7 +67,7 @@ public class KuzzleUserTest {
         "\"someuseless\": \"field\"" +
       "}"
     );
-    KuzzleUser user = new KuzzleUser(kuzzle, "foo", stubProfile);
+    User user = new User(kuzzle, "foo", stubProfile);
     assertEquals(user.id, "foo");
     assertEquals(user.getProfiles().getString(0), "bar");
     assertThat(user.content, instanceOf(JSONObject.class));
@@ -77,7 +77,7 @@ public class KuzzleUserTest {
   @Test
   public void testKuzzleUserConstructorProfileWithContent() throws JSONException {
     JSONObject stubProfile = new JSONObject("{\"profileIds\": [\"bar\"]}");
-    KuzzleUser user = new KuzzleUser(kuzzle, "foo", stubProfile);
+    User user = new User(kuzzle, "foo", stubProfile);
     assertEquals(user.id, "foo");
     assertThat(user.getProfiles(), instanceOf(JSONArray.class));
     assertEquals(user.getProfiles().getString(0), "bar");
@@ -119,9 +119,9 @@ public class KuzzleUserTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    stubUser.save(new ResponseListener<KuzzleUser>() {
+    stubUser.save(new ResponseListener<User>() {
       @Override
-      public void onSuccess(KuzzleUser response) {
+      public void onSuccess(User response) {
         assertEquals(response, stubUser);
       }
 
@@ -173,9 +173,9 @@ public class KuzzleUserTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    stubUser.saveRestricted(new ResponseListener<KuzzleUser>() {
+    stubUser.saveRestricted(new ResponseListener<User>() {
       @Override
-      public void onSuccess(KuzzleUser response) {
+      public void onSuccess(User response) {
         assertEquals(response, stubUser);
       }
 
@@ -221,7 +221,7 @@ public class KuzzleUserTest {
     JSONObject stubProfile = new JSONObject(
             "{\"profileIds\": [\"bar\"]}"
     );
-    KuzzleUser user = new KuzzleUser(kuzzle, "foo", stubProfile);
+    User user = new User(kuzzle, "foo", stubProfile);
     assertEquals(user.getProfiles().getString(0), "bar");
   }
 
@@ -230,7 +230,7 @@ public class KuzzleUserTest {
     JSONObject stubProfile = new JSONObject(
             "{\"profileIds\": [\"bar\"]}"
     );
-    KuzzleUser user = new KuzzleUser(kuzzle, "foo", stubProfile);
+    User user = new User(kuzzle, "foo", stubProfile);
     user.addProfile("new profile");
     assertEquals(user.getProfiles().getString(1), "new profile");
   }
@@ -240,7 +240,7 @@ public class KuzzleUserTest {
     JSONObject stubProfile = new JSONObject(
             "{\"profileIds\": [\"bar\"]}"
     );
-    KuzzleUser user = new KuzzleUser(kuzzle, "foo", stubProfile);
+    User user = new User(kuzzle, "foo", stubProfile);
     user.addProfile(null);
     doThrow(IllegalArgumentException.class).when(user).addProfile(eq((String)null));
   }

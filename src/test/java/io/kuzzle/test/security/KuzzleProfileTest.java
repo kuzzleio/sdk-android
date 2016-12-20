@@ -13,7 +13,7 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.security.KuzzleProfile;
+import io.kuzzle.sdk.security.Profile;
 import io.kuzzle.sdk.security.KuzzleSecurity;
 
 import static org.junit.Assert.assertFalse;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.verify;
 
 public class KuzzleProfileTest {
   private Kuzzle kuzzle;
-  private KuzzleProfile stubProfile;
+  private Profile stubProfile;
   private ResponseListener listener;
 
   @Before
@@ -38,12 +38,12 @@ public class KuzzleProfileTest {
     kuzzle = mock(Kuzzle.class);
     kuzzle.security = new KuzzleSecurity(kuzzle);
     listener = mock(ResponseListener.class);
-    stubProfile = new KuzzleProfile(kuzzle, "foo", null);
+    stubProfile = new Profile(kuzzle, "foo", null);
   }
 
   @Test
   public void testConstructorNoContent() throws JSONException {
-    KuzzleProfile profile = new KuzzleProfile(kuzzle, "foo", null);
+    Profile profile = new Profile(kuzzle, "foo", null);
     assertEquals(profile.id, "foo");
     assertEquals(profile.getPolicies().length(), 0);
     assertThat(profile.content, instanceOf(JSONObject.class));
@@ -57,7 +57,7 @@ public class KuzzleProfileTest {
         "\"policies\": [{\"roleId\": \"foo\"}, {\"roleId\": \"bar\"}, {\"roleId\": \"baz\"}]" +
       "}"
     );
-    KuzzleProfile profile = new KuzzleProfile(kuzzle, "foo", content);
+    Profile profile = new Profile(kuzzle, "foo", content);
     assertEquals(profile.id, "foo");
     assertEquals(profile.getPolicies().length(), 3);
     assertEquals(profile.getPolicies().getJSONObject(2).getString("roleId"), "baz");
@@ -76,7 +76,7 @@ public class KuzzleProfileTest {
         "]" +
       "}"
     );
-    KuzzleProfile profile = new KuzzleProfile(kuzzle, "foo", content);
+    Profile profile = new Profile(kuzzle, "foo", content);
     assertEquals(profile.id, "foo");
     assertEquals(profile.getPolicies().length(), 3);
     assertEquals(profile.getPolicies().getJSONObject(2).getString("roleId"), "baz");
@@ -131,9 +131,9 @@ public class KuzzleProfileTest {
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
     stubProfile.addPolicy("baz");
-    stubProfile.save(new ResponseListener<KuzzleProfile>() {
+    stubProfile.save(new ResponseListener<Profile>() {
       @Override
-      public void onSuccess(KuzzleProfile response) {
+      public void onSuccess(Profile response) {
         assertEquals(response, stubProfile);
       }
 
