@@ -9,7 +9,7 @@ import org.mockito.ArgumentCaptor;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.util.KuzzleJSONObject;
 import io.kuzzle.sdk.util.memoryStorage.Action;
-import io.kuzzle.test.testUtils.KuzzleMemoryStorageExtend;
+import io.kuzzle.test.testUtils.MemoryStorageExtend;
 
 import static junit.framework.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -20,14 +20,14 @@ import static org.mockito.Mockito.verify;
 public class uniqueKeyArgumentMethodsTest {
 
   Kuzzle kuzzle;
-  KuzzleMemoryStorageExtend ms;
+  MemoryStorageExtend ms;
   ArgumentCaptor argument;
   ArgumentCaptor argumentAction;
 
   @Before
   public void setUp() {
     kuzzle = mock(Kuzzle.class);
-    ms = spy(new KuzzleMemoryStorageExtend(kuzzle));
+    ms = spy(new MemoryStorageExtend(kuzzle));
     argument = ArgumentCaptor.forClass(JSONObject.class);
     argumentAction = ArgumentCaptor.forClass(Action.class);
   }

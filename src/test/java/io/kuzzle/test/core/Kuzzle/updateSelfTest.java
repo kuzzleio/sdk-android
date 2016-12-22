@@ -11,8 +11,8 @@ import org.mockito.stubbing.Answer;
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
 import static junit.framework.Assert.assertEquals;
@@ -28,13 +28,13 @@ public class updateSelfTest {
 
   Kuzzle kuzzle;
   ArgumentCaptor argument;
-  KuzzleResponseListener<JSONObject> listener;
+  ResponseListener<JSONObject> listener;
 
   @Before
   public void setUp() throws URISyntaxException {
     kuzzle = spy(new Kuzzle("localhost"));
     argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
-    listener = spy(new KuzzleResponseListener<JSONObject>() {
+    listener = spy(new ResponseListener<JSONObject>() {
       @Override
       public void onSuccess(JSONObject response) {
 
@@ -49,7 +49,7 @@ public class updateSelfTest {
 
   @Test(expected = RuntimeException.class)
   public void testUpdateSelfException() throws JSONException {
-    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     kuzzle.updateSelf(mock(JSONObject.class));
   }
 
@@ -64,12 +64,12 @@ public class updateSelfTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     kuzzle.updateSelf(content, listener);
-    kuzzle.updateSelf(content, mock(KuzzleOptions.class));
-    kuzzle.updateSelf(content, mock(KuzzleOptions.class), listener);
+    kuzzle.updateSelf(content, mock(Options.class));
+    kuzzle.updateSelf(content, mock(Options.class), listener);
     kuzzle.updateSelf(content);
-    verify(kuzzle, times(4)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(4)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     verify(listener, times(2)).onSuccess(any(JSONObject.class));
     verify(listener, times(2)).onError(any(JSONObject.class));
     assertEquals("auth", ((Kuzzle.QueryArgs)argument.getValue()).controller);

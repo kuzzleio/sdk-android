@@ -8,10 +8,10 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.security.KuzzleSecurity;
+import io.kuzzle.sdk.security.Security;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -19,23 +19,23 @@ import static org.mockito.Mockito.mock;
 
 public class getProfileTest {
   private Kuzzle kuzzle;
-  private KuzzleSecurity kuzzleSecurity;
-  private KuzzleResponseListener listener;
+  private Security kuzzleSecurity;
+  private ResponseListener listener;
 
   @Before
   public void setUp() {
     kuzzle = mock(Kuzzle.class);
-    kuzzleSecurity = new KuzzleSecurity(kuzzle);
-    listener = mock(KuzzleResponseListener.class);
+    kuzzleSecurity = new Security(kuzzle);
+    listener = mock(ResponseListener.class);
   }
   @Test(expected = IllegalArgumentException.class)
   public void testGetProfileNoID() throws JSONException {
-    kuzzleSecurity.getProfile(null, new KuzzleOptions(), listener);
+    kuzzleSecurity.fetchProfile(null, new Options(), listener);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetProfileNoListener() throws JSONException {
-    kuzzleSecurity.getProfile("foo", null);
+    kuzzleSecurity.fetchProfile("foo", null);
   }
 
   @Test(expected = RuntimeException.class)
@@ -49,9 +49,9 @@ public class getProfileTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.getProfile("foobar", listener);
+    kuzzleSecurity.fetchProfile("foobar", listener);
   }
 
   @Test
@@ -66,9 +66,9 @@ public class getProfileTest {
 
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.getProfile("foobar", listener);
+    kuzzleSecurity.fetchProfile("foobar", listener);
   }
 
   @Test
@@ -83,9 +83,9 @@ public class getProfileTest {
 
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.getProfile("foobar", listener);
+    kuzzleSecurity.fetchProfile("foobar", listener);
   }
 
   @Test
@@ -100,9 +100,9 @@ public class getProfileTest {
 
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.getProfile("foobar", listener);
+    kuzzleSecurity.fetchProfile("foobar", listener);
   }
 
   @Test
@@ -117,9 +117,9 @@ public class getProfileTest {
 
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.getProfile("foobar", listener);
+    kuzzleSecurity.fetchProfile("foobar", listener);
   }
 
 }

@@ -7,12 +7,12 @@ import org.junit.Test;
 
 import java.net.URISyntaxException;
 
+import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
-import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.listeners.ResponseListener;
+import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
 
@@ -28,22 +28,22 @@ import static org.mockito.Mockito.when;
 
 public class constructorTest {
   private Kuzzle kuzzle;
-  private KuzzleDataCollection collection;
-  private KuzzleResponseListener listener;
+  private Collection collection;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
 
     kuzzle = spy(extended);
     when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
-    collection = new KuzzleDataCollection(kuzzle, "test", "index");
-    listener = mock(KuzzleResponseListener.class);
+    collection = new Collection(kuzzle, "test", "index");
+    listener = mock(ResponseListener.class);
   }
 
   @Test
@@ -80,22 +80,22 @@ public class constructorTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowIfNoKuzzleInstanceProvided() {
-    new KuzzleDataCollection(null, "foo", "bar");
+    new Collection(null, "foo", "bar");
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowIfNoIndexProvided() {
-    new KuzzleDataCollection(mock(Kuzzle.class), "foo", null);
+    new Collection(mock(Kuzzle.class), "foo", null);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowIfNoCollectionProvided() {
-    new KuzzleDataCollection(mock(Kuzzle.class), null, "foo");
+    new Collection(mock(Kuzzle.class), null, "foo");
   }
 
   @Test(expected = RuntimeException.class)
   public void testConstructorException() {
     doThrow(JSONException.class).when(kuzzle).getHeaders();
-    new KuzzleDataCollection(kuzzle, "collections", "foo");
+    new Collection(kuzzle, "collections", "foo");
   }
 }

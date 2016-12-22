@@ -11,10 +11,9 @@ import org.mockito.stubbing.Answer;
 
 import java.net.URISyntaxException;
 
-import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
@@ -31,11 +30,11 @@ import static org.mockito.Mockito.verify;
 public class logoutTest {
   private KuzzleExtend kuzzle;
   private Socket s;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
@@ -43,7 +42,7 @@ public class logoutTest {
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
 
-    listener = new KuzzleResponseListener<Object>() {
+    listener = new ResponseListener<Object>() {
       @Override
       public void onSuccess(Object object) {
 
@@ -60,7 +59,7 @@ public class logoutTest {
   public void checkAllSignaturesVariants() {
     kuzzle = spy(kuzzle);
     kuzzle.logout();
-    verify(kuzzle).logout(any(KuzzleResponseListener.class));
+    verify(kuzzle).logout(any(ResponseListener.class));
   }
 
   @Test(expected = RuntimeException.class)
@@ -74,14 +73,14 @@ public class logoutTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("hits", new JSONArray().put("foo"))));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     kuzzle.logout(listener);
   }
 
   @Test(expected = RuntimeException.class)
   public void testLogoutQueryException() throws JSONException {
     kuzzle = spy(kuzzle);
-    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     kuzzle.logout(listener);
   }
 
@@ -98,13 +97,13 @@ public class logoutTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
     kuzzle.login("local", new JSONObject().put("username", "username").put("password", "password"));
     kuzzle.logout();
-    kuzzle.logout(mock(KuzzleResponseListener.class));
+    kuzzle.logout(mock(ResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(3)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(3)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "auth");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "logout");
   }

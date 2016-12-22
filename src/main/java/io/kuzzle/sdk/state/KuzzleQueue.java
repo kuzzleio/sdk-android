@@ -31,14 +31,14 @@ public class KuzzleQueue<T> implements Iterable<T> {
     return _queue.poll();
   }
 
-  private KuzzleStates _currentState = KuzzleStates.DISCONNECTED;
+  private States _currentState = States.DISCONNECTED;
 
   /**
    * Sets state.
    *
    * @param states the states
    */
-  public void setState(KuzzleStates states) {
+  public void setState(States states) {
     _currentState = states;
   }
 
@@ -47,7 +47,7 @@ public class KuzzleQueue<T> implements Iterable<T> {
    *
    * @return the states
    */
-  public KuzzleStates state() {
+  public States state() {
     return _currentState;
   }
 

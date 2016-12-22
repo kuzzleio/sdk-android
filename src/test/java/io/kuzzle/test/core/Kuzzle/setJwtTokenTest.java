@@ -8,8 +8,8 @@ import org.mockito.ArgumentCaptor;
 
 import java.net.URISyntaxException;
 
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.enums.KuzzleEvent;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
@@ -25,7 +25,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class setJwtTokenTest {
   private KuzzleExtend kuzzle;
@@ -33,7 +32,7 @@ public class setJwtTokenTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
@@ -43,7 +42,7 @@ public class setJwtTokenTest {
 
     kuzzle = spy(kuzzle);
     doNothing().when(kuzzle).renewSubscriptions();
-    doNothing().when(kuzzle).emitEvent(any(KuzzleEvent.class), any(JSONObject.class));
+    doNothing().when(kuzzle).emitEvent(any(Event.class), any(JSONObject.class));
   }
 
   @Test
@@ -52,7 +51,7 @@ public class setJwtTokenTest {
     assertEquals("foobar", kuzzle.getJwtToken());
 
     ArgumentCaptor loginResult = ArgumentCaptor.forClass(JSONObject.class);
-    verify(kuzzle).emitEvent(eq(KuzzleEvent.loginAttempt), (JSONObject)loginResult.capture());
+    verify(kuzzle).emitEvent(eq(Event.loginAttempt), (JSONObject)loginResult.capture());
     assertTrue(((JSONObject) loginResult.getValue()).getBoolean("success"));
 
     verify(kuzzle).renewSubscriptions();
@@ -74,7 +73,7 @@ public class setJwtTokenTest {
     assertEquals("foobar", kuzzle.getJwtToken());
 
     ArgumentCaptor loginResult = ArgumentCaptor.forClass(JSONObject.class);
-    verify(kuzzle).emitEvent(eq(KuzzleEvent.loginAttempt), (JSONObject)loginResult.capture());
+    verify(kuzzle).emitEvent(eq(Event.loginAttempt), (JSONObject)loginResult.capture());
     assertTrue(((JSONObject) loginResult.getValue()).getBoolean("success"));
 
     verify(kuzzle).renewSubscriptions();
@@ -86,7 +85,7 @@ public class setJwtTokenTest {
     assertNull(kuzzle.getJwtToken());
 
     ArgumentCaptor loginResult = ArgumentCaptor.forClass(JSONObject.class);
-    verify(kuzzle).emitEvent(eq(KuzzleEvent.loginAttempt), (JSONObject)loginResult.capture());
+    verify(kuzzle).emitEvent(eq(Event.loginAttempt), (JSONObject)loginResult.capture());
     assertFalse(((JSONObject) loginResult.getValue()).getBoolean("success"));
 
     verify(kuzzle, never()).renewSubscriptions();

@@ -10,15 +10,15 @@ import org.mockito.stubbing.Answer;
 
 import java.net.URISyntaxException;
 
+import io.kuzzle.sdk.core.Collection;
+import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
-import io.kuzzle.sdk.core.KuzzleDocument;
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.core.KuzzleRoomOptions;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.core.RoomOptions;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
 
@@ -34,40 +34,40 @@ import static org.mockito.Mockito.verify;
 
 public class subscribeTest {
   private Kuzzle k;
-  private KuzzleDocument doc;
-  private KuzzleDataCollection mockCollection;
+  private Document doc;
+  private Collection mockCollection;
 
   @Before
   public void setUp() throws URISyntaxException, JSONException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
     extended.setSocket(mock(Socket.class));
     k = spy(extended);
-    mockCollection = mock(KuzzleDataCollection.class);
-    doc = new KuzzleDocument(new KuzzleDataCollection(k, "test", "index"));
+    mockCollection = mock(Collection.class);
+    doc = new Document(new Collection(k, "test", "index"));
   }
 
   @Test
   public void checkSignaturesVariants() {
     doc.setId("foo");
     doc = spy(doc);
-    doc.subscribe(mock(KuzzleResponseListener.class));
-    verify(doc).subscribe(eq((KuzzleRoomOptions)null), any(KuzzleResponseListener.class));
+    doc.subscribe(mock(ResponseListener.class));
+    verify(doc).subscribe(eq((RoomOptions)null), any(ResponseListener.class));
   }
 
   @Test(expected = RuntimeException.class)
   public void testSubscribeException() throws JSONException {
-    doc = new KuzzleDocument(mockCollection);
+    doc = new Document(mockCollection);
     doc.setId("42");
-    doThrow(JSONException.class).when(mockCollection).subscribe(any(JSONObject.class), any(KuzzleRoomOptions.class), any(KuzzleResponseListener.class));
-    doc.subscribe(mock(KuzzleResponseListener.class));
+    doThrow(JSONException.class).when(mockCollection).subscribe(any(JSONObject.class), any(RoomOptions.class), any(ResponseListener.class));
+    doc.subscribe(mock(ResponseListener.class));
   }
 
   @Test(expected = IllegalStateException.class)
   public void testSubscribeNullId() {
-    doc.subscribe(mock(KuzzleResponseListener.class));
+    doc.subscribe(mock(ResponseListener.class));
   }
 
   @Test
@@ -82,16 +82,16 @@ public class subscribeTest {
         //Call callback with response
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(result);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject());
-        verify(k, atLeastOnce()).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+        verify(k, atLeastOnce()).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
         assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "realtime");
         assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "subscribe");
 
         return null;
       }
-    }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     doc.setId("42");
-    doc.subscribe(mock(KuzzleResponseListener.class));
-    doc.subscribe(new KuzzleRoomOptions(), mock(KuzzleResponseListener.class));
+    doc.subscribe(mock(ResponseListener.class));
+    doc.subscribe(new RoomOptions(), mock(ResponseListener.class));
   }
 
 }

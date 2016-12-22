@@ -10,11 +10,11 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.security.KuzzleSecurity;
-import io.kuzzle.sdk.security.KuzzleUser;
+import io.kuzzle.sdk.security.Security;
+import io.kuzzle.sdk.security.User;
 
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
@@ -29,8 +29,8 @@ import static org.mockito.Mockito.verify;
 
 public class KuzzleUserTest {
   private Kuzzle kuzzle;
-  private KuzzleUser stubUser;
-  private KuzzleResponseListener listener;
+  private User stubUser;
+  private ResponseListener listener;
   JSONObject stubProfile;
 
   @Before
@@ -46,14 +46,14 @@ public class KuzzleUserTest {
     );
 
     kuzzle = mock(Kuzzle.class);
-    kuzzle.security = new KuzzleSecurity(kuzzle);
-    listener = mock(KuzzleResponseListener.class);
-    stubUser = new KuzzleUser(kuzzle, "foo", null);
+    kuzzle.security = new Security(kuzzle);
+    listener = mock(ResponseListener.class);
+    stubUser = new User(kuzzle, "foo", null);
   }
 
   @Test
   public void testKuzzleUserConstructorNoContent() throws JSONException {
-    KuzzleUser user = new KuzzleUser(kuzzle, "foo", null);
+    User user = new User(kuzzle, "foo", null);
     assertEquals(user.id, "foo");
     assertEquals(user.getProfiles(), null);
     assertThat(user.content, instanceOf(JSONObject.class));
@@ -67,7 +67,7 @@ public class KuzzleUserTest {
         "\"someuseless\": \"field\"" +
       "}"
     );
-    KuzzleUser user = new KuzzleUser(kuzzle, "foo", stubProfile);
+    User user = new User(kuzzle, "foo", stubProfile);
     assertEquals(user.id, "foo");
     assertEquals(user.getProfiles().getString(0), "bar");
     assertThat(user.content, instanceOf(JSONObject.class));
@@ -77,7 +77,7 @@ public class KuzzleUserTest {
   @Test
   public void testKuzzleUserConstructorProfileWithContent() throws JSONException {
     JSONObject stubProfile = new JSONObject("{\"profileIds\": [\"bar\"]}");
-    KuzzleUser user = new KuzzleUser(kuzzle, "foo", stubProfile);
+    User user = new User(kuzzle, "foo", stubProfile);
     assertEquals(user.id, "foo");
     assertThat(user.getProfiles(), instanceOf(JSONArray.class));
     assertEquals(user.getProfiles().getString(0), "bar");
@@ -103,7 +103,7 @@ public class KuzzleUserTest {
   public void testSaveNoListener() throws JSONException {
     stubUser.save();
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class));
+    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createOrReplaceUser");
   }
@@ -117,11 +117,11 @@ public class KuzzleUserTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    stubUser.save(new KuzzleResponseListener<KuzzleUser>() {
+    stubUser.save(new ResponseListener<User>() {
       @Override
-      public void onSuccess(KuzzleUser response) {
+      public void onSuccess(User response) {
         assertEquals(response, stubUser);
       }
 
@@ -134,11 +134,11 @@ public class KuzzleUserTest {
         }
       }
     });
-    stubUser.save(mock(KuzzleOptions.class));
+    stubUser.save(mock(Options.class));
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class));
+    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createOrReplaceUser");
   }
@@ -147,17 +147,17 @@ public class KuzzleUserTest {
   public void testSaveRestrictedNoListener() throws JSONException {
     stubUser.saveRestricted();
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class));
+    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createRestrictedUser");
   }
 
   @Test
   public void testSaveRestrictedNoListenerAndOptions() throws JSONException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     stubUser.saveRestricted(options);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class));
+    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createRestrictedUser");
   }
@@ -171,11 +171,11 @@ public class KuzzleUserTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    stubUser.saveRestricted(new KuzzleResponseListener<KuzzleUser>() {
+    stubUser.saveRestricted(new ResponseListener<User>() {
       @Override
-      public void onSuccess(KuzzleUser response) {
+      public void onSuccess(User response) {
         assertEquals(response, stubUser);
       }
 
@@ -188,11 +188,11 @@ public class KuzzleUserTest {
         }
       }
     });
-    stubUser.save(mock(KuzzleOptions.class));
+    stubUser.save(mock(Options.class));
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class));
+    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createOrReplaceUser");
   }
@@ -221,7 +221,7 @@ public class KuzzleUserTest {
     JSONObject stubProfile = new JSONObject(
             "{\"profileIds\": [\"bar\"]}"
     );
-    KuzzleUser user = new KuzzleUser(kuzzle, "foo", stubProfile);
+    User user = new User(kuzzle, "foo", stubProfile);
     assertEquals(user.getProfiles().getString(0), "bar");
   }
 
@@ -230,7 +230,7 @@ public class KuzzleUserTest {
     JSONObject stubProfile = new JSONObject(
             "{\"profileIds\": [\"bar\"]}"
     );
-    KuzzleUser user = new KuzzleUser(kuzzle, "foo", stubProfile);
+    User user = new User(kuzzle, "foo", stubProfile);
     user.addProfile("new profile");
     assertEquals(user.getProfiles().getString(1), "new profile");
   }
@@ -240,7 +240,7 @@ public class KuzzleUserTest {
     JSONObject stubProfile = new JSONObject(
             "{\"profileIds\": [\"bar\"]}"
     );
-    KuzzleUser user = new KuzzleUser(kuzzle, "foo", stubProfile);
+    User user = new User(kuzzle, "foo", stubProfile);
     user.addProfile(null);
     doThrow(IllegalArgumentException.class).when(user).addProfile(eq((String)null));
   }

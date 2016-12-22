@@ -12,12 +12,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.core.KuzzleRoom;
-import io.kuzzle.sdk.enums.KuzzleEvent;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.core.Room;
+import io.kuzzle.sdk.enums.Event;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.state.States;
 import io.kuzzle.sdk.util.EventList;
 import io.socket.client.Socket;
 
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.spy;
 public class KuzzleExtend extends Kuzzle {
   protected Socket savedSocket = null;
 
-  public KuzzleResponseListener loginCallback;
+  public ResponseListener loginCallback;
 
   public class KuzzleWebViewClient extends Kuzzle.KuzzleWebViewClient {
     public boolean shouldOverrideUrlLoading(WebView view, final String url) {
@@ -38,11 +38,11 @@ public class KuzzleExtend extends Kuzzle {
     return new KuzzleWebViewClient();
   }
 
-  public KuzzleExtend(@NonNull final String host, final KuzzleOptions options, final KuzzleResponseListener<Void> connectionCallback) throws URISyntaxException {
+  public KuzzleExtend(@NonNull final String host, final Options options, final ResponseListener<Void> connectionCallback) throws URISyntaxException {
     super(host, options, connectionCallback);
   }
 
-  public void setState(KuzzleStates newState) {
+  public void setState(States newState) {
     this.state = newState;
   }
 
@@ -50,7 +50,7 @@ public class KuzzleExtend extends Kuzzle {
     this.socket = this.savedSocket = s;
   }
 
-  public void setListener(KuzzleResponseListener listener) {
+  public void setListener(ResponseListener listener) {
     this.connectionCallback = listener;
   }
 
@@ -69,7 +69,7 @@ public class KuzzleExtend extends Kuzzle {
    *
    * @param event
    */
-  public EventList getEventListeners(KuzzleEvent event) {
+  public EventList getEventListeners(Event event) {
     return this.eventListeners.get(event);
   }
 
@@ -78,7 +78,7 @@ public class KuzzleExtend extends Kuzzle {
    *
    * @return
    */
-  public Map<String, ConcurrentHashMap<String, KuzzleRoom>> getSubscriptions() {
+  public Map<String, ConcurrentHashMap<String, Room>> getSubscriptions() {
     return this.subscriptions;
   }
 
@@ -106,7 +106,7 @@ public class KuzzleExtend extends Kuzzle {
     return super.getRequestHistory();
   }
 
-  public Map<String, KuzzleRoom> getPendingSubscriptions() {
+  public Map<String, Room> getPendingSubscriptions() {
     return super.getPendingSubscriptions();
   }
 
@@ -114,7 +114,7 @@ public class KuzzleExtend extends Kuzzle {
     return super.isValidState();
   }
 
-  public KuzzleResponseListener<Void> spyAndGetConnectionCallback() {
+  public ResponseListener<Void> spyAndGetConnectionCallback() {
     super.connectionCallback = spy(super.connectionCallback);
     return super.connectionCallback;
   }
@@ -123,7 +123,7 @@ public class KuzzleExtend extends Kuzzle {
     super.defaultIndex = index;
   }
 
-  public void emitEvent(final KuzzleEvent event, final Object... args) {
+  public void emitEvent(final Event event, final Object... args) {
     super.emitEvent(event, args);
   }
 

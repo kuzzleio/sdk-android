@@ -7,12 +7,12 @@ import org.junit.Test;
 
 import java.net.URISyntaxException;
 
+import io.kuzzle.sdk.core.Collection;
+import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
-import io.kuzzle.sdk.core.KuzzleDocument;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 
 import static org.junit.Assert.assertEquals;
@@ -29,26 +29,26 @@ import static org.mockito.Mockito.when;
 
 public class constructorTest {
   private Kuzzle k;
-  private KuzzleDocument doc;
+  private Document doc;
 
   @Before
   public void setUp() throws URISyntaxException, JSONException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
     k = spy(extended);
-    doc = new KuzzleDocument(new KuzzleDataCollection(k, "test", "index"));
+    doc = new Document(new Collection(k, "test", "index"));
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testConstructorIllegalDataCollection() throws JSONException {
-    new KuzzleDocument(null, null, null);
+    new Document(null, null, null);
   }
 
   @Test
   public void testConstructor() throws JSONException {
-    doc = new KuzzleDocument(new KuzzleDataCollection(k, "test", "index"), "42");
+    doc = new Document(new Collection(k, "test", "index"), "42");
     assertEquals(doc.getId(), "42");
   }
 
@@ -56,8 +56,8 @@ public class constructorTest {
   public void testCollection() throws JSONException {
     Kuzzle k = mock(Kuzzle.class);
     when(k.getHeaders()).thenReturn(new JSONObject());
-    KuzzleDataCollection collection = new KuzzleDataCollection(k, "test", "index");
-    KuzzleDocument doc = new KuzzleDocument(collection);
+    Collection collection = new Collection(k, "test", "index");
+    Document doc = new Document(collection);
     assertEquals(doc.getCollection(), collection.getCollection());
   }
 
@@ -66,7 +66,7 @@ public class constructorTest {
     JSONObject content = new JSONObject();
     content.put("foo", "bar");
 
-    doc = new KuzzleDocument(new KuzzleDataCollection(k, "test", "index"), content);
+    doc = new Document(new Collection(k, "test", "index"), content);
     assertEquals(doc.getContent().getString("foo"), "bar");
   }
 

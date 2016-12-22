@@ -9,11 +9,11 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.security.KuzzleRole;
-import io.kuzzle.sdk.security.KuzzleSecurity;
+import io.kuzzle.sdk.security.Role;
+import io.kuzzle.sdk.security.Security;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -25,24 +25,24 @@ import static org.mockito.Mockito.verify;
 
 public class getRoleTest {
   private Kuzzle kuzzle;
-  private KuzzleSecurity kuzzleSecurity;
-  private KuzzleResponseListener listener;
+  private Security kuzzleSecurity;
+  private ResponseListener listener;
 
   @Before
   public void setUp() {
     kuzzle = mock(Kuzzle.class);
-    kuzzleSecurity = new KuzzleSecurity(kuzzle);
-    listener = mock(KuzzleResponseListener.class);
+    kuzzleSecurity = new Security(kuzzle);
+    listener = mock(ResponseListener.class);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetRoleNoID() {
-    kuzzleSecurity.getRole(null, listener);
+    kuzzleSecurity.fetchRole(null, listener);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetRoleNoListener() {
-    kuzzleSecurity.getRole("foobar", null);
+    kuzzleSecurity.fetchRole("foobar", null);
   }
 
   @Test
@@ -64,11 +64,11 @@ public class getRoleTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.getRole("foobar", null, new KuzzleResponseListener<KuzzleRole>() {
+    kuzzleSecurity.fetchRole("foobar", null, new ResponseListener<Role>() {
       @Override
-      public void onSuccess(KuzzleRole response) {
+      public void onSuccess(Role response) {
         assertEquals(response.id, "foobar");
       }
 
@@ -84,15 +84,15 @@ public class getRoleTest {
     });
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "getRole");
+    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "fetchRole");
   }
 
   @Test(expected = RuntimeException.class)
   public void testGetRoleInvalid() throws JSONException {
-    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    kuzzleSecurity.getRole("foobar", null, listener);
+    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+    kuzzleSecurity.fetchRole("foobar", null, listener);
   }
 
   @Test(expected = RuntimeException.class)
@@ -104,8 +104,8 @@ public class getRoleTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.getRole("foobar", null, listener);
+    kuzzleSecurity.fetchRole("foobar", null, listener);
   }
 }

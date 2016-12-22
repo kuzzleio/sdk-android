@@ -9,11 +9,11 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.security.KuzzleRole;
-import io.kuzzle.sdk.security.KuzzleSecurity;
+import io.kuzzle.sdk.security.Role;
+import io.kuzzle.sdk.security.Security;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -24,24 +24,24 @@ import static org.mockito.Mockito.verify;
 
 public class updateRoleTest {
   private Kuzzle kuzzle;
-  private KuzzleSecurity kuzzleSecurity;
-  private KuzzleResponseListener listener;
+  private Security kuzzleSecurity;
+  private ResponseListener listener;
   private JSONObject  content;
 
   @Before
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
-    kuzzleSecurity = new KuzzleSecurity(kuzzle);
-    listener = mock(KuzzleResponseListener.class);
+    kuzzleSecurity = new Security(kuzzle);
+    listener = mock(ResponseListener.class);
     content = new JSONObject()
         .put("foo", "bar");
   }
 
   @Test
   public void testUpdateRoleNoListener() throws JSONException {
-    kuzzleSecurity.updateRole("foo", content, new KuzzleOptions());
+    kuzzleSecurity.updateRole("foo", content, new Options());
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class));
+    verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "security");
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "updateRole");
   }
@@ -63,11 +63,11 @@ public class updateRoleTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
         return null;
       }
-    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.updateRole("foobar", content, new KuzzleResponseListener<KuzzleRole>() {
+    kuzzleSecurity.updateRole("foobar", content, new ResponseListener<Role>() {
       @Override
-      public void onSuccess(KuzzleRole role) {
+      public void onSuccess(Role role) {
         assertEquals(role.getId(), "foobar");
       }
 
@@ -82,7 +82,7 @@ public class updateRoleTest {
     });
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "security");
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "updateRole");
   }
@@ -97,9 +97,9 @@ public class updateRoleTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
         return null;
       }
-    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.updateRole("foobar", content, new KuzzleOptions(), listener);
+    kuzzleSecurity.updateRole("foobar", content, new Options(), listener);
   }
 
   @Test(expected = IllegalArgumentException.class)

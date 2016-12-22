@@ -12,9 +12,9 @@ import java.net.URISyntaxException;
 import java.util.Date;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
@@ -25,23 +25,22 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class checkTokenTest {
   private KuzzleExtend kuzzle;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(mock(Socket.class));
 
-    listener = new KuzzleResponseListener<Object>() {
+    listener = new ResponseListener<Object>() {
       @Override
       public void onSuccess(Object object) {
 
@@ -61,7 +60,7 @@ public class checkTokenTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testCheckTokenWithIllegalToken() {
-    kuzzle.checkToken(null, mock(KuzzleResponseListener.class));
+    kuzzle.checkToken(null, mock(ResponseListener.class));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -80,14 +79,14 @@ public class checkTokenTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("valid", true).put("expiresAt", new Date().getTime())));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     kuzzle.checkToken("token", listener);
   }
 
   @Test(expected = RuntimeException.class)
   public void testCheckTokenQueryException() throws JSONException {
     kuzzle = spy(kuzzle);
-    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     kuzzle.checkToken("token", listener);
   }
 
@@ -101,11 +100,11 @@ public class checkTokenTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzle.checkToken("token-42", mock(KuzzleResponseListener.class));
+    kuzzle.checkToken("token-42", mock(ResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
-    verify(kuzzle).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "auth");
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "checkToken");
   }
@@ -120,11 +119,11 @@ public class checkTokenTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzle.checkToken("token-42", mock(KuzzleResponseListener.class));
+    kuzzle.checkToken("token-42", mock(ResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "auth");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "checkToken");
   }

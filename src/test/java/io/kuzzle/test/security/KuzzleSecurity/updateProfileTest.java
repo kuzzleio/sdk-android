@@ -9,11 +9,11 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.security.KuzzleProfile;
-import io.kuzzle.sdk.security.KuzzleSecurity;
+import io.kuzzle.sdk.security.Profile;
+import io.kuzzle.sdk.security.Security;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -24,24 +24,24 @@ import static org.mockito.Mockito.verify;
 
 public class updateProfileTest {
   private Kuzzle kuzzle;
-  private KuzzleSecurity kuzzleSecurity;
-  private KuzzleResponseListener listener;
+  private Security kuzzleSecurity;
+  private ResponseListener listener;
   private JSONObject  content;
 
   @Before
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
-    kuzzleSecurity = new KuzzleSecurity(kuzzle);
-    listener = mock(KuzzleResponseListener.class);
+    kuzzleSecurity = new Security(kuzzle);
+    listener = mock(ResponseListener.class);
     content = new JSONObject()
         .put("foo", "bar");
   }
 
   @Test
   public void testUpdateProfileNoListener() throws JSONException {
-    kuzzleSecurity.updateProfile("foo", content, new KuzzleOptions());
+    kuzzleSecurity.updateProfile("foo", content, new Options());
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class));
+    verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "security");
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "updateProfile");
   }
@@ -63,11 +63,11 @@ public class updateProfileTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
         return null;
       }
-    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.updateProfile("foobar", content, new KuzzleResponseListener<KuzzleProfile>() {
+    kuzzleSecurity.updateProfile("foobar", content, new ResponseListener<Profile>() {
       @Override
-      public void onSuccess(KuzzleProfile response) {
+      public void onSuccess(Profile response) {
         assertEquals(response.getId(), "foobar");
       }
 
@@ -82,7 +82,7 @@ public class updateProfileTest {
     });
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "security");
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "updateProfile");
   }
@@ -97,9 +97,9 @@ public class updateProfileTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
         return null;
       }
-    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.updateProfile("foobar", content, new KuzzleOptions(), listener);
+    kuzzleSecurity.updateProfile("foobar", content, new Options(), listener);
   }
 
   @Test(expected = IllegalArgumentException.class)

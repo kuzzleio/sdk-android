@@ -12,8 +12,8 @@ import org.mockito.stubbing.Answer;
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 
@@ -28,12 +28,12 @@ import static org.mockito.Mockito.verify;
 public class getMyRightsTest {
 
   private Kuzzle kuzzle;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
-    kuzzle = spy(new KuzzleExtend("localhost", mock(KuzzleOptions.class), mock(KuzzleResponseListener.class)));
-    listener = mock(KuzzleResponseListener.class);
+    kuzzle = spy(new KuzzleExtend("localhost", mock(Options.class), mock(ResponseListener.class)));
+    listener = mock(ResponseListener.class);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -49,13 +49,13 @@ public class getMyRightsTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject());
         return null;
       }
-    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     kuzzle.getMyRights(listener);
   }
 
   @Test(expected = RuntimeException.class)
   public void testException() throws JSONException {
-    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     kuzzle.getMyRights(listener);
   }
 
@@ -71,10 +71,10 @@ public class getMyRightsTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
         return null;
       }
-    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    kuzzle.getMyRights(mock(KuzzleResponseListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+    kuzzle.getMyRights(mock(ResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
-    verify(kuzzle).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "security");
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "getMyRights");
   }

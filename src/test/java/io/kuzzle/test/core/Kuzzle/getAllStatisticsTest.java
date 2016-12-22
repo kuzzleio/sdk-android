@@ -12,10 +12,9 @@ import org.mockito.stubbing.Answer;
 import java.net.URISyntaxException;
 import java.util.Iterator;
 
-import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.QueryArgsHelper;
@@ -33,18 +32,18 @@ import static org.mockito.Mockito.verify;
 
 public class getAllStatisticsTest {
   private KuzzleExtend kuzzle;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(mock(Socket.class));
 
-    listener = new KuzzleResponseListener<Object>() {
+    listener = new ResponseListener<Object>() {
       @Override
       public void onSuccess(Object object) {
 
@@ -66,7 +65,7 @@ public class getAllStatisticsTest {
   public void testGetAllStatisticsNoOptions() {
     kuzzle = spy(kuzzle);
     kuzzle.getAllStatistics(listener);
-    verify(kuzzle).getAllStatistics(any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+    verify(kuzzle).getAllStatistics(any(Options.class), any(ResponseListener.class));
   }
 
   @Test(expected = RuntimeException.class)
@@ -80,14 +79,14 @@ public class getAllStatisticsTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("hits", mock(JSONObject.class))));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     kuzzle.getAllStatistics(listener);
   }
 
   @Test(expected = RuntimeException.class)
   public void testGetAllStatisticsQueryException() throws JSONException {
     kuzzle = spy(kuzzle);
-    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     kuzzle.getAllStatistics(listener);
   }
 
@@ -124,8 +123,8 @@ public class getAllStatisticsTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    kuzzle.getAllStatistics(new KuzzleResponseListener<JSONArray>() {
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+    kuzzle.getAllStatistics(new ResponseListener<JSONArray>() {
       @Override
       public void onSuccess(JSONArray result) {
         try {
@@ -146,7 +145,7 @@ public class getAllStatisticsTest {
       }
     });
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "server");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "getAllStats");
   }
@@ -163,8 +162,8 @@ public class getAllStatisticsTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(responseError);
         return null;
       }
-    }).when(kuzzle).query(eq(QueryArgsHelper.makeQueryArgs("server", "getAllStats")), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    kuzzle.getAllStatistics(new KuzzleResponseListener<JSONArray>() {
+    }).when(kuzzle).query(eq(QueryArgsHelper.makeQueryArgs("server", "getAllStats")), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+    kuzzle.getAllStatistics(new ResponseListener<JSONArray>() {
       @Override
       public void onSuccess(JSONArray object) {
       }
@@ -179,7 +178,7 @@ public class getAllStatisticsTest {
       }
     });
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "server");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "getAllStats");
   }
