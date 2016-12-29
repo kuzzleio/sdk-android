@@ -5,7 +5,7 @@
 Official Kuzzle Android SDK
 ======
 
-This SDK version requires Kuzzle v1.0.0-RC6 or higher.
+This SDK version requires Kuzzle v1.0.0-RC8 or higher.
 
 ## About Kuzzle
 
@@ -27,7 +27,7 @@ You can configure your android project to get the Kuzzle's android SDK from jcen
             jcenter()
         }
     }
-    compile 'io.kuzzle:sdk-android:1.8.0'
+    compile 'io.kuzzle:sdk-android:2.1.0'
 
 ## Basic usage
 
