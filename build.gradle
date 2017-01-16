@@ -11,7 +11,7 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:2.1.2'
-        classpath 'com.dicedmelon.gradle:jacoco-android:0.1.0'
+        classpath 'com.dicedmelon.gradle:jacoco-android:0.1.1'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
     }
 }
@@ -21,7 +21,7 @@ android {
     buildToolsVersion '23.0.2'
     defaultConfig {
         minSdkVersion 10
-        targetSdkVersion 10
+        targetSdkVersion 23
         versionCode 1
         versionName version
     }
@@ -48,8 +48,9 @@ repositories {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:+'
+    compile fileTree(include: ['*.jar'], dir: 'lib' +
+            's')
+    compile 'com.android.support:appcompat-v7:23.0.0'
     compile 'io.socket:socket.io-client:0.6.2'
     testCompile 'junit:junit:4.12'
     testCompile 'org.hamcrest:hamcrest-junit:2.0.0.0'

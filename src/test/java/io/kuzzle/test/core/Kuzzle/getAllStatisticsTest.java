@@ -14,8 +14,10 @@ import java.util.Iterator;
 
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
+import io.kuzzle.sdk.enums.State;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
+import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.QueryArgsHelper;
 import io.socket.client.Socket;
@@ -42,6 +44,7 @@ public class getAllStatisticsTest {
 
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(mock(Socket.class));
+    kuzzle.setState(States.CONNECTED);
 
     listener = new ResponseListener<Object>() {
       @Override
@@ -171,6 +174,7 @@ public class getAllStatisticsTest {
       @Override
       public void onError(JSONObject error) {
         try {
+          System.out.println(error.toString());
           assertEquals(error.get("error"), "rorre");
         } catch (JSONException e) {
           throw new RuntimeException(e);
