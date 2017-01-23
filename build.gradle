@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'jacoco-android'
 apply plugin: 'com.jfrog.bintray'
+apply plugin: 'com.github.dcendents.android-maven'
 
 version = "2.1.0"
 
@@ -12,8 +13,13 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:2.1.2'
         classpath 'com.dicedmelon.gradle:jacoco-android:0.1.0'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
     }
+}
+
+configurations {
+    javadocDeps
 }
 
 android {
@@ -49,7 +55,7 @@ repositories {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:+'
+    compile 'com.android.support:appcompat-v7:21+'
     compile 'io.socket:socket.io-client:0.6.2'
     testCompile 'junit:junit:4.12'
     testCompile 'org.hamcrest:hamcrest-junit:2.0.0.0'
@@ -57,6 +63,8 @@ dependencies {
     // for not mocking JSONObject
     testCompile files('libs-test/json-20140107.jar')
     androidTestCompile 'junit:junit:4.12'
+    compile 'com.android.support:support-annotations:22.2.0'
+    javadocDeps 'com.android.support:support-annotations:22.2.0'
 }
 
 ext {
@@ -69,48 +77,112 @@ ext {
 
     libraryDescription = 'Kuzzle Android SDK aar'
 
+    siteUrl = 'https://github.com/kuzzleio/sdk-android'
+    gitUrl = 'https://github.com/kuzzleio/sdk-android.git'
+    githubRepository= 'kuzzleio/sdk-android'
+
+    libraryVersion = version
+
     developerId = 'kblondel'
     developerName = 'Kevin Blondel'
     developerEmail = 'kblondel@kaliop.com'
 
-    task sourcesJar(type: Jar) {
-        from android.sourceSets.main.java.srcDirs
-        classifier = 'sources'
-    }
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+// from: 'https://raw.githubusercontent.com/nisrulz/JCenter/master/installv1.gradle'
+apply plugin: 'com.github.dcendents.android-maven'
 
-    task javadoc(type: Javadoc) {
-        source = android.sourceSets.main.java.srcDirs
-        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    }
+group = publishedGroupId                               // Maven Group ID for the artifact
 
-    task javadocJar(type: Jar, dependsOn: javadoc) {
-        classifier = 'javadoc'
-        from javadoc.destinationDir
-    }
-    artifacts {
-        archives javadocJar
-        archives sourcesJar
-    }
+install {
+    repositories.mavenInstaller {
+        // This generates POM.xml with proper parameters
+        pom {
+            project {
+                packaging 'aar'
+                groupId publishedGroupId
+                artifactId artifact
 
-    bintray {
+                // Add your description here
+                name libraryName
+                description libraryDescription
+                url siteUrl
 
-        user = System.getenv("bintray_user")
-        key = System.getenv("bintray_apikey")
+                // Set your license
+                licenses {
+                    license {
+                        name licenseName
+                        url licenseUrl
+                    }
+                }
+                developers {
+                    developer {
+                        id developerId
+                        name developerName
+                        email developerEmail
+                    }
+                }
+                scm {
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
 
-        configurations = ['archives']
-        pkg {
-            repo = bintrayRepo
-            name = bintrayName
-            desc = libraryDescription
-            publish = true
-            publicDownloadNumbers = true
-            version {
-                desc = libraryDescription
+                }
             }
         }
     }
+}
 
-    afterEvaluate {
-        javadoc.classpath += project.android.libraryVariants.toList().first().javaCompile.classpath
+// from: 'https://raw.githubusercontent.com/nisrulz/JCenter/master/bintrayv1.gradle'
+apply plugin: 'com.jfrog.bintray'
+
+version = libraryVersion
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator)) + configurations.javadocDeps + configurations.compile
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+// Bintray
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+
+    configurations = ['archives']
+    pkg {
+        repo = bintrayRepo
+        name = bintrayName
+        desc = libraryDescription
+        websiteUrl = siteUrl
+        issueTrackerUrl = siteUrl+'/issues'
+        vcsUrl = gitUrl
+        licenses = allLicenses
+        githubRepo = githubRepository //Optional Github repository
+        githubReleaseNotesFile = 'README.md' //Optional Github readme file
+        publish = true
+        publicDownloadNumbers = true
+        version {
+            desc = libraryDescription
+        }
     }
 }
