@@ -24,10 +24,17 @@ You can configure your android project to get the Kuzzle's android SDK from jcen
 
     buildscript {
         repositories {
+            maven {
+                url  "http://dl.bintray.com/kblondel/maven"
+            }
             jcenter()
         }
+
     }
-    compile 'io.kuzzle:sdk-android:2.1.0'
+
+    dependencies {
+        compile 'io.kuzzle:sdk-android:2.1.0'
+    }
 
 ## Basic usage
 
