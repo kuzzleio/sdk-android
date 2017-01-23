@@ -166,7 +166,7 @@ properties.load(project.rootProject.file('local.properties').newDataInputStream(
 
 bintray {
     user = System.getenv("bintray_user")
-    key = ystem.getenv("bintray_apikey")
+    key = System.getenv("bintray_apikey")
 
     configurations = ['archives']
     pkg {
