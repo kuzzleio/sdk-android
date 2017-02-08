@@ -643,7 +643,6 @@ public class Kuzzle {
    *
    * @param timestamp the timestamp
    * @param listener  the listener
-   * @return the statistics
    */
   public void getStatistics(long timestamp, @NonNull final ResponseListener<JSONArray> listener) {
     this.getStatistics(timestamp, null, listener);
@@ -747,7 +746,6 @@ public class Kuzzle {
    *
    * @param index    the index
    * @param listener the listener
-   * @return the kuzzle
    */
   public void listCollections(String index, @NonNull final ResponseListener<JSONObject> listener) {
     this.listCollections(index, null, listener);
@@ -1753,7 +1751,7 @@ public class Kuzzle {
   /**
    * Gets the kuzzle host
    *
-   * @returns string
+   * @return string
    */
   public String getHost() {
     return this.host;
