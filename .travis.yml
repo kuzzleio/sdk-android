@@ -9,6 +9,7 @@ android:
         - build-tools-23.0.2
         - platform-tools
         - android-23
+        - extra-android-support
 
 before_install:
     - export TERM=dumb

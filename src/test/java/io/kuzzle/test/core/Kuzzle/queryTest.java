@@ -72,17 +72,6 @@ public class queryTest {
   }
 
   @Test
-  public void shouldDoNothingIfOfflineAndNotQueuable() throws JSONException {
-    Options opts = new Options().setQueuable(false);
-    kuzzle.setState(States.OFFLINE);
-    kuzzle = spy(kuzzle);
-    doThrow(RuntimeException.class)
-      .when(kuzzle)
-      .emitRequest(any(JSONObject.class), any(OnQueryDoneListener.class));
-    assertThat(kuzzle.query(args, new JSONObject(), opts), instanceOf(KuzzleExtend.class));
-  }
-
-  @Test
   public void shouldEmitTheRightRequest() throws JSONException {
     kuzzle.query(args, new JSONObject());
 
@@ -310,5 +299,30 @@ public class queryTest {
     });
     doThrow(JSONException.class).when(listener).onSuccess(any(JSONObject.class));
     kuzzle.emitRequest(new JSONObject().put("requestId", "foo"), listener);
+  }
+
+  @Test
+  public void shouldDiscardQueuableRequestWhenNotConnected() throws JSONException {
+    Options opts = new Options().setQueuable(false);
+    kuzzle.setState(States.OFFLINE);
+    OnQueryDoneListener listener = mock(OnQueryDoneListener.class);
+
+    KuzzleExtend kuzzleSpy = spy(kuzzle);
+    kuzzleSpy.query(args, new JSONObject(), opts, listener);
+    verify(kuzzleSpy, never()).emitRequest(any(JSONObject.class), any(OnQueryDoneListener.class));
+    verify(listener).onError(any(JSONObject.class));
+  }
+
+  @Test
+  public void shouldDiscardNonQueuedRequestWhenNotConnected() throws JSONException {
+    Options opts = new Options().setQueuable(false);
+    kuzzle.setState(States.OFFLINE);
+    kuzzle.stopQueuing();
+    OnQueryDoneListener listener = mock(OnQueryDoneListener.class);
+
+    KuzzleExtend kuzzleSpy = spy(kuzzle);
+    kuzzleSpy.query(args, new JSONObject(), opts, listener);
+    verify(kuzzleSpy, never()).emitRequest(any(JSONObject.class), any(OnQueryDoneListener.class));
+    verify(listener).onError(any(JSONObject.class));
   }
 }

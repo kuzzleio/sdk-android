@@ -1241,10 +1241,7 @@ public class Kuzzle {
     // Metadata for this query
     if (options != null) {
       if (!options.isQueuable() && this.state != States.CONNECTED) {
-        if (listener != null) {
-          listener.onError(new JSONObject().put("message", "Unable to execute request: not connected to a Kuzzle server.\\nDiscarded request: " + object.toString()));
-        }
-
+        discardRequest(listener, object);
         return this;
       }
 
@@ -1304,7 +1301,7 @@ public class Kuzzle {
           }
         }
       });
-    } else if (this.queuing || this.state == States.INITIALIZING || this.state == States.CONNECTING) {
+    } else if (this.queuing || (options != null && options.isQueuable()) || this.state == States.INITIALIZING || this.state == States.CONNECTING) {
       cleanQueue();
 
       if (queueFilter.filter(object)) {
@@ -1315,7 +1312,10 @@ public class Kuzzle {
         this.offlineQueue.addToQueue(o);
         Kuzzle.this.emitEvent(Event.offlineQueuePush, o);
       }
+    } else {
+      discardRequest(listener, object);
     }
+
     return this;
   }
 
@@ -2620,4 +2620,18 @@ public class Kuzzle {
     return args;
   }
 
+  /**
+   * Invokes a query listener with a custom error message and status
+   * @param listener - query listener to discard
+   * @param query - discarded query
+   */
+  protected void discardRequest(final OnQueryDoneListener listener, JSONObject query) throws JSONException {
+    if (listener != null) {
+      JSONObject err = new JSONObject()
+        .put("status", 400)
+        .put("message", "Unable to execute request: not connected to a Kuzzle server.\nDiscarded request: " + query.toString());
+
+      listener.onError(err);
+    }
+  }
 }
