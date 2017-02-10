@@ -65,7 +65,7 @@ dependencies {
     testCompile files('libs-test/json-20140107.jar')
     androidTestCompile 'junit:junit:4.12'
     compile 'com.android.support:support-annotations:21.0.1'
-    javadocDeps 'com.android.support:support-annotations:21.0.1'
+    javadocDeps 'com.android.support:support-annotations:22.2.0'
 }
 
 ext {
