@@ -13,9 +13,9 @@ import org.mockito.stubbing.Answer;
 
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
@@ -32,23 +32,23 @@ import static org.mockito.Mockito.verify;
 
 public class refreshIndexTest {
   private KuzzleExtend kuzzle;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setup() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(mock(Socket.class));
 
-    listener = mock(KuzzleResponseListener.class);
+    listener = mock(ResponseListener.class);
   }
 
   @Test
   public void testAllSignatureVariants() {
-    KuzzleOptions options = mock(KuzzleOptions.class);
+    Options options = mock(Options.class);
 
     kuzzle = spy(kuzzle);
 
@@ -60,7 +60,7 @@ public class refreshIndexTest {
     kuzzle.refreshIndex("foo", options);
     kuzzle.refreshIndex("foo", listener);
 
-    verify(kuzzle, times(7)).refreshIndex(any(String.class), any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+    verify(kuzzle, times(7)).refreshIndex(any(String.class), any(Options.class), any(ResponseListener.class));
   }
 
   @Test(expected = RuntimeException.class)
@@ -73,14 +73,14 @@ public class refreshIndexTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("_shards", new JSONObject())));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     kuzzle.refreshIndex(listener);
   }
 
   @Test(expected = RuntimeException.class)
   public void testRefreshIndexQueryException() throws JSONException {
     kuzzle = spy(kuzzle);
-    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     kuzzle.refreshIndex(listener);
   }
 
@@ -88,7 +88,7 @@ public class refreshIndexTest {
   public void testRefreshIndexIllegalDefaultIndex() {
     kuzzle = spy(kuzzle);
     kuzzle.setSuperDefaultIndex(null);
-    kuzzle.refreshIndex(null, mock(KuzzleOptions.class), listener);
+    kuzzle.refreshIndex(null, mock(Options.class), listener);
   }
 
   @Test
@@ -101,13 +101,13 @@ public class refreshIndexTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
     kuzzle.refreshIndex();
     kuzzle.refreshIndex(listener);
-    kuzzle.refreshIndex(mock(KuzzleOptions.class), listener);
+    kuzzle.refreshIndex(mock(Options.class), listener);
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(3)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(3)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "index");
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "refresh");
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).index, kuzzle.getDefaultIndex());

@@ -10,14 +10,14 @@ import org.mockito.stubbing.Answer;
 
 import java.net.URISyntaxException;
 
+import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.core.KuzzleRoomOptions;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.core.RoomOptions;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
 
@@ -33,29 +33,29 @@ import static org.mockito.Mockito.when;
 
 public class subscribeTest {
   private Kuzzle kuzzle;
-  private KuzzleDataCollection collection;
-  private KuzzleResponseListener listener;
+  private Collection collection;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
 
     kuzzle = spy(extended);
     when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
-    collection = new KuzzleDataCollection(kuzzle, "test", "index");
-    listener = mock(KuzzleResponseListener.class);
+    collection = new Collection(kuzzle, "test", "index");
+    listener = mock(ResponseListener.class);
   }
 
   @Test
   public void checkSignaturesVariants() {
     collection = spy(collection);
     collection.subscribe(new JSONObject(), listener);
-    verify(collection).subscribe(any(JSONObject.class), eq((KuzzleRoomOptions)null), eq(listener));
+    verify(collection).subscribe(any(JSONObject.class), eq((RoomOptions)null), eq(listener));
   }
 
 
@@ -76,15 +76,15 @@ public class subscribeTest {
         //Call callback with response
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(result);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject());
-        verify(kuzzle, atLeastOnce()).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+        verify(kuzzle, atLeastOnce()).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
         assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "realtime");
         assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "subscribe");
 
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    collection.subscribe(mock(JSONObject.class), new KuzzleRoomOptions(), listener);
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+    collection.subscribe(mock(JSONObject.class), new RoomOptions(), listener);
     collection.subscribe(mock(JSONObject.class), listener);
-    collection.subscribe(new KuzzleRoomOptions(), listener);
+    collection.subscribe(new RoomOptions(), listener);
   }
 }

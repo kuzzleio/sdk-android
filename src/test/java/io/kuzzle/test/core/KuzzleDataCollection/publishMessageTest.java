@@ -12,14 +12,14 @@ import org.mockito.stubbing.Answer;
 
 import java.net.URISyntaxException;
 
+import io.kuzzle.sdk.core.Collection;
+import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
-import io.kuzzle.sdk.core.KuzzleDocument;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
 
@@ -30,50 +30,50 @@ import static org.mockito.Mockito.*;
 
 public class publishMessageTest {
   private Kuzzle kuzzle;
-  private KuzzleDataCollection collection;
+  private Collection collection;
 
   @Mock
-  private KuzzleResponseListener<JSONObject> listener;
+  private ResponseListener<JSONObject> listener;
 
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
 
     kuzzle = spy(extended);
     when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
-    collection = new KuzzleDataCollection(kuzzle, "test", "index");
+    collection = new Collection(kuzzle, "test", "index");
 
     MockitoAnnotations.initMocks(this);
   }
 
   @Test
   public void checkSignaturesVariants() {
-    KuzzleDocument doc = mock(KuzzleDocument.class);
+    Document doc = mock(Document.class);
 
     when(doc.getContent()).thenReturn(new JSONObject());
     collection = spy(collection);
 
     collection.publishMessage(doc);
-    collection.publishMessage(doc, mock(KuzzleOptions.class));
+    collection.publishMessage(doc, mock(Options.class));
     collection.publishMessage(doc, listener);
-    collection.publishMessage(doc, mock(KuzzleOptions.class), listener);
+    collection.publishMessage(doc, mock(Options.class), listener);
     collection.publishMessage(mock(JSONObject.class));
     collection.publishMessage(mock(JSONObject.class), listener);
-    collection.publishMessage(mock(JSONObject.class), mock(KuzzleOptions.class));
-    collection.publishMessage(mock(JSONObject.class), mock(KuzzleOptions.class), listener);
-    verify(collection, times(8)).publishMessage(any(JSONObject.class), any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+    collection.publishMessage(mock(JSONObject.class), mock(Options.class));
+    collection.publishMessage(mock(JSONObject.class), mock(Options.class), listener);
+    verify(collection, times(8)).publishMessage(any(JSONObject.class), any(Options.class), any(ResponseListener.class));
   }
 
 
   @Test(expected = IllegalArgumentException.class)
   public void publishWithNoDocument() {
-    collection.publishMessage((KuzzleDocument) null);
+    collection.publishMessage((Document) null);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -83,18 +83,18 @@ public class publishMessageTest {
 
   @Test(expected = RuntimeException.class)
   public void testPublishMessageException() throws JSONException {
-    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    collection.publishMessage(mock(KuzzleDocument.class), mock(KuzzleOptions.class));
+    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+    collection.publishMessage(mock(Document.class), mock(Options.class));
   }
 
   @Test
   public void testPublishMessage() throws JSONException {
-    KuzzleDocument doc = new KuzzleDocument(collection);
+    Document doc = new Document(collection);
     doc.setContent("foo", "bar");
     collection.publishMessage(doc);
-    collection.publishMessage(doc, new KuzzleOptions());
+    collection.publishMessage(doc, new Options());
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "realtime");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "publish");
   }
@@ -108,12 +108,12 @@ public class publishMessageTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
     JSONObject message = new JSONObject().put("foo", "bar");
     collection.publishMessage(message, listener);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "realtime");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "publish");
   }

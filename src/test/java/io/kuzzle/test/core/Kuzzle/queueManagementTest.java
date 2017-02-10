@@ -10,12 +10,12 @@ import org.mockito.stubbing.Answer;
 import java.net.URISyntaxException;
 import java.util.Date;
 
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.state.KuzzleStates;
-import io.kuzzle.sdk.util.KuzzleQueryObject;
+import io.kuzzle.sdk.state.States;
+import io.kuzzle.sdk.util.QueryObject;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.QueryArgsHelper;
 import io.socket.client.Socket;
@@ -33,11 +33,11 @@ import static org.mockito.Mockito.verify;
 public class queueManagementTest {
   private KuzzleExtend kuzzle;
   private Socket s;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
@@ -45,7 +45,7 @@ public class queueManagementTest {
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
 
-    listener = new KuzzleResponseListener<Object>() {
+    listener = new ResponseListener<Object>() {
       @Override
       public void onSuccess(Object object) {
 
@@ -60,7 +60,7 @@ public class queueManagementTest {
 
   @Test
   public void testFlushQueue() throws URISyntaxException, JSONException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setQueueTTL(1);
     options.setAutoReplay(true);
     options.setConnect(Mode.MANUAL);
@@ -68,7 +68,7 @@ public class queueManagementTest {
     options.setOfflineMode(Mode.AUTO);
 
     kuzzle = new KuzzleExtend("localhost", options, null);
-    KuzzleQueryObject o = new KuzzleQueryObject();
+    QueryObject o = new QueryObject();
     o.setTimestamp(new Date());
     o.setAction("test");
     o.setQuery(new JSONObject("{\"controller\":\"test\",\"metadata\":{},\"requestId\":\"a476ae61-497e-4338-b4dd-751ac22c6b61\",\"action\":\"test\",\"collection\":\"test\"}"));
@@ -82,7 +82,7 @@ public class queueManagementTest {
 
   @Test
   public void testManualQueuing() throws URISyntaxException, JSONException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setAutoReconnect(true);
     options.setAutoQueue(false);
     options.setDefaultIndex("testIndex");
@@ -91,7 +91,7 @@ public class queueManagementTest {
     options.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", options, null);
     extended.setSocket(s);
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
 
     doAnswer(new Answer() {
       @Override
@@ -122,22 +122,22 @@ public class queueManagementTest {
         return s;
       }
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setAutoReconnect(false);
     options.setDefaultIndex("testIndex");
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.connect();
-    kuzzle.listCollections(mock(KuzzleResponseListener.class));
+    kuzzle.listCollections(mock(ResponseListener.class));
     assertEquals(kuzzle.getOfflineQueue().size(), 1);
     kuzzle.flushQueue();
     options.setQueuable(false);
-    kuzzle.listCollections(options, mock(KuzzleResponseListener.class));
+    kuzzle.listCollections(options, mock(ResponseListener.class));
     assertEquals(kuzzle.getOfflineQueue().size(), 0);
   }
 
   @Test
   public void testQueueMaxSize() throws URISyntaxException, JSONException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setAutoReconnect(true);
     options.setAutoQueue(true);
     options.setQueueTTL(1000);
@@ -167,7 +167,7 @@ public class queueManagementTest {
 
   @Test
   public void testDequeue() throws URISyntaxException, JSONException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setAutoReconnect(true);
     options.setQueueTTL(10000);
     options.setAutoReplay(true);
@@ -186,7 +186,7 @@ public class queueManagementTest {
     }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
     kuzzle.connect();
 
-    KuzzleQueryObject o = new KuzzleQueryObject();
+    QueryObject o = new QueryObject();
     o.setTimestamp(new Date());
     o.setAction("test");
 

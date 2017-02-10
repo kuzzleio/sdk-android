@@ -9,14 +9,14 @@ import org.mockito.stubbing.Answer;
 
 import java.net.URISyntaxException;
 
+import io.kuzzle.sdk.core.Collection;
+import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
-import io.kuzzle.sdk.core.KuzzleDocument;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
 
@@ -32,22 +32,22 @@ import static org.mockito.Mockito.when;
 
 public class updateDocumentTest {
   private Kuzzle kuzzle;
-  private KuzzleDataCollection collection;
-  private KuzzleResponseListener listener;
+  private Collection collection;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
 
     kuzzle = spy(extended);
     when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
-    collection = new KuzzleDataCollection(kuzzle, "test", "index");
-    listener = mock(KuzzleResponseListener.class);
+    collection = new Collection(kuzzle, "test", "index");
+    listener = mock(ResponseListener.class);
   }
 
   @Test
@@ -57,10 +57,10 @@ public class updateDocumentTest {
     collection = spy(collection);
 
     collection.updateDocument(id, content);
-    collection.updateDocument(id, content, mock(KuzzleOptions.class));
+    collection.updateDocument(id, content, mock(Options.class));
     collection.updateDocument(id, content, listener);
 
-    verify(collection, times(3)).updateDocument(any(String.class), any(JSONObject.class), any(KuzzleOptions.class), any(KuzzleResponseListener.class));
+    verify(collection, times(3)).updateDocument(any(String.class), any(JSONObject.class), any(Options.class), any(ResponseListener.class));
   }
 
 
@@ -76,7 +76,7 @@ public class updateDocumentTest {
 
   @Test(expected = RuntimeException.class)
   public void testupdateDocumentQueryException() throws JSONException {
-    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     collection.updateDocument("id", mock(JSONObject.class), listener);
   }
 
@@ -88,7 +88,7 @@ public class updateDocumentTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject()));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     doThrow(JSONException.class).when(listener).onSuccess(any(String.class));
     collection.updateDocument("id", mock(JSONObject.class), listener);
   }
@@ -110,14 +110,14 @@ public class updateDocumentTest {
         }
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    KuzzleDocument doc = new KuzzleDocument(collection);
+    Document doc = new Document(collection);
     collection.updateDocument("42", doc.serialize());
-    collection.updateDocument("42", doc.serialize(), new KuzzleOptions());
-    collection.updateDocument("42", doc.serialize(), new KuzzleResponseListener<KuzzleDocument>() {
+    collection.updateDocument("42", doc.serialize(), new Options());
+    collection.updateDocument("42", doc.serialize(), new ResponseListener<Document>() {
       @Override
-      public void onSuccess(KuzzleDocument document) {
+      public void onSuccess(Document document) {
         assertEquals(document.getId(), "42");
         assertEquals(document.getVersion(), 1337);
       }
@@ -127,9 +127,9 @@ public class updateDocumentTest {
 
       }
     });
-    collection.updateDocument("42", doc.serialize(), new KuzzleOptions(), new KuzzleResponseListener<KuzzleDocument>() {
+    collection.updateDocument("42", doc.serialize(), new Options(), new ResponseListener<Document>() {
       @Override
-      public void onSuccess(KuzzleDocument document) {
+      public void onSuccess(Document document) {
         assertEquals(document.getId(), "42");
       }
 
@@ -138,6 +138,6 @@ public class updateDocumentTest {
 
       }
     });
-    verify(kuzzle, times(6)).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(6)).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
   }
 }

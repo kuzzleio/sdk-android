@@ -10,18 +10,18 @@ import org.mockito.stubbing.Answer;
 import java.net.URISyntaxException;
 import java.util.Date;
 
+import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.core.KuzzleRoomOptions;
-import io.kuzzle.sdk.enums.KuzzleEvent;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.core.RoomOptions;
+import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.IKuzzleEventListener;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.EventListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
-import io.kuzzle.test.testUtils.KuzzleRoomExtend;
+import io.kuzzle.test.testUtils.RoomExtend;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
@@ -36,11 +36,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class notificationHandlerTest {
-  private KuzzleResponseListener listener = mock(KuzzleResponseListener.class);
+  private ResponseListener listener = mock(ResponseListener.class);
   private JSONObject mockNotif = new JSONObject();
   private JSONObject  mockResponse = new JSONObject();
   private Kuzzle k;
-  private KuzzleRoomExtend room;
+  private RoomExtend room;
 
   @Before
   public void setUp() throws JSONException {
@@ -58,22 +58,22 @@ public class notificationHandlerTest {
     mockResponse.put("result", new JSONObject().put("channel", "channel").put("roomId", "42"));
     k = mock(Kuzzle.class);
     when(k.getHeaders()).thenReturn(new JSONObject());
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test", "index"));
+    room = new RoomExtend(new Collection(k, "test", "index"));
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testCallAfterRenewWithNoResponse() {
-    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test", "index"));
+    RoomExtend renew = new RoomExtend(new Collection(k, "test", "index"));
     // Should throw an exception
     renew.callAfterRenew(null);
   }
 
   @Test
   public void testCallAfterRenewWithError() throws JSONException {
-    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test", "index"));
+    RoomExtend renew = new RoomExtend(new Collection(k, "test", "index"));
     JSONObject errorResponse = new JSONObject();
     errorResponse.put("error", "error");
-    KuzzleResponseListener listener = mock(KuzzleResponseListener.class);
+    ResponseListener listener = mock(ResponseListener.class);
     renew.setListener(listener);
     renew.callAfterRenew(errorResponse);
     verify(listener, atLeastOnce()).onError(any(JSONObject.class));
@@ -81,7 +81,7 @@ public class notificationHandlerTest {
 
   @Test
   public void testCallAfterRenew() throws JSONException {
-    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test", "index"));
+    RoomExtend renew = new RoomExtend(new Collection(k, "test", "index"));
     renew.setListener(listener);
     JSONObject mockResponse = new JSONObject().put("result", new JSONObject());
     mockResponse.put("requestId", "42");
@@ -90,16 +90,16 @@ public class notificationHandlerTest {
 
   @Test
   public void testCallAfterRenewWithSubscribeToSelf() throws JSONException, URISyntaxException {
-    KuzzleRoomOptions options = new KuzzleRoomOptions();
+    RoomOptions options = new RoomOptions();
     options.setSubscribeToSelf(true);
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     Socket s = mock(Socket.class);
     extended.setSocket(s);
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
     extended = spy(extended);
-    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "test", "index"), options);
+    RoomExtend renew = new RoomExtend(new Collection(extended, "test", "index"), options);
     renew.setListener(listener);
     extended.getRequestHistory().put("42", new Date());
     renew.callAfterRenew(mockNotif);
@@ -108,14 +108,14 @@ public class notificationHandlerTest {
 
   @Test
   public void testRenewOn() throws JSONException, URISyntaxException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     Socket s = mock(Socket.class);
     extended.setSocket(s);
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
     extended = spy(extended);
-    room = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "collection", "index"));
+    room = new RoomExtend(new Collection(extended, "collection", "index"));
     room.setRoomId("foobar");
     room = spy(room);
     doAnswer(new Answer() {
@@ -129,7 +129,7 @@ public class notificationHandlerTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject());
         return null;
       }
-    }).when(extended).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(extended).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -146,15 +146,15 @@ public class notificationHandlerTest {
   @Test
   public void testJwtTokenExpiredNotification() throws JSONException, URISyntaxException {
     k = new Kuzzle("localhost");
-    IKuzzleEventListener listener = spy(new IKuzzleEventListener() {
+    EventListener listener = spy(new EventListener() {
       @Override
       public void trigger(Object... args) {
 
       }
     });
-    k.addListener(KuzzleEvent.jwtTokenExpired, listener);
-    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(k, "test", "index"));
-    renew.setListener(mock(KuzzleResponseListener.class));
+    k.addListener(Event.jwtTokenExpired, listener);
+    RoomExtend renew = new RoomExtend(new Collection(k, "test", "index"));
+    renew.setListener(mock(ResponseListener.class));
     JSONObject mockResponse = new JSONObject().put("result", new JSONObject());
     mockResponse.put("requestId", "42");
     mockNotif.put("action", "jwtTokenExpired");
@@ -164,15 +164,15 @@ public class notificationHandlerTest {
 
   @Test(expected = RuntimeException.class)
   public void testCallAfterRenewException() throws URISyntaxException, JSONException {
-    KuzzleRoomOptions options = new KuzzleRoomOptions();
-    KuzzleOptions opts = new KuzzleOptions();
+    RoomOptions options = new RoomOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     Socket s = mock(Socket.class);
     extended.setSocket(s);
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
     extended = spy(extended);
-    KuzzleRoomExtend renew = new KuzzleRoomExtend(new KuzzleDataCollection(extended, "test", "index"), options);
+    RoomExtend renew = new RoomExtend(new Collection(extended, "test", "index"), options);
     mockNotif = spy(mockNotif);
     doThrow(JSONException.class).when(mockNotif).isNull(any(String.class));
     renew.setListener(listener);

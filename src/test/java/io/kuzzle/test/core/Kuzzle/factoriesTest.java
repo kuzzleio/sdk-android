@@ -6,9 +6,9 @@ import org.junit.Test;
 
 import java.net.URISyntaxException;
 
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
 
@@ -18,11 +18,11 @@ import static org.mockito.Mockito.mock;
 public class factoriesTest {
   private KuzzleExtend kuzzle;
   private Socket s;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
@@ -30,7 +30,7 @@ public class factoriesTest {
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
 
-    listener = new KuzzleResponseListener<Object>() {
+    listener = new ResponseListener<Object>() {
       @Override
       public void onSuccess(Object object) {
 
@@ -45,19 +45,19 @@ public class factoriesTest {
 
   @Test
   public void testDataCollectionFactory() {
-    assertEquals(kuzzle.dataCollectionFactory("test").getCollection(), "test");
-    assertEquals(kuzzle.dataCollectionFactory("test2").getCollection(), "test2");
+    assertEquals(kuzzle.collection("test").getCollection(), "test");
+    assertEquals(kuzzle.collection("test2").getCollection(), "test2");
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testIllegalDefaultIndex() {
     kuzzle.setSuperDefaultIndex(null);
-    kuzzle.dataCollectionFactory("foo");
+    kuzzle.collection("foo");
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testIllegalIndex() {
     kuzzle.setSuperDefaultIndex(null);
-    kuzzle.dataCollectionFactory("collection", null);
+    kuzzle.collection("collection", null);
   }
 }

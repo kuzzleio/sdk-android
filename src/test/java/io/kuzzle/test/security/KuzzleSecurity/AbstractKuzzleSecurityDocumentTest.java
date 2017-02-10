@@ -9,12 +9,12 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.security.AbstractKuzzleSecurityDocument;
-import io.kuzzle.sdk.security.KuzzleRole;
-import io.kuzzle.sdk.security.KuzzleSecurity;
+import io.kuzzle.sdk.security.AbstractSecurityDocument;
+import io.kuzzle.sdk.security.Role;
+import io.kuzzle.sdk.security.Security;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
@@ -29,15 +29,15 @@ import static org.mockito.Mockito.verify;
 
 public class AbstractKuzzleSecurityDocumentTest {
   private Kuzzle kuzzle;
-  private KuzzleRole stubRole;
-  private KuzzleResponseListener listener;
+  private Role stubRole;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
-    kuzzle.security = new KuzzleSecurity(kuzzle);
-    listener = mock(KuzzleResponseListener.class);
-    stubRole = new KuzzleRole(kuzzle, "foo", new JSONObject("{\"foo\":\"bar\"}"));
+    kuzzle.security = new Security(kuzzle);
+    listener = mock(ResponseListener.class);
+    stubRole = new Role(kuzzle, "foo", new JSONObject("{\"foo\":\"bar\"}"));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -71,7 +71,7 @@ public class AbstractKuzzleSecurityDocumentTest {
   public void testDeleteNoListener() throws JSONException {
     stubRole.delete();
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class));
+    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "deleteRole");
   }
@@ -87,9 +87,9 @@ public class AbstractKuzzleSecurityDocumentTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    stubRole.delete(new KuzzleResponseListener<String>() {
+    stubRole.delete(new ResponseListener<String>() {
       @Override
       public void onSuccess(String response) {
         assertEquals(response, "foo");
@@ -105,11 +105,11 @@ public class AbstractKuzzleSecurityDocumentTest {
       }
     });
     stubRole.delete();
-    stubRole.delete(mock(KuzzleOptions.class));
+    stubRole.delete(mock(Options.class));
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
-    verify(kuzzle, times(2)).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class));
+    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(2)).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class));
 
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "deleteRole");
@@ -124,7 +124,7 @@ public class AbstractKuzzleSecurityDocumentTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(content);
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
     stubRole.delete(listener);
   }
@@ -142,11 +142,11 @@ public class AbstractKuzzleSecurityDocumentTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    stubRole.update(content, new KuzzleResponseListener<AbstractKuzzleSecurityDocument>() {
+    stubRole.update(content, new ResponseListener<AbstractSecurityDocument>() {
       @Override
-      public void onSuccess(AbstractKuzzleSecurityDocument response) {
+      public void onSuccess(AbstractSecurityDocument response) {
         assertEquals(response.getId(), "foo");
       }
 
@@ -160,9 +160,9 @@ public class AbstractKuzzleSecurityDocumentTest {
       }
     });
     stubRole.update(content);
-    stubRole.update(content, mock(KuzzleOptions.class));
-    verify(kuzzle, times(2)).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class));
-    verify(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    stubRole.update(content, mock(Options.class));
+    verify(kuzzle, times(2)).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class));
+    verify(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
   }
 
   @Test(expected = RuntimeException.class)
@@ -174,7 +174,7 @@ public class AbstractKuzzleSecurityDocumentTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(content);
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
     stubRole.update(new JSONObject(), listener);
   }

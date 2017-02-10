@@ -11,13 +11,13 @@ import org.mockito.stubbing.Answer;
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Collection;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.responses.KuzzleDocumentList;
-import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.responses.DocumentList;
+import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
 
@@ -34,28 +34,28 @@ import static org.mockito.Mockito.when;
 
 public class searchTest {
   private Kuzzle kuzzle;
-  private KuzzleDataCollection collection;
-  private KuzzleResponseListener listener;
+  private Collection collection;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
     kuzzle = spy(extended);
     when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
-    collection = new KuzzleDataCollection(kuzzle, "test", "index");
-    listener = mock(KuzzleResponseListener.class);
+    collection = new Collection(kuzzle, "test", "index");
+    listener = mock(ResponseListener.class);
   }
 
   @Test
   public void checkSignaturesVariants() {
     collection = spy(collection);
     collection.search(new JSONObject(), listener);
-    verify(collection).search(any(JSONObject.class), eq((KuzzleOptions)null), eq(listener));
+    verify(collection).search(any(JSONObject.class), eq((Options)null), eq(listener));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -65,7 +65,7 @@ public class searchTest {
 
   @Test(expected = RuntimeException.class)
   public void testSearchQueryException() throws JSONException {
-    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     collection.search(null, listener);
   }
 
@@ -77,7 +77,7 @@ public class searchTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("count", 42)));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     doThrow(JSONException.class).when(listener).onSuccess(any(Integer.class));
     collection.search(null, listener);
   }
@@ -137,11 +137,11 @@ public class searchTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject());
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    collection.search(filters, null, new KuzzleResponseListener<KuzzleDocumentList>() {
+    collection.search(filters, null, new ResponseListener<DocumentList>() {
       @Override
-      public void onSuccess(KuzzleDocumentList result) {
+      public void onSuccess(DocumentList result) {
         assertEquals(result.getTotal(), 2);
         try {
           assertEquals(result.getDocuments().get(1).getContent("sibling"), "none");
@@ -154,9 +154,9 @@ public class searchTest {
       public void onError(JSONObject error) {
       }
     });
-    collection.search(filters, mock(KuzzleResponseListener.class));
+    collection.search(filters, mock(ResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "search");
   }
@@ -236,11 +236,11 @@ public class searchTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject());
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    collection.search(filters, null, new KuzzleResponseListener<KuzzleDocumentList>() {
+    collection.search(filters, null, new ResponseListener<DocumentList>() {
       @Override
-      public void onSuccess(KuzzleDocumentList result) {
+      public void onSuccess(DocumentList result) {
         assertEquals(result.getTotal(), 2);
         try {
           assertEquals(result.getAggregations().getJSONObject("aggs_name").getJSONArray("buckets").getJSONObject(0).getString("key"), "i");
@@ -258,9 +258,9 @@ public class searchTest {
       public void onError(JSONObject error) {
       }
     });
-    collection.search(filters, mock(KuzzleResponseListener.class));
+    collection.search(filters, mock(ResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "search");
   }

@@ -11,13 +11,13 @@ import org.mockito.stubbing.Answer;
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.KuzzleQueue;
-import io.kuzzle.sdk.state.KuzzleStates;
-import io.kuzzle.sdk.util.KuzzleOfflineQueueLoader;
-import io.kuzzle.sdk.util.KuzzleQueryObject;
+import io.kuzzle.sdk.state.States;
+import io.kuzzle.sdk.util.OfflineQueueLoader;
+import io.kuzzle.sdk.util.QueryObject;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -38,7 +38,7 @@ public class offlineQueueLoaderTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     s = mock(Socket.class);
     KuzzleExtend extended = new KuzzleExtend("localhost", options, null);
@@ -65,19 +65,19 @@ public class offlineQueueLoaderTest {
     kuzzleExtend.setAutoReplay(true);
     mockAnswer(Socket.EVENT_RECONNECT);
 
-    KuzzleOptions opts = new KuzzleOptions().setQueuable(true);
-    kuzzleExtend.setState(KuzzleStates.OFFLINE);
+    Options opts = new Options().setQueuable(true);
+    kuzzleExtend.setState(States.OFFLINE);
     kuzzleExtend.startQueuing();
 
     Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
     args.action = "bar";
     kuzzleExtend.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
 
-    KuzzleOfflineQueueLoader offlineQueueLoader = new KuzzleOfflineQueueLoader() {
+    OfflineQueueLoader offlineQueueLoader = new OfflineQueueLoader() {
       @Override
-      public KuzzleQueue<KuzzleQueryObject> load() {
-        KuzzleQueue<KuzzleQueryObject> queue = new KuzzleQueue();
-        KuzzleQueryObject query = new KuzzleQueryObject();
+      public KuzzleQueue<QueryObject> load() {
+        KuzzleQueue<QueryObject> queue = new KuzzleQueue();
+        QueryObject query = new QueryObject();
         try {
           query.setQuery(new JSONObject().put("action", "foo").put("requestId", "42").put("controller", "ctrl"));
         } catch (JSONException e) {
@@ -104,19 +104,19 @@ public class offlineQueueLoaderTest {
     kuzzleExtend.setAutoReplay(true);
     mockAnswer(Socket.EVENT_RECONNECT);
 
-    KuzzleOptions opts = new KuzzleOptions().setQueuable(true);
-    kuzzleExtend.setState(KuzzleStates.OFFLINE);
+    Options opts = new Options().setQueuable(true);
+    kuzzleExtend.setState(States.OFFLINE);
     kuzzleExtend.startQueuing();
 
     Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
     args.action = "bar";
     kuzzleExtend.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
 
-    KuzzleOfflineQueueLoader offlineQueueLoader = new KuzzleOfflineQueueLoader() {
+    OfflineQueueLoader offlineQueueLoader = new OfflineQueueLoader() {
       @Override
-      public KuzzleQueue<KuzzleQueryObject> load() {
-        KuzzleQueue<KuzzleQueryObject> queue = new KuzzleQueue();
-        KuzzleQueryObject query = new KuzzleQueryObject();
+      public KuzzleQueue<QueryObject> load() {
+        KuzzleQueue<QueryObject> queue = new KuzzleQueue();
+        QueryObject query = new QueryObject();
         try {
           query.setQuery(new JSONObject().put("action", "foo").put("controller", "ctrl"));
         } catch (JSONException e) {
@@ -138,19 +138,19 @@ public class offlineQueueLoaderTest {
     kuzzleExtend.setAutoReplay(true);
     mockAnswer(Socket.EVENT_RECONNECT);
 
-    KuzzleOptions opts = new KuzzleOptions().setQueuable(true);
-    kuzzleExtend.setState(KuzzleStates.OFFLINE);
+    Options opts = new Options().setQueuable(true);
+    kuzzleExtend.setState(States.OFFLINE);
     kuzzleExtend.startQueuing();
 
     Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
     args.action = "bar";
     kuzzleExtend.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
 
-    KuzzleOfflineQueueLoader offlineQueueLoader = new KuzzleOfflineQueueLoader() {
+    OfflineQueueLoader offlineQueueLoader = new OfflineQueueLoader() {
       @Override
-      public KuzzleQueue<KuzzleQueryObject> load() {
-        KuzzleQueue<KuzzleQueryObject> queue = new KuzzleQueue();
-        KuzzleQueryObject query = new KuzzleQueryObject();
+      public KuzzleQueue<QueryObject> load() {
+        KuzzleQueue<QueryObject> queue = new KuzzleQueue();
+        QueryObject query = new QueryObject();
         try {
           query.setQuery(new JSONObject().put("action", "foo").put("requestId", "42"));
         } catch (JSONException e) {
@@ -172,19 +172,19 @@ public class offlineQueueLoaderTest {
     kuzzleExtend.setAutoReplay(true);
     mockAnswer(Socket.EVENT_RECONNECT);
 
-    KuzzleOptions opts = new KuzzleOptions().setQueuable(true);
-    kuzzleExtend.setState(KuzzleStates.OFFLINE);
+    Options opts = new Options().setQueuable(true);
+    kuzzleExtend.setState(States.OFFLINE);
     kuzzleExtend.startQueuing();
 
     Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
     args.action = "bar";
     kuzzleExtend.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
 
-    KuzzleOfflineQueueLoader offlineQueueLoader = new KuzzleOfflineQueueLoader() {
+    OfflineQueueLoader offlineQueueLoader = new OfflineQueueLoader() {
       @Override
-      public KuzzleQueue<KuzzleQueryObject> load() {
-        KuzzleQueue<KuzzleQueryObject> queue = new KuzzleQueue();
-        KuzzleQueryObject query = new KuzzleQueryObject();
+      public KuzzleQueue<QueryObject> load() {
+        KuzzleQueue<QueryObject> queue = new KuzzleQueue();
+        QueryObject query = new QueryObject();
         try {
           query.setQuery(new JSONObject().put("requestId", "42").put("controller", "ctrl"));
         } catch (JSONException e) {
@@ -206,19 +206,19 @@ public class offlineQueueLoaderTest {
     kuzzleExtend.setAutoReplay(true);
     mockAnswer(Socket.EVENT_RECONNECT);
 
-    KuzzleOptions opts = new KuzzleOptions().setQueuable(true);
-    kuzzleExtend.setState(KuzzleStates.OFFLINE);
+    Options opts = new Options().setQueuable(true);
+    kuzzleExtend.setState(States.OFFLINE);
     kuzzleExtend.startQueuing();
 
     Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
     args.action = "bar";
     kuzzleExtend.query(args, new JSONObject().put("requestId", "42"), opts, mock(OnQueryDoneListener.class));
 
-    KuzzleOfflineQueueLoader offlineQueueLoader = new KuzzleOfflineQueueLoader() {
+    OfflineQueueLoader offlineQueueLoader = new OfflineQueueLoader() {
       @Override
-      public KuzzleQueue<KuzzleQueryObject> load() {
-        KuzzleQueue<KuzzleQueryObject> queue = new KuzzleQueue();
-        KuzzleQueryObject query = new KuzzleQueryObject();
+      public KuzzleQueue<QueryObject> load() {
+        KuzzleQueue<QueryObject> queue = new KuzzleQueue();
+        QueryObject query = new QueryObject();
         try {
           query.setQuery(new JSONObject().put("action", "foo").put("requestId", "42").put("controller", "ctrl"));
         } catch (JSONException e) {

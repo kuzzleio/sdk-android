@@ -17,7 +17,7 @@ import io.kuzzle.sdk.util.memoryStorage.ObjectCommand;
 import io.kuzzle.sdk.util.memoryStorage.Position;
 import io.kuzzle.sdk.util.memoryStorage.SetParams;
 import io.kuzzle.sdk.util.memoryStorage.ZParams;
-import io.kuzzle.test.testUtils.KuzzleMemoryStorageExtend;
+import io.kuzzle.test.testUtils.MemoryStorageExtend;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -30,13 +30,13 @@ import static org.mockito.Mockito.verify;
 public class methodsTest {
 
   Kuzzle kuzzle;
-  KuzzleMemoryStorageExtend ms;
+  MemoryStorageExtend ms;
   ArgumentCaptor argument;
 
   @Before
   public void setUp() {
     kuzzle = mock(Kuzzle.class);
-    ms = spy(new KuzzleMemoryStorageExtend(kuzzle));
+    ms = spy(new MemoryStorageExtend(kuzzle));
     argument = ArgumentCaptor.forClass(KuzzleJSONObject.class);
   }
 

@@ -9,11 +9,11 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.security.KuzzleSecurity;
-import io.kuzzle.sdk.security.KuzzleUser;
+import io.kuzzle.sdk.security.Security;
+import io.kuzzle.sdk.security.User;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -24,24 +24,24 @@ import static org.mockito.Mockito.verify;
 
 public class getUserTest {
   private Kuzzle kuzzle;
-  private KuzzleSecurity kuzzleSecurity;
-  private KuzzleResponseListener listener;
+  private Security kuzzleSecurity;
+  private ResponseListener listener;
 
   @Before
   public void setUp() {
     kuzzle = mock(Kuzzle.class);
-    kuzzleSecurity = new KuzzleSecurity(kuzzle);
-    listener = mock(KuzzleResponseListener.class);
+    kuzzleSecurity = new Security(kuzzle);
+    listener = mock(ResponseListener.class);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetUserNoID() throws JSONException {
-    kuzzleSecurity.getUser(null, new KuzzleOptions(), listener);
+    kuzzleSecurity.fetchUser(null, new Options(), listener);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetUserNoListener() throws JSONException {
-    kuzzleSecurity.getUser("foo", null);
+    kuzzleSecurity.fetchUser("foo", null);
   }
 
   @Test
@@ -61,11 +61,11 @@ public class getUserTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.getUser("foobar", new KuzzleResponseListener<KuzzleUser>() {
+    kuzzleSecurity.fetchUser("foobar", new ResponseListener<User>() {
       @Override
-      public void onSuccess(KuzzleUser response) {
+      public void onSuccess(User response) {
         assertEquals(response.id, "foobar");
       }
 
@@ -80,9 +80,9 @@ public class getUserTest {
     });
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "getUser");
+    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "fetchUser");
   }
 
   @Test(expected = RuntimeException.class)
@@ -95,8 +95,8 @@ public class getUserTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.getUser("foobar", listener);
+    kuzzleSecurity.fetchUser("foobar", listener);
   }
 }

@@ -3,7 +3,7 @@ apply plugin: 'jacoco-android'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'com.github.dcendents.android-maven'
 
-version = "2.1.0"
+version = "2.2.0"
 
 buildscript {
     repositories {
@@ -12,7 +12,7 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:2.1.2'
-        classpath 'com.dicedmelon.gradle:jacoco-android:0.1.0'
+        classpath 'com.dicedmelon.gradle:jacoco-android:0.1.1'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
     }
@@ -27,7 +27,7 @@ android {
     buildToolsVersion '23.0.2'
     defaultConfig {
         minSdkVersion 10
-        targetSdkVersion 10
+        targetSdkVersion 23
         versionCode 1
         versionName version
     }
@@ -55,7 +55,8 @@ repositories {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:21+'
+    // Temporary using v21, until Travis supports v23+
+    compile 'com.android.support:appcompat-v7:21.+'
     compile 'io.socket:socket.io-client:0.6.2'
     testCompile 'junit:junit:4.12'
     testCompile 'org.hamcrest:hamcrest-junit:2.0.0.0'
@@ -63,7 +64,7 @@ dependencies {
     // for not mocking JSONObject
     testCompile files('libs-test/json-20140107.jar')
     androidTestCompile 'junit:junit:4.12'
-    compile 'com.android.support:support-annotations:22.2.0'
+    compile 'com.android.support:support-annotations:21.0.1'
     javadocDeps 'com.android.support:support-annotations:22.2.0'
 }
 
@@ -161,9 +162,6 @@ artifacts {
 }
 
 // Bintray
-Properties properties = new Properties()
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
-
 bintray {
     user = System.getenv("bintray_user")
     key = System.getenv("bintray_apikey")

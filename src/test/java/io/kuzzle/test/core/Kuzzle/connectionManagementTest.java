@@ -13,18 +13,18 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
-import io.kuzzle.sdk.core.KuzzleOptions;
-import io.kuzzle.sdk.core.KuzzleRoom;
-import io.kuzzle.sdk.enums.KuzzleEvent;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.core.Room;
+import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.IKuzzleEventListener;
-import io.kuzzle.sdk.listeners.KuzzleResponseListener;
+import io.kuzzle.sdk.listeners.EventListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.responses.KuzzleTokenValidity;
-import io.kuzzle.sdk.state.KuzzleStates;
-import io.kuzzle.sdk.util.KuzzleQueryObject;
+import io.kuzzle.sdk.responses.TokenValidity;
+import io.kuzzle.sdk.state.States;
+import io.kuzzle.sdk.util.QueryObject;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -46,16 +46,16 @@ import static org.mockito.Mockito.verify;
 public class connectionManagementTest {
   private KuzzleExtend kuzzle;
   private Socket s;
-  private KuzzleResponseListener listener;
+  private ResponseListener listener;
 
   @Before
   public void setUp() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
     s = mock(Socket.class);
-    listener = new KuzzleResponseListener<Object>() {
+    listener = new ResponseListener<Object>() {
       @Override
       public void onSuccess(Object object) {
 
@@ -72,7 +72,7 @@ public class connectionManagementTest {
 
   @Test
   public void testMaxTTLWithReconnectListener() throws JSONException, URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setQueueTTL(1);
     options.setReplayInterval(1);
     options.setAutoReplay(true);
@@ -80,7 +80,7 @@ public class connectionManagementTest {
     options.setOfflineMode(Mode.AUTO);
     options.setAutoReconnect(true);
 
-    KuzzleQueryObject o = new KuzzleQueryObject();
+    QueryObject o = new QueryObject();
     o.setTimestamp(new Date());
     o.setAction("test");
     JSONObject query = new JSONObject("{\"controller\":\"test3\",\"metadata\":{},\"requestId\":\"a476ae61-497e-4338-b4dd-751ac22c6b61\",\"action\":\"test3\",\"collection\":\"test3\"}");
@@ -107,15 +107,15 @@ public class connectionManagementTest {
     kuzzle.connect();
     kuzzle.setOfflineQueue(o);
 
-    IKuzzleEventListener listener = mock(IKuzzleEventListener.class);
-    kuzzle.addListener(KuzzleEvent.reconnected, listener);
+    EventListener listener = mock(EventListener.class);
+    kuzzle.addListener(Event.reconnected, listener);
     kuzzle.connect();
     verify(listener, times(1)).trigger();
   }
 
   @Test
   public void testRenewSubscriptionsAfterReconnection() throws URISyntaxException, JSONException, InterruptedException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setAutoReconnect(true);
     options.setQueueTTL(1);
     options.setAutoReplay(true);
@@ -124,18 +124,18 @@ public class connectionManagementTest {
     options.setOfflineMode(Mode.AUTO);
     KuzzleExtend extended = new KuzzleExtend("localhost", options, null);
     extended.setSocket(s);
-    extended.setState(KuzzleStates.INITIALIZING);
+    extended.setState(States.INITIALIZING);
     final Kuzzle kuzzleSpy = spy(extended);
 
-    KuzzleRoom
-      room1 = new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "test", "index")),
-      room2 = new KuzzleRoom(new KuzzleDataCollection(kuzzleSpy, "test2", "index"));
+    Room
+      room1 = new Room(new Collection(kuzzleSpy, "test", "index")),
+      room2 = new Room(new Collection(kuzzleSpy, "test2", "index"));
 
     room1.renew(listener);
     room2.renew(listener);
 
-    Map<String, ConcurrentHashMap<String, KuzzleRoom>> subscriptions = kuzzle.getSubscriptions();
-    subscriptions.put("room", new ConcurrentHashMap<String, KuzzleRoom>());
+    Map<String, ConcurrentHashMap<String, Room>> subscriptions = kuzzle.getSubscriptions();
+    subscriptions.put("room", new ConcurrentHashMap<String, Room>());
     subscriptions.get("room").put("42", room1);
     subscriptions.get("room").put("43", room2);
 
@@ -159,14 +159,14 @@ public class connectionManagementTest {
 
     Thread.sleep(2);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzleSpy, atLeastOnce()).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(KuzzleOptions.class), any(OnQueryDoneListener.class));
+    verify(kuzzleSpy, atLeastOnce()).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "realtime");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "subscribe");
   }
 
   @Test
   public void testAutoReconnect() throws URISyntaxException {
-    KuzzleOptions options = new KuzzleOptions();
+    Options options = new Options();
     options.setConnect(Mode.MANUAL);
     options.setAutoReconnect(false);
 
@@ -192,7 +192,7 @@ public class connectionManagementTest {
   @Test
   public void testConnectNotValid() throws URISyntaxException {
     listener = spy(listener);
-    kuzzle.setState(KuzzleStates.LOGGED_OUT);
+    kuzzle.setState(States.LOGGED_OUT);
     kuzzle.setListener(listener);
     kuzzle = spy(kuzzle);
     kuzzle.connect();
@@ -229,7 +229,7 @@ public class connectionManagementTest {
       }
     }).when(s).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
     kuzzle = spy(kuzzle);
-    KuzzleResponseListener<Void> fake = kuzzle.spyAndGetConnectionCallback();
+    ResponseListener<Void> fake = kuzzle.spyAndGetConnectionCallback();
     doReturn(true).when(kuzzle).isValidState();
     kuzzle.connect();
     verify(s).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
@@ -238,7 +238,7 @@ public class connectionManagementTest {
 
   @Test
   public void testDisconnect() {
-    kuzzle.setState(KuzzleStates.CONNECTED);
+    kuzzle.setState(States.CONNECTED);
     assertNotNull(kuzzle.getSocket());
     kuzzle.disconnect();
     assertNull(kuzzle.getSocket());
@@ -263,15 +263,15 @@ public class connectionManagementTest {
     }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
     kuzzle = spy(kuzzle);
     kuzzle.setJwtToken("foo");
-    KuzzleTokenValidity tokenValidity = spy(new KuzzleTokenValidity());
+    TokenValidity tokenValidity = spy(new TokenValidity());
     doReturn(false).when(tokenValidity).isValid();
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((KuzzleResponseListener) invocation.getArguments()[1]).onSuccess(mock(KuzzleTokenValidity.class));
+        ((ResponseListener) invocation.getArguments()[1]).onSuccess(mock(TokenValidity.class));
         return null;
       }
-    }).when(kuzzle).checkToken(eq("foo"), any(KuzzleResponseListener.class));
+    }).when(kuzzle).checkToken(eq("foo"), any(ResponseListener.class));
     kuzzle.connect();
     assertNull(kuzzle.getJwtToken());
     doReturn(true).when(tokenValidity).isValid();
@@ -296,10 +296,10 @@ public class connectionManagementTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((KuzzleResponseListener) invocation.getArguments()[1]).onError(mock(JSONObject.class));
+        ((ResponseListener) invocation.getArguments()[1]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzle).checkToken(eq("foo"), any(KuzzleResponseListener.class));
+    }).when(kuzzle).checkToken(eq("foo"), any(ResponseListener.class));
     kuzzle.connect();
     assertNull(kuzzle.getJwtToken());
   }

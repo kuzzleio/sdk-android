@@ -7,12 +7,12 @@ import org.junit.Test;
 
 import java.net.URISyntaxException;
 
+import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.KuzzleDataCollection;
-import io.kuzzle.sdk.core.KuzzleDocument;
-import io.kuzzle.sdk.core.KuzzleOptions;
+import io.kuzzle.sdk.core.Document;
+import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.state.KuzzleStates;
+import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 
 import static junit.framework.Assert.assertEquals;
@@ -23,16 +23,16 @@ import static org.mockito.Mockito.spy;
 public class serializeTest {
 
   private Kuzzle k;
-  private KuzzleDocument doc;
+  private Document doc;
 
   @Before
   public void setUp() throws URISyntaxException, JSONException {
-    KuzzleOptions opts = new KuzzleOptions();
+    Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
-    extended.setState(KuzzleStates.CONNECTED);
+    extended.setState(States.CONNECTED);
     k = spy(extended);
-    doc = new KuzzleDocument(new KuzzleDataCollection(k, "test", "index"));
+    doc = new Document(new Collection(k, "test", "index"));
   }
 
   @Test(expected = RuntimeException.class)

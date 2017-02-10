@@ -4,6 +4,18 @@
 
 * https://github.com/kuzzleio/sdk-android/releases/tag/2.0.0
 
+## Breaking Changes
+
+* Full refactoring of factory methods and class names #104 #105
+
+# 2.1.0
+
+* https://github.com/kuzzleio/sdk-android/releases/tag/2.1.0
+
+# 2.0.0
+
+* https://github.com/kuzzleio/sdk-android/releases/tag/2.0.0
+
 # 1.8.0
 
 * https://github.com/kuzzleio/sdk-android/releases/tag/1.8.0
