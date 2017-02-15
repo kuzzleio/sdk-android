@@ -84,6 +84,13 @@ public class createDocumentTest {
     collection.createDocument(mock(Document.class), listener);
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testCreateDocumentIllegalIfExistValue() {
+    Options opts = new Options();
+
+    opts.setIfExists("foobar");
+  }
+
   @Test(expected = RuntimeException.class)
   public void testCreateDocumentException() throws JSONException {
     doAnswer(new Answer() {
@@ -128,7 +135,7 @@ public class createDocumentTest {
     Document doc = new Document(collection);
     doc.setContent("foo", "bar");
     Options options = new Options();
-    options.setUpdateIfExists(true);
+    options.setIfExists("replace");
     collection.createDocument(doc, options);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));

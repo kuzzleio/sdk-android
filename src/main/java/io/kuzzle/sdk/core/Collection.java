@@ -419,8 +419,12 @@ public class Collection {
    * @return the kuzzle data collection
    */
   public Collection createDocument(final Document document, final Options options, final ResponseListener<Document> listener) {
-    String action = (options != null && options.isUpdateIfExists()) ? "createOrReplace" : "create";
+    String action = "create";
     JSONObject data = document.serialize();
+
+    if (options != null && options.getIfExists().equals("replace")) {
+      action = "createOrReplace";
+    }
 
     this.kuzzle.addHeaders(data, this.getHeaders());
 
