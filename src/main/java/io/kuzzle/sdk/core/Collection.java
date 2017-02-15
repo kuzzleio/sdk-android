@@ -422,7 +422,7 @@ public class Collection {
     String action = "create";
     JSONObject data = document.serialize();
 
-    if (options != null && options.getIfExists().equals("replace")) {
+    if (options != null && options.getIfExist().equals("replace")) {
       action = "createOrReplace";
     }
 

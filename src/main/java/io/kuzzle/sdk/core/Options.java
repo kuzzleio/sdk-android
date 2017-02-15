@@ -19,7 +19,7 @@ public class Options {
   private int queueMaxSize = 500;
   private int queueTTL = 120000;
   private long reconnectionDelay = 1000;
-  private String ifExists = "error";
+  private String ifExist = "error";
   private Mode connect = Mode.AUTO;
   private Mode offlineMode = Mode.MANUAL;
   private int replayInterval = 10;
@@ -79,8 +79,8 @@ public class Options {
    *
    * @return value of the ifExists parameter
    */
-  public String getIfExists() {
-    return ifExists;
+  public String getIfExist() {
+    return ifExist;
   }
 
   /**
@@ -90,12 +90,12 @@ public class Options {
    * @return the update if exists
    * @throws
    */
-  public Options setIfExists(String value) {
+  public Options setIfExist(String value) {
     if (value != "error" && value != "replace") {
       throw new IllegalArgumentException("Invalid value for option 'ifExists': " + value);
     }
 
-    this.ifExists = value;
+    this.ifExist = value;
     return this;
   }
 
