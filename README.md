@@ -128,7 +128,3 @@ kuzzle.login("github", new KuzzleResponseListener<JSONObject>() {
       }
     });
 ```
-
-## Javadoc
-
-You can find the java doc of the SDK here: [http://kuzzleio.github.io/sdk-android/](http://kuzzleio.github.io/sdk-android/)
