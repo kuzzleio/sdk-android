@@ -13,7 +13,7 @@ import java.util.List;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.SubscribeListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.responses.DocumentList;
+import io.kuzzle.sdk.responses.SearchResult;
 import io.kuzzle.sdk.responses.NotificationResponse;
 
 /**
@@ -70,7 +70,7 @@ public class Collection {
    * @param filter   the filter
    * @param listener the listener
    */
-  public void search(final JSONObject filter, final ResponseListener<DocumentList> listener) {
+  public void search(final JSONObject filter, final ResponseListener<SearchResult> listener) {
     this.search(filter, null, listener);
   }
 
@@ -84,7 +84,7 @@ public class Collection {
    * @param options  the options
    * @param listener the listener
    */
-  public void search(final JSONObject filters, final Options options, @NonNull final ResponseListener<DocumentList> listener) {
+  public void search(final JSONObject filters, final Options options, @NonNull final ResponseListener<SearchResult> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("listener cannot be null");
     }
@@ -101,7 +101,7 @@ public class Collection {
         @Override
         public void onSuccess(JSONObject object) {
           try {
-            DocumentList response;
+            SearchResult response;
             JSONArray hits = object.getJSONObject("result").getJSONArray("hits");
             List<Document> docs = new ArrayList<Document>();
             for (int i = 0; i < hits.length(); i++) {
@@ -110,10 +110,10 @@ public class Collection {
               docs.add(doc);
             }
             if (object.getJSONObject("result").has("aggregations")) {
-              response = new DocumentList(docs, object.getJSONObject("result").getInt("total"), object.getJSONObject("result").getJSONObject("aggregations"));
+              response = new SearchResult(Collection.this, object.getJSONObject("result").getInt("total"), docs, object.getJSONObject("result").getJSONObject("aggregations"));
             }
             else {
-              response = new DocumentList(docs, object.getJSONObject("result").getInt("total"));
+              response = new SearchResult(Collection.this, object.getJSONObject("result").getInt("total"), docs);
             }
             listener.onSuccess(response);
           } catch (JSONException e) {
@@ -745,7 +745,7 @@ public class Collection {
    *
    * @param listener the listener
    */
-  public void fetchAllDocuments(@NonNull final ResponseListener<DocumentList> listener) {
+  public void fetchAllDocuments(@NonNull final ResponseListener<SearchResult> listener) {
     this.fetchAllDocuments(null, listener);
   }
 
@@ -755,7 +755,7 @@ public class Collection {
    * @param options  the options
    * @param listener the listener
    */
-  public void fetchAllDocuments(final Options options, @NonNull final ResponseListener<DocumentList> listener) {
+  public void fetchAllDocuments(final Options options, @NonNull final ResponseListener<SearchResult> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Collection.fetchAllDocuments: listener required");
     }
