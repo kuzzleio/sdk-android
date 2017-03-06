@@ -56,4 +56,11 @@ public class SearchResult implements KuzzleList<Document> {
   public Collection getCollection() {
     return collection;
   }
+
+  /**
+   * @return TODO replace this mock with real implementation once scroll is implemented
+   */
+  public SearchResult fetchNext() {
+    return this;
+  }
 }
