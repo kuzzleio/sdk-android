@@ -55,7 +55,7 @@ public class searchTest {
   public void checkSignaturesVariants() {
     collection = spy(collection);
     collection.search(new JSONObject(), listener);
-    verify(collection).search(any(JSONObject.class), eq((Options)null), eq(listener));
+    verify(collection).search(any(JSONObject.class), any(Options.class), eq(listener));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -139,7 +139,7 @@ public class searchTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    collection.search(filters, null, new ResponseListener<SearchResult>() {
+    collection.search(filters, new ResponseListener<SearchResult>() {
       @Override
       public void onSuccess(SearchResult result) {
         assertEquals(result.getTotal(), 2);
@@ -238,7 +238,7 @@ public class searchTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    collection.search(filters, null, new ResponseListener<SearchResult>() {
+    collection.search(filters, new ResponseListener<SearchResult>() {
       @Override
       public void onSuccess(SearchResult result) {
         assertEquals(result.getTotal(), 2);

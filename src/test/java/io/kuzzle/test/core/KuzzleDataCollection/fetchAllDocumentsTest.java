@@ -51,7 +51,7 @@ public class fetchAllDocumentsTest {
   public void checkSignaturesVariants() {
     collection = spy(collection);
     collection.fetchAllDocuments(listener);
-    verify(collection).fetchAllDocuments(eq((Options)null), eq(listener));
+    verify(collection).fetchAllDocuments(any(Options.class), eq(listener));
   }
 
   @Test(expected = IllegalArgumentException.class)
