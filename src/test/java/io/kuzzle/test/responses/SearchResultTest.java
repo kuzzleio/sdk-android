@@ -89,7 +89,7 @@ public class SearchResultTest {
 
     searchResult.fetchNext(listener);
 
-    verify(collection).scroll(eq(scrollId), eq(scroll), any(Options.class), eq((JSONObject) null), eq(listener));
+    verify(collection).scroll(eq(scrollId), any(Options.class), eq((JSONObject) null), eq(listener));
   }
 
   @Test
