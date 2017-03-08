@@ -82,7 +82,7 @@ public class SearchResult implements KuzzleList<Document> {
     }
     options.setPrevious(this);
 
-    if (options.getScrollId() != null && options.getScroll() != null) {
+    if (options.getScrollId() != null) {
       if(this.fetchedDocument >= this.getTotal()) {
         listener.onSuccess(null);
         return;
@@ -96,7 +96,7 @@ public class SearchResult implements KuzzleList<Document> {
         options.setSize(null);
       }
 
-      this.collection.scroll(options.getScrollId(), options.getScroll(), options, this.filters, listener);
+      this.collection.scroll(options.getScrollId(), options, this.filters, listener);
 
       return;
     }

@@ -147,15 +147,15 @@ public class Collection {
     }
   }
 
-  public void scroll(String scrollId, String scroll, final ResponseListener<SearchResult> listener) {
-    this.scroll(scrollId, scroll, new Options(), new JSONObject(), listener);
+  public void scroll(String scrollId, final ResponseListener<SearchResult> listener) {
+    this.scroll(scrollId, new Options(), new JSONObject(), listener);
   }
 
-  public void scroll(String scrollId, String scroll, final Options options, final ResponseListener<SearchResult> listener) {
-    this.scroll(scrollId, scroll, options, new JSONObject(), listener);
+  public void scroll(String scrollId, final Options options, final ResponseListener<SearchResult> listener) {
+    this.scroll(scrollId, options, new JSONObject(), listener);
   }
 
-  public void scroll(String scrollId, String scroll, final Options options, final JSONObject filters, final ResponseListener<SearchResult> listener) {
+  public void scroll(String scrollId, final Options options, final JSONObject filters, final ResponseListener<SearchResult> listener) {
     JSONObject request;
 
     try {
@@ -173,12 +173,7 @@ public class Collection {
       throw new RuntimeException("Collection.scroll: scrollId is required");
     }
 
-    if (scroll == null) {
-      throw new RuntimeException("Collection.scroll: scroll is required");
-    }
-
     options.setScrollId(scrollId);
-    options.setScroll(scroll);
 
     try {
       this.kuzzle.query(makeQueryArgs("document", "scroll"), request, options, new OnQueryDoneListener() {
