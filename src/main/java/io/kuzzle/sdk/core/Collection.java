@@ -695,7 +695,7 @@ public class Collection {
         data.put("_id", documentId);
         action = "delete";
       } else {
-        data.put("body", filter);
+        data.put("body", new JSONObject().put("query", filter));
         action = "deleteByQuery";
       }
       this.kuzzle.query(makeQueryArgs("document", action), data, options, new OnQueryDoneListener() {
