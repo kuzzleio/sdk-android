@@ -13,7 +13,7 @@ import java.util.List;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.SubscribeListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
-import io.kuzzle.sdk.responses.DocumentList;
+import io.kuzzle.sdk.responses.SearchResult;
 import io.kuzzle.sdk.responses.NotificationResponse;
 
 /**
@@ -70,8 +70,8 @@ public class Collection {
    * @param filter   the filter
    * @param listener the listener
    */
-  public void search(final JSONObject filter, final ResponseListener<DocumentList> listener) {
-    this.search(filter, null, listener);
+  public void search(final JSONObject filter, final ResponseListener<SearchResult> listener) {
+    this.search(filter, new Options(), listener);
   }
 
   /**
@@ -84,7 +84,7 @@ public class Collection {
    * @param options  the options
    * @param listener the listener
    */
-  public void search(final JSONObject filters, final Options options, @NonNull final ResponseListener<DocumentList> listener) {
+  public void search(final JSONObject filters, @NonNull final Options options, @NonNull final ResponseListener<SearchResult> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("listener cannot be null");
     }
@@ -101,20 +101,110 @@ public class Collection {
         @Override
         public void onSuccess(JSONObject object) {
           try {
-            DocumentList response;
+            SearchResult response;
+            JSONObject aggregations = null;
             JSONArray hits = object.getJSONObject("result").getJSONArray("hits");
             List<Document> docs = new ArrayList<Document>();
+
             for (int i = 0; i < hits.length(); i++) {
               JSONObject hit = hits.getJSONObject(i);
               Document doc = new Document(Collection.this, hit.getString("_id"), hit.getJSONObject("_source"));
+
               docs.add(doc);
             }
+
+            if (object.getJSONObject("result").has("_scroll_id")) {
+              options.setScrollId(object.getJSONObject("result").getString("_scroll_id"));
+            }
+
             if (object.getJSONObject("result").has("aggregations")) {
-              response = new DocumentList(docs, object.getJSONObject("result").getInt("total"), object.getJSONObject("result").getJSONObject("aggregations"));
+              aggregations = object.getJSONObject("result").getJSONObject("aggregations");
             }
-            else {
-              response = new DocumentList(docs, object.getJSONObject("result").getInt("total"));
+
+            response = new SearchResult(
+              Collection.this,
+              object.getJSONObject("result").getInt("total"),
+              docs,
+              aggregations,
+              options,
+              filters,
+              options.getPrevious()
+            );
+
+            listener.onSuccess(response);
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void scroll(String scrollId, final ResponseListener<SearchResult> listener) {
+    this.scroll(scrollId, new Options(), new JSONObject(), listener);
+  }
+
+  public void scroll(String scrollId, final Options options, final ResponseListener<SearchResult> listener) {
+    this.scroll(scrollId, options, new JSONObject(), listener);
+  }
+
+  public void scroll(String scrollId, final Options options, final JSONObject filters, final ResponseListener<SearchResult> listener) {
+    JSONObject request;
+
+    try {
+      request = new JSONObject().put("body", new JSONObject());
+    }
+    catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+
+    if (listener == null) {
+      throw new IllegalArgumentException("listener cannot be null");
+    }
+
+    if (scrollId == null) {
+      throw new RuntimeException("Collection.scroll: scrollId is required");
+    }
+
+    options.setScrollId(scrollId);
+
+    try {
+      this.kuzzle.query(makeQueryArgs("document", "scroll"), request, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject object) {
+          try {
+            SearchResult response;
+            JSONArray hits = object.getJSONObject("result").getJSONArray("hits");
+            List<Document> docs = new ArrayList<Document>();
+
+            for (int i = 0; i < hits.length(); i++) {
+              JSONObject hit = hits.getJSONObject(i);
+              Document doc = new Document(Collection.this, hit.getString("_id"), hit.getJSONObject("_source"));
+
+              docs.add(doc);
             }
+
+            if (object.getJSONObject("result").has("_scroll_id")) {
+              options.setScrollId(object.getJSONObject("result").getString("_scroll_id"));
+            }
+
+            response = new SearchResult(
+                    Collection.this,
+                    object.getJSONObject("result").getInt("total"),
+                    docs,
+                    new JSONObject(),
+                    options,
+                    filters,
+                    options.getPrevious()
+            );
+
             listener.onSuccess(response);
           } catch (JSONException e) {
             throw new RuntimeException(e);
@@ -745,8 +835,8 @@ public class Collection {
    *
    * @param listener the listener
    */
-  public void fetchAllDocuments(@NonNull final ResponseListener<DocumentList> listener) {
-    this.fetchAllDocuments(null, listener);
+  public void fetchAllDocuments(@NonNull final ResponseListener<ArrayList<Document>> listener) {
+    this.fetchAllDocuments(new Options(), listener);
   }
 
   /**
@@ -755,12 +845,42 @@ public class Collection {
    * @param options  the options
    * @param listener the listener
    */
-  public void fetchAllDocuments(final Options options, @NonNull final ResponseListener<DocumentList> listener) {
+  public void fetchAllDocuments(final Options options, @NonNull final ResponseListener<ArrayList<Document>> listener) {
+    final ArrayList<Document> documents = new ArrayList<Document>();
+    JSONObject filters = new JSONObject();
+
     if (listener == null) {
       throw new IllegalArgumentException("Collection.fetchAllDocuments: listener required");
     }
 
-    this.search(new JSONObject(), options, listener);
+    if (options.getFrom() == null) {
+      options.setFrom((long) 0);
+    }
+
+    if (options.getSize() == null) {
+      options.setSize((long) 1000);
+    }
+
+    this.search(filters, options, new ResponseListener<SearchResult>() {
+      @Override
+      public void onSuccess(SearchResult response) {
+        if (response != null) {
+          for (int i = 0; i < response.getDocuments().size(); i++) {
+            documents.add(response.getDocuments().get(i));
+          }
+
+          response.fetchNext(this);
+        }
+        else {
+          listener.onSuccess(documents);
+        }
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+        listener.onError(error);
+      }
+    });
   }
 
   /**

@@ -1,9 +1,13 @@
 package io.kuzzle.sdk.core;
 
+import android.support.annotation.NonNull;
+
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import io.kuzzle.sdk.enums.CollectionType;
 import io.kuzzle.sdk.enums.Mode;
+import io.kuzzle.sdk.responses.SearchResult;
 
 /**
  * The type Kuzzle options.
@@ -27,12 +31,44 @@ public class Options {
   private String defaultIndex = null;
   private boolean replaceIfExist = false;
   private String refresh = null;
-  private Long from;
-  private Long size;
+  private Long from = null;
+  private Long size = null;
   private Integer port = 7512;
+  private String scroll = null;
+  private SearchResult previous = null;
+  private String scrollId = null;
 
   // Used for getting collections
   private CollectionType collectionType = CollectionType.ALL;
+
+  public Options() {
+    // Default constructor
+  }
+
+  public Options(@NonNull Options originalOptions) throws JSONException {
+    this.autoQueue = originalOptions.autoQueue;
+    this.autoReconnect = originalOptions.autoReconnect;
+    this.autoResubscribe = originalOptions.autoResubscribe;
+    this.headers = new JSONObject(originalOptions.headers.toString());
+    this.metadata = new JSONObject(originalOptions.metadata.toString());
+    this.queueMaxSize = originalOptions.queueMaxSize;
+    this.queueTTL = originalOptions.queueTTL;
+    this.reconnectionDelay = originalOptions.reconnectionDelay;
+    this.ifExist = originalOptions.ifExist;
+    this.connect = originalOptions.connect;
+    this.offlineMode = originalOptions.offlineMode;
+    this.replayInterval = originalOptions.replayInterval;
+    this.queuable = originalOptions.queuable;
+    this.defaultIndex = originalOptions.defaultIndex;
+    this.replaceIfExist = originalOptions.replaceIfExist;
+    this.refresh = originalOptions.refresh;
+    this.from = originalOptions.from;
+    this.size = originalOptions.size;
+    this.port = originalOptions.port;
+    this.scroll = originalOptions.scroll;
+    this.previous = originalOptions.previous;
+    this.scrollId = originalOptions.scrollId;
+  }
 
   /**
    * Is auto reconnect boolean.
@@ -412,6 +448,33 @@ public class Options {
 
   public Options setRefresh(String refresh) {
     this.refresh = refresh;
+    return this;
+  }
+
+  public String getScroll() {
+    return scroll;
+  }
+
+  public Options setScroll(String scroll) {
+    this.scroll = scroll;
+    return this;
+  }
+
+  public SearchResult getPrevious() {
+    return previous;
+  }
+
+  public Options setPrevious(SearchResult previous) {
+    this.previous = previous;
+    return this;
+  }
+
+  public String getScrollId() {
+    return scrollId;
+  }
+
+  public Options setScrollId(String scrollId) {
+    this.scrollId = scrollId;
     return this;
   }
 }

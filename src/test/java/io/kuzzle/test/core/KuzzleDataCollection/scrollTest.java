@@ -9,15 +9,13 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 
 import io.kuzzle.sdk.core.Collection;
-import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.responses.SearchResult;
 import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
@@ -27,16 +25,20 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class fetchAllDocumentsTest {
+public class scrollTest {
   private Kuzzle kuzzle;
   private Collection collection;
   private ResponseListener listener;
+  private String scrollId;
+  private String scroll;
+  private Options options;
 
   @Before
   public void setUp() throws URISyntaxException {
@@ -45,42 +47,52 @@ public class fetchAllDocumentsTest {
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
     extended.setSocket(mock(Socket.class));
     extended.setState(States.CONNECTED);
-
     kuzzle = spy(extended);
     when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
     collection = new Collection(kuzzle, "test", "index");
     listener = mock(ResponseListener.class);
+    scrollId = "someScrollId";
+    options = mock(Options.class);
   }
 
   @Test
   public void checkSignaturesVariants() {
     collection = spy(collection);
-    collection.fetchAllDocuments(listener);
-    verify(collection).fetchAllDocuments(any(Options.class), eq(listener));
+    collection.scroll(scrollId, listener);
+    verify(collection).scroll(eq(scrollId), any(Options.class), any(JSONObject.class), eq(listener));
+
+    collection.scroll(scrollId, options, listener);
+    verify(collection).scroll(eq(scrollId), eq(options), any(JSONObject.class), eq(listener));
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testFetchAllDocumentsIllegalListener() {
-    collection.fetchAllDocuments(null);
+  public void testScrollIllegalListener() {
+    collection.scroll(scrollId, null);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testScrollQueryException() throws JSONException {
+    doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+    collection.scroll(scrollId, listener);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testScrollException() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("count", 42)));
+        return null;
+      }
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(listener).onSuccess(any(Integer.class));
+    collection.scroll(scrollId, listener);
   }
 
   @Test
-  public void testFetchAllDocuments() throws JSONException {
-    ResponseListener<ArrayList<Document>> spyListener = new ResponseListener<ArrayList<Document>>() {
-      @Override
-      public void onSuccess(ArrayList<Document> response) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    };
-
-    spyListener = spy(spyListener);
-
+  public void testScroll() throws JSONException {
+    JSONObject filters = new JSONObject();
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -133,29 +145,27 @@ public class fetchAllDocumentsTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject());
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    collection.fetchAllDocuments(new Options(), spyListener);
+    collection.scroll(scrollId, new ResponseListener<SearchResult>() {
+      @Override
+      public void onSuccess(SearchResult result) {
+        assertEquals(result.getTotal(), 2);
+        try {
+          assertEquals(result.getDocuments().get(1).getContent("sibling"), "none");
+        } catch (JSONException e) {
+          throw new RuntimeException(e);
+        }
+      }
 
-    ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "search");
-    ArgumentCaptor listenerArgument = ArgumentCaptor.forClass(ArrayList.class);
-    verify(spyListener).onSuccess((ArrayList<Document>) listenerArgument.capture());
-    assertEquals(((ArrayList<Document>) listenerArgument.getValue()).size(), 2);
+      @Override
+      public void onError(JSONObject error) {
+      }
+    });
+    collection.scroll(scrollId, mock(ResponseListener.class));
+    ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(2)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "document");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "scroll");
   }
-
-  @Test
-  public void testPagination() throws JSONException {
-    Options options = new Options();
-    options.setFrom(1L);
-    options.setSize(42L);
-    collection.fetchAllDocuments(options, mock(ResponseListener.class));
-    ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
-    verify(kuzzle).query(any(Kuzzle.QueryArgs.class), (JSONObject)argument.capture(), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((JSONObject) argument.getValue()).getLong("from"), 1);
-    assertEquals(((JSONObject) argument.getValue()).getLong("size"), 42);
-  }
-
 }
