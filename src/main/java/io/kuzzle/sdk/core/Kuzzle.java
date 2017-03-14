@@ -535,6 +535,66 @@ public class Kuzzle {
   }
 
   /**
+   * Create an index in Kuzzle
+   * @param index
+   * @param cb
+   * @return
+   */
+  public Kuzzle createIndex(@NonNull final String index, final ResponseListener<JSONObject> cb) {
+    return createIndex(index, null, cb);
+  }
+
+  /**
+   * Create an index in Kuzzle
+   * @param index
+   * @return
+   */
+  public Kuzzle createIndex(@NonNull final String index) {
+    return createIndex(index, null, null);
+  }
+
+  /**
+   * Create an index in Kuzzle
+   * @param index
+   * @param options
+   * @param cb
+   * @return
+   */
+  public Kuzzle createIndex(@NonNull final String index, final Options options, final ResponseListener<JSONObject> cb) {
+    if (index == null && defaultIndex == null) {
+      throw new IllegalArgumentException("Collection.createIndex: index required");
+    }
+
+    QueryArgs args = new QueryArgs();
+    args.controller = "index";
+    args.action = "create";
+
+    JSONObject request = new JSONObject();
+    try {
+      request.put("index", index == null ? defaultIndex : index);
+      this.query(args, request, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            cb.onSuccess(response.getJSONObject("result"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          cb.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+
+    return this;
+  }
+
+  /**
    * Empties the offline queue without replaying it.
    *
    * @return Kuzzle instance
