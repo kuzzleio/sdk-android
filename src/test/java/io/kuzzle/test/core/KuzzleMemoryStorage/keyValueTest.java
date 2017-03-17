@@ -8,7 +8,6 @@ import org.mockito.ArgumentCaptor;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.util.KuzzleJSONObject;
-import io.kuzzle.sdk.util.memoryStorage.Action;
 import io.kuzzle.test.testUtils.MemoryStorageExtend;
 
 import static org.junit.Assert.assertEquals;

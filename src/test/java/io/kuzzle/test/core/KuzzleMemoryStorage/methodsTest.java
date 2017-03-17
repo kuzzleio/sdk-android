@@ -11,12 +11,7 @@ import java.util.Map;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.util.KuzzleJSONObject;
-import io.kuzzle.sdk.util.memoryStorage.Action;
-import io.kuzzle.sdk.util.memoryStorage.BitOP;
-import io.kuzzle.sdk.util.memoryStorage.ObjectCommand;
-import io.kuzzle.sdk.util.memoryStorage.Position;
 import io.kuzzle.sdk.util.memoryStorage.SetParams;
-import io.kuzzle.sdk.util.memoryStorage.ZParams;
 import io.kuzzle.test.testUtils.MemoryStorageExtend;
 
 import static org.junit.Assert.assertEquals;

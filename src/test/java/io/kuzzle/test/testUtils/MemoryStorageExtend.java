@@ -5,7 +5,6 @@ import android.support.annotation.NonNull;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.MemoryStorage;
 import io.kuzzle.sdk.util.KuzzleJSONObject;
-import io.kuzzle.sdk.util.memoryStorage.Action;
 
 public class MemoryStorageExtend extends MemoryStorage {
   public MemoryStorageExtend(@NonNull Kuzzle kuzzle) {
