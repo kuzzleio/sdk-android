@@ -4249,7 +4249,7 @@ public class MemoryStorage {
   }
 
   public void zrank(@NonNull String key, @NonNull String member, Options options, @NonNull final ResponseListener<Long> listener) {
-    KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key).put("member");
+    KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key).put("member", member);
 
     send(
       "zrank",
@@ -4571,7 +4571,7 @@ public class MemoryStorage {
   }
 
   public void zrevrank(@NonNull String key, @NonNull String member, Options options, @NonNull final ResponseListener<Long> listener) {
-    KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key).put("member");
+    KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key).put("member", member);
 
     send(
       "zrevrank",
@@ -4638,34 +4638,22 @@ public class MemoryStorage {
     );
   }
 
-  public void zscan(@NonNull String key, long cursor, @NonNull final ResponseListener<JSONArray> listener) {
-    zscan(key, cursor, null, listener);
+  public void zscore(@NonNull String key, @NonNull String member, @NonNull final ResponseListener<Double> listener) {
+    zscore(key, member, null, listener);
   }
 
-  public void zscan(@NonNull String key, long cursor, Options options, @NonNull final ResponseListener<JSONArray> listener) {
-    KuzzleJSONObject query = new KuzzleJSONObject()
-      .put("_id", key)
-      .put("cursor", cursor);
-
-    if (options != null) {
-      if (options.getCount() != null) {
-        query.put("count", options.getCount());
-      }
-
-      if (options.getMatch() != null) {
-        query.put("match", options.getMatch());
-      }
-    }
+  public void zscore(@NonNull String key, @NonNull String member, Options options, @NonNull final ResponseListener<Double> listener) {
+    KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key).put("member", member);
 
     send(
-      "zscan",
+      "zscore",
       query,
       options,
       new ResponseListener<JSONObject>() {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(response.getJSONArray("result"));
+            listener.onSuccess(Double.parseDouble(response.getString("result")));
           }
           catch(JSONException e) {
             throw new RuntimeException(e);
@@ -4678,5 +4666,58 @@ public class MemoryStorage {
         }
       }
     );
+  }
+
+  public MemoryStorage zunionstore(@NonNull String destination, @NonNull JSONArray keys) {
+    return zunionstore(destination, keys, null, null);
+  }
+
+  public MemoryStorage zunionstore(@NonNull String destination, @NonNull JSONArray keys, final ResponseListener<Long> listener) {
+    return zunionstore(destination, keys, null, listener);
+  }
+
+  public MemoryStorage zunionstore(@NonNull String destination, @NonNull JSONArray keys, Options options) {
+    return zunionstore(destination, keys, options, null);
+  }
+
+  public MemoryStorage zunionstore(@NonNull String destination, @NonNull JSONArray keys, Options options, final ResponseListener<Long> listener) {
+    ResponseListener<JSONObject> callback = null;
+    KuzzleJSONObject query = new KuzzleJSONObject().put("_id", destination);
+    KuzzleJSONObject body = new KuzzleJSONObject().put("keys", keys);
+
+    if (options != null) {
+      if (options.getAggregate() != null) {
+        body.put("aggregate", options.getAggregate());
+      }
+
+      if (options.getWeights() != null) {
+        body.put("weights", options.getWeights());
+      }
+    }
+
+    query.put("body", body);
+
+    if (listener != null) {
+      callback = new ResponseListener<JSONObject>() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getLong("result"));
+          }
+          catch(JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      };
+    }
+
+    send("zunionstore", query, options, callback);
+
+    return this;
   }
 }
