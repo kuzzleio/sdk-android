@@ -28,7 +28,7 @@ public class MemoryStorage {
     this.kuzzle = kuzzle;
   }
 
-  private void assignGeoradiusOptions(@NonNull JSONObject query, Options options) {
+  protected void assignGeoradiusOptions(@NonNull JSONObject query, Options options) {
     if (options != null) {
       JSONArray opts = new JSONArray();
 
@@ -59,7 +59,7 @@ public class MemoryStorage {
     }
   }
 
-  private JSONArray mapGeoradiusResults(@NonNull JSONArray points) throws JSONException {
+  protected JSONArray mapGeoradiusResults(@NonNull JSONArray points) throws JSONException {
     JSONArray mapped = new JSONArray();
 
     // Simple array of point names (no options provided)
@@ -98,7 +98,7 @@ public class MemoryStorage {
     return mapped;
   }
 
-  private JSONArray mapZrangeResults(@NonNull JSONArray members) {
+  protected JSONArray mapZrangeResults(@NonNull JSONArray members) {
     String buffer = null;
     JSONArray mapped = new JSONArray();
 
@@ -149,6 +149,111 @@ public class MemoryStorage {
     }
   }
 
+  protected ResponseListener<JSONObject> getCallbackLong(final ResponseListener<Long> listener) {
+    ResponseListener<JSONObject> callback = new ResponseListener<JSONObject>() {
+      @Override
+      public void onSuccess(JSONObject response) {
+        try {
+          listener.onSuccess(response.getLong("result"));
+        }
+        catch(JSONException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+        listener.onError(error);
+      }
+    };
+
+    return callback;
+  }
+
+  protected ResponseListener<JSONObject> getCallbackInt(final ResponseListener<Integer> listener) {
+    ResponseListener<JSONObject> callback = new ResponseListener<JSONObject>() {
+      @Override
+      public void onSuccess(JSONObject response) {
+        try {
+          listener.onSuccess(response.getInt("result"));
+        }
+        catch(JSONException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+        listener.onError(error);
+      }
+    };
+
+    return callback;
+  }
+
+  protected ResponseListener<JSONObject> getCallbackString(final ResponseListener<String> listener) {
+    ResponseListener<JSONObject> callback = new ResponseListener<JSONObject>() {
+      @Override
+      public void onSuccess(JSONObject response) {
+        try {
+          listener.onSuccess(response.getString("result"));
+        }
+        catch(JSONException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+        listener.onError(error);
+      }
+    };
+
+    return callback;
+  }
+
+  protected ResponseListener<JSONObject> getCallbackDouble(final ResponseListener<Double> listener) {
+    ResponseListener<JSONObject> callback = new ResponseListener<JSONObject>() {
+      @Override
+      public void onSuccess(JSONObject response) {
+        try {
+          listener.onSuccess(Double.parseDouble(response.getString("result")));
+        }
+        catch(JSONException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+        listener.onError(error);
+      }
+    };
+
+    return callback;
+  }
+
+  protected ResponseListener<JSONObject> getCallbackArray(final ResponseListener<JSONArray> listener) {
+    ResponseListener<JSONObject> callback = new ResponseListener<JSONObject>() {
+      @Override
+      public void onSuccess(JSONObject response) {
+        try {
+          listener.onSuccess(response.getJSONArray("result"));
+        }
+        catch(JSONException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+        listener.onError(error);
+      }
+    };
+
+    return callback;
+  }
+
   public MemoryStorage append(@NonNull String key, @NonNull final String value) {
     return append(key, value, null, null);
   }
@@ -162,33 +267,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage append(@NonNull String key, @NonNull final String value, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("value", value)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("append", query, options, callback);
+    send("append", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -210,27 +295,7 @@ public class MemoryStorage {
       }
     }
 
-    send(
-      "bitcount",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("bitcount", query, options, getCallbackLong(listener));
   }
 
   public MemoryStorage bitop(@NonNull String key, @NonNull String operation, @NonNull final JSONArray keys) {
@@ -246,7 +311,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage bitop(@NonNull String key, @NonNull String operation, @NonNull final JSONArray keys, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -254,26 +318,7 @@ public class MemoryStorage {
         .put("keys", keys)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("bitop", query, options, callback);
+    send("bitop", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -297,27 +342,7 @@ public class MemoryStorage {
       }
     }
 
-    send(
-      "bitpos",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("bitpos", query, options, getCallbackLong(listener));
   }
 
   public void dbsize(@NonNull final ResponseListener<Long> listener) {
@@ -325,27 +350,7 @@ public class MemoryStorage {
   }
 
   public void dbsize(Options options, @NonNull final ResponseListener<Long> listener) {
-    send(
-      "dbsize",
-      null,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("dbsize", null, options, getCallbackLong(listener));
   }
 
   public MemoryStorage decr(@NonNull String key) {
@@ -361,29 +366,9 @@ public class MemoryStorage {
   }
 
   public MemoryStorage decr(@NonNull String key, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("decr", query, options, callback);
+    send("decr", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -401,33 +386,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage decrby(@NonNull String key, long value, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("value", value)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("decrby", query, options, callback);
+    send("decrby", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -445,30 +410,10 @@ public class MemoryStorage {
   }
 
   public MemoryStorage del(@NonNull JSONArray keys, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("body", new KuzzleJSONObject().put("keys", keys));
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("del", query, options, callback);
+    send("del", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -480,27 +425,7 @@ public class MemoryStorage {
   public void exists(@NonNull JSONArray keys, Options options, @NonNull final ResponseListener<Long> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("keys", keys);
 
-    send(
-      "exists",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("exists", query, options, getCallbackLong(listener));
   }
 
   public MemoryStorage expire(@NonNull String key, long seconds) {
@@ -516,33 +441,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage expire(@NonNull String key, long seconds, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("seconds", seconds)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("expire", query, options, callback);
+    send("expire", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -560,33 +465,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage expireat(@NonNull String key, long timestamp, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("timestamp", timestamp)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("expireat", query, options, callback);
+    send("expireat", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -604,28 +489,7 @@ public class MemoryStorage {
   }
 
   public MemoryStorage flushdb(Options options, final ResponseListener<String> listener) {
-    ResponseListener<JSONObject> callback = null;
-
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("dbsize", null, options, callback);
+    send("flushdb", null, options, listener != null ? getCallbackString(listener) : null);
 
     return this;
   }
@@ -643,33 +507,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage geoadd(@NonNull String key, @NonNull JSONArray points, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("points", points)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("geoadd", query, options, callback);
+    send("geoadd", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -690,27 +534,7 @@ public class MemoryStorage {
       }
     }
 
-    send(
-      "geodist",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(Double.parseDouble(response.getString("result")));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("geodist", query, options, getCallbackDouble(listener));
   }
 
   public void geohash(@NonNull String key, @NonNull JSONArray members, @NonNull final ResponseListener<JSONArray> listener) {
@@ -722,27 +546,7 @@ public class MemoryStorage {
       .put("_id", key)
       .put("members", members);
 
-    send(
-      "geohash",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONArray("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("geohash", query, options, getCallbackArray(listener));
   }
 
   public void geopos(@NonNull String key, @NonNull JSONArray members, @NonNull final ResponseListener<JSONArray> listener) {
@@ -877,27 +681,7 @@ public class MemoryStorage {
   public void get(@NonNull String key, Options options, @NonNull final ResponseListener<String> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
 
-    send(
-      "get",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("get", query, options, getCallbackString(listener));
   }
 
   public void getbit(@NonNull String key, long offset, @NonNull final ResponseListener<Integer> listener) {
@@ -907,27 +691,7 @@ public class MemoryStorage {
   public void getbit(@NonNull String key, long offset, Options options, @NonNull final ResponseListener<Integer> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key).put("offset", offset);
 
-    send(
-      "getbit",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getInt("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("getbit", query, options, getCallbackInt(listener));
   }
 
   public void getrange(@NonNull String key, long start, long end, @NonNull final ResponseListener<String> listener) {
@@ -940,27 +704,7 @@ public class MemoryStorage {
       .put("start", start)
       .put("end", end);
 
-    send(
-      "getrange",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("getrange", query, options, getCallbackString(listener));
   }
 
   public MemoryStorage getset(@NonNull String key, @NonNull String value) {
@@ -976,33 +720,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage getset(@NonNull String key, @NonNull String value, Options options, final ResponseListener<String> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("value", value)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("getset", query, options, callback);
+    send("getset", query, options, listener != null ? getCallbackString(listener) : null);
 
     return this;
   }
@@ -1020,33 +744,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage hdel(@NonNull String key, @NonNull JSONArray fields, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("fields", fields)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("hdel", query, options, callback);
+    send("hdel", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -1058,27 +762,7 @@ public class MemoryStorage {
   public void hexists(@NonNull String key, @NonNull String field, Options options, @NonNull final ResponseListener<Integer> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key).put("field", field);
 
-    send(
-      "hexists",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getInt("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("hexists", query, options, getCallbackInt(listener));
   }
 
   public void hget(@NonNull String key, @NonNull String field, @NonNull final ResponseListener<String> listener) {
@@ -1088,27 +772,7 @@ public class MemoryStorage {
   public void hget(@NonNull String key, @NonNull String field, Options options, @NonNull final ResponseListener<String> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key).put("field", field);
 
-    send(
-      "hget",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("hget", query, options, getCallbackString(listener));
   }
 
   public void hgetall(@NonNull String key, @NonNull final ResponseListener<JSONObject> listener) {
@@ -1154,7 +818,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage hincrby(@NonNull String key, @NonNull String field, long value, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -1162,26 +825,7 @@ public class MemoryStorage {
         .put("value", value)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("hincrby", query, options, callback);
+    send("hincrby", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -1199,7 +843,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage hincrbyfloat(@NonNull String key, @NonNull String field, double value, Options options, final ResponseListener<Double> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -1207,26 +850,7 @@ public class MemoryStorage {
         .put("value", value)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(Double.parseDouble(response.getString("result")));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("hincrbyfloat", query, options, callback);
+    send("hincrbyfloat", query, options, listener != null ? getCallbackDouble(listener) : null);
 
     return this;
   }
@@ -1238,27 +862,7 @@ public class MemoryStorage {
   public void hkeys(@NonNull String key, Options options, @NonNull final ResponseListener<JSONArray> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
 
-    send(
-      "hkeys",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONArray("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("hkeys", query, options, getCallbackArray(listener));
   }
 
   public void hlen(@NonNull String key, @NonNull final ResponseListener<Long> listener) {
@@ -1268,27 +872,7 @@ public class MemoryStorage {
   public void hlen(@NonNull String key, Options options, @NonNull final ResponseListener<Long> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
 
-    send(
-      "hlen",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("hlen", query, options, getCallbackLong(listener));
   }
 
   public void hmget(@NonNull String key, @NonNull JSONArray fields, @NonNull final ResponseListener<JSONArray> listener) {
@@ -1300,27 +884,7 @@ public class MemoryStorage {
       .put("_id", key)
       .put("fields", fields);
 
-    send(
-      "hmget",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONArray("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("hmget", query, options, getCallbackArray(listener));
   }
 
   public MemoryStorage hmset(@NonNull String key, @NonNull JSONObject entries) {
@@ -1336,33 +900,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage hmset(@NonNull String key, @NonNull JSONObject entries, Options options, final ResponseListener<String> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("entries", entries)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("hmset", query, options, callback);
+    send("hmset", query, options, listener != null ? getCallbackString(listener) : null);
 
     return this;
   }
@@ -1386,27 +930,7 @@ public class MemoryStorage {
       }
     }
 
-    send(
-      "hscan",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONArray("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("hscan", query, options, getCallbackArray(listener));
   }
 
   public MemoryStorage hset(@NonNull String key, @NonNull String field, @NonNull String value) {
@@ -1422,7 +946,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage hset(@NonNull String key, @NonNull String field, @NonNull String value, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -1430,26 +953,7 @@ public class MemoryStorage {
         .put("value", value)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("hset", query, options, callback);
+    send("hset", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -1467,7 +971,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage hsetnx(@NonNull String key, @NonNull String field, @NonNull String value, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -1475,26 +978,7 @@ public class MemoryStorage {
         .put("value", value)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("hsetnx", query, options, callback);
+    send("hsetnx", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -1506,27 +990,7 @@ public class MemoryStorage {
   private void hstrlen(@NonNull String key, @NonNull String field, Options options, @NonNull final ResponseListener<Long> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key).put("field", field);
 
-    send(
-      "hstrlen",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("hstrlen", query, options, getCallbackLong(listener));
   }
 
   public void hvals(@NonNull String key, @NonNull final ResponseListener<JSONArray> listener) {
@@ -1536,27 +1000,7 @@ public class MemoryStorage {
   public void hvals(@NonNull String key, Options options, @NonNull final ResponseListener<JSONArray> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
 
-    send(
-      "hvals",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONArray("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("hvals", query, options, getCallbackArray(listener));
   }
 
   public MemoryStorage incr(@NonNull String key) {
@@ -1572,29 +1016,9 @@ public class MemoryStorage {
   }
 
   public MemoryStorage incr(@NonNull String key, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("incr", query, options, callback);
+    send("incr", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -1612,33 +1036,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage incrby(@NonNull String key, long value, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("value", value)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("incrby", query, options, callback);
+    send("incrby", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -1656,33 +1060,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage incrbyfloat(@NonNull String key, double value, Options options, final ResponseListener<Double> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("value", value)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(Double.parseDouble(response.getString("result")));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("incrbyfloat", query, options, callback);
+    send("incrbyfloat", query, options, listener != null ? getCallbackDouble(listener) : null);
 
     return this;
   }
@@ -1694,27 +1078,7 @@ public class MemoryStorage {
   public void keys(@NonNull String pattern, Options options, @NonNull final ResponseListener<JSONArray> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("pattern", pattern);
 
-    send(
-      "keys",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONArray("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("keys", query, options, getCallbackArray(listener));
   }
 
   public void lindex(@NonNull String key, long index, @NonNull final ResponseListener<String> listener) {
@@ -1724,27 +1088,7 @@ public class MemoryStorage {
   public void lindex(@NonNull String key, long index, Options options, @NonNull final ResponseListener<String> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key).put("index", index);
 
-    send(
-      "lindex",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("lindex", query, options, getCallbackString(listener));
   }
 
   public MemoryStorage linsert(@NonNull String key, @NonNull String position, @NonNull String pivot, @NonNull String value) {
@@ -1760,7 +1104,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage linsert(@NonNull String key, @NonNull String position, @NonNull String pivot, @NonNull String value, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -1769,26 +1112,7 @@ public class MemoryStorage {
         .put("value", value)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("linsert", query, options, callback);
+    send("linsert", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -1800,27 +1124,7 @@ public class MemoryStorage {
   public void llen(@NonNull String key, Options options, @NonNull final ResponseListener<Long> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
 
-    send(
-      "llen",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("llen", query, options, getCallbackLong(listener));
   }
 
   public MemoryStorage lpop(@NonNull String key) {
@@ -1836,29 +1140,9 @@ public class MemoryStorage {
   }
 
   public MemoryStorage lpop(@NonNull String key, Options options, final ResponseListener<String> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("lpop", query, options, callback);
+    send("lpop", query, options, listener != null ? getCallbackString(listener) : null);
 
     return this;
   }
@@ -1876,33 +1160,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage lpush(@NonNull String key, @NonNull JSONArray values, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("values", values)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("lpush", query, options, callback);
+    send("lpush", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -1920,33 +1184,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage lpushx(@NonNull String key, @NonNull final String value, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("value", value)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("lpushx", query, options, callback);
+    send("lpushx", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -1961,27 +1205,7 @@ public class MemoryStorage {
       .put("start", start)
       .put("stop", stop);
 
-    send(
-      "lrange",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONArray("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("lrange", query, options, getCallbackArray(listener));
   }
 
   public MemoryStorage lrem(@NonNull String key, long count, @NonNull String value) {
@@ -1997,7 +1221,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage lrem(@NonNull String key, long count, @NonNull String value, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -2005,26 +1228,7 @@ public class MemoryStorage {
         .put("value", value)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("lrem", query, options, callback);
+    send("lrem", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -2042,7 +1246,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage lset(@NonNull String key, long index, @NonNull String value, Options options, final ResponseListener<String> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -2050,26 +1253,7 @@ public class MemoryStorage {
         .put("value", value)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("lset", query, options, callback);
+    send("lset", query, options, listener != null ? getCallbackString(listener) : null);
 
     return this;
   }
@@ -2087,7 +1271,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage ltrim(@NonNull String key, long start, long stop, Options options, final ResponseListener<String> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -2095,26 +1278,7 @@ public class MemoryStorage {
         .put("stop", stop)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("ltrim", query, options, callback);
+    send("ltrim", query, options, listener != null ? getCallbackString(listener) : null);
 
     return this;
   }
@@ -2126,27 +1290,7 @@ public class MemoryStorage {
   public void mget(@NonNull JSONArray keys, Options options, @NonNull final ResponseListener<JSONArray> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("keys", keys);
 
-    send(
-      "mget",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONArray("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("mget", query, options, getCallbackArray(listener));
   }
 
   public MemoryStorage mset(@NonNull JSONArray entries) {
@@ -2162,30 +1306,10 @@ public class MemoryStorage {
   }
 
   public MemoryStorage mset(@NonNull JSONArray entries, Options options, final ResponseListener<String> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("body", new KuzzleJSONObject().put("entries", entries));
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("mset", query, options, callback);
+    send("mset", query, options, listener != null ? getCallbackString(listener) : null);
 
     return this;
   }
@@ -2203,30 +1327,10 @@ public class MemoryStorage {
   }
 
   public MemoryStorage msetnx(@NonNull JSONArray entries, Options options, final ResponseListener<Integer> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("body", new KuzzleJSONObject().put("entries", entries));
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getInt("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("msetnx", query, options, callback);
+    send("msetnx", query, options, listener != null ? getCallbackInt(listener) : null);
 
     return this;
   }
@@ -2240,27 +1344,7 @@ public class MemoryStorage {
       .put("_id", key)
       .put("subcommand", subcommand);
 
-    send(
-      "object",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("object", query, options, getCallbackString(listener));
   }
 
   public MemoryStorage persist(@NonNull String key) {
@@ -2276,29 +1360,9 @@ public class MemoryStorage {
   }
 
   public MemoryStorage persist(@NonNull String key, Options options, final ResponseListener<Integer> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getInt("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("persist", query, options, callback);
+    send("persist", query, options, listener != null ? getCallbackInt(listener) : null);
 
     return this;
   }
@@ -2316,33 +1380,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage pexpire(@NonNull String key, long milliseconds, Options options, final ResponseListener<Integer> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("milliseconds", milliseconds)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getInt("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("pexpire", query, options, callback);
+    send("pexpire", query, options, listener != null ? getCallbackInt(listener) : null);
 
     return this;
   }
@@ -2360,33 +1404,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage pexpireat(@NonNull String key, long timestamp, Options options, final ResponseListener<Integer> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("timestamp", timestamp)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getInt("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("pexpireat", query, options, callback);
+    send("pexpireat", query, options, listener != null ? getCallbackInt(listener) : null);
 
     return this;
   }
@@ -2404,33 +1428,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage pfadd(@NonNull String key, @NonNull JSONArray elements, Options options, final ResponseListener<Integer> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("elements", elements)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getInt("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("pfadd", query, options, callback);
+    send("pfadd", query, options, listener != null ? getCallbackInt(listener) : null);
 
     return this;
   }
@@ -2442,27 +1446,7 @@ public class MemoryStorage {
   public void pfcount(@NonNull JSONArray keys, Options options, @NonNull final ResponseListener<Long> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("keys", keys);
 
-    send(
-      "pfcount",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("pfcount", query, options, getCallbackLong(listener));
   }
 
   public MemoryStorage pfmerge(@NonNull String key, @NonNull JSONArray sources) {
@@ -2478,33 +1462,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage pfmerge(@NonNull String key, @NonNull JSONArray sources, Options options, final ResponseListener<String> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("sources", sources)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("pfmerge", query, options, callback);
+    send("pfmerge", query, options, listener != null ? getCallbackString(listener) : null);
 
     return this;
   }
@@ -2514,27 +1478,7 @@ public class MemoryStorage {
   }
 
   public void ping(Options options, @NonNull final ResponseListener<String> listener) {
-    send(
-      "ping",
-      null,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("ping", null, options, getCallbackString(listener));
   }
 
   public MemoryStorage psetex(@NonNull String key, @NonNull String value, long milliseconds) {
@@ -2550,7 +1494,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage psetex(@NonNull String key, @NonNull String value, long milliseconds, Options options, final ResponseListener<String> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -2558,26 +1501,7 @@ public class MemoryStorage {
         .put("milliseconds", milliseconds)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("psetex", query, options, callback);
+    send("psetex", query, options, listener != null ? getCallbackString(listener) : null);
 
     return this;
   }
@@ -2589,27 +1513,7 @@ public class MemoryStorage {
   public void pttl(@NonNull String key, Options options, @NonNull final ResponseListener<Long> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
 
-    send(
-      "pttl",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("pttl", query, options, getCallbackLong(listener));
   }
 
   public void randomkey(@NonNull final ResponseListener<String> listener) {
@@ -2617,27 +1521,7 @@ public class MemoryStorage {
   }
 
   public void randomkey(Options options, @NonNull final ResponseListener<String> listener) {
-    send(
-      "randomkey",
-      null,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("randomkey", null, options, getCallbackString(listener));
   }
 
   public MemoryStorage rename(@NonNull String key, @NonNull String newkey) {
@@ -2653,33 +1537,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage rename(@NonNull String key, @NonNull String newkey, Options options, final ResponseListener<String> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("newkey", newkey)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("rename", query, options, callback);
+    send("rename", query, options, listener != null ? getCallbackString(listener) : null);
 
     return this;
   }
@@ -2697,33 +1561,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage renamenx(@NonNull String key, @NonNull String newkey, Options options, final ResponseListener<String> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("newkey", newkey)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("renamenx", query, options, callback);
+    send("renamenx", query, options, listener != null ? getCallbackString(listener) : null);
 
     return this;
   }
@@ -2741,29 +1585,9 @@ public class MemoryStorage {
   }
 
   public MemoryStorage rpop(@NonNull String key, Options options, final ResponseListener<String> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("rpop", query, options, callback);
+    send("rpop", query, options, listener != null ? getCallbackString(listener) : null);
 
     return this;
   }
@@ -2781,33 +1605,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage rpoplpush(@NonNull String source, @NonNull String destination, Options options, final ResponseListener<String> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("body", new KuzzleJSONObject()
         .put("source", source)
         .put("destination", destination)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("rpoplpush", query, options, callback);
+    send("rpoplpush", query, options, listener != null ? getCallbackString(listener) : null);
 
     return this;
   }
@@ -2825,33 +1629,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage rpush(@NonNull String key, @NonNull JSONArray values, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("values", values)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("rpush", query, options, callback);
+    send("rpush", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -2869,33 +1653,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage rpushx(@NonNull String key, @NonNull final String value, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("value", value)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("rpushx", query, options, callback);
+    send("rpushx", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -2913,33 +1677,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage sadd(@NonNull String key, @NonNull JSONArray members, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("members", members)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("sadd", query, options, callback);
+    send("sadd", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -2961,27 +1705,7 @@ public class MemoryStorage {
       }
     }
 
-    send(
-      "scan",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONArray("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("scan", query, options, getCallbackArray(listener));
   }
 
   public void scard(@NonNull String key, @NonNull final ResponseListener<Long> listener) {
@@ -2991,27 +1715,7 @@ public class MemoryStorage {
   public void scard(@NonNull String key, Options options, @NonNull final ResponseListener<Long> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
 
-    send(
-      "scard",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("scard", query, options, getCallbackLong(listener));
   }
 
   public void sdiff(@NonNull String key, @NonNull JSONArray keys, @NonNull final ResponseListener<JSONArray> listener) {
@@ -3023,27 +1727,7 @@ public class MemoryStorage {
       .put("_id", key)
       .put("keys", keys);
 
-    send(
-      "bitcount",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONArray("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("sdiff", query, options, getCallbackArray(listener));
   }
 
   public MemoryStorage sdiffstore(@NonNull String key, @NonNull JSONArray keys, @NonNull String destination) {
@@ -3059,7 +1743,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage sdiffstore(@NonNull String key, @NonNull JSONArray keys, @NonNull String destination, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -3067,26 +1750,7 @@ public class MemoryStorage {
         .put("keys", keys)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("sdiffstore", query, options, callback);
+    send("sdiffstore", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -3104,7 +1768,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage set(@NonNull String key, @NonNull String value, Options options, final ResponseListener<String> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
     KuzzleJSONObject body = new KuzzleJSONObject().put("value", value);
 
@@ -3123,26 +1786,7 @@ public class MemoryStorage {
 
     query.put("body", body);
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("set", query, options, callback);
+    send("set", query, options, listener != null ? getCallbackString(listener) : null);
 
     return this;
   }
@@ -3160,7 +1804,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage setex(@NonNull String key, @NonNull String value, long seconds, Options options, final ResponseListener<String> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -3168,26 +1811,7 @@ public class MemoryStorage {
         .put("seconds", seconds)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("setex", query, options, callback);
+    send("setex", query, options, listener != null ? getCallbackString(listener) : null);
 
     return this;
   }
@@ -3205,33 +1829,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage setnx(@NonNull String key, @NonNull String value, Options options, final ResponseListener<Integer> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("value", value)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getInt("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("setnx", query, options, callback);
+    send("setnx", query, options, listener != null ? getCallbackInt(listener) : null);
 
     return this;
   }
@@ -3243,27 +1847,7 @@ public class MemoryStorage {
   public void sinter(@NonNull JSONArray keys, Options options, @NonNull final ResponseListener<JSONArray> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("keys", keys);
 
-    send(
-      "sinter",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONArray("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("sinter", query, options, getCallbackArray(listener));
   }
 
   public MemoryStorage sinterstore(@NonNull String destination, @NonNull JSONArray keys) {
@@ -3279,33 +1863,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage sinterstore(@NonNull String destination, @NonNull JSONArray keys, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("body", new KuzzleJSONObject()
         .put("destination", destination)
         .put("keys", keys)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("sinterstore", query, options, callback);
+    send("sinterstore", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -3317,27 +1881,7 @@ public class MemoryStorage {
   public void sismember(@NonNull String key, @NonNull String member, Options options, @NonNull final ResponseListener<Integer> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key).put("member", member);
 
-    send(
-      "sismember",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getInt("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("sismember", query, options, getCallbackInt(listener));
   }
 
   public void smembers(@NonNull String key, @NonNull final ResponseListener<JSONArray> listener) {
@@ -3347,27 +1891,7 @@ public class MemoryStorage {
   public void smembers(@NonNull String key, Options options, @NonNull final ResponseListener<JSONArray> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
 
-    send(
-      "smembers",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONArray("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("smembers", query, options, getCallbackArray(listener));
   }
 
   public MemoryStorage smove(@NonNull String key, @NonNull String destination, @NonNull String member) {
@@ -3383,7 +1907,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage smove(@NonNull String key, @NonNull String destination, @NonNull String member, Options options, final ResponseListener<Integer> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -3391,26 +1914,7 @@ public class MemoryStorage {
         .put("member", member)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getInt("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("smove", query, options, callback);
+    send("smove", query, options, listener != null ? getCallbackInt(listener) : null);
 
     return this;
   }
@@ -3442,27 +1946,7 @@ public class MemoryStorage {
       query.put("alpha", options.getAlpha());
     }
 
-    send(
-      "sort",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONArray("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("sort", query, options, getCallbackArray(listener));
   }
 
   public MemoryStorage spop(@NonNull String key) {
@@ -3576,33 +2060,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage srem(@NonNull String key, @NonNull JSONArray members, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("members", members)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("srem", query, options, callback);
+    send("srem", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -3626,27 +2090,7 @@ public class MemoryStorage {
       }
     }
 
-    send(
-      "sscan",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONArray("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("sscan", query, options, getCallbackArray(listener));
   }
 
   public void strlen(@NonNull String key, @NonNull final ResponseListener<Long> listener) {
@@ -3656,27 +2100,7 @@ public class MemoryStorage {
   public void strlen(@NonNull String key, Options options, @NonNull final ResponseListener<Long> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
 
-    send(
-      "strlen",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("strlen", query, options, getCallbackLong(listener));
   }
 
   public void sunion(@NonNull JSONArray keys, @NonNull final ResponseListener<JSONArray> listener) {
@@ -3686,27 +2110,7 @@ public class MemoryStorage {
   public void sunion(@NonNull JSONArray keys, Options options, @NonNull final ResponseListener<JSONArray> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("keys", keys);
 
-    send(
-      "sunion",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONArray("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("sunion", query, options, getCallbackArray(listener));
   }
 
   public MemoryStorage sunionstore(@NonNull String destination, @NonNull JSONArray keys) {
@@ -3722,33 +2126,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage sunionstore(@NonNull String destination, @NonNull JSONArray keys, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("body", new KuzzleJSONObject()
         .put("destination", destination)
         .put("keys", keys)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("sunionstore", query, options, callback);
+    send("sunionstore", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -3799,30 +2183,10 @@ public class MemoryStorage {
   }
 
   public MemoryStorage touch(@NonNull JSONArray keys, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("body", new KuzzleJSONObject().put("keys", keys));
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("touch", query, options, callback);
+    send("touch", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -3834,27 +2198,7 @@ public class MemoryStorage {
   public void ttl(@NonNull String key, Options options, @NonNull final ResponseListener<Long> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
 
-    send(
-      "ttl",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("ttl", query, options, getCallbackLong(listener));
   }
 
   public void type(@NonNull String key, @NonNull final ResponseListener<String> listener) {
@@ -3864,27 +2208,7 @@ public class MemoryStorage {
   public void type(@NonNull String key, Options options, @NonNull final ResponseListener<String> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
 
-    send(
-      "type",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getString("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("type", query, options, getCallbackString(listener));
   }
 
   public MemoryStorage zadd(@NonNull String key, @NonNull JSONArray elements) {
@@ -3900,7 +2224,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage zadd(@NonNull String key, @NonNull JSONArray elements, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
     KuzzleJSONObject body = new KuzzleJSONObject().put("elements", elements);
 
@@ -3913,26 +2236,7 @@ public class MemoryStorage {
 
     query.put("body", body);
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("zadd", query, options, callback);
+    send("zadd", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -3944,27 +2248,7 @@ public class MemoryStorage {
   public void zcard(@NonNull String key, Options options, @NonNull final ResponseListener<Long> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
 
-    send(
-      "zcard",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("zcard", query, options, getCallbackLong(listener));
   }
 
   public void zcount(@NonNull String key, long min, long max, @NonNull final ResponseListener<Long> listener) {
@@ -3977,27 +2261,7 @@ public class MemoryStorage {
       .put("min", min)
       .put("max", max);
 
-    send(
-      "zcount",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("zcount", query, options, getCallbackLong(listener));
   }
 
   public MemoryStorage zincrby(@NonNull String key, @NonNull String member, double value) {
@@ -4013,7 +2277,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage zincrby(@NonNull String key, @NonNull String member, double value, Options options, final ResponseListener<Double> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -4021,26 +2284,8 @@ public class MemoryStorage {
         .put("value", value)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(Double.parseDouble(response.getString("result")));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
 
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("zincrby", query, options, callback);
+    send("zincrby", query, options, listener != null ? getCallbackDouble(listener) : null);
 
     return this;
   }
@@ -4058,7 +2303,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage zinterstore(@NonNull String destination, @NonNull JSONArray keys, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", destination);
     KuzzleJSONObject body = new KuzzleJSONObject().put("keys", keys);
 
@@ -4074,26 +2318,7 @@ public class MemoryStorage {
 
     query.put("body", body);
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("zinterstore", query, options, callback);
+    send("zinterstore", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -4108,27 +2333,7 @@ public class MemoryStorage {
       .put("min", min)
       .put("max", max);
 
-    send(
-      "zlexcount",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("zlexcount", query, options, getCallbackLong(listener));
   }
 
   public void zrange(@NonNull String key, long start, long stop, @NonNull final ResponseListener<JSONArray> listener) {
@@ -4181,27 +2386,7 @@ public class MemoryStorage {
       }
     }
 
-    send(
-      "zrangebylex",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONArray("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("zrangebylex", query, options, getCallbackArray(listener));
   }
 
   public void zrangebyscore(@NonNull String key, long min, long max, @NonNull final ResponseListener<JSONArray> listener) {
@@ -4251,27 +2436,7 @@ public class MemoryStorage {
   public void zrank(@NonNull String key, @NonNull String member, Options options, @NonNull final ResponseListener<Long> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key).put("member", member);
 
-    send(
-      "zrank",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("zrank", query, options, getCallbackLong(listener));
   }
 
   public MemoryStorage zrem(@NonNull String key, @NonNull JSONArray members) {
@@ -4287,33 +2452,13 @@ public class MemoryStorage {
   }
 
   public MemoryStorage zrem(@NonNull String key, @NonNull JSONArray members, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("members", members)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("zrem", query, options, callback);
+    send("zrem", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -4331,7 +2476,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage zremrangebylex(@NonNull String key, @NonNull String min, @NonNull String max, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -4339,26 +2483,7 @@ public class MemoryStorage {
         .put("max", max)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("zremrangebylex", query, options, callback);
+    send("zremrangebylex", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -4376,7 +2501,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage zremrangebyrank(@NonNull String key, long min, long max, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -4384,26 +2508,7 @@ public class MemoryStorage {
         .put("stop", max)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("zremrangebyrank", query, options, callback);
+    send("zremrangebyrank", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -4421,7 +2526,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage zremrangebyscore(@NonNull String key, double min, double max, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -4429,26 +2533,7 @@ public class MemoryStorage {
         .put("stop", max)
       );
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("zremrangebyscore", query, options, callback);
+    send("zremrangebyscore", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
@@ -4503,27 +2588,7 @@ public class MemoryStorage {
       }
     }
 
-    send(
-      "zrevrangebylex",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONArray("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("zrevrangebylex", query, options, getCallbackArray(listener));
   }
 
   public void zrevrangebyscore(@NonNull String key, long min, long max, @NonNull final ResponseListener<JSONArray> listener) {
@@ -4573,27 +2638,7 @@ public class MemoryStorage {
   public void zrevrank(@NonNull String key, @NonNull String member, Options options, @NonNull final ResponseListener<Long> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key).put("member", member);
 
-    send(
-      "zrevrank",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("zrevrank", query, options, getCallbackLong(listener));
   }
 
   public void zscan(@NonNull String key, long cursor, @NonNull final ResponseListener<JSONArray> listener) {
@@ -4615,27 +2660,7 @@ public class MemoryStorage {
       }
     }
 
-    send(
-      "zscan",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONArray("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("zscan", query, options, getCallbackArray(listener));
   }
 
   public void zscore(@NonNull String key, @NonNull String member, @NonNull final ResponseListener<Double> listener) {
@@ -4645,27 +2670,7 @@ public class MemoryStorage {
   public void zscore(@NonNull String key, @NonNull String member, Options options, @NonNull final ResponseListener<Double> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key).put("member", member);
 
-    send(
-      "zscore",
-      query,
-      options,
-      new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(Double.parseDouble(response.getString("result")));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      }
-    );
+    send("zscore", query, options, getCallbackDouble(listener));
   }
 
   public MemoryStorage zunionstore(@NonNull String destination, @NonNull JSONArray keys) {
@@ -4681,7 +2686,6 @@ public class MemoryStorage {
   }
 
   public MemoryStorage zunionstore(@NonNull String destination, @NonNull JSONArray keys, Options options, final ResponseListener<Long> listener) {
-    ResponseListener<JSONObject> callback = null;
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", destination);
     KuzzleJSONObject body = new KuzzleJSONObject().put("keys", keys);
 
@@ -4697,26 +2701,7 @@ public class MemoryStorage {
 
     query.put("body", body);
 
-    if (listener != null) {
-      callback = new ResponseListener<JSONObject>() {
-        @Override
-        public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getLong("result"));
-          }
-          catch(JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-
-        @Override
-        public void onError(JSONObject error) {
-          listener.onError(error);
-        }
-      };
-    }
-
-    send("zunionstore", query, options, callback);
+    send("zunionstore", query, options, listener != null ? getCallbackLong(listener) : null);
 
     return this;
   }
