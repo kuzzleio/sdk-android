@@ -1,780 +1,854 @@
 package io.kuzzle.test.core.KuzzleMemoryStorage;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.skyscreamer.jsonassert.JSONAssert;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import io.kuzzle.sdk.core.Kuzzle;
+import io.kuzzle.sdk.core.MemoryStorage;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.listeners.OnQueryDoneListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.util.KuzzleJSONObject;
-import io.kuzzle.sdk.util.memoryStorage.SetParams;
-import io.kuzzle.test.testUtils.MemoryStorageExtend;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class methodsTest {
+  private Kuzzle kuzzle;
+  private Kuzzle.QueryArgs queryArgs = new Kuzzle.QueryArgs();
+  private MemoryStorage ms;
+  private ArgumentCaptor capturedQueryArgs;
+  private ArgumentCaptor capturedQuery;
 
-  Kuzzle kuzzle;
-  MemoryStorageExtend ms;
-  ArgumentCaptor argument;
+  private static <T> T[] concat(T[] first, T[] second) {
+    T[] result = Arrays.copyOf(first, first.length + second.length);
+    System.arraycopy(second, 0, result, first.length, second.length);
+    return result;
+  }
+
+  private void validate(String command, JSONObject expected, boolean withOpts) throws JSONException {
+    assertEquals(((Kuzzle.QueryArgs) capturedQueryArgs.getValue()).controller, "ms");
+    assertEquals(((Kuzzle.QueryArgs) capturedQueryArgs.getValue()).action, command);
+
+    /*
+     if options are provided, the expected result should come first
+     as the assertion expects the second argument to contain at least
+     the JSON properties contained in the first one
+
+     And vice versa without options provided
+     */
+    if (withOpts) {
+      JSONAssert.assertEquals(expected, (JSONObject)capturedQuery.getValue(), false);
+    }
+    else {
+      JSONAssert.assertEquals(capturedQuery.getValue().toString(), expected, false);
+    }
+  }
+
+  private ResponseListener<Long> verifyResultLong(long returnValue, final long expected) throws JSONException {
+    mockResult(new KuzzleJSONObject().put("result", returnValue));
+
+    return new ResponseListener<Long>() {
+      @Override
+      public void onSuccess(Long response) {
+        assertEquals((long)response, expected);
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+      }
+    };
+  }
+
+  private ResponseListener<Integer> verifyResultInt(int returnValue, final int expected) throws JSONException {
+    mockResult(new KuzzleJSONObject().put("result", returnValue));
+
+    return new ResponseListener<Integer>() {
+      @Override
+      public void onSuccess(Integer response) {
+        assertEquals((int)response, expected);
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+      }
+    };
+  }
+
+  private ResponseListener<String> verifyResultString(String returnValue, final String expected) throws JSONException {
+    mockResult(new KuzzleJSONObject().put("result", returnValue));
+
+    return new ResponseListener<String>() {
+      @Override
+      public void onSuccess(String response) {
+        assertEquals(response, expected);
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+      }
+    };
+  }
+
+  private ResponseListener<JSONArray> verifyResultArray(JSONArray returnValue, final JSONArray expected) throws JSONException {
+    mockResult(new KuzzleJSONObject().put("result", returnValue));
+
+    return new ResponseListener<JSONArray>() {
+      @Override
+      public void onSuccess(JSONArray response) {
+        try {
+          JSONAssert.assertEquals(response, expected, false);
+        }
+        catch (JSONException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+      }
+    };
+  }
+
+  private ResponseListener<Double> verifyResultDouble(String returnValue, final double expected) throws JSONException {
+    mockResult(new KuzzleJSONObject().put("result", returnValue));
+
+    return new ResponseListener<Double>() {
+      @Override
+      public void onSuccess(Double response) {
+        assertEquals(response, expected, 10e-12);
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+      }
+    };
+  }
+
+  private void mockResult(final KuzzleJSONObject raw) throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(raw);
+        return null;
+      }
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+  }
+
+  private void testReadMethod(String command, Class[] proto, Object[] args, Options opts, JSONObject expected) throws Exception {
+    Class[] overloadedProto;
+    Object[] overloadedArgs;
+    Method mscommand;
+
+    // With options and listener
+    overloadedProto = concat(proto, new Class[]{Options.class, ResponseListener.class});
+    overloadedArgs = concat(args, new Object[]{opts, mock(ResponseListener.class)});
+    mscommand = MemoryStorage.class.getDeclaredMethod(command, overloadedProto);
+    mscommand.invoke(ms, overloadedArgs);
+    verify(kuzzle).query((Kuzzle.QueryArgs) capturedQueryArgs.capture(), (JSONObject)capturedQuery.capture(), eq(opts), any(OnQueryDoneListener.class));
+    validate(command, expected, true);
+
+    // Without options, with listener
+    overloadedProto = concat(proto, new Class[]{ResponseListener.class});
+    overloadedArgs = concat(args, new Object[]{mock(ResponseListener.class)});
+    mscommand = MemoryStorage.class.getDeclaredMethod(command, overloadedProto);
+    mscommand.invoke(ms, overloadedArgs);
+    verify(kuzzle).query((Kuzzle.QueryArgs) capturedQueryArgs.capture(), (JSONObject)capturedQuery.capture(), eq((Options)null), any(OnQueryDoneListener.class));
+    validate(command, expected, false);
+  }
+
+  private void testWriteMethod(String command, Class[] proto, Object[] args, Options opts, JSONObject expected) throws Exception {
+    Class[] overloadedProto;
+    Object[] overloadedArgs;
+    Method mscommand = MemoryStorage.class.getDeclaredMethod(command, proto);
+
+    // Without options nor listener
+    mscommand.invoke(ms, args);
+    verify(kuzzle).query((Kuzzle.QueryArgs) capturedQueryArgs.capture(), (JSONObject)capturedQuery.capture(), eq((Options)null));
+    validate(command, expected, false);
+
+    // With options, without listener
+    overloadedProto = concat(proto, new Class[]{Options.class});
+    overloadedArgs = concat(args, new Object[]{opts});
+    mscommand = MemoryStorage.class.getDeclaredMethod(command, overloadedProto);
+    mscommand.invoke(ms, overloadedArgs);
+    verify(kuzzle).query((Kuzzle.QueryArgs) capturedQueryArgs.capture(), (JSONObject)capturedQuery.capture(), eq(opts));
+    validate(command, expected, true);
+
+    // With options and listener
+    overloadedProto = concat(overloadedProto, new Class[]{ResponseListener.class});
+    overloadedArgs = concat(overloadedArgs, new Object[]{mock(ResponseListener.class)});
+    mscommand = MemoryStorage.class.getDeclaredMethod(command, overloadedProto);
+    mscommand.invoke(ms, overloadedArgs);
+    verify(kuzzle).query((Kuzzle.QueryArgs) capturedQueryArgs.capture(), (JSONObject)capturedQuery.capture(), eq(opts), any(OnQueryDoneListener.class));
+    validate(command, expected, true);
+
+    // Without options, with listener
+    overloadedProto = concat(proto, new Class[]{ResponseListener.class});
+    overloadedArgs = concat(args, new Object[]{mock(ResponseListener.class)});
+    mscommand = MemoryStorage.class.getDeclaredMethod(command, overloadedProto);
+    mscommand.invoke(ms, overloadedArgs);
+    verify(kuzzle).query((Kuzzle.QueryArgs) capturedQueryArgs.capture(), (JSONObject)capturedQuery.capture(), eq((Options)null), any(OnQueryDoneListener.class));
+    validate(command, expected, false);
+  }
 
   @Before
   public void setUp() {
     kuzzle = mock(Kuzzle.class);
-    ms = spy(new MemoryStorageExtend(kuzzle));
-    argument = ArgumentCaptor.forClass(KuzzleJSONObject.class);
+    ms = new MemoryStorage(kuzzle);
+    capturedQueryArgs = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
+    capturedQuery = ArgumentCaptor.forClass(io.kuzzle.sdk.util.KuzzleJSONObject.class);
+    queryArgs.controller = "ms";
   }
 
-  private JSONObject getBody(final KuzzleJSONObject obj) {
-    try {
-      return obj.getJSONObject("body");
-    } catch (JSONException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Test
-  public void testAppend() throws JSONException {
-    ms.append("foo", "bar");
-    verify(ms).send(eq(Action.append), (KuzzleJSONObject) argument.capture());
-    assertEquals("bar", ((KuzzleJSONObject)argument.getValue()).getString("body"));
-  }
-
-  @Test
-  public void testBgrewriteaof() {
-    ms.bgrewriteaof();
-    verify(ms).send(eq(Action.bgrewriteaof), any(KuzzleJSONObject.class));
-  }
-
-  @Test
-  public void testBgsave() {
-    ms.bgsave();
-    verify(ms).send(eq(Action.bgsave), any(KuzzleJSONObject.class));
-  }
-
-  @Test
-  public void testBitcount() throws JSONException {
-    ms.bitcount("foo");
-    ms.bitcount("foo", 24, 42);
-    verify(ms, times(2)).send(eq(Action.bitcount), (KuzzleJSONObject) argument.capture());
-    assertEquals(24, getBody((KuzzleJSONObject)argument.getAllValues().get(1)).getLong("start"));
-    assertEquals(42, getBody((KuzzleJSONObject)argument.getAllValues().get(1)).getLong("end"));
-  }
-
-  @Test
-  public void testBitOP() throws JSONException {
-    ms.bitop(BitOP.AND, "destKey", "src1", "src2");
-    verify(ms).send(eq(Action.bitop), (KuzzleJSONObject) argument.capture());
-    assertEquals("AND", getBody((KuzzleJSONObject) argument.getValue()).getString("operation"));
-    assertEquals("destKey", getBody((KuzzleJSONObject) argument.getValue()).getString("destKey"));
-    assertEquals("src1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[0]);
-    assertEquals("src2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[1]);
-  }
-
-  @Test
-  public void testBitPos() throws JSONException {
-    ms.bitpos("id", 42);
-    ms.bitpos("id", 42, 24);
-    ms.bitpos("id", 42, 24, 1337);
-    verify(ms, times(3)).send(eq(Action.bitpos), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject) argument.getAllValues().get(0)).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getAllValues().get(2)).getLong("bit"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getAllValues().get(2)).getLong("start"));
-    assertEquals(1337, getBody((KuzzleJSONObject) argument.getAllValues().get(2)).getLong("end"));
-  }
-
-  @Test
-  public void testBlpop() throws JSONException {
-    ms.blpop(new String[]{"1", "2"}, 42);
-    verify(ms).send(eq(Action.blpop), (KuzzleJSONObject) argument.capture());
-    assertEquals("1",((String[])getBody((KuzzleJSONObject) argument.getValue()).get("src"))[0]);
-    assertEquals("2",((String[])getBody((KuzzleJSONObject) argument.getValue()).get("src"))[1]);
-    assertEquals(42,getBody((KuzzleJSONObject) argument.getValue()).getLong("timeout"));
-  }
-
-  @Test
-  public void testBrpoplpush() throws JSONException {
-    ms.brpoplpush("source", "destination", 42);
-    verify(ms).send(eq(Action.brpoplpush), (KuzzleJSONObject) argument.capture());
-    assertEquals("source", getBody((KuzzleJSONObject) argument.getValue()).get("source"));
-    assertEquals("destination", getBody((KuzzleJSONObject) argument.getValue()).get("destination"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("timeout"));
-  }
-
-  @Test
-  public void testDbsize() {
-    ms.dbsize();
-    verify(ms).send(eq(Action.dbsize), any(KuzzleJSONObject.class));
-  }
-
-  @Test
-  public void testDecrby() throws JSONException {
-    ms.decrby("id", 42);
-    verify(ms).send(eq(Action.decrby), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject) argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("value"));
-  }
-
-  @Test
-  public void testDiscard() {
-    ms.discard();
-    verify(ms).send(eq(Action.discard), any(KuzzleJSONObject.class));
-  }
-
-  @Test
-  public void testExec() {
-    ms.exec();
-    verify(ms).send(eq(Action.exec), any(KuzzleJSONObject.class));
-  }
-
-  @Test
-  public void testExpire() throws JSONException {
-    ms.expire("id", 42);
-    verify(ms).send(eq(Action.expire), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("seconds"));
-  }
-
-  @Test
-  public void testExpireAt() throws JSONException {
-    ms.expireat("id", 42);
-    verify(ms).send(eq(Action.expireat), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("timestamp"));
-  }
-
-  @Test
-  public void testFlushdb() {
-    ms.flushdb();
-    verify(ms).send(eq(Action.flushdb), any(KuzzleJSONObject.class));
-  }
-
-  @Test
-  public void testGetbit() throws JSONException {
-    ms.getbit("id", 42);
-    verify(ms).send(eq(Action.getbit), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("offset"));
-  }
-
-  @Test
-  public void testGetrange() throws JSONException {
-    ms.getrange("id", 24, 42);
-    verify(ms).send(eq(Action.getrange), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("start"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("end"));
-  }
-
-  @Test
-  public void testHdel() throws JSONException {
-    ms.hdel("id", "field1", "field2");
-    verify(ms).send(eq(Action.hdel), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getAllValues().get(0)).getString("_id"));
-    assertEquals("field1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("fields"))[0]);
-    assertEquals("field2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("fields"))[1]);
-  }
-
-  @Test
-  public void testHexists() throws JSONException {
-    ms.hexists("id", "field");
-    verify(ms).send(eq(Action.hexists), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("field", getBody((KuzzleJSONObject) argument.getValue()).getString("field"));
-  }
-
-  @Test
-  public void hincrby() throws JSONException {
-    ms.hincrby("id", "field", 42);
-    verify(ms).send(eq(Action.hincrby), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("field", getBody((KuzzleJSONObject) argument.getValue()).getString("field"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getDouble("value"), 1);
-  }
-
-  @Test
-  public void hmsetTest() throws JSONException {
-    Map m = new HashMap<String, String>();
-    m.put("one", "one");
-    m.put("second", "two");
-    ms.hmset("id", m);
-    verify(ms).send(eq(Action.hmset), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("one", getBody((KuzzleJSONObject) argument.getValue()).getJSONObject("fields").getString("one"));
-    assertEquals("two", getBody((KuzzleJSONObject) argument.getValue()).getJSONObject("fields").getString("second"));
-  }
-
-  @Test
-  public void hsetTest() throws JSONException {
-    ms.hset("id", "field", "value");
-    verify(ms).send(eq(Action.hset), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("field", getBody((KuzzleJSONObject) argument.getValue()).getString("field"));
-    assertEquals("value", getBody((KuzzleJSONObject) argument.getValue()).getString("value"));
-  }
-
-  @Test
-  public void infoTest() throws JSONException {
-    ms.info("section");
-    verify(ms).send(eq(Action.info), (KuzzleJSONObject) argument.capture());
-    assertEquals("section", getBody((KuzzleJSONObject) argument.getValue()).getString("section"));
-  }
-
-  @Test
-  public void keysTest() throws JSONException {
-    ms.keys("pattern");
-    verify(ms).send(eq(Action.keys), (KuzzleJSONObject) argument.capture());
-    assertEquals("pattern", getBody((KuzzleJSONObject) argument.getValue()).getString("pattern"));
-  }
-
-  @Test
-  public void lastSaveTest() {
-    ms.lastsave();
-    verify(ms).send(eq(Action.lastsave), any(KuzzleJSONObject.class));
-  }
-
-  @Test
-  public void lindexTest() throws JSONException {
-    ms.lindex("id", 42);
-    verify(ms).send(eq(Action.lindex), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("idx"));
-  }
-
-  @Test
-  public void linsertTest() throws JSONException {
-    ms.linsert("id", Position.AFTER, "pivot", "value");
-    verify(ms).send(eq(Action.linsert), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("pivot", getBody((KuzzleJSONObject) argument.getValue()).getString("pivot"));
-    assertEquals("value", getBody((KuzzleJSONObject) argument.getValue()).getString("value"));
-  }
-
-  @Test
-  public void lpushTest() throws JSONException {
-    ms.lpush("id", "value1", "value2");
-    verify(ms).send(eq(Action.lpush), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("value1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[0]);
-    assertEquals("value2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[1]);
-  }
-
-  @Test
-  public void lrangeTest() throws JSONException {
-    ms.lrange("id", 24, 42);
-    verify(ms).send(eq(Action.lrange), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("start"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("end"));
-  }
-
-  @Test
-  public void lremTest() throws JSONException {
-    ms.lrem("id", 42, "value");
-    verify(ms).send(eq(Action.lrem), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("count"));
-    assertEquals("value", getBody((KuzzleJSONObject) argument.getValue()).getString("value"));
-  }
-
-  @Test
-  public void lsetTest() throws JSONException {
-    ms.lset("id", 42, "value");
-    verify(ms).send(eq(Action.lset), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("idx"));
-    assertEquals("value", getBody((KuzzleJSONObject) argument.getValue()).getString("value"));
-  }
-
-  @Test
-  public void ltrimTest() throws JSONException {
-    ms.ltrim("id", 24, 42);
-    verify(ms).send(eq(Action.ltrim), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("start"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("stop"));
-  }
-
-  @Test
-  public void msetTest() throws JSONException {
-    ms.mset("key1", "value1", "key2", "value2");
-    verify(ms).send(eq(Action.mset), (KuzzleJSONObject) argument.capture());
-    assertEquals("key1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[0]);
-    assertEquals("value1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[1]);
-    assertEquals("key2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[2]);
-    assertEquals("value2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[3]);
-  }
-
-  @Test
-  public void multiTest() {
-    ms.multi();
-    verify(ms).send(eq(Action.multi), any(KuzzleJSONObject.class));
-  }
-
-  @Test
-  public void objectTest() throws JSONException {
-    ms.object(ObjectCommand.encoding, "test1");
-    ms.object(ObjectCommand.idletime, "test2");
-    ms.object(ObjectCommand.refcount, "test3");
-    verify(ms, times(3)).send(eq(Action.object), (KuzzleJSONObject) argument.capture());
-    assertEquals(ObjectCommand.encoding.toString(), getBody((KuzzleJSONObject) argument.getAllValues().get(0)).getString("subcommand"));
-    assertEquals(ObjectCommand.idletime.toString(), getBody((KuzzleJSONObject) argument.getAllValues().get(1)).getString("subcommand"));
-    assertEquals(ObjectCommand.refcount.toString(), getBody((KuzzleJSONObject) argument.getAllValues().get(2)).getString("subcommand"));
-    assertEquals("test1", getBody((KuzzleJSONObject) argument.getAllValues().get(0)).getString("args"));
-    assertEquals("test2", getBody((KuzzleJSONObject) argument.getAllValues().get(1)).getString("args"));
-    assertEquals("test3", getBody((KuzzleJSONObject) argument.getAllValues().get(2)).getString("args"));
-  }
-
-  @Test
-  public void pexpireTest() throws JSONException {
-    ms.pexpire("id", 42);
-    verify(ms).send(eq(Action.pexpire), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("milliseconds"));
-  }
-
-  @Test
-  public void pexpireatTest() throws JSONException {
-    ms.pexpireat("id", 42);
-    verify(ms).send(eq(Action.pexpireat), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("timestamp"));
-  }
-
-  @Test
-  public void pfaddTest() throws JSONException {
-    ms.pfadd("id", "value1", "value2");
-    verify(ms).send(eq(Action.pfadd), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("value1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("elements"))[0]);
-    assertEquals("value2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("elements"))[1]);
-  }
-
-  @Test
-  public void pfmerge() throws JSONException {
-    ms.pfmerge("dest", "src1", "src2");
-    verify(ms).send(eq(Action.pfmerge), (KuzzleJSONObject) argument.capture());
-    assertEquals("dest", getBody((KuzzleJSONObject) argument.getValue()).get("destkey"));
-    assertEquals("src1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("sourcekeys"))[0]);
-    assertEquals("src2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("sourcekeys"))[1]);
-  }
-
-  @Test
-  public void pingTest() {
-    ms.ping();
-    verify(ms).send(eq(Action.ping), any(KuzzleJSONObject.class));
-  }
-
-  @Test
-  public void psetexTest() throws JSONException {
-    ms.psetex("id", 42, "value");
-    verify(ms).send(eq(Action.psetex), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("milliseconds"));
-    assertEquals("value", getBody((KuzzleJSONObject) argument.getValue()).getString("value"));
-  }
-
-  @Test
-  public void publishTest() throws JSONException {
-    ms.publish("channel", "message");
-    verify(ms).send(eq(Action.publish), (KuzzleJSONObject) argument.capture());
-    assertEquals("channel", getBody((KuzzleJSONObject) argument.getValue()).getString("channel"));
-    assertEquals("message", getBody((KuzzleJSONObject) argument.getValue()).getString("message"));
-  }
-
-  @Test
-  public void randomkeyTest() {
-    ms.randomkey();
-    verify(ms).send(eq(Action.randomkey), any(KuzzleJSONObject.class));
-  }
-
   @Test
-  public void renameTest() throws JSONException {
-    ms.rename("oldkey", "newkey");
-    verify(ms).send(eq(Action.rename), (KuzzleJSONObject) argument.capture());
-    assertEquals("oldkey", ((KuzzleJSONObject) argument.getValue()).getString("_id"));
-    assertEquals("newkey", getBody((KuzzleJSONObject) argument.getValue()).getString("newkey"));
-  }
+  public void append() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"foo", "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo")
+      .put("body", new JSONObject()
+        .put("value", "bar")
+      );
 
-  @Test
-  public void renamenxTest() throws JSONException {
-    ms.renamenx("oldkey", "newkey");
-    verify(ms).send(eq(Action.renamenx), (KuzzleJSONObject) argument.capture());
-    assertEquals("oldkey", ((KuzzleJSONObject) argument.getValue()).getString("_id"));
-    assertEquals("newkey", getBody((KuzzleJSONObject) argument.getValue()).getString("newkey"));
-  }
+    this.testWriteMethod("append", new Class[]{String.class, String.class}, args, opts, expected);
 
-  @Test
-  public void restoreTest() throws JSONException {
-    ms.restore("id", 42, "\nx17serializedcontent");
-    verify(ms).send(eq(Action.restore), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("ttl"));
-    assertEquals("\nx17serializedcontent", getBody((KuzzleJSONObject) argument.getValue()).getString("content"));
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.append("foo", "bar", listener);
   }
 
   @Test
-  public void rpoplpushTest() throws JSONException {
-    ms.rpoplpush("source", "dst");
-    verify(ms).send(eq(Action.rpoplpush), (KuzzleJSONObject) argument.capture());
-    assertEquals("source", getBody((KuzzleJSONObject) argument.getValue()).getString("source"));
-    assertEquals("dst", getBody((KuzzleJSONObject) argument.getValue()).getString("destination"));
-  }
+  public void bitcount() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"foo"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo");
 
-  @Test
-  public void saddTest() throws JSONException {
-    ms.sadd("id", "member1", "member2");
-    verify(ms).send(eq(Action.sadd), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("member1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("members"))[0]);
-    assertEquals("member2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("members"))[1]);
-  }
+    this.testReadMethod("bitcount", new Class[]{String.class}, args, opts, expected);
 
-  @Test
-  public void saveTest() {
-    ms.save();
-    verify(ms).send(eq(Action.save), any(KuzzleJSONObject.class));
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.bitcount("foo", listener);
   }
 
-
   @Test
-  public void sdiffstoreTest() throws JSONException {
-    ms.sdiffstore("dest", "key1", "key2");
-    verify(ms).send(eq(Action.sdiffstore), (KuzzleJSONObject) argument.capture());
-    assertEquals("dest", getBody((KuzzleJSONObject) argument.getValue()).getString("destination"));
-    assertEquals("key1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[0]);
-    assertEquals("key2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[1]);
-  }
+  public void bitop() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar");
+    Object[] args = new Object[]{"foo", "xor", keys};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo")
+      .put("body", new JSONObject()
+        .put("operation", "xor")
+        .put("keys", keys)
+      );
 
-  @Test
-  public void setTest() throws JSONException {
-    SetParams sp = SetParams.setParams();
-    sp.ex(42);
-    sp.nx();
-    ms.set("mykey", "value", sp);
-    verify(ms).send(eq(Action.set), (KuzzleJSONObject) argument.capture());
-    assertEquals("mykey", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("ex"));
-    assertEquals(true, getBody((KuzzleJSONObject) argument.getValue()).getBoolean("nx"));
-  }
+    this.testWriteMethod("bitop", new Class[]{String.class, String.class, JSONArray.class}, args, opts, expected);
 
-  @Test
-  public void setbitTest() throws JSONException {
-    ms.setbit("id", 42, 1337);
-    verify(ms).send(eq(Action.setbit), (KuzzleJSONObject) argument.capture());
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("offset"));
-    assertEquals(1337, getBody((KuzzleJSONObject) argument.getValue()).getLong("value"));
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.bitop("foo", "bar", keys, listener);
   }
 
   @Test
-  public void setexTest() throws JSONException {
-    ms.setex("id", 42, "value");
-    verify(ms).send(eq(Action.setex), (KuzzleJSONObject) argument.capture());
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getInt("seconds"));
-    assertEquals("value", getBody((KuzzleJSONObject) argument.getValue()).getString("value"));
-  }
+  public void bitpos() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setStart((long)13)
+      .setEnd((long)42);
+    Object[] args = new Object[]{"foo", 1};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo")
+      .put("bit", 1)
+      .put("start", 13)
+      .put("end", 42);
 
-  @Test
-  public void setrangeTest() throws JSONException {
-    ms.setrange("id", 42, "value");
-    verify(ms).send(eq(Action.setrange), (KuzzleJSONObject) argument.capture());
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getInt("offset"));
-    assertEquals("value", getBody((KuzzleJSONObject) argument.getValue()).getString("value"));
-  }
+    this.testReadMethod("bitpos", new Class[]{String.class, int.class}, args, opts, expected);
 
-  @Test
-  public void sinterstoreTest() throws JSONException {
-    ms.sinterstore("dest", "key1", "key2");
-    verify(ms).send(eq(Action.sinterstore), (KuzzleJSONObject) argument.capture());
-    assertEquals("dest", getBody((KuzzleJSONObject) argument.getValue()).getString("destination"));
-    assertEquals("key1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[0]);
-    assertEquals("key2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[1]);
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.bitpos("foo", 1, listener);
   }
 
   @Test
-  public void sismemberTest() throws JSONException {
-    ms.sismember("id", "member");
-    verify(ms).send(eq(Action.sismember), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("member", getBody((KuzzleJSONObject) argument.getValue()).getString("member"));
-  }
+  public void dbsize() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{};
+    JSONObject expected = new JSONObject();
 
-  @Test
-  public void smoveTest() throws JSONException {
-    ms.smove("srckey", "dstkey", "member");
-    verify(ms).send(eq(Action.smove), (KuzzleJSONObject) argument.capture());
-    assertEquals("srckey", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("dstkey", getBody((KuzzleJSONObject) argument.getValue()).getString("destination"));
-    assertEquals("member", getBody((KuzzleJSONObject) argument.getValue()).getString("member"));
-  }
+    this.testReadMethod("dbsize", new Class[]{}, args, opts, expected);
 
-  @Test
-  public void spopTest() throws JSONException {
-    ms.spop("id");
-    ms.spop("idd", 42);
-    verify(ms, times(2)).send(eq(Action.spop), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getAllValues().get(0)).getString("_id"));
-    assertEquals("idd", ((KuzzleJSONObject)argument.getAllValues().get(1)).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject)argument.getAllValues().get(1)).getLong("count"));
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.dbsize(listener);
   }
 
   @Test
-  public void sremTest() throws JSONException {
-    ms.srem("id", "member1", "member2");
-    verify(ms).send(eq(Action.srem), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getAllValues().get(0)).getString("_id"));
-    assertEquals("member1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("members"))[0]);
-    assertEquals("member2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("members"))[1]);
-  }
+  public void decr() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"foo"};
+    JSONObject expected = new JSONObject().put("_id", "foo");
 
-  @Test
-  public void sunionstoreTest() throws JSONException {
-    ms.sunionstore("dst", "key1", "key2");
-    verify(ms).send(eq(Action.sunionstore), (KuzzleJSONObject) argument.capture());
-    assertEquals("dst", getBody((KuzzleJSONObject)argument.getValue()).getString("destination"));
-    assertEquals("key1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[0]);
-    assertEquals("key2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[1]);
-  }
+    this.testWriteMethod("decr", new Class[]{String.class}, args, opts, expected);
 
-  @Test
-  public void unwatchTest() {
-    ms.unwatch();
-    verify(ms).send(eq(Action.unwatch), any(KuzzleJSONObject.class));
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.decr("foo", listener);
   }
 
   @Test
-  public void waitTest() throws JSONException {
-    ms.wait(24, (long)42);
-    verify(ms).send(eq(Action.wait), (KuzzleJSONObject) argument.capture());
-    assertEquals(24, getBody((KuzzleJSONObject)argument.getValue()).getInt("numslaves"));
-    assertEquals(42, getBody((KuzzleJSONObject)argument.getValue()).getLong("timeout"));
-  }
+  public void decrby() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"foo", -42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo")
+      .put("body", new JSONObject()
+        .put("value", -42)
+      );
 
-  @Test
-  public void zcountTest() throws JSONException {
-    ms.zcount("id", "min", 42);
-    verify(ms).send(eq(Action.zcount), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getAllValues().get(0)).getString("_id"));
-    assertEquals("min", getBody((KuzzleJSONObject)argument.getValue()).get("min"));
-    assertEquals(42, getBody((KuzzleJSONObject)argument.getValue()).get("max"));
-  }
+    this.testWriteMethod("decrby", new Class[]{String.class, long.class}, args, opts, expected);
 
-  @Test
-  public void zincrbyTest() throws JSONException {
-    ms.zincrby("id", 42, "one");
-    verify(ms).send(eq(Action.zincrby), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getAllValues().get(0)).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject)argument.getValue()).getDouble("value"), 2);
-    assertEquals("one", getBody((KuzzleJSONObject)argument.getValue()).get("member"));
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.decrby("foo", -42, listener);
   }
 
   @Test
-  public void zinterstoreTest() throws JSONException {
-    ms.zinterstore("out", new String[]{"zset1", "zset2"}, ZParams.Aggregate.MAX, 2, 3);
-    verify(ms).send(eq(Action.zinterstore), (KuzzleJSONObject) argument.capture());
-    assertEquals("out", getBody((KuzzleJSONObject)argument.getValue()).getString("destination"));
-    assertEquals("zset1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[0]);
-    assertEquals("zset2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[1]);
-    assertEquals(ZParams.Aggregate.MAX.toString(), getBody((KuzzleJSONObject)argument.getValue()).getString("aggregate"));
-    assertEquals(2, ((Object[])getBody((KuzzleJSONObject) argument.getValue()).get("weights"))[0]);
-    assertEquals(3, ((Object[])getBody((KuzzleJSONObject) argument.getValue()).get("weights"))[1]);
-  }
+  public void del() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{keys};
+    JSONObject expected = new JSONObject()
+      .put("body", new JSONObject()
+        .put("keys", keys)
+      );
 
-  @Test
-  public void zlexcountTest() throws JSONException {
-    ms.zlexcount("id", 24, 42);
-    verify(ms).send(eq(Action.zlexcount), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("min"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("max"));
-  }
+    this.testWriteMethod("del", new Class[]{JSONArray.class}, args, opts, expected);
 
-  @Test
-  public void zrangeTest() throws JSONException {
-    ms.zrange("id", 24, 42, true);
-    verify(ms).send(eq(Action.zrange), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("start"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("stop"));
-    assertEquals(true, getBody((KuzzleJSONObject) argument.getValue()).getBoolean("withscores"));
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.del(keys, listener);
   }
 
   @Test
-  public void zrangebylexTest() throws JSONException {
-    ms.zrangebylex("id", 24, 42, 0xff, 1337);
-    verify(ms).send(eq(Action.zrangebylex), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("min"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("max"));
-    assertEquals(0xff, getBody((KuzzleJSONObject) argument.getValue()).getLong("offset"));
-    assertEquals(1337, getBody((KuzzleJSONObject) argument.getValue()).getLong("count"));
-  }
+  public void exists() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{keys};
+    JSONObject expected = new JSONObject()
+      .put("keys", keys);
 
-  @Test
-  public void zrangebyscoreTest() throws JSONException {
-    ms.zrangebyscore("id", 24, 42, true, 0xff, 1337);
-    verify(ms).send(eq(Action.zrangebyscore), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("min"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("max"));
-    assertEquals(true, getBody((KuzzleJSONObject) argument.getValue()).getBoolean("withscores"));
-    assertEquals(0xff, getBody((KuzzleJSONObject) argument.getValue()).getLong("offset"));
-    assertEquals(1337, getBody((KuzzleJSONObject) argument.getValue()).getLong("count"));
-  }
+    this.testReadMethod("exists", new Class[]{JSONArray.class}, args, opts, expected);
 
-  @Test
-  public void zremTest() throws JSONException {
-    ms.zrem("id", "member1", "member2");
-    verify(ms).send(eq(Action.zrem), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getAllValues().get(0)).getString("_id"));
-    assertEquals("member1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("members"))[0]);
-    assertEquals("member2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("members"))[1]);
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.exists(keys, listener);
   }
 
   @Test
-  public void zremrangebylexTest() throws JSONException {
-    ms.zremrangebylex("id", 24, 42, 0xff, 1337);
-    verify(ms).send(eq(Action.zremrangebylex), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("min"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("max"));
-    assertEquals(0xff, getBody((KuzzleJSONObject) argument.getValue()).getLong("offset"));
-    assertEquals(1337, getBody((KuzzleJSONObject) argument.getValue()).getLong("count"));
-  }
+  public void expire() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"foo", 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo")
+      .put("body", new JSONObject()
+        .put("seconds", 42)
+      );
 
-  @Test
-  public void zrevrangebyscoreTest() throws JSONException {
-    ms.zrevrangebyscore("id", 24, 42, true, 0xff, 1337);
-    verify(ms).send(eq(Action.zrevrangebyscore), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("min"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("max"));
-    assertEquals(true, getBody((KuzzleJSONObject) argument.getValue()).getBoolean("withscores"));
-    assertEquals(0xff, getBody((KuzzleJSONObject) argument.getValue()).getLong("offset"));
-    assertEquals(1337, getBody((KuzzleJSONObject) argument.getValue()).getLong("count"));
-  }
+    this.testWriteMethod("expire", new Class[]{String.class, long.class}, args, opts, expected);
 
-  @Test
-  public void zrevrankTest() throws JSONException {
-    ms.zrevrank("id", "member");
-    verify(ms).send(eq(Action.zrevrank), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("member", getBody((KuzzleJSONObject) argument.getValue()).getString("member"));
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.expire("foo", 42, listener);
   }
 
   @Test
-  public void incrbyTest() throws JSONException {
-    ms.incrby("id", 42);
-    verify(ms).send(eq(Action.incrby), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject)argument.getValue()).getLong("value"));
-  }
+  public void expireat() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"foo", 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo")
+      .put("body", new JSONObject()
+        .put("timestamp", 42)
+      );
 
-  @Test
-  public void incrbyfloatTest() throws JSONException {
-    ms.incrbyfloat("id", 42.42);
-    verify(ms).send(eq(Action.incrbyfloat), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42.42, getBody((KuzzleJSONObject)argument.getValue()).getDouble("value"), 2);
-  }
+    this.testWriteMethod("expireat", new Class[]{String.class, long.class}, args, opts, expected);
 
-  @Test
-  public void brpopTest() throws JSONException {
-    ms.brpop(new String[]{"1", "2"}, 42);
-    verify(ms).send(eq(Action.brpop), (KuzzleJSONObject) argument.capture());
-    assertEquals("1",((String[])getBody((KuzzleJSONObject) argument.getValue()).get("src"))[0]);
-    assertEquals("2",((String[])getBody((KuzzleJSONObject) argument.getValue()).get("src"))[1]);
-    assertEquals(42,getBody((KuzzleJSONObject) argument.getValue()).getLong("timeout"));
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.expireat("foo", 42, listener);
   }
 
   @Test
-  public void testHget() throws JSONException {
-    ms.hget("id", "field");
-    verify(ms).send(eq(Action.hget), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("field", getBody((KuzzleJSONObject) argument.getValue()).getString("field"));
-  }
+  public void flushdb() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{};
+    JSONObject expected = new JSONObject();
 
-  @Test
-  public void testHmget() throws JSONException {
-    ms.hmget("id", "field1", "field2");
-    verify(ms).send(eq(Action.hmget), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getAllValues().get(0)).getString("_id"));
-    assertEquals("field1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("fields"))[0]);
-    assertEquals("field2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("fields"))[1]);
-  }
+    this.testWriteMethod("flushdb", new Class[]{}, args, opts, expected);
 
-  @Test
-  public void hsetnxTest() throws JSONException {
-    ms.hsetnx("id", "field", "value");
-    verify(ms).send(eq(Action.hsetnx), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("field", getBody((KuzzleJSONObject) argument.getValue()).getString("field"));
-    assertEquals("value", getBody((KuzzleJSONObject) argument.getValue()).getString("value"));
+    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ms.flushdb(listener);
   }
 
   @Test
-  public void msetnxTest() throws JSONException {
-    ms.msetnx("key1", "value1", "key2", "value2");
-    verify(ms).send(eq(Action.msetnx), (KuzzleJSONObject) argument.capture());
-    assertEquals("key1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[0]);
-    assertEquals("value1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[1]);
-    assertEquals("key2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[2]);
-    assertEquals("value2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[3]);
-  }
+  public void geoadd() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray points = new JSONArray()
+      .put(new JSONObject()
+        .put("lon", 13.361389)
+        .put("lat", 38.115556)
+        .put("name", "Palermo")
+      )
+      .put(new JSONObject()
+        .put("lon", 15.087269)
+        .put("lat", 37.502669)
+        .put("name", "Catania")
+      );
+    Object[] args = new Object[]{"foo", points};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo")
+      .put("body", new JSONObject()
+        .put("points", points)
+      );
 
-  @Test
-  public void rpushTest() throws JSONException {
-    ms.rpush("id", "value1", "value2");
-    verify(ms).send(eq(Action.rpush), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("value1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[0]);
-    assertEquals("value2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[1]);
-  }
+    this.testWriteMethod("geoadd", new Class[]{String.class, JSONArray.class}, args, opts, expected);
 
-  @Test
-  public void hincrbyfloatTest() throws JSONException {
-    ms.hincrbyfloat("id", "field", 42.42);
-    verify(ms).send(eq(Action.hincrbyfloat), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("field", getBody((KuzzleJSONObject) argument.getValue()).getString("field"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getDouble("value"), 2);
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.geoadd("foo", points, listener);
   }
 
   @Test
-  public void srandmemberTest() throws JSONException {
-    ms.srandmember("idd", 42);
-    verify(ms).send(eq(Action.srandmember), (KuzzleJSONObject) argument.capture());
-    assertEquals("idd", ((KuzzleJSONObject)argument.getAllValues().get(0)).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject)argument.getAllValues().get(0)).getLong("count"));
-  }
+  public void geodist() throws Exception {
+    Options opts = new Options().setQueuable(true).setUnit("ft");
+    Object[] args = new Object[]{"key", "Palermo", "Catania"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("member1", "Palermo")
+      .put("member2", "Catania")
+      .put("unit", "ft");
 
-  @Test
-  public void zrevrangeTest() throws JSONException {
-    ms.zrevrange("id", 24, 42, true);
-    verify(ms).send(eq(Action.zrevrange), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("start"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("stop"));
-    assertEquals(true, getBody((KuzzleJSONObject) argument.getValue()).getBoolean("withscores"));
-  }
+    this.testReadMethod("geodist", new Class[]{String.class, String.class, String.class}, args, opts, expected);
 
-  @Test
-  public void zscoreTest() throws JSONException {
-    ms.zscore("id", "member");
-    verify(ms).send(eq(Action.zscore), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("member", getBody((KuzzleJSONObject) argument.getValue()).getString("member"));
+    ResponseListener<Double> listener = verifyResultDouble("166274.1516", 166274.1516);
+    ms.geodist("foo", "Palermo", "Catania", listener);
+  }
+
+  @Test
+  public void geohash() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray members = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", members};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("members", members);
+
+    this.testReadMethod("geohash", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    JSONArray expectedResult = new JSONArray().put("sqc8b49rny0").put("sqdtr74hyu0");
+    ResponseListener<JSONArray> listener = verifyResultArray(expectedResult, expectedResult);
+    ms.geohash("key", members, listener);
+  }
+
+  @Test
+  public void geopos() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray members = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", members};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("members", members);
+
+    this.testReadMethod("geopos", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    JSONArray rawResult = new JSONArray()
+      .put(new JSONArray().put("13.361389").put("38.115556"))
+      .put(new JSONArray().put("15.087269").put("37.502669"));
+
+    JSONArray expectedResult = new JSONArray()
+      .put(new JSONArray().put(13.361389).put(38.115556))
+      .put(new JSONArray().put(15.087269).put(37.502669));
+
+    ResponseListener<JSONArray> listener = verifyResultArray(rawResult, expectedResult);
+    ms.geopos("key", members, listener);
+  }
+
+  @Test
+  public void georadius() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setCount((long)10)
+      .setSort("asc")
+      .setWithcoord(true)
+      .setWithdist(true);
+    Object[] args = new Object[]{"key", 15, 37, 200, "km"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("lon", 15)
+      .put("lat", 37)
+      .put("distance", 200)
+      .put("unit", "km");
+
+    this.testReadMethod("georadius", new Class[]{String.class, double.class, double.class, double.class, String.class}, args, opts, expected);
+
+    // without coordinates nor distance
+    opts.setWithcoord(false).setWithdist(false);
+    ResponseListener<JSONArray> listener = verifyResultArray(
+      new JSONArray().put("Palermo").put("Catania"),
+      new JSONArray()
+        .put(new JSONObject().put("name", "Palermo"))
+        .put(new JSONObject().put("name", "Catania"))
+    );
+    ms.georadius("key", 15, 37, 200, "km", opts, listener);
+
+    // with coordinates, without distance
+    opts.setWithcoord(true).setWithdist(false);
+    listener = verifyResultArray(
+      new JSONArray().put(
+        new JSONArray()
+          .put("Palermo").put("190.4424")
+      ).put(
+        new JSONArray()
+          .put("Catania").put("56.4413")
+      ),
+      new JSONArray()
+        .put(new JSONObject().put("name", "Palermo").put("distance", 190.4424))
+        .put(new JSONObject().put("name", "Catania").put("distance", 56.4413))
+    );
+    ms.georadius("key", 15, 37, 200, "km", opts, listener);
+
+    // without coordinates, with distance
+    opts.setWithcoord(false).setWithdist(true);
+    listener = verifyResultArray(
+      new JSONArray().put(
+        new JSONArray()
+          .put("Palermo").put(new JSONArray().put("13.3613").put("38.1155"))
+      ).put(
+        new JSONArray()
+          .put("Catania").put(new JSONArray().put("15.0872").put("37.5026"))
+      ),
+      new JSONArray()
+        .put(new JSONObject().put("name", "Palermo")
+          .put("coordinates", new JSONArray().put(13.3613).put(38.1155))
+        )
+        .put(new JSONObject().put("name", "Catania")
+          .put("coordinates", new JSONArray().put(15.0872).put(37.5026))
+        )
+    );
+    ms.georadius("key", 15, 37, 200, "km", opts, listener);
+
+    // with coordinates, with distance
+    opts.setWithcoord(true).setWithdist(true);
+    listener = verifyResultArray(
+      new JSONArray().put(
+        new JSONArray()
+          .put("Palermo").put(new JSONArray().put("13.3613").put("38.1155")).put("190.4424")
+      ).put(
+        new JSONArray()
+          .put("Catania").put("56.4413").put(new JSONArray().put("15.0872").put("37.5026"))
+      ),
+      new JSONArray()
+        .put(new JSONObject().put("name", "Palermo")
+          .put("distance", 190.4424)
+          .put("coordinates", new JSONArray().put(13.3613).put(38.1155))
+        )
+        .put(new JSONObject().put("name", "Catania")
+          .put("distance", 56.4413)
+          .put("coordinates", new JSONArray().put(15.0872).put(37.5026))
+        )
+    );
+    ms.georadius("key", 15, 37, 200, "km", opts, listener);
+  }
+
+  @Test
+  public void georadiusbymember() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setCount((long)10)
+      .setSort("asc")
+      .setWithcoord(true)
+      .setWithdist(true);
+    Object[] args = new Object[]{"key", "Palermo", 200, "km"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("member", "Palermo")
+      .put("distance", 200)
+      .put("unit", "km");
+
+    this.testReadMethod("georadiusbymember", new Class[]{String.class, String.class, double.class, String.class}, args, opts, expected);
+
+    // without coordinates nor distance
+    opts.setWithcoord(false).setWithdist(false);
+    ResponseListener<JSONArray> listener = verifyResultArray(
+      new JSONArray().put("Palermo").put("Catania"),
+      new JSONArray()
+        .put(new JSONObject().put("name", "Palermo"))
+        .put(new JSONObject().put("name", "Catania"))
+    );
+    ms.georadiusbymember("key", "Palermo", 200, "km", opts, listener);
+
+    // with coordinates, without distance
+    opts.setWithcoord(true).setWithdist(false);
+    listener = verifyResultArray(
+      new JSONArray().put(
+        new JSONArray()
+          .put("Palermo").put("190.4424")
+      ).put(
+        new JSONArray()
+          .put("Catania").put("56.4413")
+      ),
+      new JSONArray()
+        .put(new JSONObject().put("name", "Palermo").put("distance", 190.4424))
+        .put(new JSONObject().put("name", "Catania").put("distance", 56.4413))
+    );
+    ms.georadiusbymember("key", "Palermo", 200, "km", opts, listener);
+
+    // without coordinates, with distance
+    opts.setWithcoord(false).setWithdist(true);
+    listener = verifyResultArray(
+      new JSONArray().put(
+        new JSONArray()
+          .put("Palermo").put(new JSONArray().put("13.3613").put("38.1155"))
+      ).put(
+        new JSONArray()
+          .put("Catania").put(new JSONArray().put("15.0872").put("37.5026"))
+      ),
+      new JSONArray()
+        .put(new JSONObject().put("name", "Palermo")
+          .put("coordinates", new JSONArray().put(13.3613).put(38.1155))
+        )
+        .put(new JSONObject().put("name", "Catania")
+          .put("coordinates", new JSONArray().put(15.0872).put(37.5026))
+        )
+    );
+    ms.georadiusbymember("key", "Palermo", 200, "km", opts, listener);
+
+    // with coordinates, with distance
+    opts.setWithcoord(true).setWithdist(true);
+    listener = verifyResultArray(
+      new JSONArray().put(
+        new JSONArray()
+          .put("Palermo").put(new JSONArray().put("13.3613").put("38.1155")).put("190.4424")
+      ).put(
+        new JSONArray()
+          .put("Catania").put("56.4413").put(new JSONArray().put("15.0872").put("37.5026"))
+      ),
+      new JSONArray()
+        .put(new JSONObject().put("name", "Palermo")
+          .put("distance", 190.4424)
+          .put("coordinates", new JSONArray().put(13.3613).put(38.1155))
+        )
+        .put(new JSONObject().put("name", "Catania")
+          .put("distance", 56.4413)
+          .put("coordinates", new JSONArray().put(15.0872).put(37.5026))
+        )
+    );
+    ms.georadiusbymember("key", "Palermo", 200, "km", opts, listener);
+  }
+
+  @Test
+  public void get() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("get", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.get("key", listener);
+  }
+
+  @Test
+  public void getbit() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 10};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("offset", 10);
+
+    this.testReadMethod("getbit", new Class[]{String.class, long.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.getbit("key", 10, listener);
+  }
+
+  @Test
+  public void getrange() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 13, 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("start", 13)
+      .put("end", 42);
+
+    this.testReadMethod("getrange", new Class[]{String.class, long.class, long.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.getrange("key", 13, 42, listener);
+  }
+
+  @Test
+  public void getset() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "value"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject().put("value", "value"));
+
+    this.testWriteMethod("getset", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.getset("key", "value", listener);
+  }
+
+  @Test
+  public void hdel() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray fields = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", fields};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject().put("fields", fields));
+
+    this.testWriteMethod("hdel", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.hdel("key", fields, listener);
+  }
+
+  @Test
+  public void hexists() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foobar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("field", "foobar");
+
+    this.testReadMethod("hexists", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(1, 1);
+    ms.hexists("key", "foobar", listener);
+  }
+
+  @Test
+  public void hget() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("field", "foo");
+
+    this.testReadMethod("hget", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("bar", "bar");
+    ms.hget("key", "foo", listener);
+  }
+
+  @Test
+  public void hgetall() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("hgetall", new Class[]{String.class}, args, opts, expected);
+
+    final KuzzleJSONObject result = new KuzzleJSONObject().put("foo", "bar");
+    mockResult(new KuzzleJSONObject().put("result", result));
+
+    ResponseListener<JSONObject> listener =new ResponseListener<JSONObject>() {
+      @Override
+      public void onSuccess(JSONObject response) {
+        assertEquals(response, result);
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+      }
+    };
+
+    ms.hgetall("key", listener);
+  }
+
+  @Test
+  public void hincrby() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("value", 42)
+        .put("field", "foo")
+      );
+
+    this.testWriteMethod("hincrby", new Class[]{String.class, String.class, long.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.hincrby("foo", "bar", 42, listener);
+  }
+
+  @Test
+  public void hincrbyfloat() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", 3.14159};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("value", 3.14159)
+        .put("field", "foo")
+      );
+
+    this.testWriteMethod("hincrbyfloat", new Class[]{String.class, String.class, double.class}, args, opts, expected);
+
+    ResponseListener<Double> listener = verifyResultDouble("48.14159", 48.14159);
+    ms.hincrbyfloat("foo", "bar", 3.14159, listener);
+  }
+
+  @Test
+  public void hkeys() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("hkeys", new Class[]{String.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.hkeys("key", listener);
+  }
+
+  @Test
+  public void hlen() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("hlen", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.hlen("key", listener);
+  }
+
+  @Test
+  public void hmget() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray fields = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", fields};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("fields", fields);
+
+    this.testReadMethod("hmget", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.hmget("key", fields, listener);
   }
-
 }

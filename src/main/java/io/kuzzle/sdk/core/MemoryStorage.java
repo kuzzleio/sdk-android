@@ -26,6 +26,7 @@ public class MemoryStorage {
 
   public MemoryStorage(@NonNull final Kuzzle kuzzle) {
     this.kuzzle = kuzzle;
+    queryArgs.controller = "ms";
   }
 
   protected void assignGeoradiusOptions(@NonNull JSONObject query, Options options) {
@@ -124,7 +125,6 @@ public class MemoryStorage {
   }
 
   protected void send(@NonNull String action, final KuzzleJSONObject query, Options options, final ResponseListener<JSONObject> listener) {
-    queryArgs.controller = "ms";
     queryArgs.action = action;
 
     try {
@@ -323,11 +323,11 @@ public class MemoryStorage {
     return this;
   }
 
-  public void bitpos(@NonNull String key, short bit, @NonNull final ResponseListener<Long> listener) {
+  public void bitpos(@NonNull String key, int bit, @NonNull final ResponseListener<Long> listener) {
     bitpos(key, bit, null, listener);
   }
 
-  public void bitpos(@NonNull String key, short bit, Options options, @NonNull final ResponseListener<Long> listener) {
+  public void bitpos(@NonNull String key, int bit, Options options, @NonNull final ResponseListener<Long> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("bit", bit);
@@ -350,7 +350,7 @@ public class MemoryStorage {
   }
 
   public void dbsize(Options options, @NonNull final ResponseListener<Long> listener) {
-    send("dbsize", null, options, getCallbackLong(listener));
+    send("dbsize", new KuzzleJSONObject(), options, getCallbackLong(listener));
   }
 
   public MemoryStorage decr(@NonNull String key) {
@@ -436,18 +436,18 @@ public class MemoryStorage {
     return expire(key, seconds, options, null);
   }
 
-  public MemoryStorage expire(@NonNull String key, long seconds, final ResponseListener<Long> listener) {
+  public MemoryStorage expire(@NonNull String key, long seconds, final ResponseListener<Integer> listener) {
     return expire(key, seconds, null, listener);
   }
 
-  public MemoryStorage expire(@NonNull String key, long seconds, Options options, final ResponseListener<Long> listener) {
+  public MemoryStorage expire(@NonNull String key, long seconds, Options options, final ResponseListener<Integer> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("seconds", seconds)
       );
 
-    send("expire", query, options, listener != null ? getCallbackLong(listener) : null);
+    send("expire", query, options, listener != null ? getCallbackInt(listener) : null);
 
     return this;
   }
@@ -460,18 +460,18 @@ public class MemoryStorage {
     return expireat(key, timestamp, options, null);
   }
 
-  public MemoryStorage expireat(@NonNull String key, long timestamp, final ResponseListener<Long> listener) {
+  public MemoryStorage expireat(@NonNull String key, long timestamp, final ResponseListener<Integer> listener) {
     return expireat(key, timestamp, null, listener);
   }
 
-  public MemoryStorage expireat(@NonNull String key, long timestamp, Options options, final ResponseListener<Long> listener) {
+  public MemoryStorage expireat(@NonNull String key, long timestamp, Options options, final ResponseListener<Integer> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("timestamp", timestamp)
       );
 
-    send("expireat", query, options, listener != null ? getCallbackLong(listener) : null);
+    send("expireat", query, options, listener != null ? getCallbackInt(listener) : null);
 
     return this;
   }
@@ -489,7 +489,7 @@ public class MemoryStorage {
   }
 
   public MemoryStorage flushdb(Options options, final ResponseListener<String> listener) {
-    send("flushdb", null, options, listener != null ? getCallbackString(listener) : null);
+    send("flushdb", new KuzzleJSONObject(), options, listener != null ? getCallbackString(listener) : null);
 
     return this;
   }
@@ -576,7 +576,7 @@ public class MemoryStorage {
 
             for (int i = 0; i < raw.length(); i++) {
               JSONArray
-                rawPos = result.getJSONArray(i),
+                rawPos = raw.getJSONArray(i),
                 pos = new JSONArray();
 
               for (int j = 0; j < rawPos.length(); j++) {
@@ -708,7 +708,7 @@ public class MemoryStorage {
   }
 
   public MemoryStorage getset(@NonNull String key, @NonNull String value) {
-    return getset(key, value);
+    return getset(key, value, null, null);
   }
 
   public MemoryStorage getset(@NonNull String key, @NonNull String value, final ResponseListener<String> listener) {
