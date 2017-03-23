@@ -37,6 +37,7 @@ public class Options {
   private String scroll = null;
   private SearchResult previous = null;
   private String scrollId = null;
+  private int retryOnConflict = 0;
 
   // Used for getting collections
   private CollectionType collectionType = CollectionType.ALL;
@@ -475,6 +476,19 @@ public class Options {
 
   public Options setScrollId(String scrollId) {
     this.scrollId = scrollId;
+    return this;
+  }
+
+  public int getRetryOnConflict() {
+    return retryOnConflict;
+  }
+
+  public Options setRetryOnConflict(int retryOnConflict) {
+    if (retryOnConflict < 0) {
+      throw new IllegalArgumentException("Invalid value for the retryOnConflict option (positive or null integer allowed)");
+    }
+
+    this.retryOnConflict = retryOnConflict;
     return this;
   }
 }

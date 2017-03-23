@@ -1335,6 +1335,10 @@ public class Collection {
       JSONObject data = new JSONObject().put("_id", documentId).put("body", content);
       this.kuzzle.addHeaders(data, this.getHeaders());
 
+      if (options != null && options.getRetryOnConflict() > 0) {
+        data.put("retryOnConflict", options.getRetryOnConflict());
+      }
+
       this.kuzzle.query(makeQueryArgs("document", "update"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
