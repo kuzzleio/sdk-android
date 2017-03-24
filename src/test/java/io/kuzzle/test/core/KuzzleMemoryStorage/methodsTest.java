@@ -253,10 +253,15 @@ public class methodsTest {
 
   @Test
   public void bitcount() throws Exception {
-    Options opts = new Options().setQueuable(true);
+    Options opts = new Options()
+      .setQueuable(true)
+      .setStart((long)13)
+      .setEnd((long)42);
     Object[] args = new Object[]{"foo"};
     JSONObject expected = new JSONObject()
-      .put("_id", "foo");
+      .put("_id", "foo")
+      .put("start", 13)
+      .put("end", 42);
 
     this.testReadMethod("bitcount", new Class[]{String.class}, args, opts, expected);
 
@@ -1092,7 +1097,7 @@ public class methodsTest {
     JSONObject expected = new JSONObject()
       .put("_id", "key");
 
-    this.testReadMethod("lpop", new Class[]{String.class}, args, opts, expected);
+    this.testWriteMethod("lpop", new Class[]{String.class}, args, opts, expected);
 
     ResponseListener<String> listener = verifyResultString("foobar", "foobar");
     ms.lpop("key", listener);
@@ -1274,7 +1279,7 @@ public class methodsTest {
     JSONObject expected = new JSONObject()
       .put("_id", "key");
 
-    this.testReadMethod("persist", new Class[]{String.class}, args, opts, expected);
+    this.testWriteMethod("persist", new Class[]{String.class}, args, opts, expected);
 
     ResponseListener<Integer> listener = verifyResultInt(123, 123);
     ms.persist("key", listener);
@@ -1290,7 +1295,7 @@ public class methodsTest {
         .put("milliseconds", 42000)
       );
 
-    this.testReadMethod("pexpire", new Class[]{String.class, long.class}, args, opts, expected);
+    this.testWriteMethod("pexpire", new Class[]{String.class, long.class}, args, opts, expected);
 
     ResponseListener<Integer> listener = verifyResultInt(123, 123);
     ms.pexpire("key", 42000, listener);
@@ -1306,7 +1311,7 @@ public class methodsTest {
         .put("timestamp", 1234567890)
       );
 
-    this.testReadMethod("pexpireat", new Class[]{String.class, long.class}, args, opts, expected);
+    this.testWriteMethod("pexpireat", new Class[]{String.class, long.class}, args, opts, expected);
 
     ResponseListener<Integer> listener = verifyResultInt(123, 123);
     ms.pexpireat("key", 1234567890, listener);
@@ -1453,7 +1458,7 @@ public class methodsTest {
     JSONObject expected = new JSONObject()
       .put("_id", "key");
 
-    this.testReadMethod("rpop", new Class[]{String.class}, args, opts, expected);
+    this.testWriteMethod("rpop", new Class[]{String.class}, args, opts, expected);
 
     ResponseListener<String> listener = verifyResultString("foobar", "foobar");
     ms.rpop("key", listener);
@@ -1469,7 +1474,7 @@ public class methodsTest {
         .put("destination", "dest")
       );
 
-    this.testReadMethod("rpoplpush", new Class[]{String.class, String.class}, args, opts, expected);
+    this.testWriteMethod("rpoplpush", new Class[]{String.class, String.class}, args, opts, expected);
 
     ResponseListener<String> listener = verifyResultString("foobar", "foobar");
     ms.rpoplpush("key", "dest", listener);
@@ -1591,7 +1596,7 @@ public class methodsTest {
         .put("destination", "dest")
     );
 
-    this.testReadMethod("sdiffstore", new Class[]{String.class, JSONArray.class, String.class}, args, opts, expected);
+    this.testWriteMethod("sdiffstore", new Class[]{String.class, JSONArray.class, String.class}, args, opts, expected);
 
     ResponseListener<Long> listener = verifyResultLong(123, 123);
     ms.sdiffstore("key", keys, "dest", listener);
@@ -1679,7 +1684,7 @@ public class methodsTest {
         .put("destination", "key")
       );
 
-    this.testReadMethod("sinterstore", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+    this.testWriteMethod("sinterstore", new Class[]{String.class, JSONArray.class}, args, opts, expected);
 
     ResponseListener<Long> listener = verifyResultLong(123, 123);
     ms.sinterstore("key", keys, listener);
@@ -1879,7 +1884,7 @@ public class methodsTest {
         .put("destination", "key")
       );
 
-    this.testReadMethod("sunionstore", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+    this.testWriteMethod("sunionstore", new Class[]{String.class, JSONArray.class}, args, opts, expected);
 
     ResponseListener<Long> listener = verifyResultLong(123, 123);
     ms.sunionstore("key", keys, listener);
@@ -2031,7 +2036,7 @@ public class methodsTest {
         .put("weights", weights)
       );
 
-    this.testReadMethod("zinterstore", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+    this.testWriteMethod("zinterstore", new Class[]{String.class, JSONArray.class}, args, opts, expected);
 
     ResponseListener<Long> listener = verifyResultLong(123, 123);
     ms.zinterstore("key", keys, listener);
@@ -2339,7 +2344,7 @@ public class methodsTest {
         .put("weights", weights)
       );
 
-    this.testReadMethod("zunionstore", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+    this.testWriteMethod("zunionstore", new Class[]{String.class, JSONArray.class}, args, opts, expected);
 
     ResponseListener<Long> listener = verifyResultLong(123, 123);
     ms.zunionstore("key", keys, listener);

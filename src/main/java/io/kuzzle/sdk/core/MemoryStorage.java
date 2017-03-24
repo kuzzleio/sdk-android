@@ -1998,16 +1998,8 @@ public class MemoryStorage {
     return this;
   }
 
-  public MemoryStorage srandmember(@NonNull String key) {
-    return srandmember(key, null, null);
-  }
-
-  public MemoryStorage srandmember(@NonNull String key, final ResponseListener<JSONArray> listener) {
+  public MemoryStorage srandmember(@NonNull String key, @NonNull final ResponseListener<JSONArray> listener) {
     return srandmember(key, null, listener);
-  }
-
-  public MemoryStorage srandmember(@NonNull String key, Options options) {
-    return srandmember(key, options, null);
   }
 
   public MemoryStorage srandmember(@NonNull String key, Options options, final ResponseListener<JSONArray> listener) {
