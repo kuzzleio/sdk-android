@@ -887,19 +887,19 @@ public class MemoryStorage {
     send("hmget", query, options, getCallbackArray(listener));
   }
 
-  public MemoryStorage hmset(@NonNull String key, @NonNull JSONObject entries) {
+  public MemoryStorage hmset(@NonNull String key, @NonNull JSONArray entries) {
     return hmset(key, entries, null, null);
   }
 
-  public MemoryStorage hmset(@NonNull String key, @NonNull JSONObject entries, final ResponseListener<String> listener) {
+  public MemoryStorage hmset(@NonNull String key, @NonNull JSONArray entries, final ResponseListener<String> listener) {
     return hmset(key, entries, null, listener);
   }
 
-  public MemoryStorage hmset(@NonNull String key, @NonNull JSONObject entries, Options options) {
+  public MemoryStorage hmset(@NonNull String key, @NonNull JSONArray entries, Options options) {
     return hmset(key, entries, options, null);
   }
 
-  public MemoryStorage hmset(@NonNull String key, @NonNull JSONObject entries, Options options, final ResponseListener<String> listener) {
+  public MemoryStorage hmset(@NonNull String key, @NonNull JSONArray entries, Options options, final ResponseListener<String> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -937,7 +937,7 @@ public class MemoryStorage {
     return hset(key, field, value, null, null);
   }
 
-  public MemoryStorage hset(@NonNull String key, @NonNull String field, @NonNull String value, final ResponseListener<Long> listener) {
+  public MemoryStorage hset(@NonNull String key, @NonNull String field, @NonNull String value, final ResponseListener<Integer> listener) {
     return hset(key, field, value, null, listener);
   }
 
@@ -945,7 +945,7 @@ public class MemoryStorage {
     return hset(key, field, value, options, null);
   }
 
-  public MemoryStorage hset(@NonNull String key, @NonNull String field, @NonNull String value, Options options, final ResponseListener<Long> listener) {
+  public MemoryStorage hset(@NonNull String key, @NonNull String field, @NonNull String value, Options options, final ResponseListener<Integer> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -953,7 +953,7 @@ public class MemoryStorage {
         .put("value", value)
       );
 
-    send("hset", query, options, listener != null ? getCallbackLong(listener) : null);
+    send("hset", query, options, listener != null ? getCallbackInt(listener) : null);
 
     return this;
   }
@@ -962,7 +962,7 @@ public class MemoryStorage {
     return hsetnx(key, field, value, null, null);
   }
 
-  public MemoryStorage hsetnx(@NonNull String key, @NonNull String field, @NonNull String value, final ResponseListener<Long> listener) {
+  public MemoryStorage hsetnx(@NonNull String key, @NonNull String field, @NonNull String value, final ResponseListener<Integer> listener) {
     return hsetnx(key, field, value, null, listener);
   }
 
@@ -970,7 +970,7 @@ public class MemoryStorage {
     return hsetnx(key, field, value, options, null);
   }
 
-  public MemoryStorage hsetnx(@NonNull String key, @NonNull String field, @NonNull String value, Options options, final ResponseListener<Long> listener) {
+  public MemoryStorage hsetnx(@NonNull String key, @NonNull String field, @NonNull String value, Options options, final ResponseListener<Integer> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -978,16 +978,16 @@ public class MemoryStorage {
         .put("value", value)
       );
 
-    send("hsetnx", query, options, listener != null ? getCallbackLong(listener) : null);
+    send("hsetnx", query, options, listener != null ? getCallbackInt(listener) : null);
 
     return this;
   }
 
-  private void hstrlen(@NonNull String key, @NonNull String field, @NonNull final ResponseListener<Long> listener) {
+  public void hstrlen(@NonNull String key, @NonNull String field, @NonNull final ResponseListener<Long> listener) {
     hstrlen(key, field, null, listener);
   }
 
-  private void hstrlen(@NonNull String key, @NonNull String field, Options options, @NonNull final ResponseListener<Long> listener) {
+  public void hstrlen(@NonNull String key, @NonNull String field, Options options, @NonNull final ResponseListener<Long> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key).put("field", field);
 
     send("hstrlen", query, options, getCallbackLong(listener));
@@ -1478,7 +1478,7 @@ public class MemoryStorage {
   }
 
   public void ping(Options options, @NonNull final ResponseListener<String> listener) {
-    send("ping", null, options, getCallbackString(listener));
+    send("ping", new KuzzleJSONObject(), options, getCallbackString(listener));
   }
 
   public MemoryStorage psetex(@NonNull String key, @NonNull String value, long milliseconds) {
@@ -1521,7 +1521,7 @@ public class MemoryStorage {
   }
 
   public void randomkey(Options options, @NonNull final ResponseListener<String> listener) {
-    send("randomkey", null, options, getCallbackString(listener));
+    send("randomkey", new KuzzleJSONObject(), options, getCallbackString(listener));
   }
 
   public MemoryStorage rename(@NonNull String key, @NonNull String newkey) {
@@ -2015,7 +2015,7 @@ public class MemoryStorage {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
 
     if (options != null && options.getCount() != null) {
-      query.put("body", new KuzzleJSONObject().put("count", options.getCount()));
+      query.put("count", options.getCount());
     }
 
     if (listener != null) {
@@ -2144,7 +2144,7 @@ public class MemoryStorage {
   public void time(Options options, @NonNull final ResponseListener<JSONArray> listener) {
     send(
       "time",
-      null,
+      new KuzzleJSONObject(),
       options,
       new ResponseListener<JSONObject>() {
         @Override
@@ -2389,11 +2389,11 @@ public class MemoryStorage {
     send("zrangebylex", query, options, getCallbackArray(listener));
   }
 
-  public void zrangebyscore(@NonNull String key, long min, long max, @NonNull final ResponseListener<JSONArray> listener) {
+  public void zrangebyscore(@NonNull String key, double min, double max, @NonNull final ResponseListener<JSONArray> listener) {
     zrangebyscore(key, min, max, null, listener);
   }
 
-  public void zrangebyscore(@NonNull String key, long min, long max, Options options, @NonNull final ResponseListener<JSONArray> listener) {
+  public void zrangebyscore(@NonNull String key, double min, double max, Options options, @NonNull final ResponseListener<JSONArray> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("min", min)
@@ -2529,8 +2529,8 @@ public class MemoryStorage {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
-        .put("start", min)
-        .put("stop", max)
+        .put("min", min)
+        .put("max", max)
       );
 
     send("zremrangebyscore", query, options, listener != null ? getCallbackLong(listener) : null);
@@ -2591,11 +2591,11 @@ public class MemoryStorage {
     send("zrevrangebylex", query, options, getCallbackArray(listener));
   }
 
-  public void zrevrangebyscore(@NonNull String key, long min, long max, @NonNull final ResponseListener<JSONArray> listener) {
+  public void zrevrangebyscore(@NonNull String key, double min, double max, @NonNull final ResponseListener<JSONArray> listener) {
     zrevrangebyscore(key, min, max, null, listener);
   }
 
-  public void zrevrangebyscore(@NonNull String key, long min, long max, Options options, @NonNull final ResponseListener<JSONArray> listener) {
+  public void zrevrangebyscore(@NonNull String key, double min, double max, Options options, @NonNull final ResponseListener<JSONArray> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("min", min)

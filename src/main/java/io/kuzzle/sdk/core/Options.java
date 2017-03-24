@@ -650,7 +650,7 @@ public class Options {
     return limit;
   }
 
-  public Options setLimit() {
+  public Options setLimit(JSONArray limit) {
     this.limit = limit;
     return this;
   }

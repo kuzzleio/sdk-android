@@ -104,6 +104,26 @@ public class methodsTest {
     };
   }
 
+  private ResponseListener<JSONArray> verifyResultArray(String returnValue, final JSONArray expected) throws JSONException {
+    mockResult(new KuzzleJSONObject().put("result", returnValue));
+
+    return new ResponseListener<JSONArray>() {
+      @Override
+      public void onSuccess(JSONArray response) {
+        try {
+          JSONAssert.assertEquals(response, expected, false);
+        }
+        catch (JSONException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+      }
+    };
+  }
+
   private ResponseListener<JSONArray> verifyResultArray(JSONArray returnValue, final JSONArray expected) throws JSONException {
     mockResult(new KuzzleJSONObject().put("result", returnValue));
 
@@ -851,4 +871,1478 @@ public class methodsTest {
     ResponseListener<JSONArray> listener = verifyResultArray(result, result);
     ms.hmget("key", fields, listener);
   }
+
+  @Test
+  public void hmset() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray entries = new JSONArray()
+      .put(new JSONObject().put("field", "field1").put("value", "foo"))
+      .put(new JSONObject().put("field", "field2").put("value", "bar"))
+      .put(new JSONObject().put("field", "...").put("value", "..."));
+
+    Object[] args = new Object[]{"key", entries};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("entries", entries)
+      );
+
+    this.testWriteMethod("hmset", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ms.hmset("key", entries, listener);
+  }
+
+  @Test
+  public void hscan() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setCount((long)10)
+      .setMatch("foo*");
+    Object[] args = new Object[]{"key", 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("cursor", 42)
+      .put("count", 10)
+      .put("match", "foo*");
+
+    this.testReadMethod("hscan", new Class[]{String.class, long.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray()
+      .put(18)
+      .put(new JSONArray()
+        .put("field1")
+        .put("field1 value")
+        .put("field2")
+        .put("field2 value")
+      );
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.hscan("key", 42, listener);
+  }
+
+  @Test
+  public void hset() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("field", "foo")
+        .put("value", "bar")
+      );
+
+    this.testWriteMethod("hset", new Class[]{String.class, String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.hset("key", "foo", "bar", listener);
+  }
+
+  @Test
+  public void hsetnx() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("field", "foo")
+        .put("value", "bar")
+      );
+
+    this.testWriteMethod("hsetnx", new Class[]{String.class, String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.hsetnx("key", "foo", "bar", listener);
+  }
+
+  @Test
+  public void hstrlen() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("field", "foo");
+
+    this.testReadMethod("hstrlen", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.hstrlen("key", "foo", listener);
+  }
+
+  @Test
+  public void hvals() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("hvals", new Class[]{String.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.hvals("key", listener);
+  }
+
+  @Test
+  public void incr() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"foo"};
+    JSONObject expected = new JSONObject().put("_id", "foo");
+
+    this.testWriteMethod("incr", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.incr("foo", listener);
+  }
+
+  @Test
+  public void incrby() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"foo", -42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo")
+      .put("body", new JSONObject()
+        .put("value", -42)
+      );
+
+    this.testWriteMethod("incrby", new Class[]{String.class, long.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.incrby("foo", -42, listener);
+  }
+
+  @Test
+  public void incrbyfloat() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"foo", 3.14159};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo")
+      .put("body", new JSONObject()
+        .put("value", 3.14159)
+      );
+
+    this.testWriteMethod("incrbyfloat", new Class[]{String.class, double.class}, args, opts, expected);
+
+    ResponseListener<Double> listener = verifyResultDouble("48.14159", 48.14159);
+    ms.incrbyfloat("foo", 3.14159, listener);
+  }
+
+  @Test
+  public void keys() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"foo*"};
+    JSONObject expected = new JSONObject()
+      .put("pattern", "foo*");
+
+    this.testReadMethod("keys", new Class[]{String.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.keys("foo*", listener);
+  }
+
+  @Test
+  public void lindex() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 10};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("index", 10);
+
+    this.testReadMethod("lindex", new Class[]{String.class, long.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foo", "foo");
+    ms.lindex("key", 10, listener);
+  }
+
+  @Test
+  public void linsert() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "before", "foo", "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("value", "bar")
+        .put("position", "before")
+        .put("pivot", "foo")
+      );
+
+    this.testWriteMethod("linsert", new Class[]{String.class, String.class, String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.linsert("key", "before", "foo", "bar", listener);
+  }
+
+  @Test
+  public void llen() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("llen", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.llen("key", listener);
+  }
+
+  @Test
+  public void lpop() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("lpop", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.lpop("key", listener);
+  }
+
+  @Test
+  public void lpush() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray values = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", values};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("values", values)
+      );
+
+    this.testWriteMethod("lpush", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.lpush("key", values, listener);
+  }
+
+  @Test
+  public void lpushx() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "value"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject().put("value", "value"));
+
+    this.testWriteMethod("lpushx", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.lpushx("key", "value", listener);
+  }
+
+  @Test
+  public void lrange() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 13, 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("start", 13)
+      .put("stop", 42);
+
+    this.testReadMethod("lrange", new Class[]{String.class, long.class, long.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.lrange("key", 13, 42, listener);
+  }
+
+  @Test
+  public void lrem() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 42, "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("value", "bar")
+        .put("count", 42)
+      );
+
+    this.testWriteMethod("lrem", new Class[]{String.class, long.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.lrem("key", 42, "bar", listener);
+  }
+
+
+  @Test
+  public void lset() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 42, "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("value", "bar")
+        .put("index", 42)
+      );
+
+    this.testWriteMethod("lset", new Class[]{String.class, long.class, String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foo", "foo");
+    ms.lset("key", 42, "bar", listener);
+  }
+
+  @Test
+  public void ltrim() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 13, 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("start", 13)
+        .put("stop", 42)
+      );
+
+    this.testWriteMethod("ltrim", new Class[]{String.class, long.class, long.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foo", "foo");
+    ms.ltrim("key", 13, 42, listener);
+  }
+
+  @Test
+  public void mget() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{keys};
+    JSONObject expected = new JSONObject()
+      .put("keys", keys);
+
+    this.testReadMethod("mget", new Class[]{JSONArray.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.mget(keys, listener);
+  }
+
+  @Test
+  public void mset() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray entries = new JSONArray()
+      .put(new JSONObject().put("key", "key1").put("value", "foo"))
+      .put(new JSONObject().put("key", "key2").put("value", "bar"))
+      .put(new JSONObject().put("key", "...").put("value", "..."));
+
+    Object[] args = new Object[]{entries};
+    JSONObject expected = new JSONObject()
+      .put("body", new JSONObject()
+        .put("entries", entries)
+      );
+
+    this.testWriteMethod("mset", new Class[]{JSONArray.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ms.mset(entries, listener);
+  }
+
+
+  @Test
+  public void msetnx() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray entries = new JSONArray()
+      .put(new JSONObject().put("key", "key1").put("value", "foo"))
+      .put(new JSONObject().put("key", "key2").put("value", "bar"))
+      .put(new JSONObject().put("key", "...").put("value", "..."));
+
+    Object[] args = new Object[]{entries};
+    JSONObject expected = new JSONObject()
+      .put("body", new JSONObject()
+        .put("entries", entries)
+      );
+
+    this.testWriteMethod("msetnx", new Class[]{JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.msetnx(entries, listener);
+  }
+
+  @Test
+  public void object() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "encoding"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("subcommand", "encoding");
+
+    this.testReadMethod("object", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.object("key", "encoding", listener);
+  }
+
+  @Test
+  public void persist() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("persist", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.persist("key", listener);
+  }
+
+  @Test
+  public void pexpire() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 42000};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("milliseconds", 42000)
+      );
+
+    this.testReadMethod("pexpire", new Class[]{String.class, long.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.pexpire("key", 42000, listener);
+  }
+
+  @Test
+  public void pexpireat() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 1234567890};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("timestamp", 1234567890)
+      );
+
+    this.testReadMethod("pexpireat", new Class[]{String.class, long.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.pexpireat("key", 1234567890, listener);
+  }
+
+  @Test
+  public void pfadd() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray elements = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", elements};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("elements", elements)
+      );
+
+    this.testWriteMethod("pfadd", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.pfadd("key", elements, listener);
+  }
+
+  @Test
+  public void pfcount() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{keys};
+    JSONObject expected = new JSONObject()
+      .put("keys", keys);
+
+    this.testReadMethod("pfcount", new Class[]{JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.pfcount(keys, listener);
+  }
+
+  @Test
+  public void pfmerge() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", keys};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("sources", keys)
+      );
+
+    this.testWriteMethod("pfmerge", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ms.pfmerge("key", keys, listener);
+  }
+
+  @Test
+  public void ping() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{};
+    JSONObject expected = new JSONObject();
+
+    this.testReadMethod("ping", new Class[]{}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ms.ping(listener);
+  }
+
+  @Test
+  public void psetex() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", 42000};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("value", "foo")
+        .put("milliseconds", 42000)
+      );
+
+    this.testWriteMethod("psetex", new Class[]{String.class, String.class, long.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ms.psetex("key", "foo", 42000, listener);
+  }
+
+  @Test
+  public void pttl() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("pttl", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.pttl("key", listener);
+  }
+
+  @Test
+  public void randomkey() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{};
+    JSONObject expected = new JSONObject();
+
+    this.testReadMethod("randomkey", new Class[]{}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.randomkey(listener);
+  }
+
+  @Test
+  public void rename() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("newkey", "foo")
+      );
+
+    this.testWriteMethod("rename", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ms.rename("key", "foo", listener);
+  }
+
+  @Test
+  public void renamenx() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("newkey", "foo")
+      );
+
+    this.testWriteMethod("renamenx", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ms.renamenx("key", "foo", listener);
+  }
+
+  @Test
+  public void rpop() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("rpop", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.rpop("key", listener);
+  }
+
+  @Test
+  public void rpoplpush() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "dest"};
+    JSONObject expected = new JSONObject()
+      .put("body", new JSONObject()
+        .put("source", "key")
+        .put("destination", "dest")
+      );
+
+    this.testReadMethod("rpoplpush", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.rpoplpush("key", "dest", listener);
+  }
+
+  @Test
+  public void rpush() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray values = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", values};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("values", values)
+      );
+
+    this.testWriteMethod("rpush", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.rpush("key", values, listener);
+  }
+
+  @Test
+  public void rpushx() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "value"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject().put("value", "value"));
+
+    this.testWriteMethod("rpushx", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.rpushx("key", "value", listener);
+  }
+
+  @Test
+  public void sadd() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray members = new JSONArray().put("foo").put("bar").put("baz");
+
+    Object[] args = new Object[]{"key", members};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("members", members)
+      );
+
+    this.testWriteMethod("sadd", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.sadd("key", members, listener);
+  }
+
+  @Test
+  public void scan() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setCount((long)10)
+      .setMatch("foo*");
+    Object[] args = new Object[]{42};
+    JSONObject expected = new JSONObject()
+      .put("cursor", 42)
+      .put("count", 10)
+      .put("match", "foo*");
+
+    this.testReadMethod("scan", new Class[]{long.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray()
+      .put(18)
+      .put(new JSONArray()
+        .put("field1")
+        .put("field1 value")
+        .put("field2")
+        .put("field2 value")
+      );
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.scan(42, listener);
+  }
+
+  @Test
+  public void scard() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("scard", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.scard("key", listener);
+  }
+
+  @Test
+  public void sdiff() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", keys};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("keys", keys);
+
+    this.testReadMethod("sdiff", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.sdiff("key", keys, listener);
+  }
+
+  @Test
+  public void sdiffstore() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", keys, "dest"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("keys", keys)
+        .put("destination", "dest")
+    );
+
+    this.testReadMethod("sdiffstore", new Class[]{String.class, JSONArray.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.sdiffstore("key", keys, "dest", listener);
+  }
+
+  @Test
+  public void set() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setEx((long)123)
+      .setNx(true)
+      .setPx((long)456)
+      .setXx(false);
+    Object[] args = new Object[]{"key", "value"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("value", "value")
+        .put("ex", 123)
+        .put("nx", true)
+        .put("px", 456)
+        .put("xx", false)
+      );
+
+    this.testWriteMethod("set", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.set("key", "value", listener);
+  }
+
+  @Test
+  public void setex() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("value", "foo")
+        .put("seconds", 42)
+      );
+
+    this.testWriteMethod("setex", new Class[]{String.class, String.class, long.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ms.setex("key", "foo", 42, listener);
+  }
+
+  @Test
+  public void setnx() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "value"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject().put("value", "value"));
+
+    this.testWriteMethod("setnx", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(1, 1);
+    ms.setnx("key", "value", listener);
+  }
+
+  @Test
+  public void sinter() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{keys};
+    JSONObject expected = new JSONObject()
+      .put("keys", keys);
+
+    this.testReadMethod("sinter", new Class[]{JSONArray.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.sinter(keys, listener);
+  }
+
+  @Test
+  public void sinterstore() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", keys};
+    JSONObject expected = new JSONObject()
+      .put("body", new JSONObject()
+        .put("keys", keys)
+        .put("destination", "key")
+      );
+
+    this.testReadMethod("sinterstore", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.sinterstore("key", keys, listener);
+  }
+
+  @Test
+  public void sismember() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("member", "foo");
+
+    this.testReadMethod("sismember", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(1, 1);
+    ms.sismember("key", "foo", listener);
+  }
+
+  @Test
+  public void smembers() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("smembers", new Class[]{String.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.smembers("key", listener);
+  }
+
+  @Test
+  public void smove() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("destination", "foo")
+        .put("member", "bar")
+      );
+
+    this.testWriteMethod("smove", new Class[]{String.class, String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(1, 1);
+    ms.smove("key", "foo", "bar", listener);
+  }
+
+  @Test
+  public void sort() throws Exception {
+    JSONArray
+      array = new JSONArray().put("foo").put("bar").put("baz"),
+      limit = new JSONArray().put(13).put(42);
+    Options opts = new Options()
+      .setQueuable(true)
+      .setAlpha(true)
+      .setBy("foobar")
+      .setDirection("asc")
+      .setGet(array)
+      .setLimit(limit);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("alpha", true)
+      .put("by", "foobar")
+      .put("direction", "asc")
+      .put("get", array)
+      .put("limit", limit);
+
+    this.testReadMethod("sort", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<JSONArray> listener = verifyResultArray(array, array);
+    ms.sort("key", listener);
+  }
+
+  @Test
+  public void spop() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setCount((long)10);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject().put("count", 10));
+
+    this.testWriteMethod("spop", new Class[]{String.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.spop("key", listener);
+
+    listener = verifyResultArray("foo", new JSONArray().put("foo"));
+    ms.spop("key", listener);
+  }
+
+  @Test
+  public void srandmember() throws Exception {
+    Options opts = new Options().setQueuable(true).setCount((long)10);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("count", 10);
+
+    this.testReadMethod("srandmember", new Class[]{String.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.srandmember("key", listener);
+
+    listener = verifyResultArray("foo", new JSONArray().put("foo"));
+    ms.srandmember("key", listener);
+  }
+
+  @Test
+  public void srem() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray members = new JSONArray().put("foo").put("bar").put("baz");
+
+    Object[] args = new Object[]{"key", members};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("members", members)
+      );
+
+    this.testWriteMethod("srem", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.srem("key", members, listener);
+  }
+
+  @Test
+  public void sscan() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setCount((long)10)
+      .setMatch("foo*");
+    Object[] args = new Object[]{"key", 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("cursor", 42)
+      .put("count", 10)
+      .put("match", "foo*");
+
+    this.testReadMethod("sscan", new Class[]{String.class, long.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray()
+      .put(18)
+      .put(new JSONArray()
+        .put("field1")
+        .put("field1 value")
+        .put("field2")
+        .put("field2 value")
+      );
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.sscan("key", 42, listener);
+  }
+
+  @Test
+  public void strlen() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("strlen", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.strlen("key", listener);
+  }
+
+  @Test
+  public void sunion() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{keys};
+    JSONObject expected = new JSONObject()
+      .put("keys", keys);
+
+    this.testReadMethod("sunion", new Class[]{JSONArray.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.sunion(keys, listener);
+  }
+
+  @Test
+  public void sunionstore() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", keys};
+    JSONObject expected = new JSONObject()
+      .put("body", new JSONObject()
+        .put("keys", keys)
+        .put("destination", "key")
+      );
+
+    this.testReadMethod("sunionstore", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.sunionstore("key", keys, listener);
+  }
+
+  @Test
+  public void time() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{};
+    JSONObject expected = new JSONObject();
+
+    this.testReadMethod("time", new Class[]{}, args, opts, expected);
+
+    ResponseListener<JSONArray> listener = verifyResultArray(
+      new JSONArray().put("123").put("456"),
+      new JSONArray().put(123).put(456)
+    );
+    ms.time(listener);
+  }
+
+  @Test
+  public void touch() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{keys};
+    JSONObject expected = new JSONObject()
+      .put("body", new JSONObject()
+        .put("keys", keys)
+      );
+
+    this.testWriteMethod("touch", new Class[]{JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.touch(keys, listener);
+  }
+
+  @Test
+  public void ttl() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("ttl", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.ttl("key", listener);
+  }
+
+  @Test
+  public void type() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("type", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.type("key", listener);
+  }
+
+  @Test
+  public void zadd() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setCh(true)
+      .setIncr(true)
+      .setNx(true)
+      .setXx(false);
+    JSONArray elements = new JSONArray().put("foo").put("bar").put("baz");
+
+    Object[] args = new Object[]{"key", elements};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("elements", elements)
+        .put("ch", true)
+        .put("incr", true)
+        .put("nx", true)
+        .put("xx", false)
+      );
+
+    this.testWriteMethod("zadd", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zadd("key", elements, listener);
+  }
+
+  @Test
+  public void zcard() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("zcard", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zcard("key", listener);
+  }
+
+  @Test
+  public void zcount() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 13, 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("min", 13)
+      .put("max", 42);
+
+    this.testReadMethod("zcount", new Class[]{String.class, long.class, long.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zcount("key", 13, 42, listener);
+  }
+
+  @Test
+  public void zincrby() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", 3.14159};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("value", 3.14159)
+        .put("member", "foo")
+      );
+
+    this.testWriteMethod("zincrby", new Class[]{String.class, String.class, double.class}, args, opts, expected);
+
+    ResponseListener<Double> listener = verifyResultDouble("48.14159", 48.14159);
+    ms.zincrby("foo", "bar", 3.14159, listener);
+  }
+
+  @Test
+  public void zinterstore() throws Exception {
+    JSONArray weights = new JSONArray().put(1).put(2).put(3);
+    Options opts = new Options()
+      .setQueuable(true)
+      .setAggregate("max")
+      .setWeights(weights);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", keys};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("keys", keys)
+        .put("aggregate", "max")
+        .put("weights", weights)
+      );
+
+    this.testReadMethod("zinterstore", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zinterstore("key", keys, listener);
+  }
+
+  @Test
+  public void zlexcount() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("min", "foo")
+      .put("max", "bar");
+
+    this.testReadMethod("zlexcount", new Class[]{String.class, String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zlexcount("key", "foo", "bar", listener);
+  }
+
+  @Test
+  public void zrange() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 13, 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("start", 13)
+      .put("stop", 42)
+      .put("options", new JSONArray().put("withscores"));
+
+    this.testReadMethod("zrange", new Class[]{String.class, long.class, long.class}, args, opts, expected);
+
+    ResponseListener<JSONArray> listener = verifyResultArray(
+      new JSONArray().put("foo").put("3.14159").put("bar").put("123.456"),
+      new JSONArray()
+          .put(new JSONObject().put("member", "foo").put("score", 3.14159))
+          .put(new JSONObject().put("member", "bar").put("score", 123.456))
+    );
+    ms.zrange("key", 13, 42, listener);
+  }
+
+  @Test
+  public void zrangebylex() throws Exception {
+    JSONArray limit = new JSONArray().put(1).put(2);
+    Options opts = new Options()
+      .setQueuable(true)
+      .setLimit(limit);
+    Object[] args = new Object[]{"key", "foo", "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("min", "foo")
+      .put("max", "bar")
+      .put("limit", limit);
+
+    this.testReadMethod("zrangebylex", new Class[]{String.class, String.class, String.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.zrangebylex("key", "foo", "bar", listener);
+  }
+
+  @Test
+  public void zrangebyscore() throws Exception {
+    JSONArray limit = new JSONArray().put(1).put(2);
+    Options opts = new Options()
+      .setQueuable(true)
+      .setLimit(limit);
+    Object[] args = new Object[]{"key", 3.14, 42.24};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("min", 3.14)
+      .put("max", 42.24)
+      .put("limit", limit)
+      .put("options", new JSONArray().put("withscores"));
+
+    this.testReadMethod("zrangebyscore", new Class[]{String.class, double.class, double.class}, args, opts, expected);
+
+    ResponseListener<JSONArray> listener = verifyResultArray(
+      new JSONArray().put("foo").put("3.14159").put("bar").put("123.456"),
+      new JSONArray()
+        .put(new JSONObject().put("member", "foo").put("score", 3.14159))
+        .put(new JSONObject().put("member", "bar").put("score", 123.456))
+    );
+    ms.zrangebyscore("key", 3.14, 42.24, listener);
+  }
+
+  @Test
+  public void zrank() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("member", "foo");
+
+    this.testReadMethod("zrank", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zrank("key", "foo", listener);
+  }
+
+  @Test
+  public void zrem() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray members = new JSONArray().put("foo").put("bar").put("baz");
+
+    Object[] args = new Object[]{"key", members};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("members", members)
+      );
+
+    this.testWriteMethod("zrem", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zrem("key", members, listener);
+  }
+
+  @Test
+  public void zremrangebylex() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("min", "foo")
+        .put("max", "bar")
+    );
+
+    this.testWriteMethod("zremrangebylex", new Class[]{String.class, String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zremrangebylex("key", "foo", "bar", listener);
+  }
+
+  @Test
+  public void zremrangebyrank() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 13, 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("start", 13)
+        .put("stop", 42)
+      );
+
+    this.testWriteMethod("zremrangebyrank", new Class[]{String.class, long.class, long.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zremrangebyrank("key", 13, 42, listener);
+  }
+
+  @Test
+  public void zremrangebyscore() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 13.1, 42.3};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("min", 13.1)
+        .put("max", 42.3)
+      );
+
+    this.testWriteMethod("zremrangebyscore", new Class[]{String.class, double.class, double.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zremrangebyscore("key", 13, 42, listener);
+  }
+
+  @Test
+  public void zrevrange() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 13, 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("start", 13)
+      .put("stop", 42)
+      .put("options", new JSONArray().put("withscores"));
+
+    this.testReadMethod("zrevrange", new Class[]{String.class, long.class, long.class}, args, opts, expected);
+
+    ResponseListener<JSONArray> listener = verifyResultArray(
+      new JSONArray().put("foo").put("3.14159").put("bar").put("123.456"),
+      new JSONArray()
+        .put(new JSONObject().put("member", "foo").put("score", 3.14159))
+        .put(new JSONObject().put("member", "bar").put("score", 123.456))
+    );
+    ms.zrevrange("key", 13, 42, listener);
+  }
+
+  @Test
+  public void zrevrangebylex() throws Exception {
+    JSONArray limit = new JSONArray().put(1).put(2);
+    Options opts = new Options()
+      .setQueuable(true)
+      .setLimit(limit);
+    Object[] args = new Object[]{"key", "foo", "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("min", "foo")
+      .put("max", "bar")
+      .put("limit", limit);
+
+    this.testReadMethod("zrevrangebylex", new Class[]{String.class, String.class, String.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.zrevrangebylex("key", "foo", "bar", listener);
+  }
+
+  @Test
+  public void zrevrangebyscore() throws Exception {
+    JSONArray limit = new JSONArray().put(1).put(2);
+    Options opts = new Options()
+      .setQueuable(true)
+      .setLimit(limit);
+    Object[] args = new Object[]{"key", 3.14, 42.24};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("min", 3.14)
+      .put("max", 42.24)
+      .put("limit", limit)
+      .put("options", new JSONArray().put("withscores"));
+
+    this.testReadMethod("zrevrangebyscore", new Class[]{String.class, double.class, double.class}, args, opts, expected);
+
+    ResponseListener<JSONArray> listener = verifyResultArray(
+      new JSONArray().put("foo").put("3.14159").put("bar").put("123.456"),
+      new JSONArray()
+        .put(new JSONObject().put("member", "foo").put("score", 3.14159))
+        .put(new JSONObject().put("member", "bar").put("score", 123.456))
+    );
+    ms.zrevrangebyscore("key", 3.14, 42.24, listener);
+  }
+
+  @Test
+  public void zrevrank() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("member", "foo");
+
+    this.testReadMethod("zrevrank", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zrevrank("key", "foo", listener);
+  }
+
+  @Test
+  public void zscan() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setCount((long)10)
+      .setMatch("foo*");
+    Object[] args = new Object[]{"key", 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("cursor", 42)
+      .put("count", 10)
+      .put("match", "foo*");
+
+    this.testReadMethod("zscan", new Class[]{String.class, long.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray()
+      .put(18)
+      .put(new JSONArray()
+        .put("field1")
+        .put("field1 value")
+        .put("field2")
+        .put("field2 value")
+      );
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.zscan("key", 42, listener);
+  }
+
+  @Test
+  public void zscore() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("member", "foo");
+
+    this.testReadMethod("zscore", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Double> listener = verifyResultDouble("3.14159", 3.14159);
+    ms.zscore("key", "foo", listener);
+  }
+
+  @Test
+  public void zunionstore() throws Exception {
+    JSONArray weights = new JSONArray().put(1).put(2).put(3);
+    Options opts = new Options()
+      .setQueuable(true)
+      .setAggregate("max")
+      .setWeights(weights);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", keys};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("keys", keys)
+        .put("aggregate", "max")
+        .put("weights", weights)
+      );
+
+    this.testReadMethod("zunionstore", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zunionstore("key", keys, listener);
+  }
+
 }
