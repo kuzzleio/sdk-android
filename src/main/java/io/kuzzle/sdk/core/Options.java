@@ -2,6 +2,7 @@ package io.kuzzle.sdk.core;
 
 import android.support.annotation.NonNull;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -38,6 +39,29 @@ public class Options {
   private SearchResult previous = null;
   private String scrollId = null;
   private int retryOnConflict = 0;
+
+  // MemoryStorage specific options
+  private Long start = null;
+  private Long end = null;
+  private String unit = null;
+  private boolean withcoord = false;
+  private boolean withdist = false;
+  private Long count = null;
+  private String sort = null;
+  private String match = null;
+  private Long ex = null;
+  private boolean nx = false;
+  private Long px = null;
+  private boolean xx = false;
+  private boolean alpha = false;
+  private String by = null;
+  private String direction = null;
+  private JSONArray get = null;
+  private JSONArray limit = null;
+  private boolean ch = false;
+  private boolean incr = false;
+  private String aggregate = null;
+  private JSONArray weights = null;
 
   // Used for getting collections
   private CollectionType collectionType = CollectionType.ALL;
@@ -489,6 +513,195 @@ public class Options {
     }
 
     this.retryOnConflict = retryOnConflict;
+    return this;
+  }
+
+  public Long getStart() {
+    return start;
+  }
+
+  public Options setStart(Long start) {
+    this.start = start;
+    return this;
+  }
+
+  public Long getEnd() {
+    return end;
+  }
+
+  public Options setEnd(Long end) {
+    this.end = end;
+    return this;
+  }
+
+  public String getUnit() {
+    return unit;
+  }
+
+  public Options setUnit(String unit) {
+    this.unit = unit;
+    return this;
+  }
+
+  public boolean getWithcoord() {
+    return withcoord;
+  }
+
+  public Options setWithcoord(boolean withcoord) {
+    this.withcoord = withcoord;
+    return this;
+  }
+
+  public boolean getWithdist() {
+    return withdist;
+  }
+
+  public Options setWithdist(boolean withdist) {
+    this.withdist = withdist;
+    return this;
+  }
+
+  public Long getCount() {
+    return count;
+  }
+
+  public Options setCount(Long count) {
+    this.count = count;
+    return this;
+  }
+
+  public String getSort() {
+    return sort;
+  }
+
+  public Options setSort(String sort) {
+    this.sort = sort;
+    return this;
+  }
+
+  public String getMatch() {
+    return match;
+  }
+
+  public Options setMatch(String match) {
+    this.match = match;
+    return this;
+  }
+
+  public Long getEx() {
+    return ex;
+  }
+
+  public Options setEx(Long ex) {
+    this.ex = ex;
+    return this;
+  }
+
+  public boolean getNx() {
+    return nx;
+  }
+
+  public Options setNx(boolean nx) {
+    this.nx = nx;
+    return this;
+  }
+
+  public Long getPx() {
+    return px;
+  }
+
+  public Options setPx(Long px) {
+    this.px = px;
+    return this;
+  }
+
+  public boolean getXx() {
+    return xx;
+  }
+
+  public Options setXx(boolean xx) {
+    this.xx = xx;
+    return this;
+  }
+
+  public boolean getAlpha() {
+    return alpha;
+  }
+
+  public Options setAlpha(boolean alpha) {
+    this.alpha = alpha;
+    return this;
+  }
+
+  public String getBy() {
+    return by;
+  }
+
+  public Options setBy(String by) {
+    this.by = by;
+    return this;
+  }
+
+  public String getDirection() {
+    return direction;
+  }
+
+  public Options setDirection(String direction) {
+    this.direction = direction;
+    return this;
+  }
+
+  public JSONArray getGet() {
+    return get;
+  }
+
+  public Options setGet(JSONArray get) {
+    this.get = get;
+    return this;
+  }
+
+  public JSONArray getLimit() {
+    return limit;
+  }
+
+  public Options setLimit(JSONArray limit) {
+    this.limit = limit;
+    return this;
+  }
+
+  public boolean getCh() {
+    return ch;
+  }
+
+  public Options setCh(boolean ch) {
+    this.ch = ch;
+    return this;
+  }
+
+  public boolean getIncr() {
+    return incr;
+  }
+
+  public Options setIncr(boolean incr) {
+    this.incr = incr;
+    return this;
+  }
+
+  public String getAggregate() {
+    return aggregate;
+  }
+
+  public Options setAggregate(String aggregate) {
+    this.aggregate = aggregate;
+    return this;
+  }
+
+  public JSONArray getWeights() {
+    return weights;
+  }
+
+  public Options setWeights(JSONArray weights) {
+    this.weights = weights;
     return this;
   }
 }

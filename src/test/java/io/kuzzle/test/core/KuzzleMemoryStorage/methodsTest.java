@@ -1,785 +1,2353 @@
 package io.kuzzle.test.core.KuzzleMemoryStorage;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.skyscreamer.jsonassert.JSONAssert;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import io.kuzzle.sdk.core.Kuzzle;
+import io.kuzzle.sdk.core.MemoryStorage;
+import io.kuzzle.sdk.core.Options;
+import io.kuzzle.sdk.listeners.OnQueryDoneListener;
+import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.util.KuzzleJSONObject;
-import io.kuzzle.sdk.util.memoryStorage.Action;
-import io.kuzzle.sdk.util.memoryStorage.BitOP;
-import io.kuzzle.sdk.util.memoryStorage.ObjectCommand;
-import io.kuzzle.sdk.util.memoryStorage.Position;
-import io.kuzzle.sdk.util.memoryStorage.SetParams;
-import io.kuzzle.sdk.util.memoryStorage.ZParams;
-import io.kuzzle.test.testUtils.MemoryStorageExtend;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class methodsTest {
+  private Kuzzle kuzzle;
+  private Kuzzle.QueryArgs queryArgs = new Kuzzle.QueryArgs();
+  private MemoryStorage ms;
+  private ArgumentCaptor capturedQueryArgs;
+  private ArgumentCaptor capturedQuery;
 
-  Kuzzle kuzzle;
-  MemoryStorageExtend ms;
-  ArgumentCaptor argument;
+  private static <T> T[] concat(T[] first, T[] second) {
+    T[] result = Arrays.copyOf(first, first.length + second.length);
+    System.arraycopy(second, 0, result, first.length, second.length);
+    return result;
+  }
+
+  private void validate(String command, JSONObject expected, boolean withOpts) throws JSONException {
+    assertEquals(((Kuzzle.QueryArgs) capturedQueryArgs.getValue()).controller, "ms");
+    assertEquals(((Kuzzle.QueryArgs) capturedQueryArgs.getValue()).action, command);
+
+    /*
+     if options are provided, the expected result should come first
+     as the assertion expects the second argument to contain at least
+     the JSON properties contained in the first one
+
+     And vice versa without options provided
+     */
+    if (withOpts) {
+      JSONAssert.assertEquals(expected, (JSONObject)capturedQuery.getValue(), false);
+    }
+    else {
+      JSONAssert.assertEquals(capturedQuery.getValue().toString(), expected, false);
+    }
+  }
+
+  private ResponseListener<Long> verifyResultLong(long returnValue, final long expected) throws JSONException {
+    mockResult(new KuzzleJSONObject().put("result", returnValue));
+
+    return new ResponseListener<Long>() {
+      @Override
+      public void onSuccess(Long response) {
+        assertEquals((long)response, expected);
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+      }
+    };
+  }
+
+  private ResponseListener<Integer> verifyResultInt(int returnValue, final int expected) throws JSONException {
+    mockResult(new KuzzleJSONObject().put("result", returnValue));
+
+    return new ResponseListener<Integer>() {
+      @Override
+      public void onSuccess(Integer response) {
+        assertEquals((int)response, expected);
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+      }
+    };
+  }
+
+  private ResponseListener<String> verifyResultString(String returnValue, final String expected) throws JSONException {
+    mockResult(new KuzzleJSONObject().put("result", returnValue));
+
+    return new ResponseListener<String>() {
+      @Override
+      public void onSuccess(String response) {
+        assertEquals(response, expected);
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+      }
+    };
+  }
+
+  private ResponseListener<JSONArray> verifyResultArray(String returnValue, final JSONArray expected) throws JSONException {
+    mockResult(new KuzzleJSONObject().put("result", returnValue));
+
+    return new ResponseListener<JSONArray>() {
+      @Override
+      public void onSuccess(JSONArray response) {
+        try {
+          JSONAssert.assertEquals(response, expected, false);
+        }
+        catch (JSONException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+      }
+    };
+  }
+
+  private ResponseListener<JSONArray> verifyResultArray(JSONArray returnValue, final JSONArray expected) throws JSONException {
+    mockResult(new KuzzleJSONObject().put("result", returnValue));
+
+    return new ResponseListener<JSONArray>() {
+      @Override
+      public void onSuccess(JSONArray response) {
+        try {
+          JSONAssert.assertEquals(response, expected, false);
+        }
+        catch (JSONException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+      }
+    };
+  }
+
+  private ResponseListener<Double> verifyResultDouble(String returnValue, final double expected) throws JSONException {
+    mockResult(new KuzzleJSONObject().put("result", returnValue));
+
+    return new ResponseListener<Double>() {
+      @Override
+      public void onSuccess(Double response) {
+        assertEquals(response, expected, 10e-12);
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+      }
+    };
+  }
+
+  private void mockResult(final KuzzleJSONObject raw) throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(raw);
+        return null;
+      }
+    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+  }
+
+  private void testReadMethod(String command, Class[] proto, Object[] args, Options opts, JSONObject expected) throws Exception {
+    Class[] overloadedProto;
+    Object[] overloadedArgs;
+    Method mscommand;
+
+    // With options and listener
+    overloadedProto = concat(proto, new Class[]{Options.class, ResponseListener.class});
+    overloadedArgs = concat(args, new Object[]{opts, mock(ResponseListener.class)});
+    mscommand = MemoryStorage.class.getDeclaredMethod(command, overloadedProto);
+    mscommand.invoke(ms, overloadedArgs);
+    verify(kuzzle).query((Kuzzle.QueryArgs) capturedQueryArgs.capture(), (JSONObject)capturedQuery.capture(), eq(opts), any(OnQueryDoneListener.class));
+    validate(command, expected, true);
+
+    // Without options, with listener
+    overloadedProto = concat(proto, new Class[]{ResponseListener.class});
+    overloadedArgs = concat(args, new Object[]{mock(ResponseListener.class)});
+    mscommand = MemoryStorage.class.getDeclaredMethod(command, overloadedProto);
+    mscommand.invoke(ms, overloadedArgs);
+    verify(kuzzle).query((Kuzzle.QueryArgs) capturedQueryArgs.capture(), (JSONObject)capturedQuery.capture(), eq((Options)null), any(OnQueryDoneListener.class));
+    validate(command, expected, false);
+  }
+
+  private void testWriteMethod(String command, Class[] proto, Object[] args, Options opts, JSONObject expected) throws Exception {
+    Class[] overloadedProto;
+    Object[] overloadedArgs;
+    Method mscommand = MemoryStorage.class.getDeclaredMethod(command, proto);
+
+    // Without options nor listener
+    mscommand.invoke(ms, args);
+    verify(kuzzle).query((Kuzzle.QueryArgs) capturedQueryArgs.capture(), (JSONObject)capturedQuery.capture(), eq((Options)null));
+    validate(command, expected, false);
+
+    // With options, without listener
+    overloadedProto = concat(proto, new Class[]{Options.class});
+    overloadedArgs = concat(args, new Object[]{opts});
+    mscommand = MemoryStorage.class.getDeclaredMethod(command, overloadedProto);
+    mscommand.invoke(ms, overloadedArgs);
+    verify(kuzzle).query((Kuzzle.QueryArgs) capturedQueryArgs.capture(), (JSONObject)capturedQuery.capture(), eq(opts));
+    validate(command, expected, true);
+
+    // With options and listener
+    overloadedProto = concat(overloadedProto, new Class[]{ResponseListener.class});
+    overloadedArgs = concat(overloadedArgs, new Object[]{mock(ResponseListener.class)});
+    mscommand = MemoryStorage.class.getDeclaredMethod(command, overloadedProto);
+    mscommand.invoke(ms, overloadedArgs);
+    verify(kuzzle).query((Kuzzle.QueryArgs) capturedQueryArgs.capture(), (JSONObject)capturedQuery.capture(), eq(opts), any(OnQueryDoneListener.class));
+    validate(command, expected, true);
+
+    // Without options, with listener
+    overloadedProto = concat(proto, new Class[]{ResponseListener.class});
+    overloadedArgs = concat(args, new Object[]{mock(ResponseListener.class)});
+    mscommand = MemoryStorage.class.getDeclaredMethod(command, overloadedProto);
+    mscommand.invoke(ms, overloadedArgs);
+    verify(kuzzle).query((Kuzzle.QueryArgs) capturedQueryArgs.capture(), (JSONObject)capturedQuery.capture(), eq((Options)null), any(OnQueryDoneListener.class));
+    validate(command, expected, false);
+  }
 
   @Before
   public void setUp() {
     kuzzle = mock(Kuzzle.class);
-    ms = spy(new MemoryStorageExtend(kuzzle));
-    argument = ArgumentCaptor.forClass(KuzzleJSONObject.class);
+    ms = new MemoryStorage(kuzzle);
+    capturedQueryArgs = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
+    capturedQuery = ArgumentCaptor.forClass(io.kuzzle.sdk.util.KuzzleJSONObject.class);
+    queryArgs.controller = "ms";
   }
 
-  private JSONObject getBody(final KuzzleJSONObject obj) {
-    try {
-      return obj.getJSONObject("body");
-    } catch (JSONException e) {
-      throw new RuntimeException(e);
-    }
+  @Test
+  public void append() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"foo", "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo")
+      .put("body", new JSONObject()
+        .put("value", "bar")
+      );
+
+    this.testWriteMethod("append", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.append("foo", "bar", listener);
+  }
+
+  @Test
+  public void bitcount() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setStart((long)13)
+      .setEnd((long)42);
+    Object[] args = new Object[]{"foo"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo")
+      .put("start", 13)
+      .put("end", 42);
+
+    this.testReadMethod("bitcount", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.bitcount("foo", listener);
+  }
+
+  @Test
+  public void bitop() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar");
+    Object[] args = new Object[]{"foo", "xor", keys};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo")
+      .put("body", new JSONObject()
+        .put("operation", "xor")
+        .put("keys", keys)
+      );
+
+    this.testWriteMethod("bitop", new Class[]{String.class, String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.bitop("foo", "bar", keys, listener);
+  }
+
+  @Test
+  public void bitpos() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setStart((long)13)
+      .setEnd((long)42);
+    Object[] args = new Object[]{"foo", 1};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo")
+      .put("bit", 1)
+      .put("start", 13)
+      .put("end", 42);
+
+    this.testReadMethod("bitpos", new Class[]{String.class, int.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.bitpos("foo", 1, listener);
+  }
+
+  @Test
+  public void dbsize() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{};
+    JSONObject expected = new JSONObject();
+
+    this.testReadMethod("dbsize", new Class[]{}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.dbsize(listener);
+  }
+
+  @Test
+  public void decr() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"foo"};
+    JSONObject expected = new JSONObject().put("_id", "foo");
+
+    this.testWriteMethod("decr", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.decr("foo", listener);
+  }
+
+  @Test
+  public void decrby() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"foo", -42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo")
+      .put("body", new JSONObject()
+        .put("value", -42)
+      );
+
+    this.testWriteMethod("decrby", new Class[]{String.class, long.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.decrby("foo", -42, listener);
+  }
+
+  @Test
+  public void del() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{keys};
+    JSONObject expected = new JSONObject()
+      .put("body", new JSONObject()
+        .put("keys", keys)
+      );
+
+    this.testWriteMethod("del", new Class[]{JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.del(keys, listener);
+  }
+
+  @Test
+  public void exists() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{keys};
+    JSONObject expected = new JSONObject()
+      .put("keys", keys);
+
+    this.testReadMethod("exists", new Class[]{JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.exists(keys, listener);
+  }
+
+  @Test
+  public void expire() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"foo", 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo")
+      .put("body", new JSONObject()
+        .put("seconds", 42)
+      );
+
+    this.testWriteMethod("expire", new Class[]{String.class, long.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.expire("foo", 42, listener);
+  }
+
+  @Test
+  public void expireat() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"foo", 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo")
+      .put("body", new JSONObject()
+        .put("timestamp", 42)
+      );
+
+    this.testWriteMethod("expireat", new Class[]{String.class, long.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.expireat("foo", 42, listener);
+  }
+
+  @Test
+  public void flushdb() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{};
+    JSONObject expected = new JSONObject();
+
+    this.testWriteMethod("flushdb", new Class[]{}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ms.flushdb(listener);
+  }
+
+  @Test
+  public void geoadd() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray points = new JSONArray()
+      .put(new JSONObject()
+        .put("lon", 13.361389)
+        .put("lat", 38.115556)
+        .put("name", "Palermo")
+      )
+      .put(new JSONObject()
+        .put("lon", 15.087269)
+        .put("lat", 37.502669)
+        .put("name", "Catania")
+      );
+    Object[] args = new Object[]{"foo", points};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo")
+      .put("body", new JSONObject()
+        .put("points", points)
+      );
+
+    this.testWriteMethod("geoadd", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.geoadd("foo", points, listener);
+  }
+
+  @Test
+  public void geodist() throws Exception {
+    Options opts = new Options().setQueuable(true).setUnit("ft");
+    Object[] args = new Object[]{"key", "Palermo", "Catania"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("member1", "Palermo")
+      .put("member2", "Catania")
+      .put("unit", "ft");
+
+    this.testReadMethod("geodist", new Class[]{String.class, String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Double> listener = verifyResultDouble("166274.1516", 166274.1516);
+    ms.geodist("foo", "Palermo", "Catania", listener);
+  }
+
+  @Test
+  public void geohash() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray members = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", members};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("members", members);
+
+    this.testReadMethod("geohash", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    JSONArray expectedResult = new JSONArray().put("sqc8b49rny0").put("sqdtr74hyu0");
+    ResponseListener<JSONArray> listener = verifyResultArray(expectedResult, expectedResult);
+    ms.geohash("key", members, listener);
+  }
+
+  @Test
+  public void geopos() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray members = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", members};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("members", members);
+
+    this.testReadMethod("geopos", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    JSONArray rawResult = new JSONArray()
+      .put(new JSONArray().put("13.361389").put("38.115556"))
+      .put(new JSONArray().put("15.087269").put("37.502669"));
+
+    JSONArray expectedResult = new JSONArray()
+      .put(new JSONArray().put(13.361389).put(38.115556))
+      .put(new JSONArray().put(15.087269).put(37.502669));
+
+    ResponseListener<JSONArray> listener = verifyResultArray(rawResult, expectedResult);
+    ms.geopos("key", members, listener);
+  }
+
+  @Test
+  public void georadius() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setCount((long)10)
+      .setSort("asc")
+      .setWithcoord(true)
+      .setWithdist(true);
+    Object[] args = new Object[]{"key", 15, 37, 200, "km"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("lon", 15)
+      .put("lat", 37)
+      .put("distance", 200)
+      .put("unit", "km");
+
+    this.testReadMethod("georadius", new Class[]{String.class, double.class, double.class, double.class, String.class}, args, opts, expected);
+
+    // without coordinates nor distance
+    opts.setWithcoord(false).setWithdist(false);
+    ResponseListener<JSONArray> listener = verifyResultArray(
+      new JSONArray().put("Palermo").put("Catania"),
+      new JSONArray()
+        .put(new JSONObject().put("name", "Palermo"))
+        .put(new JSONObject().put("name", "Catania"))
+    );
+    ms.georadius("key", 15, 37, 200, "km", opts, listener);
+
+    // with coordinates, without distance
+    opts.setWithcoord(true).setWithdist(false);
+    listener = verifyResultArray(
+      new JSONArray().put(
+        new JSONArray()
+          .put("Palermo").put("190.4424")
+      ).put(
+        new JSONArray()
+          .put("Catania").put("56.4413")
+      ),
+      new JSONArray()
+        .put(new JSONObject().put("name", "Palermo").put("distance", 190.4424))
+        .put(new JSONObject().put("name", "Catania").put("distance", 56.4413))
+    );
+    ms.georadius("key", 15, 37, 200, "km", opts, listener);
+
+    // without coordinates, with distance
+    opts.setWithcoord(false).setWithdist(true);
+    listener = verifyResultArray(
+      new JSONArray().put(
+        new JSONArray()
+          .put("Palermo").put(new JSONArray().put("13.3613").put("38.1155"))
+      ).put(
+        new JSONArray()
+          .put("Catania").put(new JSONArray().put("15.0872").put("37.5026"))
+      ),
+      new JSONArray()
+        .put(new JSONObject().put("name", "Palermo")
+          .put("coordinates", new JSONArray().put(13.3613).put(38.1155))
+        )
+        .put(new JSONObject().put("name", "Catania")
+          .put("coordinates", new JSONArray().put(15.0872).put(37.5026))
+        )
+    );
+    ms.georadius("key", 15, 37, 200, "km", opts, listener);
+
+    // with coordinates, with distance
+    opts.setWithcoord(true).setWithdist(true);
+    listener = verifyResultArray(
+      new JSONArray().put(
+        new JSONArray()
+          .put("Palermo").put(new JSONArray().put("13.3613").put("38.1155")).put("190.4424")
+      ).put(
+        new JSONArray()
+          .put("Catania").put("56.4413").put(new JSONArray().put("15.0872").put("37.5026"))
+      ),
+      new JSONArray()
+        .put(new JSONObject().put("name", "Palermo")
+          .put("distance", 190.4424)
+          .put("coordinates", new JSONArray().put(13.3613).put(38.1155))
+        )
+        .put(new JSONObject().put("name", "Catania")
+          .put("distance", 56.4413)
+          .put("coordinates", new JSONArray().put(15.0872).put(37.5026))
+        )
+    );
+    ms.georadius("key", 15, 37, 200, "km", opts, listener);
+  }
+
+  @Test
+  public void georadiusbymember() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setCount((long)10)
+      .setSort("asc")
+      .setWithcoord(true)
+      .setWithdist(true);
+    Object[] args = new Object[]{"key", "Palermo", 200, "km"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("member", "Palermo")
+      .put("distance", 200)
+      .put("unit", "km");
+
+    this.testReadMethod("georadiusbymember", new Class[]{String.class, String.class, double.class, String.class}, args, opts, expected);
+
+    // without coordinates nor distance
+    opts.setWithcoord(false).setWithdist(false);
+    ResponseListener<JSONArray> listener = verifyResultArray(
+      new JSONArray().put("Palermo").put("Catania"),
+      new JSONArray()
+        .put(new JSONObject().put("name", "Palermo"))
+        .put(new JSONObject().put("name", "Catania"))
+    );
+    ms.georadiusbymember("key", "Palermo", 200, "km", opts, listener);
+
+    // with coordinates, without distance
+    opts.setWithcoord(true).setWithdist(false);
+    listener = verifyResultArray(
+      new JSONArray().put(
+        new JSONArray()
+          .put("Palermo").put("190.4424")
+      ).put(
+        new JSONArray()
+          .put("Catania").put("56.4413")
+      ),
+      new JSONArray()
+        .put(new JSONObject().put("name", "Palermo").put("distance", 190.4424))
+        .put(new JSONObject().put("name", "Catania").put("distance", 56.4413))
+    );
+    ms.georadiusbymember("key", "Palermo", 200, "km", opts, listener);
+
+    // without coordinates, with distance
+    opts.setWithcoord(false).setWithdist(true);
+    listener = verifyResultArray(
+      new JSONArray().put(
+        new JSONArray()
+          .put("Palermo").put(new JSONArray().put("13.3613").put("38.1155"))
+      ).put(
+        new JSONArray()
+          .put("Catania").put(new JSONArray().put("15.0872").put("37.5026"))
+      ),
+      new JSONArray()
+        .put(new JSONObject().put("name", "Palermo")
+          .put("coordinates", new JSONArray().put(13.3613).put(38.1155))
+        )
+        .put(new JSONObject().put("name", "Catania")
+          .put("coordinates", new JSONArray().put(15.0872).put(37.5026))
+        )
+    );
+    ms.georadiusbymember("key", "Palermo", 200, "km", opts, listener);
+
+    // with coordinates, with distance
+    opts.setWithcoord(true).setWithdist(true);
+    listener = verifyResultArray(
+      new JSONArray().put(
+        new JSONArray()
+          .put("Palermo").put(new JSONArray().put("13.3613").put("38.1155")).put("190.4424")
+      ).put(
+        new JSONArray()
+          .put("Catania").put("56.4413").put(new JSONArray().put("15.0872").put("37.5026"))
+      ),
+      new JSONArray()
+        .put(new JSONObject().put("name", "Palermo")
+          .put("distance", 190.4424)
+          .put("coordinates", new JSONArray().put(13.3613).put(38.1155))
+        )
+        .put(new JSONObject().put("name", "Catania")
+          .put("distance", 56.4413)
+          .put("coordinates", new JSONArray().put(15.0872).put(37.5026))
+        )
+    );
+    ms.georadiusbymember("key", "Palermo", 200, "km", opts, listener);
+  }
+
+  @Test
+  public void get() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("get", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.get("key", listener);
+  }
+
+  @Test
+  public void getbit() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 10};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("offset", 10);
+
+    this.testReadMethod("getbit", new Class[]{String.class, long.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.getbit("key", 10, listener);
+  }
+
+  @Test
+  public void getrange() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 13, 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("start", 13)
+      .put("end", 42);
+
+    this.testReadMethod("getrange", new Class[]{String.class, long.class, long.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.getrange("key", 13, 42, listener);
+  }
+
+  @Test
+  public void getset() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "value"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject().put("value", "value"));
+
+    this.testWriteMethod("getset", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.getset("key", "value", listener);
+  }
+
+  @Test
+  public void hdel() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray fields = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", fields};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject().put("fields", fields));
+
+    this.testWriteMethod("hdel", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.hdel("key", fields, listener);
+  }
+
+  @Test
+  public void hexists() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foobar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("field", "foobar");
+
+    this.testReadMethod("hexists", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(1, 1);
+    ms.hexists("key", "foobar", listener);
+  }
+
+  @Test
+  public void hget() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("field", "foo");
+
+    this.testReadMethod("hget", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("bar", "bar");
+    ms.hget("key", "foo", listener);
+  }
+
+  @Test
+  public void hgetall() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("hgetall", new Class[]{String.class}, args, opts, expected);
+
+    final KuzzleJSONObject result = new KuzzleJSONObject().put("foo", "bar");
+    mockResult(new KuzzleJSONObject().put("result", result));
+
+    ResponseListener<JSONObject> listener =new ResponseListener<JSONObject>() {
+      @Override
+      public void onSuccess(JSONObject response) {
+        assertEquals(response, result);
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+      }
+    };
+
+    ms.hgetall("key", listener);
+  }
+
+  @Test
+  public void hincrby() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("value", 42)
+        .put("field", "foo")
+      );
+
+    this.testWriteMethod("hincrby", new Class[]{String.class, String.class, long.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.hincrby("foo", "bar", 42, listener);
+  }
+
+  @Test
+  public void hincrbyfloat() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", 3.14159};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("value", 3.14159)
+        .put("field", "foo")
+      );
+
+    this.testWriteMethod("hincrbyfloat", new Class[]{String.class, String.class, double.class}, args, opts, expected);
+
+    ResponseListener<Double> listener = verifyResultDouble("48.14159", 48.14159);
+    ms.hincrbyfloat("foo", "bar", 3.14159, listener);
+  }
+
+  @Test
+  public void hkeys() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("hkeys", new Class[]{String.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.hkeys("key", listener);
+  }
+
+  @Test
+  public void hlen() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("hlen", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.hlen("key", listener);
   }
 
   @Test
-  public void testAppend() throws JSONException {
-    ms.append("foo", "bar");
-    verify(ms).send(eq(Action.append), (KuzzleJSONObject) argument.capture());
-    assertEquals("bar", ((KuzzleJSONObject)argument.getValue()).getString("body"));
+  public void hmget() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray fields = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", fields};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("fields", fields);
+
+    this.testReadMethod("hmget", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.hmget("key", fields, listener);
+  }
+
+  @Test
+  public void hmset() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray entries = new JSONArray()
+      .put(new JSONObject().put("field", "field1").put("value", "foo"))
+      .put(new JSONObject().put("field", "field2").put("value", "bar"))
+      .put(new JSONObject().put("field", "...").put("value", "..."));
+
+    Object[] args = new Object[]{"key", entries};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("entries", entries)
+      );
+
+    this.testWriteMethod("hmset", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ms.hmset("key", entries, listener);
   }
 
   @Test
-  public void testBgrewriteaof() {
-    ms.bgrewriteaof();
-    verify(ms).send(eq(Action.bgrewriteaof), any(KuzzleJSONObject.class));
+  public void hscan() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setCount((long)10)
+      .setMatch("foo*");
+    Object[] args = new Object[]{"key", 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("cursor", 42)
+      .put("count", 10)
+      .put("match", "foo*");
+
+    this.testReadMethod("hscan", new Class[]{String.class, long.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray()
+      .put(18)
+      .put(new JSONArray()
+        .put("field1")
+        .put("field1 value")
+        .put("field2")
+        .put("field2 value")
+      );
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.hscan("key", 42, listener);
   }
 
   @Test
-  public void testBgsave() {
-    ms.bgsave();
-    verify(ms).send(eq(Action.bgsave), any(KuzzleJSONObject.class));
+  public void hset() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("field", "foo")
+        .put("value", "bar")
+      );
+
+    this.testWriteMethod("hset", new Class[]{String.class, String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.hset("key", "foo", "bar", listener);
   }
 
   @Test
-  public void testBitcount() throws JSONException {
-    ms.bitcount("foo");
-    ms.bitcount("foo", 24, 42);
-    verify(ms, times(2)).send(eq(Action.bitcount), (KuzzleJSONObject) argument.capture());
-    assertEquals(24, getBody((KuzzleJSONObject)argument.getAllValues().get(1)).getLong("start"));
-    assertEquals(42, getBody((KuzzleJSONObject)argument.getAllValues().get(1)).getLong("end"));
+  public void hsetnx() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("field", "foo")
+        .put("value", "bar")
+      );
+
+    this.testWriteMethod("hsetnx", new Class[]{String.class, String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.hsetnx("key", "foo", "bar", listener);
   }
 
   @Test
-  public void testBitOP() throws JSONException {
-    ms.bitop(BitOP.AND, "destKey", "src1", "src2");
-    verify(ms).send(eq(Action.bitop), (KuzzleJSONObject) argument.capture());
-    assertEquals("AND", getBody((KuzzleJSONObject) argument.getValue()).getString("operation"));
-    assertEquals("destKey", getBody((KuzzleJSONObject) argument.getValue()).getString("destKey"));
-    assertEquals("src1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[0]);
-    assertEquals("src2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[1]);
+  public void hstrlen() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("field", "foo");
+
+    this.testReadMethod("hstrlen", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.hstrlen("key", "foo", listener);
   }
 
   @Test
-  public void testBitPos() throws JSONException {
-    ms.bitpos("id", 42);
-    ms.bitpos("id", 42, 24);
-    ms.bitpos("id", 42, 24, 1337);
-    verify(ms, times(3)).send(eq(Action.bitpos), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject) argument.getAllValues().get(0)).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getAllValues().get(2)).getLong("bit"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getAllValues().get(2)).getLong("start"));
-    assertEquals(1337, getBody((KuzzleJSONObject) argument.getAllValues().get(2)).getLong("end"));
+  public void hvals() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("hvals", new Class[]{String.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.hvals("key", listener);
   }
 
   @Test
-  public void testBlpop() throws JSONException {
-    ms.blpop(new String[]{"1", "2"}, 42);
-    verify(ms).send(eq(Action.blpop), (KuzzleJSONObject) argument.capture());
-    assertEquals("1",((String[])getBody((KuzzleJSONObject) argument.getValue()).get("src"))[0]);
-    assertEquals("2",((String[])getBody((KuzzleJSONObject) argument.getValue()).get("src"))[1]);
-    assertEquals(42,getBody((KuzzleJSONObject) argument.getValue()).getLong("timeout"));
+  public void incr() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"foo"};
+    JSONObject expected = new JSONObject().put("_id", "foo");
+
+    this.testWriteMethod("incr", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.incr("foo", listener);
   }
 
   @Test
-  public void testBrpoplpush() throws JSONException {
-    ms.brpoplpush("source", "destination", 42);
-    verify(ms).send(eq(Action.brpoplpush), (KuzzleJSONObject) argument.capture());
-    assertEquals("source", getBody((KuzzleJSONObject) argument.getValue()).get("source"));
-    assertEquals("destination", getBody((KuzzleJSONObject) argument.getValue()).get("destination"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("timeout"));
+  public void incrby() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"foo", -42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo")
+      .put("body", new JSONObject()
+        .put("value", -42)
+      );
+
+    this.testWriteMethod("incrby", new Class[]{String.class, long.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.incrby("foo", -42, listener);
   }
 
   @Test
-  public void testDbsize() {
-    ms.dbsize();
-    verify(ms).send(eq(Action.dbsize), any(KuzzleJSONObject.class));
+  public void incrbyfloat() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"foo", 3.14159};
+    JSONObject expected = new JSONObject()
+      .put("_id", "foo")
+      .put("body", new JSONObject()
+        .put("value", 3.14159)
+      );
+
+    this.testWriteMethod("incrbyfloat", new Class[]{String.class, double.class}, args, opts, expected);
+
+    ResponseListener<Double> listener = verifyResultDouble("48.14159", 48.14159);
+    ms.incrbyfloat("foo", 3.14159, listener);
   }
 
   @Test
-  public void testDecrby() throws JSONException {
-    ms.decrby("id", 42);
-    verify(ms).send(eq(Action.decrby), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject) argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("value"));
+  public void keys() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"foo*"};
+    JSONObject expected = new JSONObject()
+      .put("pattern", "foo*");
+
+    this.testReadMethod("keys", new Class[]{String.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.keys("foo*", listener);
   }
 
   @Test
-  public void testDiscard() {
-    ms.discard();
-    verify(ms).send(eq(Action.discard), any(KuzzleJSONObject.class));
+  public void lindex() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 10};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("index", 10);
+
+    this.testReadMethod("lindex", new Class[]{String.class, long.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foo", "foo");
+    ms.lindex("key", 10, listener);
   }
 
   @Test
-  public void testExec() {
-    ms.exec();
-    verify(ms).send(eq(Action.exec), any(KuzzleJSONObject.class));
+  public void linsert() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "before", "foo", "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("value", "bar")
+        .put("position", "before")
+        .put("pivot", "foo")
+      );
+
+    this.testWriteMethod("linsert", new Class[]{String.class, String.class, String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.linsert("key", "before", "foo", "bar", listener);
   }
 
   @Test
-  public void testExpire() throws JSONException {
-    ms.expire("id", 42);
-    verify(ms).send(eq(Action.expire), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("seconds"));
+  public void llen() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("llen", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.llen("key", listener);
   }
 
   @Test
-  public void testExpireAt() throws JSONException {
-    ms.expireat("id", 42);
-    verify(ms).send(eq(Action.expireat), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("timestamp"));
+  public void lpop() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testWriteMethod("lpop", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.lpop("key", listener);
   }
 
   @Test
-  public void testFlushdb() {
-    ms.flushdb();
-    verify(ms).send(eq(Action.flushdb), any(KuzzleJSONObject.class));
+  public void lpush() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray values = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", values};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("values", values)
+      );
+
+    this.testWriteMethod("lpush", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.lpush("key", values, listener);
   }
 
   @Test
-  public void testGetbit() throws JSONException {
-    ms.getbit("id", 42);
-    verify(ms).send(eq(Action.getbit), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("offset"));
+  public void lpushx() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "value"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject().put("value", "value"));
+
+    this.testWriteMethod("lpushx", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.lpushx("key", "value", listener);
   }
 
   @Test
-  public void testGetrange() throws JSONException {
-    ms.getrange("id", 24, 42);
-    verify(ms).send(eq(Action.getrange), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("start"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("end"));
+  public void lrange() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 13, 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("start", 13)
+      .put("stop", 42);
+
+    this.testReadMethod("lrange", new Class[]{String.class, long.class, long.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.lrange("key", 13, 42, listener);
   }
 
   @Test
-  public void testHdel() throws JSONException {
-    ms.hdel("id", "field1", "field2");
-    verify(ms).send(eq(Action.hdel), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getAllValues().get(0)).getString("_id"));
-    assertEquals("field1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("fields"))[0]);
-    assertEquals("field2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("fields"))[1]);
+  public void lrem() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 42, "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("value", "bar")
+        .put("count", 42)
+      );
+
+    this.testWriteMethod("lrem", new Class[]{String.class, long.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.lrem("key", 42, "bar", listener);
   }
+
 
   @Test
-  public void testHexists() throws JSONException {
-    ms.hexists("id", "field");
-    verify(ms).send(eq(Action.hexists), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("field", getBody((KuzzleJSONObject) argument.getValue()).getString("field"));
+  public void lset() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 42, "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("value", "bar")
+        .put("index", 42)
+      );
+
+    this.testWriteMethod("lset", new Class[]{String.class, long.class, String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foo", "foo");
+    ms.lset("key", 42, "bar", listener);
   }
 
   @Test
-  public void hincrby() throws JSONException {
-    ms.hincrby("id", "field", 42);
-    verify(ms).send(eq(Action.hincrby), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("field", getBody((KuzzleJSONObject) argument.getValue()).getString("field"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getDouble("value"), 1);
+  public void ltrim() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 13, 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("start", 13)
+        .put("stop", 42)
+      );
+
+    this.testWriteMethod("ltrim", new Class[]{String.class, long.class, long.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foo", "foo");
+    ms.ltrim("key", 13, 42, listener);
   }
 
   @Test
-  public void hmsetTest() throws JSONException {
-    Map m = new HashMap<String, String>();
-    m.put("one", "one");
-    m.put("second", "two");
-    ms.hmset("id", m);
-    verify(ms).send(eq(Action.hmset), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("one", getBody((KuzzleJSONObject) argument.getValue()).getJSONObject("fields").getString("one"));
-    assertEquals("two", getBody((KuzzleJSONObject) argument.getValue()).getJSONObject("fields").getString("second"));
+  public void mget() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{keys};
+    JSONObject expected = new JSONObject()
+      .put("keys", keys);
+
+    this.testReadMethod("mget", new Class[]{JSONArray.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.mget(keys, listener);
   }
 
   @Test
-  public void hsetTest() throws JSONException {
-    ms.hset("id", "field", "value");
-    verify(ms).send(eq(Action.hset), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("field", getBody((KuzzleJSONObject) argument.getValue()).getString("field"));
-    assertEquals("value", getBody((KuzzleJSONObject) argument.getValue()).getString("value"));
+  public void mset() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray entries = new JSONArray()
+      .put(new JSONObject().put("key", "key1").put("value", "foo"))
+      .put(new JSONObject().put("key", "key2").put("value", "bar"))
+      .put(new JSONObject().put("key", "...").put("value", "..."));
+
+    Object[] args = new Object[]{entries};
+    JSONObject expected = new JSONObject()
+      .put("body", new JSONObject()
+        .put("entries", entries)
+      );
+
+    this.testWriteMethod("mset", new Class[]{JSONArray.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ms.mset(entries, listener);
   }
+
 
   @Test
-  public void infoTest() throws JSONException {
-    ms.info("section");
-    verify(ms).send(eq(Action.info), (KuzzleJSONObject) argument.capture());
-    assertEquals("section", getBody((KuzzleJSONObject) argument.getValue()).getString("section"));
+  public void msetnx() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray entries = new JSONArray()
+      .put(new JSONObject().put("key", "key1").put("value", "foo"))
+      .put(new JSONObject().put("key", "key2").put("value", "bar"))
+      .put(new JSONObject().put("key", "...").put("value", "..."));
+
+    Object[] args = new Object[]{entries};
+    JSONObject expected = new JSONObject()
+      .put("body", new JSONObject()
+        .put("entries", entries)
+      );
+
+    this.testWriteMethod("msetnx", new Class[]{JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.msetnx(entries, listener);
   }
 
   @Test
-  public void keysTest() throws JSONException {
-    ms.keys("pattern");
-    verify(ms).send(eq(Action.keys), (KuzzleJSONObject) argument.capture());
-    assertEquals("pattern", getBody((KuzzleJSONObject) argument.getValue()).getString("pattern"));
+  public void object() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "encoding"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("subcommand", "encoding");
+
+    this.testReadMethod("object", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.object("key", "encoding", listener);
   }
 
   @Test
-  public void lastSaveTest() {
-    ms.lastsave();
-    verify(ms).send(eq(Action.lastsave), any(KuzzleJSONObject.class));
+  public void persist() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testWriteMethod("persist", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.persist("key", listener);
   }
 
   @Test
-  public void lindexTest() throws JSONException {
-    ms.lindex("id", 42);
-    verify(ms).send(eq(Action.lindex), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("idx"));
+  public void pexpire() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 42000};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("milliseconds", 42000)
+      );
+
+    this.testWriteMethod("pexpire", new Class[]{String.class, long.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.pexpire("key", 42000, listener);
   }
 
   @Test
-  public void linsertTest() throws JSONException {
-    ms.linsert("id", Position.AFTER, "pivot", "value");
-    verify(ms).send(eq(Action.linsert), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("pivot", getBody((KuzzleJSONObject) argument.getValue()).getString("pivot"));
-    assertEquals("value", getBody((KuzzleJSONObject) argument.getValue()).getString("value"));
+  public void pexpireat() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 1234567890};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("timestamp", 1234567890)
+      );
+
+    this.testWriteMethod("pexpireat", new Class[]{String.class, long.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.pexpireat("key", 1234567890, listener);
   }
 
   @Test
-  public void lpushTest() throws JSONException {
-    ms.lpush("id", "value1", "value2");
-    verify(ms).send(eq(Action.lpush), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("value1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[0]);
-    assertEquals("value2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[1]);
+  public void pfadd() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray elements = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", elements};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("elements", elements)
+      );
+
+    this.testWriteMethod("pfadd", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ms.pfadd("key", elements, listener);
   }
 
   @Test
-  public void lrangeTest() throws JSONException {
-    ms.lrange("id", 24, 42);
-    verify(ms).send(eq(Action.lrange), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("start"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("end"));
+  public void pfcount() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{keys};
+    JSONObject expected = new JSONObject()
+      .put("keys", keys);
+
+    this.testReadMethod("pfcount", new Class[]{JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.pfcount(keys, listener);
   }
 
   @Test
-  public void lremTest() throws JSONException {
-    ms.lrem("id", 42, "value");
-    verify(ms).send(eq(Action.lrem), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("count"));
-    assertEquals("value", getBody((KuzzleJSONObject) argument.getValue()).getString("value"));
+  public void pfmerge() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", keys};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("sources", keys)
+      );
+
+    this.testWriteMethod("pfmerge", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ms.pfmerge("key", keys, listener);
   }
 
   @Test
-  public void lsetTest() throws JSONException {
-    ms.lset("id", 42, "value");
-    verify(ms).send(eq(Action.lset), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("idx"));
-    assertEquals("value", getBody((KuzzleJSONObject) argument.getValue()).getString("value"));
+  public void ping() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{};
+    JSONObject expected = new JSONObject();
+
+    this.testReadMethod("ping", new Class[]{}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ms.ping(listener);
   }
 
   @Test
-  public void ltrimTest() throws JSONException {
-    ms.ltrim("id", 24, 42);
-    verify(ms).send(eq(Action.ltrim), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("start"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("stop"));
+  public void psetex() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", 42000};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("value", "foo")
+        .put("milliseconds", 42000)
+      );
+
+    this.testWriteMethod("psetex", new Class[]{String.class, String.class, long.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ms.psetex("key", "foo", 42000, listener);
   }
 
   @Test
-  public void msetTest() throws JSONException {
-    ms.mset("key1", "value1", "key2", "value2");
-    verify(ms).send(eq(Action.mset), (KuzzleJSONObject) argument.capture());
-    assertEquals("key1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[0]);
-    assertEquals("value1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[1]);
-    assertEquals("key2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[2]);
-    assertEquals("value2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[3]);
+  public void pttl() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("pttl", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.pttl("key", listener);
   }
 
   @Test
-  public void multiTest() {
-    ms.multi();
-    verify(ms).send(eq(Action.multi), any(KuzzleJSONObject.class));
+  public void randomkey() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{};
+    JSONObject expected = new JSONObject();
+
+    this.testReadMethod("randomkey", new Class[]{}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.randomkey(listener);
   }
 
   @Test
-  public void objectTest() throws JSONException {
-    ms.object(ObjectCommand.encoding, "test1");
-    ms.object(ObjectCommand.idletime, "test2");
-    ms.object(ObjectCommand.refcount, "test3");
-    verify(ms, times(3)).send(eq(Action.object), (KuzzleJSONObject) argument.capture());
-    assertEquals(ObjectCommand.encoding.toString(), getBody((KuzzleJSONObject) argument.getAllValues().get(0)).getString("subcommand"));
-    assertEquals(ObjectCommand.idletime.toString(), getBody((KuzzleJSONObject) argument.getAllValues().get(1)).getString("subcommand"));
-    assertEquals(ObjectCommand.refcount.toString(), getBody((KuzzleJSONObject) argument.getAllValues().get(2)).getString("subcommand"));
-    assertEquals("test1", getBody((KuzzleJSONObject) argument.getAllValues().get(0)).getString("args"));
-    assertEquals("test2", getBody((KuzzleJSONObject) argument.getAllValues().get(1)).getString("args"));
-    assertEquals("test3", getBody((KuzzleJSONObject) argument.getAllValues().get(2)).getString("args"));
+  public void rename() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("newkey", "foo")
+      );
+
+    this.testWriteMethod("rename", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ms.rename("key", "foo", listener);
   }
 
   @Test
-  public void pexpireTest() throws JSONException {
-    ms.pexpire("id", 42);
-    verify(ms).send(eq(Action.pexpire), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("milliseconds"));
+  public void renamenx() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("newkey", "foo")
+      );
+
+    this.testWriteMethod("renamenx", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ms.renamenx("key", "foo", listener);
   }
 
   @Test
-  public void pexpireatTest() throws JSONException {
-    ms.pexpireat("id", 42);
-    verify(ms).send(eq(Action.pexpireat), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("timestamp"));
+  public void rpop() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testWriteMethod("rpop", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.rpop("key", listener);
   }
 
   @Test
-  public void pfaddTest() throws JSONException {
-    ms.pfadd("id", "value1", "value2");
-    verify(ms).send(eq(Action.pfadd), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("value1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("elements"))[0]);
-    assertEquals("value2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("elements"))[1]);
+  public void rpoplpush() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "dest"};
+    JSONObject expected = new JSONObject()
+      .put("body", new JSONObject()
+        .put("source", "key")
+        .put("destination", "dest")
+      );
+
+    this.testWriteMethod("rpoplpush", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.rpoplpush("key", "dest", listener);
   }
 
   @Test
-  public void pfmerge() throws JSONException {
-    ms.pfmerge("dest", "src1", "src2");
-    verify(ms).send(eq(Action.pfmerge), (KuzzleJSONObject) argument.capture());
-    assertEquals("dest", getBody((KuzzleJSONObject) argument.getValue()).get("destkey"));
-    assertEquals("src1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("sourcekeys"))[0]);
-    assertEquals("src2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("sourcekeys"))[1]);
+  public void rpush() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray values = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", values};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("values", values)
+      );
+
+    this.testWriteMethod("rpush", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.rpush("key", values, listener);
   }
 
   @Test
-  public void pingTest() {
-    ms.ping();
-    verify(ms).send(eq(Action.ping), any(KuzzleJSONObject.class));
+  public void rpushx() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "value"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject().put("value", "value"));
+
+    this.testWriteMethod("rpushx", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.rpushx("key", "value", listener);
   }
 
   @Test
-  public void psetexTest() throws JSONException {
-    ms.psetex("id", 42, "value");
-    verify(ms).send(eq(Action.psetex), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("milliseconds"));
-    assertEquals("value", getBody((KuzzleJSONObject) argument.getValue()).getString("value"));
+  public void sadd() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray members = new JSONArray().put("foo").put("bar").put("baz");
+
+    Object[] args = new Object[]{"key", members};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("members", members)
+      );
+
+    this.testWriteMethod("sadd", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.sadd("key", members, listener);
   }
 
   @Test
-  public void publishTest() throws JSONException {
-    ms.publish("channel", "message");
-    verify(ms).send(eq(Action.publish), (KuzzleJSONObject) argument.capture());
-    assertEquals("channel", getBody((KuzzleJSONObject) argument.getValue()).getString("channel"));
-    assertEquals("message", getBody((KuzzleJSONObject) argument.getValue()).getString("message"));
+  public void scan() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setCount((long)10)
+      .setMatch("foo*");
+    Object[] args = new Object[]{42};
+    JSONObject expected = new JSONObject()
+      .put("cursor", 42)
+      .put("count", 10)
+      .put("match", "foo*");
+
+    this.testReadMethod("scan", new Class[]{long.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray()
+      .put(18)
+      .put(new JSONArray()
+        .put("field1")
+        .put("field1 value")
+        .put("field2")
+        .put("field2 value")
+      );
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.scan(42, listener);
   }
 
   @Test
-  public void randomkeyTest() {
-    ms.randomkey();
-    verify(ms).send(eq(Action.randomkey), any(KuzzleJSONObject.class));
+  public void scard() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("scard", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.scard("key", listener);
   }
 
   @Test
-  public void renameTest() throws JSONException {
-    ms.rename("oldkey", "newkey");
-    verify(ms).send(eq(Action.rename), (KuzzleJSONObject) argument.capture());
-    assertEquals("oldkey", ((KuzzleJSONObject) argument.getValue()).getString("_id"));
-    assertEquals("newkey", getBody((KuzzleJSONObject) argument.getValue()).getString("newkey"));
+  public void sdiff() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", keys};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("keys", keys);
+
+    this.testReadMethod("sdiff", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.sdiff("key", keys, listener);
   }
 
   @Test
-  public void renamenxTest() throws JSONException {
-    ms.renamenx("oldkey", "newkey");
-    verify(ms).send(eq(Action.renamenx), (KuzzleJSONObject) argument.capture());
-    assertEquals("oldkey", ((KuzzleJSONObject) argument.getValue()).getString("_id"));
-    assertEquals("newkey", getBody((KuzzleJSONObject) argument.getValue()).getString("newkey"));
+  public void sdiffstore() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", keys, "dest"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("keys", keys)
+        .put("destination", "dest")
+    );
+
+    this.testWriteMethod("sdiffstore", new Class[]{String.class, JSONArray.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.sdiffstore("key", keys, "dest", listener);
   }
 
   @Test
-  public void restoreTest() throws JSONException {
-    ms.restore("id", 42, "\nx17serializedcontent");
-    verify(ms).send(eq(Action.restore), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("ttl"));
-    assertEquals("\nx17serializedcontent", getBody((KuzzleJSONObject) argument.getValue()).getString("content"));
+  public void set() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setEx((long)123)
+      .setNx(true)
+      .setPx((long)456)
+      .setXx(false);
+    Object[] args = new Object[]{"key", "value"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("value", "value")
+        .put("ex", 123)
+        .put("nx", true)
+        .put("px", 456)
+        .put("xx", false)
+      );
+
+    this.testWriteMethod("set", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.set("key", "value", listener);
   }
 
   @Test
-  public void rpoplpushTest() throws JSONException {
-    ms.rpoplpush("source", "dst");
-    verify(ms).send(eq(Action.rpoplpush), (KuzzleJSONObject) argument.capture());
-    assertEquals("source", getBody((KuzzleJSONObject) argument.getValue()).getString("source"));
-    assertEquals("dst", getBody((KuzzleJSONObject) argument.getValue()).getString("destination"));
+  public void setex() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("value", "foo")
+        .put("seconds", 42)
+      );
+
+    this.testWriteMethod("setex", new Class[]{String.class, String.class, long.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ms.setex("key", "foo", 42, listener);
   }
 
   @Test
-  public void saddTest() throws JSONException {
-    ms.sadd("id", "member1", "member2");
-    verify(ms).send(eq(Action.sadd), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("member1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("members"))[0]);
-    assertEquals("member2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("members"))[1]);
+  public void setnx() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "value"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject().put("value", "value"));
+
+    this.testWriteMethod("setnx", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(1, 1);
+    ms.setnx("key", "value", listener);
   }
 
   @Test
-  public void saveTest() {
-    ms.save();
-    verify(ms).send(eq(Action.save), any(KuzzleJSONObject.class));
+  public void sinter() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{keys};
+    JSONObject expected = new JSONObject()
+      .put("keys", keys);
+
+    this.testReadMethod("sinter", new Class[]{JSONArray.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.sinter(keys, listener);
   }
+
+  @Test
+  public void sinterstore() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", keys};
+    JSONObject expected = new JSONObject()
+      .put("body", new JSONObject()
+        .put("keys", keys)
+        .put("destination", "key")
+      );
 
+    this.testWriteMethod("sinterstore", new Class[]{String.class, JSONArray.class}, args, opts, expected);
 
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.sinterstore("key", keys, listener);
+  }
+
   @Test
-  public void sdiffstoreTest() throws JSONException {
-    ms.sdiffstore("dest", "key1", "key2");
-    verify(ms).send(eq(Action.sdiffstore), (KuzzleJSONObject) argument.capture());
-    assertEquals("dest", getBody((KuzzleJSONObject) argument.getValue()).getString("destination"));
-    assertEquals("key1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[0]);
-    assertEquals("key2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[1]);
+  public void sismember() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("member", "foo");
+
+    this.testReadMethod("sismember", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(1, 1);
+    ms.sismember("key", "foo", listener);
   }
 
   @Test
-  public void setTest() throws JSONException {
-    SetParams sp = SetParams.setParams();
-    sp.ex(42);
-    sp.nx();
-    ms.set("mykey", "value", sp);
-    verify(ms).send(eq(Action.set), (KuzzleJSONObject) argument.capture());
-    assertEquals("mykey", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("ex"));
-    assertEquals(true, getBody((KuzzleJSONObject) argument.getValue()).getBoolean("nx"));
+  public void smembers() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("smembers", new Class[]{String.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.smembers("key", listener);
   }
 
   @Test
-  public void setbitTest() throws JSONException {
-    ms.setbit("id", 42, 1337);
-    verify(ms).send(eq(Action.setbit), (KuzzleJSONObject) argument.capture());
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("offset"));
-    assertEquals(1337, getBody((KuzzleJSONObject) argument.getValue()).getLong("value"));
+  public void smove() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("destination", "foo")
+        .put("member", "bar")
+      );
+
+    this.testWriteMethod("smove", new Class[]{String.class, String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Integer> listener = verifyResultInt(1, 1);
+    ms.smove("key", "foo", "bar", listener);
   }
 
   @Test
-  public void setexTest() throws JSONException {
-    ms.setex("id", 42, "value");
-    verify(ms).send(eq(Action.setex), (KuzzleJSONObject) argument.capture());
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getInt("seconds"));
-    assertEquals("value", getBody((KuzzleJSONObject) argument.getValue()).getString("value"));
+  public void sort() throws Exception {
+    JSONArray
+      array = new JSONArray().put("foo").put("bar").put("baz"),
+      limit = new JSONArray().put(13).put(42);
+    Options opts = new Options()
+      .setQueuable(true)
+      .setAlpha(true)
+      .setBy("foobar")
+      .setDirection("asc")
+      .setGet(array)
+      .setLimit(limit);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("alpha", true)
+      .put("by", "foobar")
+      .put("direction", "asc")
+      .put("get", array)
+      .put("limit", limit);
+
+    this.testReadMethod("sort", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<JSONArray> listener = verifyResultArray(array, array);
+    ms.sort("key", listener);
   }
 
   @Test
-  public void setrangeTest() throws JSONException {
-    ms.setrange("id", 42, "value");
-    verify(ms).send(eq(Action.setrange), (KuzzleJSONObject) argument.capture());
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getInt("offset"));
-    assertEquals("value", getBody((KuzzleJSONObject) argument.getValue()).getString("value"));
+  public void spop() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setCount((long)10);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject().put("count", 10));
+
+    this.testWriteMethod("spop", new Class[]{String.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.spop("key", listener);
+
+    listener = verifyResultArray("foo", new JSONArray().put("foo"));
+    ms.spop("key", listener);
   }
 
   @Test
-  public void sinterstoreTest() throws JSONException {
-    ms.sinterstore("dest", "key1", "key2");
-    verify(ms).send(eq(Action.sinterstore), (KuzzleJSONObject) argument.capture());
-    assertEquals("dest", getBody((KuzzleJSONObject) argument.getValue()).getString("destination"));
-    assertEquals("key1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[0]);
-    assertEquals("key2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[1]);
+  public void srandmember() throws Exception {
+    Options opts = new Options().setQueuable(true).setCount((long)10);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("count", 10);
+
+    this.testReadMethod("srandmember", new Class[]{String.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.srandmember("key", listener);
+
+    listener = verifyResultArray("foo", new JSONArray().put("foo"));
+    ms.srandmember("key", listener);
   }
 
   @Test
-  public void sismemberTest() throws JSONException {
-    ms.sismember("id", "member");
-    verify(ms).send(eq(Action.sismember), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("member", getBody((KuzzleJSONObject) argument.getValue()).getString("member"));
+  public void srem() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray members = new JSONArray().put("foo").put("bar").put("baz");
+
+    Object[] args = new Object[]{"key", members};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("members", members)
+      );
+
+    this.testWriteMethod("srem", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.srem("key", members, listener);
   }
 
   @Test
-  public void smoveTest() throws JSONException {
-    ms.smove("srckey", "dstkey", "member");
-    verify(ms).send(eq(Action.smove), (KuzzleJSONObject) argument.capture());
-    assertEquals("srckey", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("dstkey", getBody((KuzzleJSONObject) argument.getValue()).getString("destination"));
-    assertEquals("member", getBody((KuzzleJSONObject) argument.getValue()).getString("member"));
+  public void sscan() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setCount((long)10)
+      .setMatch("foo*");
+    Object[] args = new Object[]{"key", 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("cursor", 42)
+      .put("count", 10)
+      .put("match", "foo*");
+
+    this.testReadMethod("sscan", new Class[]{String.class, long.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray()
+      .put(18)
+      .put(new JSONArray()
+        .put("field1")
+        .put("field1 value")
+        .put("field2")
+        .put("field2 value")
+      );
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.sscan("key", 42, listener);
   }
 
   @Test
-  public void spopTest() throws JSONException {
-    ms.spop("id");
-    ms.spop("idd", 42);
-    verify(ms, times(2)).send(eq(Action.spop), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getAllValues().get(0)).getString("_id"));
-    assertEquals("idd", ((KuzzleJSONObject)argument.getAllValues().get(1)).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject)argument.getAllValues().get(1)).getLong("count"));
+  public void strlen() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("strlen", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.strlen("key", listener);
   }
 
   @Test
-  public void sremTest() throws JSONException {
-    ms.srem("id", "member1", "member2");
-    verify(ms).send(eq(Action.srem), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getAllValues().get(0)).getString("_id"));
-    assertEquals("member1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("members"))[0]);
-    assertEquals("member2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("members"))[1]);
+  public void sunion() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{keys};
+    JSONObject expected = new JSONObject()
+      .put("keys", keys);
+
+    this.testReadMethod("sunion", new Class[]{JSONArray.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.sunion(keys, listener);
   }
 
   @Test
-  public void sunionstoreTest() throws JSONException {
-    ms.sunionstore("dst", "key1", "key2");
-    verify(ms).send(eq(Action.sunionstore), (KuzzleJSONObject) argument.capture());
-    assertEquals("dst", getBody((KuzzleJSONObject)argument.getValue()).getString("destination"));
-    assertEquals("key1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[0]);
-    assertEquals("key2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[1]);
+  public void sunionstore() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", keys};
+    JSONObject expected = new JSONObject()
+      .put("body", new JSONObject()
+        .put("keys", keys)
+        .put("destination", "key")
+      );
+
+    this.testWriteMethod("sunionstore", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.sunionstore("key", keys, listener);
   }
 
   @Test
-  public void unwatchTest() {
-    ms.unwatch();
-    verify(ms).send(eq(Action.unwatch), any(KuzzleJSONObject.class));
+  public void time() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{};
+    JSONObject expected = new JSONObject();
+
+    this.testReadMethod("time", new Class[]{}, args, opts, expected);
+
+    ResponseListener<JSONArray> listener = verifyResultArray(
+      new JSONArray().put("123").put("456"),
+      new JSONArray().put(123).put(456)
+    );
+    ms.time(listener);
   }
 
   @Test
-  public void waitTest() throws JSONException {
-    ms.wait(24, (long)42);
-    verify(ms).send(eq(Action.wait), (KuzzleJSONObject) argument.capture());
-    assertEquals(24, getBody((KuzzleJSONObject)argument.getValue()).getInt("numslaves"));
-    assertEquals(42, getBody((KuzzleJSONObject)argument.getValue()).getLong("timeout"));
+  public void touch() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{keys};
+    JSONObject expected = new JSONObject()
+      .put("body", new JSONObject()
+        .put("keys", keys)
+      );
+
+    this.testWriteMethod("touch", new Class[]{JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.touch(keys, listener);
   }
 
   @Test
-  public void zcountTest() throws JSONException {
-    ms.zcount("id", "min", 42);
-    verify(ms).send(eq(Action.zcount), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getAllValues().get(0)).getString("_id"));
-    assertEquals("min", getBody((KuzzleJSONObject)argument.getValue()).get("min"));
-    assertEquals(42, getBody((KuzzleJSONObject)argument.getValue()).get("max"));
+  public void ttl() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("ttl", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.ttl("key", listener);
   }
 
   @Test
-  public void zincrbyTest() throws JSONException {
-    ms.zincrby("id", 42, "one");
-    verify(ms).send(eq(Action.zincrby), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getAllValues().get(0)).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject)argument.getValue()).getDouble("value"), 2);
-    assertEquals("one", getBody((KuzzleJSONObject)argument.getValue()).get("member"));
+  public void type() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("type", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ms.type("key", listener);
   }
 
   @Test
-  public void zinterstoreTest() throws JSONException {
-    ms.zinterstore("out", new String[]{"zset1", "zset2"}, ZParams.Aggregate.MAX, 2, 3);
-    verify(ms).send(eq(Action.zinterstore), (KuzzleJSONObject) argument.capture());
-    assertEquals("out", getBody((KuzzleJSONObject)argument.getValue()).getString("destination"));
-    assertEquals("zset1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[0]);
-    assertEquals("zset2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("keys"))[1]);
-    assertEquals(ZParams.Aggregate.MAX.toString(), getBody((KuzzleJSONObject)argument.getValue()).getString("aggregate"));
-    assertEquals(2, ((Object[])getBody((KuzzleJSONObject) argument.getValue()).get("weights"))[0]);
-    assertEquals(3, ((Object[])getBody((KuzzleJSONObject) argument.getValue()).get("weights"))[1]);
+  public void zadd() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setCh(true)
+      .setIncr(true)
+      .setNx(true)
+      .setXx(false);
+    JSONArray elements = new JSONArray().put("foo").put("bar").put("baz");
+
+    Object[] args = new Object[]{"key", elements};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("elements", elements)
+        .put("ch", true)
+        .put("incr", true)
+        .put("nx", true)
+        .put("xx", false)
+      );
+
+    this.testWriteMethod("zadd", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zadd("key", elements, listener);
   }
 
   @Test
-  public void zlexcountTest() throws JSONException {
-    ms.zlexcount("id", 24, 42);
-    verify(ms).send(eq(Action.zlexcount), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("min"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("max"));
+  public void zcard() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key");
+
+    this.testReadMethod("zcard", new Class[]{String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zcard("key", listener);
   }
 
   @Test
-  public void zrangeTest() throws JSONException {
-    ms.zrange("id", 24, 42, true);
-    verify(ms).send(eq(Action.zrange), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("start"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("stop"));
-    assertEquals(true, getBody((KuzzleJSONObject) argument.getValue()).getBoolean("withscores"));
+  public void zcount() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 13, 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("min", 13)
+      .put("max", 42);
+
+    this.testReadMethod("zcount", new Class[]{String.class, long.class, long.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zcount("key", 13, 42, listener);
   }
 
   @Test
-  public void zrangebylexTest() throws JSONException {
-    ms.zrangebylex("id", 24, 42, 0xff, 1337);
-    verify(ms).send(eq(Action.zrangebylex), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("min"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("max"));
-    assertEquals(0xff, getBody((KuzzleJSONObject) argument.getValue()).getLong("offset"));
-    assertEquals(1337, getBody((KuzzleJSONObject) argument.getValue()).getLong("count"));
+  public void zincrby() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", 3.14159};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("value", 3.14159)
+        .put("member", "foo")
+      );
+
+    this.testWriteMethod("zincrby", new Class[]{String.class, String.class, double.class}, args, opts, expected);
+
+    ResponseListener<Double> listener = verifyResultDouble("48.14159", 48.14159);
+    ms.zincrby("foo", "bar", 3.14159, listener);
   }
 
   @Test
-  public void zrangebyscoreTest() throws JSONException {
-    ms.zrangebyscore("id", 24, 42, true, 0xff, 1337);
-    verify(ms).send(eq(Action.zrangebyscore), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("min"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("max"));
-    assertEquals(true, getBody((KuzzleJSONObject) argument.getValue()).getBoolean("withscores"));
-    assertEquals(0xff, getBody((KuzzleJSONObject) argument.getValue()).getLong("offset"));
-    assertEquals(1337, getBody((KuzzleJSONObject) argument.getValue()).getLong("count"));
+  public void zinterstore() throws Exception {
+    JSONArray weights = new JSONArray().put(1).put(2).put(3);
+    Options opts = new Options()
+      .setQueuable(true)
+      .setAggregate("max")
+      .setWeights(weights);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", keys};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("keys", keys)
+        .put("aggregate", "max")
+        .put("weights", weights)
+      );
+
+    this.testWriteMethod("zinterstore", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zinterstore("key", keys, listener);
   }
 
   @Test
-  public void zremTest() throws JSONException {
-    ms.zrem("id", "member1", "member2");
-    verify(ms).send(eq(Action.zrem), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getAllValues().get(0)).getString("_id"));
-    assertEquals("member1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("members"))[0]);
-    assertEquals("member2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("members"))[1]);
+  public void zlexcount() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("min", "foo")
+      .put("max", "bar");
+
+    this.testReadMethod("zlexcount", new Class[]{String.class, String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zlexcount("key", "foo", "bar", listener);
   }
 
   @Test
-  public void zremrangebylexTest() throws JSONException {
-    ms.zremrangebylex("id", 24, 42, 0xff, 1337);
-    verify(ms).send(eq(Action.zremrangebylex), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("min"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("max"));
-    assertEquals(0xff, getBody((KuzzleJSONObject) argument.getValue()).getLong("offset"));
-    assertEquals(1337, getBody((KuzzleJSONObject) argument.getValue()).getLong("count"));
+  public void zrange() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 13, 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("start", 13)
+      .put("stop", 42)
+      .put("options", new JSONArray().put("withscores"));
+
+    this.testReadMethod("zrange", new Class[]{String.class, long.class, long.class}, args, opts, expected);
+
+    ResponseListener<JSONArray> listener = verifyResultArray(
+      new JSONArray().put("foo").put("3.14159").put("bar").put("123.456"),
+      new JSONArray()
+          .put(new JSONObject().put("member", "foo").put("score", 3.14159))
+          .put(new JSONObject().put("member", "bar").put("score", 123.456))
+    );
+    ms.zrange("key", 13, 42, listener);
   }
 
   @Test
-  public void zrevrangebyscoreTest() throws JSONException {
-    ms.zrevrangebyscore("id", 24, 42, true, 0xff, 1337);
-    verify(ms).send(eq(Action.zrevrangebyscore), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("min"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("max"));
-    assertEquals(true, getBody((KuzzleJSONObject) argument.getValue()).getBoolean("withscores"));
-    assertEquals(0xff, getBody((KuzzleJSONObject) argument.getValue()).getLong("offset"));
-    assertEquals(1337, getBody((KuzzleJSONObject) argument.getValue()).getLong("count"));
+  public void zrangebylex() throws Exception {
+    JSONArray limit = new JSONArray().put(1).put(2);
+    Options opts = new Options()
+      .setQueuable(true)
+      .setLimit(limit);
+    Object[] args = new Object[]{"key", "foo", "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("min", "foo")
+      .put("max", "bar")
+      .put("limit", limit);
+
+    this.testReadMethod("zrangebylex", new Class[]{String.class, String.class, String.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.zrangebylex("key", "foo", "bar", listener);
   }
 
   @Test
-  public void zrevrankTest() throws JSONException {
-    ms.zrevrank("id", "member");
-    verify(ms).send(eq(Action.zrevrank), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("member", getBody((KuzzleJSONObject) argument.getValue()).getString("member"));
+  public void zrangebyscore() throws Exception {
+    JSONArray limit = new JSONArray().put(1).put(2);
+    Options opts = new Options()
+      .setQueuable(true)
+      .setLimit(limit);
+    Object[] args = new Object[]{"key", 3.14, 42.24};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("min", 3.14)
+      .put("max", 42.24)
+      .put("limit", limit)
+      .put("options", new JSONArray().put("withscores"));
+
+    this.testReadMethod("zrangebyscore", new Class[]{String.class, double.class, double.class}, args, opts, expected);
+
+    ResponseListener<JSONArray> listener = verifyResultArray(
+      new JSONArray().put("foo").put("3.14159").put("bar").put("123.456"),
+      new JSONArray()
+        .put(new JSONObject().put("member", "foo").put("score", 3.14159))
+        .put(new JSONObject().put("member", "bar").put("score", 123.456))
+    );
+    ms.zrangebyscore("key", 3.14, 42.24, listener);
   }
 
   @Test
-  public void incrbyTest() throws JSONException {
-    ms.incrby("id", 42);
-    verify(ms).send(eq(Action.incrby), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject)argument.getValue()).getLong("value"));
+  public void zrank() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("member", "foo");
+
+    this.testReadMethod("zrank", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zrank("key", "foo", listener);
   }
 
   @Test
-  public void incrbyfloatTest() throws JSONException {
-    ms.incrbyfloat("id", 42.42);
-    verify(ms).send(eq(Action.incrbyfloat), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(42.42, getBody((KuzzleJSONObject)argument.getValue()).getDouble("value"), 2);
+  public void zrem() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    JSONArray members = new JSONArray().put("foo").put("bar").put("baz");
+
+    Object[] args = new Object[]{"key", members};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("members", members)
+      );
+
+    this.testWriteMethod("zrem", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zrem("key", members, listener);
   }
 
   @Test
-  public void brpopTest() throws JSONException {
-    ms.brpop(new String[]{"1", "2"}, 42);
-    verify(ms).send(eq(Action.brpop), (KuzzleJSONObject) argument.capture());
-    assertEquals("1",((String[])getBody((KuzzleJSONObject) argument.getValue()).get("src"))[0]);
-    assertEquals("2",((String[])getBody((KuzzleJSONObject) argument.getValue()).get("src"))[1]);
-    assertEquals(42,getBody((KuzzleJSONObject) argument.getValue()).getLong("timeout"));
+  public void zremrangebylex() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo", "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("min", "foo")
+        .put("max", "bar")
+    );
+
+    this.testWriteMethod("zremrangebylex", new Class[]{String.class, String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zremrangebylex("key", "foo", "bar", listener);
   }
 
   @Test
-  public void testHget() throws JSONException {
-    ms.hget("id", "field");
-    verify(ms).send(eq(Action.hget), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("field", getBody((KuzzleJSONObject) argument.getValue()).getString("field"));
+  public void zremrangebyrank() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 13, 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("start", 13)
+        .put("stop", 42)
+      );
+
+    this.testWriteMethod("zremrangebyrank", new Class[]{String.class, long.class, long.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zremrangebyrank("key", 13, 42, listener);
   }
 
   @Test
-  public void testHmget() throws JSONException {
-    ms.hmget("id", "field1", "field2");
-    verify(ms).send(eq(Action.hmget), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getAllValues().get(0)).getString("_id"));
-    assertEquals("field1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("fields"))[0]);
-    assertEquals("field2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("fields"))[1]);
+  public void zremrangebyscore() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 13.1, 42.3};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("min", 13.1)
+        .put("max", 42.3)
+      );
+
+    this.testWriteMethod("zremrangebyscore", new Class[]{String.class, double.class, double.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zremrangebyscore("key", 13, 42, listener);
   }
 
   @Test
-  public void hsetnxTest() throws JSONException {
-    ms.hsetnx("id", "field", "value");
-    verify(ms).send(eq(Action.hsetnx), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("field", getBody((KuzzleJSONObject) argument.getValue()).getString("field"));
-    assertEquals("value", getBody((KuzzleJSONObject) argument.getValue()).getString("value"));
+  public void zrevrange() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", 13, 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("start", 13)
+      .put("stop", 42)
+      .put("options", new JSONArray().put("withscores"));
+
+    this.testReadMethod("zrevrange", new Class[]{String.class, long.class, long.class}, args, opts, expected);
+
+    ResponseListener<JSONArray> listener = verifyResultArray(
+      new JSONArray().put("foo").put("3.14159").put("bar").put("123.456"),
+      new JSONArray()
+        .put(new JSONObject().put("member", "foo").put("score", 3.14159))
+        .put(new JSONObject().put("member", "bar").put("score", 123.456))
+    );
+    ms.zrevrange("key", 13, 42, listener);
   }
 
   @Test
-  public void msetnxTest() throws JSONException {
-    ms.msetnx("key1", "value1", "key2", "value2");
-    verify(ms).send(eq(Action.msetnx), (KuzzleJSONObject) argument.capture());
-    assertEquals("key1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[0]);
-    assertEquals("value1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[1]);
-    assertEquals("key2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[2]);
-    assertEquals("value2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[3]);
+  public void zrevrangebylex() throws Exception {
+    JSONArray limit = new JSONArray().put(1).put(2);
+    Options opts = new Options()
+      .setQueuable(true)
+      .setLimit(limit);
+    Object[] args = new Object[]{"key", "foo", "bar"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("min", "foo")
+      .put("max", "bar")
+      .put("limit", limit);
+
+    this.testReadMethod("zrevrangebylex", new Class[]{String.class, String.class, String.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray().put("foo").put("bar").put("baz");
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.zrevrangebylex("key", "foo", "bar", listener);
   }
 
   @Test
-  public void rpushTest() throws JSONException {
-    ms.rpush("id", "value1", "value2");
-    verify(ms).send(eq(Action.rpush), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("value1", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[0]);
-    assertEquals("value2", ((String[])getBody((KuzzleJSONObject) argument.getValue()).get("values"))[1]);
+  public void zrevrangebyscore() throws Exception {
+    JSONArray limit = new JSONArray().put(1).put(2);
+    Options opts = new Options()
+      .setQueuable(true)
+      .setLimit(limit);
+    Object[] args = new Object[]{"key", 3.14, 42.24};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("min", 3.14)
+      .put("max", 42.24)
+      .put("limit", limit)
+      .put("options", new JSONArray().put("withscores"));
+
+    this.testReadMethod("zrevrangebyscore", new Class[]{String.class, double.class, double.class}, args, opts, expected);
+
+    ResponseListener<JSONArray> listener = verifyResultArray(
+      new JSONArray().put("foo").put("3.14159").put("bar").put("123.456"),
+      new JSONArray()
+        .put(new JSONObject().put("member", "foo").put("score", 3.14159))
+        .put(new JSONObject().put("member", "bar").put("score", 123.456))
+    );
+    ms.zrevrangebyscore("key", 3.14, 42.24, listener);
   }
 
   @Test
-  public void hincrbyfloatTest() throws JSONException {
-    ms.hincrbyfloat("id", "field", 42.42);
-    verify(ms).send(eq(Action.hincrbyfloat), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("field", getBody((KuzzleJSONObject) argument.getValue()).getString("field"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getDouble("value"), 2);
+  public void zrevrank() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("member", "foo");
+
+    this.testReadMethod("zrevrank", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zrevrank("key", "foo", listener);
   }
 
   @Test
-  public void srandmemberTest() throws JSONException {
-    ms.srandmember("idd", 42);
-    verify(ms).send(eq(Action.srandmember), (KuzzleJSONObject) argument.capture());
-    assertEquals("idd", ((KuzzleJSONObject)argument.getAllValues().get(0)).getString("_id"));
-    assertEquals(42, getBody((KuzzleJSONObject)argument.getAllValues().get(0)).getLong("count"));
+  public void zscan() throws Exception {
+    Options opts = new Options()
+      .setQueuable(true)
+      .setCount((long)10)
+      .setMatch("foo*");
+    Object[] args = new Object[]{"key", 42};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("cursor", 42)
+      .put("count", 10)
+      .put("match", "foo*");
+
+    this.testReadMethod("zscan", new Class[]{String.class, long.class}, args, opts, expected);
+
+    JSONArray result = new JSONArray()
+      .put(18)
+      .put(new JSONArray()
+        .put("field1")
+        .put("field1 value")
+        .put("field2")
+        .put("field2 value")
+      );
+    ResponseListener<JSONArray> listener = verifyResultArray(result, result);
+    ms.zscan("key", 42, listener);
   }
 
   @Test
-  public void zrevrangeTest() throws JSONException {
-    ms.zrevrange("id", 24, 42, true);
-    verify(ms).send(eq(Action.zrevrange), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals(24, getBody((KuzzleJSONObject) argument.getValue()).getLong("start"));
-    assertEquals(42, getBody((KuzzleJSONObject) argument.getValue()).getLong("stop"));
-    assertEquals(true, getBody((KuzzleJSONObject) argument.getValue()).getBoolean("withscores"));
+  public void zscore() throws Exception {
+    Options opts = new Options().setQueuable(true);
+    Object[] args = new Object[]{"key", "foo"};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("member", "foo");
+
+    this.testReadMethod("zscore", new Class[]{String.class, String.class}, args, opts, expected);
+
+    ResponseListener<Double> listener = verifyResultDouble("3.14159", 3.14159);
+    ms.zscore("key", "foo", listener);
   }
 
   @Test
-  public void zscoreTest() throws JSONException {
-    ms.zscore("id", "member");
-    verify(ms).send(eq(Action.zscore), (KuzzleJSONObject) argument.capture());
-    assertEquals("id", ((KuzzleJSONObject)argument.getValue()).getString("_id"));
-    assertEquals("member", getBody((KuzzleJSONObject) argument.getValue()).getString("member"));
+  public void zunionstore() throws Exception {
+    JSONArray weights = new JSONArray().put(1).put(2).put(3);
+    Options opts = new Options()
+      .setQueuable(true)
+      .setAggregate("max")
+      .setWeights(weights);
+    JSONArray keys = new JSONArray().put("foo").put("bar").put("baz");
+    Object[] args = new Object[]{"key", keys};
+    JSONObject expected = new JSONObject()
+      .put("_id", "key")
+      .put("body", new JSONObject()
+        .put("keys", keys)
+        .put("aggregate", "max")
+        .put("weights", weights)
+      );
+
+    this.testWriteMethod("zunionstore", new Class[]{String.class, JSONArray.class}, args, opts, expected);
+
+    ResponseListener<Long> listener = verifyResultLong(123, 123);
+    ms.zunionstore("key", keys, listener);
   }
 
 }
