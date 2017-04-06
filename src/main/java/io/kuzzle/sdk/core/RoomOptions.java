@@ -9,7 +9,7 @@ import io.kuzzle.sdk.enums.Users;
 public class RoomOptions {
 
   private boolean subscribeToSelf = true;
-  private JSONObject  metadata = new JSONObject();
+  private JSONObject  _volatile = new JSONObject();
   private Scope scope = Scope.ALL;
   private State state = State.DONE;
   private Users users = Users.NONE;
@@ -32,12 +32,12 @@ public class RoomOptions {
     this.subscribeToSelf = subscribeToSelf;
   }
 
-  public JSONObject getMetadata() {
-    return metadata;
+  public JSONObject getVolatile() {
+    return _volatile;
   }
 
-  public void setMetadata(JSONObject metadata) {
-    this.metadata = metadata;
+  public void setVolatile(JSONObject _volatile) {
+    this._volatile = _volatile;
   }
 
   public Scope getScope() {

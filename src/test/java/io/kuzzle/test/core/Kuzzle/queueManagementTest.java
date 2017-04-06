@@ -71,9 +71,9 @@ public class queueManagementTest {
     QueryObject o = new QueryObject();
     o.setTimestamp(new Date());
     o.setAction("test");
-    o.setQuery(new JSONObject("{\"controller\":\"test\",\"metadata\":{},\"requestId\":\"a476ae61-497e-4338-b4dd-751ac22c6b61\",\"action\":\"test\",\"collection\":\"test\"}"));
+    o.setQuery(new JSONObject("{\"controller\":\"test\",\"volatile\":{},\"requestId\":\"a476ae61-497e-4338-b4dd-751ac22c6b61\",\"action\":\"test\",\"collection\":\"test\"}"));
     kuzzle.getOfflineQueue().add(o);
-    o.setQuery(new JSONObject("{\"controller\":\"test2\",\"metadata\":{},\"requestId\":\"a476ae61-497e-4338-b4dd-751ac22c6b61\",\"action\":\"test2\",\"collection\":\"test2\"}"));
+    o.setQuery(new JSONObject("{\"controller\":\"test2\",\"volatile\":{},\"requestId\":\"a476ae61-497e-4338-b4dd-751ac22c6b61\",\"action\":\"test2\",\"collection\":\"test2\"}"));
     kuzzle.getOfflineQueue().add(o);
     assertEquals(kuzzle.getOfflineQueue().size(), 2);
     kuzzle.flushQueue();
@@ -190,7 +190,7 @@ public class queueManagementTest {
     o.setTimestamp(new Date());
     o.setAction("test");
 
-    JSONObject query = new JSONObject("{\"controller\":\"test3\",\"metadata\":{},\"requestId\":\"a476ae61-497e-4338-b4dd-751ac22c6b61\",\"action\":\"test3\",\"collection\":\"test3\"}");
+    JSONObject query = new JSONObject("{\"controller\":\"test3\",\"volatile\":{},\"requestId\":\"a476ae61-497e-4338-b4dd-751ac22c6b61\",\"action\":\"test3\",\"collection\":\"test3\"}");
     o.setQuery(query);
     kuzzle.getOfflineQueue().add(o);
 

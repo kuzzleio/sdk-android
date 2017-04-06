@@ -36,7 +36,7 @@ public class constructorTest {
       .put("action", "action")
       .put("state", "ALL")
       .put("scope", "ALL")
-      .put("metadata", new JSONObject())
+      .put("volatile", new JSONObject())
       .put("result", new JSONObject())
       .put("requestId", "42");
     mockResponse.put("result", new JSONObject().put("channel", "channel").put("roomId", "42"));
@@ -108,17 +108,17 @@ public class constructorTest {
   }
 
   @Test
-  public void setMetadataThroughConstructor() throws JSONException {
+  public void setVolatileThroughConstructor() throws JSONException {
     JSONObject meta = new JSONObject();
     meta.put("foo", "bar");
     RoomOptions options = new RoomOptions();
-    options.setMetadata(meta);
+    options.setVolatile(meta);
     Room room = new Room(new Collection(k, "test", "index"), options);
-    assertEquals(room.getMetadata().get("foo"), "bar");
+    assertEquals(room.getVolatile().get("foo"), "bar");
     JSONObject meta2 = new JSONObject();
     meta2.put("oof", "rab");
-    room.setMetadata(meta2);
-    assertEquals(room.getMetadata().get("oof"), "rab");
+    room.setVolatile(meta2);
+    assertEquals(room.getVolatile().get("oof"), "rab");
   }
 
   @Test(expected = IllegalArgumentException.class)

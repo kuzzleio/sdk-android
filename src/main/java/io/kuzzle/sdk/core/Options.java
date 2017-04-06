@@ -20,7 +20,7 @@ public class Options {
   private boolean autoReplay = false;
   private boolean autoResubscribe = true;
   private JSONObject headers = new JSONObject();
-  private JSONObject metadata = new JSONObject();
+  private JSONObject _volatile = new JSONObject();
   private int queueMaxSize = 500;
   private int queueTTL = 120000;
   private long reconnectionDelay = 1000;
@@ -75,7 +75,7 @@ public class Options {
     this.autoReconnect = originalOptions.autoReconnect;
     this.autoResubscribe = originalOptions.autoResubscribe;
     this.headers = new JSONObject(originalOptions.headers.toString());
-    this.metadata = new JSONObject(originalOptions.metadata.toString());
+    this._volatile = new JSONObject(originalOptions._volatile.toString());
     this.queueMaxSize = originalOptions.queueMaxSize;
     this.queueTTL = originalOptions.queueTTL;
     this.reconnectionDelay = originalOptions.reconnectionDelay;
@@ -161,22 +161,22 @@ public class Options {
   }
 
   /**
-   * Gets metadata.
+   * Gets volatile data.
    *
-   * @return the metadata
+   * @return the volatile property
    */
-  public JSONObject getMetadata() {
-    return metadata;
+  public JSONObject getVolatile() {
+    return _volatile;
   }
 
   /**
-   * Sets metadata.
+   * Sets volatile data.
    *
-   * @param metadata the metadata
-   * @return the metadata
+   * @param _volatile the volatile property
+   * @return kuzzle instance
    */
-  public Options setMetadata(JSONObject metadata) {
-    this.metadata = metadata;
+  public Options setVolatile(JSONObject _volatile) {
+    this._volatile = _volatile;
     return this;
   }
 
