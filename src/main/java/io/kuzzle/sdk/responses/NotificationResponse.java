@@ -20,7 +20,7 @@ public class NotificationResponse {
   private State   state;
   private Scope   scope;
   private Users   users;
-  private JSONObject  metadata;
+  private JSONObject  _volatile;
   private String requestId;
   private Document document;
   private JSONObject  result;
@@ -34,7 +34,7 @@ public class NotificationResponse {
       this.controller = object.getString("controller");
       this.action = object.getString("action");
       this.state = (object.isNull("state") ? null : State.valueOf(object.getString("state").toUpperCase()));
-      this.metadata = object.getJSONObject("metadata");
+      this._volatile = object.getJSONObject("volatile");
       this.requestId = object.getString("requestId");
       this.result = (object.isNull("result") ? null : object.getJSONObject("result"));
       this.scope = (object.isNull("scope") ? null : Scope.valueOf(object.getString("scope").toUpperCase()));
@@ -92,12 +92,12 @@ public class NotificationResponse {
     this.scope = scope;
   }
 
-  public JSONObject getMetadata() {
-    return metadata;
+  public JSONObject getVolatile() {
+    return _volatile;
   }
 
-  public void setMetadata(JSONObject metadata) {
-    this.metadata = metadata;
+  public void setVolatile(JSONObject _volatile) {
+    this._volatile = _volatile;
   }
 
   public String getRequestId() {

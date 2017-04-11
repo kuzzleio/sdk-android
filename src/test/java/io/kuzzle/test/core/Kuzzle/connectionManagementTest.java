@@ -83,7 +83,7 @@ public class connectionManagementTest {
     QueryObject o = new QueryObject();
     o.setTimestamp(new Date());
     o.setAction("test");
-    JSONObject query = new JSONObject("{\"controller\":\"test3\",\"metadata\":{},\"requestId\":\"a476ae61-497e-4338-b4dd-751ac22c6b61\",\"action\":\"test3\",\"collection\":\"test3\"}");
+    JSONObject query = new JSONObject("{\"controller\":\"test3\",\"volatile\":{},\"requestId\":\"a476ae61-497e-4338-b4dd-751ac22c6b61\",\"action\":\"test3\",\"collection\":\"test3\"}");
     o.setQuery(query);
 
     kuzzle = new KuzzleExtend("localhost", options, null);

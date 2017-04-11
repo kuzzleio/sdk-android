@@ -48,9 +48,9 @@ public class Room {
    */
   protected JSONObject headers;
   /**
-   * The Metadata.
+   * The Volatile property.
    */
-  protected JSONObject metadata;
+  protected JSONObject _volatile;
   /**
    * The Subscribe to self.
    */
@@ -136,7 +136,7 @@ public class Room {
     }
 
     this.subscribeToSelf = opts.isSubscribeToSelf();
-    this.metadata = opts.getMetadata();
+    this._volatile = opts.getVolatile();
     this.scope = opts.getScope();
     this.state = opts.getState();
     this.users = opts.getUsers();
@@ -316,7 +316,7 @@ public class Room {
           .put("state", this.state.toString().toLowerCase())
           .put("users", this.users.toString().toLowerCase());
 
-      options.setMetadata(this.metadata);
+      options.setVolatile(this._volatile);
       this.kuzzle.addHeaders(subscribeQuery, this.headers);
 
       new Thread(new Runnable() {
@@ -530,22 +530,22 @@ public class Room {
   }
 
   /**
-   * Gets metadata.
+   * Gets volatile data.
    *
-   * @return the metadata
+   * @return the volatile property
    */
-  public JSONObject getMetadata() {
-    return metadata;
+  public JSONObject getVolatile() {
+    return _volatile;
   }
 
   /**
-   * Sets metadata.
+   * Sets volatile metadata.
    *
-   * @param metadata the metadata
-   * @return the metadata
+   * @param _volatile the volatile property
+   * @return kuzzle instance
    */
-  public Room setMetadata(final JSONObject metadata) {
-    this.metadata = metadata;
+  public Room setVolatile(final JSONObject _volatile) {
+    this._volatile = _volatile;
     return this;
   }
 

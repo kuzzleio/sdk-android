@@ -71,9 +71,9 @@ public class Kuzzle {
    */
   protected JSONObject headers = new JSONObject();
   /**
-   * The Metadata.
+   * The Volatile property.
    */
-  protected JSONObject metadata;
+  protected JSONObject _volatile;
   /**
    * The target Kuzzle host
    */
@@ -249,7 +249,7 @@ public class Kuzzle {
     this.autoResubscribe = opt.isAutoResubscribe();
     this.defaultIndex = opt.getDefaultIndex();
     this.headers = opt.getHeaders();
-    this.metadata = opt.getMetadata();
+    this._volatile = opt.getVolatile();
     this.port = opt.getPort();
     this.queueMaxSize = opt.getQueueMaxSize();
     this.queueTTL = opt.getQueueTTL();
@@ -1289,14 +1289,14 @@ public class Kuzzle {
       .put("action", queryArgs.action)
       .put("controller", queryArgs.controller);
 
-    // Global metadata
-    JSONObject meta = new JSONObject();
-    for (Iterator ite = this.metadata.keys(); ite.hasNext();) {
+    // Global volatile data
+    JSONObject _volatile = new JSONObject();
+    for (Iterator ite = this._volatile.keys(); ite.hasNext();) {
       String key = (String) ite.next();
-      meta.put(key, this.metadata.get(key));
+      _volatile.put(key, this._volatile.get(key));
     }
 
-    // Metadata for this query
+    // Volatile data for this query
     if (options != null) {
       if (!options.isQueuable() && this.state != States.CONNECTED) {
         discardRequest(listener, object);
@@ -1307,10 +1307,10 @@ public class Kuzzle {
         object.put("refresh", options.getRefresh());
       }
 
-      if (options.getMetadata() != null) {
-        for (Iterator iterator = options.getMetadata().keys(); iterator.hasNext(); ) {
+      if (options.getVolatile() != null) {
+        for (Iterator iterator = options.getVolatile().keys(); iterator.hasNext(); ) {
           String key = (String) iterator.next();
-          meta.put(key, options.getMetadata().get(key));
+          _volatile.put(key, options.getVolatile().get(key));
         }
       }
 
@@ -1323,7 +1323,7 @@ public class Kuzzle {
       }
     }
 
-    object.put("metadata", meta);
+    object.put("volatile", _volatile);
 
     if (queryArgs.collection != null) {
       object.put("collection", queryArgs.collection);
@@ -2123,23 +2123,23 @@ public class Kuzzle {
   }
 
   /**
-   * Setter for the metadata property
+   * Setter for the volatile property
    *
-   * @param newMetadata the new metadata
-   * @return metadata metadata
+   * @param _volatile the new volatile data
+   * @return kuzzle instance
    */
-  public Kuzzle setMetadata(JSONObject newMetadata) {
-    this.metadata = newMetadata;
+  public Kuzzle setVolatile(JSONObject _volatile) {
+    this._volatile = _volatile;
     return this;
   }
 
   /**
-   * Getter for the metadata property
+   * Getter for the volatile property
    *
-   * @return metadata metadata
+   * @return _volatile volatile data
    */
-  public JSONObject getMetadata() {
-    return this.metadata;
+  public JSONObject getVolatile() {
+    return this._volatile;
   }
 
 

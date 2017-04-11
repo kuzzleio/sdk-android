@@ -54,7 +54,7 @@ public class renewTest {
       .put("action", "action")
       .put("state", "ALL")
       .put("scope", "ALL")
-      .put("metadata", new JSONObject())
+      .put("volatile", new JSONObject())
       .put("result", new JSONObject())
       .put("requestId", "42");
     mockResponse.put("result", new JSONObject().put("channel", "channel").put("roomId", "42"));
