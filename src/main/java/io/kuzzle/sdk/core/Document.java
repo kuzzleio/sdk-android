@@ -145,6 +145,37 @@ public class Document {
     }
   }
 
+  public void exists(@NonNull final ResponseListener<JSONObject> listener) {
+    this.exists(null, listener);
+  }
+
+  public void exists(final Options options, @NonNull final ResponseListener<JSONObject> listener) {
+    if (this.id == null) {
+      throw new IllegalStateException("Document.exists: cannot check if the document exists if no id has been provided");
+    }
+
+    if (listener == null) {
+      throw new IllegalArgumentException("Document.exists: a valid ResponseListener object is required");
+    }
+
+    try {
+      this.kuzzle.query(this.dataCollection.makeQueryArgs("document", "exists"), this.serialize(), options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject object) {
+          listener.onSuccess(object);
+          ;
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   /**
    * Gets a refreshed copy of the current object
    *
