@@ -100,31 +100,50 @@ public class eventSystemTest {
 
   @Test(expected = NullPointerException.class)
   public void testRemoveAllListeners() {
-    String id = kuzzle.addListener(Event.connected, null);
-    assertEquals(kuzzle.getEventListeners(Event.connected).get(id).getType(), Event.connected);
+    kuzzle.addListener(Event.connected, mock(EventListener.class));
+    kuzzle.addListener(Event.connected, mock(EventListener.class));
+    kuzzle.addListener(Event.disconnected, mock(EventListener.class));
+    kuzzle.addListener(Event.disconnected, mock(EventListener.class));
+    assertEquals(kuzzle.getEventListeners(Event.connected).size(), 2);
+    assertEquals(kuzzle.getEventListeners(Event.disconnected).size(), 2);
     kuzzle.removeAllListeners();
-    kuzzle.getEventListeners(Event.connected).get(id).getType();
+    assertEquals(kuzzle.getEventListeners(Event.connected).size(), 0);
+    assertEquals(kuzzle.getEventListeners(Event.disconnected).size(), 0);
   }
 
   @Test
   public void testRemoveAllListenersType() {
-    kuzzle.addListener(Event.connected, null);
-    kuzzle.addListener(Event.disconnected, null);
-    assertEquals(kuzzle.getEventListeners(Event.connected).size(), 1);
-    assertEquals(kuzzle.getEventListeners(Event.disconnected).size(), 1);
+    kuzzle.addListener(Event.connected, mock(EventListener.class));
+    kuzzle.addListener(Event.connected, mock(EventListener.class));
+    kuzzle.addListener(Event.disconnected, mock(EventListener.class));
+    kuzzle.addListener(Event.disconnected, mock(EventListener.class));
+    assertEquals(kuzzle.getEventListeners(Event.connected).size(), 2);
+    assertEquals(kuzzle.getEventListeners(Event.disconnected).size(), 2);
     kuzzle.removeAllListeners(Event.connected);
     assertEquals(kuzzle.getEventListeners(Event.connected).size(), 0);
-    assertEquals(kuzzle.getEventListeners(Event.disconnected).size(), 1);
+    assertEquals(kuzzle.getEventListeners(Event.disconnected).size(), 2);
   }
 
   @Test
   public void testRemoveListener() {
-    String id = kuzzle.addListener(Event.disconnected, mock(EventListener.class));
-    String id2 = kuzzle.addListener(Event.connected, mock(EventListener.class));
-    assertEquals(kuzzle.getEventListeners(Event.disconnected).get(id).getType(), Event.disconnected);
-    assertEquals(kuzzle.getEventListeners(Event.connected).get(id2).getType(), Event.connected);
-    kuzzle.removeListener(Event.connected, id2);
-    assertEquals(kuzzle.getEventListeners(Event.connected).size(), 0);
-    assertEquals(kuzzle.getEventListeners(Event.disconnected).size(), 1);
+    EventListener listener1 = mock(EventListener.class);
+    EventListener listener2 = mock(EventListener.class);
+    EventListener listener3 = mock(EventListener.class);
+    EventListener listener4 = mock(EventListener.class);
+    kuzzle.addListener(Event.disconnected, listener1);
+    kuzzle.addListener(Event.connected, listener2);
+    kuzzle.addListener(Event.disconnected, listener3);
+    kuzzle.addListener(Event.connected, listener4);
+    assertEquals(kuzzle.getEventListeners(Event.disconnected).get(listener1).getType(), Event.disconnected);
+    assertEquals(kuzzle.getEventListeners(Event.connected).get(listener2).getType(), Event.connected);
+    assertEquals(kuzzle.getEventListeners(Event.disconnected).get(listener3).getType(), Event.disconnected);
+    assertEquals(kuzzle.getEventListeners(Event.connected).get(listener4).getType(), Event.connected);
+    kuzzle.removeListener(Event.connected, listener2);
+    assertEquals(kuzzle.getEventListeners(Event.connected).size(), 1);
+    assertEquals(kuzzle.getEventListeners(Event.disconnected).size(), 2);
+    assertEquals(kuzzle.getEventListeners(Event.disconnected).get(listener1).getType(), Event.disconnected);
+    assertEquals(kuzzle.getEventListeners(Event.disconnected).get(listener2), null);
+    assertEquals(kuzzle.getEventListeners(Event.disconnected).get(listener3).getType(), Event.disconnected);
+    assertEquals(kuzzle.getEventListeners(Event.connected).get(listener4).getType(), Event.connected);
   }
 }
