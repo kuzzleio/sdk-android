@@ -321,9 +321,11 @@ public class User extends AbstractSecurityDocument {
   }
 
   /**
-   * @param credentials
+   * @param credentials the user credentials
    */
-  public void setCredentials(JSONObject credentials) {
+  public User setCredentials(JSONObject credentials) {
     this.credentials = credentials;
+
+    return this;
   }
 }
