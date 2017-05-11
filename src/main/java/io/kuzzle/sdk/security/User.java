@@ -22,6 +22,8 @@ public class User extends AbstractSecurityDocument {
    */
   private JSONArray profileIds = null;
 
+  private JSONObject credentials = new JSONObject();
+
   /**
    * Instantiates a new Kuzzle user.
    *
@@ -84,11 +86,11 @@ public class User extends AbstractSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public User save(final Options options, final ResponseListener<User> listener) throws JSONException {
+  public User replace(final Options options, final ResponseListener<User> listener) throws JSONException {
     JSONObject data = this.serialize();
 
     if (listener != null) {
-      this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createOrReplaceUser"), data, options, new OnQueryDoneListener() {
+      this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("replaceUser"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
           listener.onSuccess(User.this);
@@ -101,7 +103,7 @@ public class User extends AbstractSecurityDocument {
       });
     }
     else {
-      this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createOrReplaceUser"), data, options);
+      this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("replaceUser"), data, options);
     }
 
     return this;
@@ -114,8 +116,8 @@ public class User extends AbstractSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public User save(final ResponseListener<User> listener) throws JSONException {
-    return save(null, listener);
+  public User replace(final ResponseListener<User> listener) throws JSONException {
+    return replace(null, listener);
   }
 
   /**
@@ -125,8 +127,8 @@ public class User extends AbstractSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public User save(final Options options) throws JSONException {
-    return save(options, null);
+  public User replace(final Options options) throws JSONException {
+    return replace(options, null);
   }
 
   /**
@@ -135,8 +137,71 @@ public class User extends AbstractSecurityDocument {
    * @return this kuzzle user
    * @throws JSONException the json exception
    */
-  public User save() throws JSONException {
-    return save(null, null);
+  public User replace() throws JSONException {
+    return replace(null, null);
+  }
+
+  /**
+   * Create this user into Kuzzle.
+   *
+   * @param options  - Optional arguments
+   * @param listener - Callback listener
+   * @return this kuzzle user
+   * @throws JSONException the json exception
+   */
+  public User create(final Options options, final ResponseListener<User> listener) throws JSONException {
+    JSONObject data = this.creationSerialize();
+
+    if (listener != null) {
+      this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createUser"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          listener.onSuccess(User.this);
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    }
+    else {
+      this.kuzzle.query(this.kuzzleSecurity.buildQueryArgs("createUser"), data, options);
+    }
+
+    return this;
+  }
+
+  /**
+   * Create this user into Kuzzle.
+   *
+   * @param listener - Callback listener
+   * @return this kuzzle user
+   * @throws JSONException the json exception
+   */
+  public User create(final ResponseListener<User> listener) throws JSONException {
+    return create(null, listener);
+  }
+
+  /**
+   * Create this user into Kuzzle.
+   *
+   * @param options - Optional arguments
+   * @return this kuzzle user
+   * @throws JSONException the json exception
+   */
+  public User create(final Options options) throws JSONException {
+    return create(options, null);
+  }
+
+  /**
+   * Create this user into Kuzzle.
+   *
+   * @return this kuzzle user
+   * @throws JSONException the json exception
+   */
+  public User create() throws JSONException {
+    return create(null, null);
   }
 
   /**
@@ -223,11 +288,42 @@ public class User extends AbstractSecurityDocument {
   }
 
   /**
+   * Return a JSONObject representing a serialized version of this object
+   *
+   * @return serialized version of this object
+   * @throws JSONException the json exception
+   */
+  public JSONObject creationSerialize() throws JSONException {
+    JSONObject
+      data = new JSONObject().put("_id", this.id),
+      body = new JSONObject(),
+      content = new JSONObject(this.content.toString()),
+      credentials = new JSONObject(this.credentials.toString());
+
+    if (this.profileIds != null) {
+      content.put("profileIds", this.profileIds);
+    }
+
+    body.put("content", content);
+    body.put("credentials", credentials);
+    data.put("body", body);
+
+    return data;
+  }
+
+  /**
    * Returns the associated profiles
    *
    * @return an array of strings
    */
   public JSONArray getProfiles() {
     return this.profileIds;
+  }
+
+  /**
+   * @param credentials
+   */
+  public void setCredentials(JSONObject credentials) {
+    this.credentials = credentials;
   }
 }
