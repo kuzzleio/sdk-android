@@ -986,10 +986,6 @@ public class Security {
 
   /**
    * Create a new user in Kuzzle.
-   * Takes an optional argument object with the following property:
-   * - replaceIfExist (boolean, default: false):
-   * If the same user already exists: throw an error if sets to false.
-   * Replace the existing user otherwise
    *
    * @param id       - ID of the user to create
    * @param content  - Should contain a 'profile' attribute with the profile ID
@@ -998,7 +994,7 @@ public class Security {
    * @throws JSONException the json exception
    */
   public void createUser(@NonNull final String id, @NonNull final JSONObject content, final Options options, final ResponseListener<User> listener) throws JSONException {
-    String action = options != null && options.isReplaceIfExist() ? "createOrReplaceUser" : "createUser";
+    String action = "createUser";
     if (id == null || content == null) {
       throw new IllegalArgumentException("Security.createUser: cannot create a user with a null ID or content");
     }

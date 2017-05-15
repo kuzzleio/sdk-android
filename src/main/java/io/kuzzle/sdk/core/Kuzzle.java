@@ -307,13 +307,11 @@ public class Kuzzle {
   /**
    * Adds a listener to a Kuzzle global event. When an event is fired, listeners are called in the order of their
    * insertion.
-   * The ID returned by this function is required to remove this listener at a later time.
    *
    * @param kuzzleEvent - name of the global event to subscribe to
    * @param listener    the event listener
-   * @return {string} Unique listener ID
    */
-  public String addListener(final Event kuzzleEvent, final EventListener listener) {
+  public Kuzzle addListener(final Event kuzzleEvent, final EventListener listener) {
     this.isValid();
 
     io.kuzzle.sdk.util.Event e = new io.kuzzle.sdk.util.Event(kuzzleEvent) {
@@ -327,9 +325,8 @@ public class Kuzzle {
       eventListeners.put(kuzzleEvent, new EventList());
     }
 
-    String id = e.getId().toString();
-    eventListeners.get(kuzzleEvent).put(id, e);
-    return id;
+    eventListeners.get(kuzzleEvent).put(listener, e);
+    return this;
   }
 
   /**
@@ -1405,12 +1402,12 @@ public class Kuzzle {
    * Removes a listener from an event.
    *
    * @param event      the type
-   * @param listenerId the listener id
+   * @param listener the listener
    * @return the kuzzle
    */
-  public Kuzzle removeListener(Event event, String listenerId) {
+  public Kuzzle removeListener(Event event, EventListener listener) {
     if (eventListeners.containsKey(event)) {
-      eventListeners.get(event).remove(listenerId);
+      eventListeners.get(event).remove(listener);
     }
 
     return this;
