@@ -777,6 +777,45 @@ public class Collection {
     return new Document(this, id, content);
   }
 
+  public void documentExists(@NonNull final String documentId, @NonNull final ResponseListener<JSONObject> listener) {
+    this.documentExists(documentId, null, listener);
+  }
+
+  /**
+   * Returns a boolean indicating whether or not a document with provided ID exists.
+   *
+   * @param documentId the document id
+   * @param options    the options
+   * @param listener   the listener
+   */
+  public void documentExists(@NonNull final String documentId, final Options options, final ResponseListener<JSONObject> listener) {
+    if (documentId == null) {
+      throw new IllegalArgumentException("Collection.fetchDocument: documentId required");
+    }
+    if (listener == null) {
+      throw new IllegalArgumentException("Collection.fetchDocument: listener required");
+    }
+
+    try {
+      JSONObject data = new JSONObject().put("_id", documentId);
+      this.kuzzle.addHeaders(data, this.getHeaders());
+
+      this.kuzzle.query(makeQueryArgs("document", "exists"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          listener.onSuccess(response);
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   /**
    * Fetch document kuzzle data collection.
    *
