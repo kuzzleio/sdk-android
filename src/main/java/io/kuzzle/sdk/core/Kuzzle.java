@@ -1006,16 +1006,16 @@ public class Kuzzle {
     try {
       Options options = new Options();
       JSONObject query = new JSONObject();
-      JSONObject body;
+      JSONObject body = new JSONObject();
       if (credentials != null) {
-        body = new JSONObject(credentials.toString());
-      } else {
-        body = new JSONObject().put("strategy", strategy);
+        body = credentials;
       }
 
       if (expiresIn >= 0) {
         body.put("expiresIn", expiresIn);
       }
+
+      query.put("strategy", strategy);
 
       query.put("body", body);
       QueryArgs args = new QueryArgs();
