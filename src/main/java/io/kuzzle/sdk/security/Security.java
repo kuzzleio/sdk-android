@@ -1798,7 +1798,7 @@ public class Security {
    * @param listener
    * @return
    */
-  public void hasCredentials(@NonNull final String strategy, @NonNull final String kuid, @NonNull final ResponseListener<JSONObject> listener) {
+  public void hasCredentials(@NonNull final String strategy, @NonNull final String kuid, @NonNull final ResponseListener<Boolean> listener) {
     hasCredentials(strategy, kuid, null, listener);
   }
 
@@ -1811,7 +1811,7 @@ public class Security {
    * @param listener
    * @return
    */
-  public void hasCredentials(@NonNull final String strategy, @NonNull final String kuid, final Options options, @NonNull final ResponseListener<JSONObject> listener) {
+  public void hasCredentials(@NonNull final String strategy, @NonNull final String kuid, final Options options, @NonNull final ResponseListener<Boolean> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Security.hasCredentials: listener is mandatory.");
     }
@@ -1823,7 +1823,7 @@ public class Security {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(response.getJSONObject("result"));
+            listener.onSuccess(response.getBoolean("result"));
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
@@ -1919,7 +1919,7 @@ public class Security {
    * @param credentials
    * @param listener
    */
-  public void validateCredentials(@NonNull final String strategy, @NonNull final String kuid, final JSONObject credentials, @NonNull final ResponseListener<JSONObject> listener) {
+  public void validateCredentials(@NonNull final String strategy, @NonNull final String kuid, final JSONObject credentials, @NonNull final ResponseListener<Boolean> listener) {
     validateCredentials(strategy, kuid, credentials, null, listener);
   }
 
@@ -1932,7 +1932,7 @@ public class Security {
    * @param listener
    * @return
    */
-  public void validateCredentials(@NonNull final String strategy, @NonNull final String kuid, final JSONObject credentials, final Options options, @NonNull final ResponseListener<JSONObject> listener) {
+  public void validateCredentials(@NonNull final String strategy, @NonNull final String kuid, final JSONObject credentials, final Options options, @NonNull final ResponseListener<Boolean> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Security.getCredentials: listener is mandatory.");
     }
@@ -1945,7 +1945,7 @@ public class Security {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(response.getJSONObject("result"));
+            listener.onSuccess(response.getBoolean("result"));
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }

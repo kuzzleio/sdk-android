@@ -2984,7 +2984,7 @@ public class Kuzzle {
    * @param credentials
    * @param listener
    */
-  public void validateMyCredentials(@NonNull final String strategy, final JSONObject credentials, @NonNull final ResponseListener<JSONObject> listener) {
+  public void validateMyCredentials(@NonNull final String strategy, final JSONObject credentials, @NonNull final ResponseListener<Boolean> listener) {
     validateMyCredentials(strategy, credentials, null, listener);
   }
 
@@ -2996,7 +2996,7 @@ public class Kuzzle {
    * @param options
    * @param listener
    */
-  public void validateMyCredentials(@NonNull final String strategy, final JSONObject credentials, final Options options, @NonNull final ResponseListener<JSONObject> listener) {
+  public void validateMyCredentials(@NonNull final String strategy, final JSONObject credentials, final Options options, @NonNull final ResponseListener<Boolean> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.validateMyCredentials: listener is mandatory");
     }
@@ -3008,7 +3008,7 @@ public class Kuzzle {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(response.getJSONObject("result"));
+            listener.onSuccess(response.getBoolean("result"));
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }

@@ -70,7 +70,7 @@ public class hasCredentialsTest {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
         if (invocation.getArguments()[3] != null) {
-          ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject()));
+          ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", true));
           ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         }
         return null;
