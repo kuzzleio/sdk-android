@@ -108,7 +108,7 @@ public class Collection {
 
             for (int i = 0; i < hits.length(); i++) {
               JSONObject hit = hits.getJSONObject(i);
-              Document doc = new Document(Collection.this, hit.getString("_id"), hit.getJSONObject("_source"));
+              Document doc = new Document(Collection.this, hit.getString("_id"), hit.getJSONObject("_source"), hit.getJSONObject("_meta"));
 
               docs.add(doc);
             }
@@ -186,7 +186,7 @@ public class Collection {
 
             for (int i = 0; i < hits.length(); i++) {
               JSONObject hit = hits.getJSONObject(i);
-              Document doc = new Document(Collection.this, hit.getString("_id"), hit.getJSONObject("_source"));
+              Document doc = new Document(Collection.this, hit.getString("_id"), hit.getJSONObject("_source"), hit.getJSONObject("_meta"));
 
               docs.add(doc);
             }
@@ -525,7 +525,7 @@ public class Collection {
           if (listener != null) {
             try {
               JSONObject result = response.getJSONObject("result");
-              Document document = new Document(Collection.this, result.getString("_id"), result.getJSONObject("_source"));
+              Document document = new Document(Collection.this, result.getString("_id"), result.getJSONObject("_source"), result.getJSONObject("_meta"));
               document.setVersion(result.getLong("_version"));
               listener.onSuccess(document);
             } catch (JSONException e) {

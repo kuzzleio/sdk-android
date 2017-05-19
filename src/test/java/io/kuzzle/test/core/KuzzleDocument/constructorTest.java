@@ -43,7 +43,7 @@ public class constructorTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testConstructorIllegalDataCollection() throws JSONException {
-    new Document(null, null, null);
+    new Document(null, null, null, null);
   }
 
   @Test
@@ -117,6 +117,59 @@ public class constructorTest {
     doc.setContent("foo", "bar");
     assertEquals(doc.getContent().getString("foo"), "bar");
     assertNull(doc.getContent("!exist"));
+  }
+
+  @Test
+  public void testDocumentWithMetadata() throws JSONException {
+    JSONObject content = new JSONObject();
+    content.put("foo", "bar");
+
+    JSONObject meta = new JSONObject();
+    meta.put("author", "foo");
+
+    doc = new Document(new Collection(k, "test", "index"), content, meta);
+    assertEquals(doc.getMeta().getString("author"), "foo");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testSetMetaPutException() throws JSONException {
+    doc = spy(doc);
+    doc.setMeta(mock(JSONObject.class));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testSetMetaIllegalKey() throws JSONException {
+    doc.setMeta(null, "value");
+  }
+
+  @Test
+  public void checkSetMetaVariants() throws JSONException {
+    doc = spy(doc);
+    doc.setMeta(new JSONObject());
+    verify(doc).setMeta(any(JSONObject.class), eq(false));
+  }
+
+  @Test
+  public void testSetMeta() throws JSONException {
+    assertEquals(doc.getMeta().toString(), new JSONObject().toString());
+    JSONObject meta = new JSONObject();
+    meta.put("author", "foo");
+    doc.setMeta(meta, false);
+    assertEquals(doc.getMeta().get("author"), "foo");
+    meta = new JSONObject();
+    meta.put("updater", "bar");
+    doc.setMeta(meta, true);
+    assertEquals(doc.getMeta().get("updater"), "bar");
+    assertTrue(doc.getMeta().isNull("author"));
+  }
+
+  @Test
+  public void testGetMeta() throws JSONException {
+    doc.setMeta(null);
+    assertNotNull(doc.getMeta());
+    doc.setMeta("author", "foo");
+    assertEquals(doc.getMeta().getString("author"), "foo");
+    assertNull(doc.getMeta("!exist"));
   }
 
   @Test
