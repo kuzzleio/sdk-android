@@ -1318,6 +1318,14 @@ public class Kuzzle {
       if (options.getSize() != null) {
         object.put("size", options.getSize());
       }
+
+      if (options.getScroll() != null) {
+        object.put("scroll", options.getScroll());
+      }
+
+      if (options.getScrollId() != null) {
+        object.put("scrollId", options.getScrollId());
+      }
     }
 
     object.put("volatile", _volatile);

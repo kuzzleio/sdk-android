@@ -14,6 +14,7 @@ import io.kuzzle.sdk.enums.Policies;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.SecurityDocumentList;
+import io.kuzzle.sdk.util.Scroll;
 
 
 /**
@@ -479,7 +480,7 @@ public class Security {
 
           for (int i = 0; i < policies.length(); i++) {
             JSONObject formattedPolicy = new JSONObject()
-                .put("roleId", policies.getJSONObject(i).getString("roleId"));
+              .put("roleId", policies.getJSONObject(i).getString("roleId"));
             if (((JSONObject) policies.get(i)).has("restrictedTo")) {
               formattedPolicy.put("restrictedTo", policies.getJSONObject(i).getJSONArray("restrictedTo"));
             }
@@ -547,14 +548,20 @@ public class Security {
           JSONObject result = response.getJSONObject("result");
           JSONArray documents = result.getJSONArray("hits");
           int documentsLength = documents.length();
-          ArrayList<AbstractSecurityDocument> roles = new ArrayList<>();
+          ArrayList<AbstractSecurityDocument> profiles = new ArrayList<>();
 
           for (int i = 0; i < documentsLength; i++) {
             JSONObject document = documents.getJSONObject(i);
-            roles.add(new Profile(Security.this.kuzzle, document.getString("_id"), document.getJSONObject("_source")));
+            profiles.add(new Profile(Security.this.kuzzle, document.getString("_id"), document.getJSONObject("_source")));
           }
 
-          listener.onSuccess(new SecurityDocumentList(roles, result.getLong("total")));
+          Scroll scroll = new Scroll();
+
+          if (result.has("scrollId")) {
+            scroll.setScrollId(result.getString("scrollId"));
+          }
+
+          listener.onSuccess(new SecurityDocumentList(profiles, result.getLong("total"), scroll));
         } catch (JSONException e) {
           throw new RuntimeException(e);
         }
@@ -768,6 +775,78 @@ public class Security {
   }
 
   /**
+   * Returns the next profiles result set with scroll query.
+   *
+   * @param scroll   - Scroll object
+   * @param options  - Optional arguments
+   * @param listener - Callback listener
+   * @throws JSONException the json exception
+   */
+  public void scrollProfiles(final Scroll scroll, final Options options, final ResponseListener<SecurityDocumentList> listener) throws JSONException {
+    JSONObject request;
+
+    try {
+      request = new JSONObject().put("body", new JSONObject());
+    }
+    catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+
+    if (listener == null) {
+      throw new IllegalArgumentException("listener cannot be null");
+    }
+
+    if (scroll.getScrollId() == null) {
+      throw new IllegalArgumentException("Security.scrollProfiles: scrollId is required");
+    }
+
+    options.setScrollId(scroll.getScrollId());
+
+    try {
+      this.kuzzle.query(buildQueryArgs("scrollProfiles"), request, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject object) {
+          try {
+            JSONArray hits = object.getJSONObject("result").getJSONArray("hits");
+            ArrayList<AbstractSecurityDocument> profiles = new ArrayList<>();
+
+            for (int i = 0; i < hits.length(); i++) {
+              JSONObject hit = hits.getJSONObject(i);
+              Profile profile = new Profile(Security.this.kuzzle, hit.getString("_id"), hit.getJSONObject("_source"));
+
+              profiles.add(profile);
+            }
+
+            SecurityDocumentList response = new SecurityDocumentList(profiles, hits.length(), scroll);
+
+            listener.onSuccess(response);
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Returns the next profiles result set with scroll query.
+   *
+   * @param scroll   - Scroll object
+   * @param listener - Callback listener
+   * @throws JSONException the json exception
+   */
+  public void scrollProfiles(Scroll scroll, final ResponseListener<SecurityDocumentList> listener) throws JSONException {
+    this.scrollProfiles(scroll, new Options(), listener);
+  }
+
+  /**
    * Update profile.
    *
    * @param id       the id
@@ -949,14 +1028,20 @@ public class Security {
           JSONObject result = response.getJSONObject("result");
           JSONArray documents = result.getJSONArray("hits");
           int documentsLength = documents.length();
-          ArrayList<AbstractSecurityDocument> roles = new ArrayList<>();
+          ArrayList<AbstractSecurityDocument> users = new ArrayList<>();
 
           for (int i = 0; i < documentsLength; i++) {
             JSONObject document = documents.getJSONObject(i);
-            roles.add(new User(Security.this.kuzzle, document.getString("_id"), document.getJSONObject("_source")));
+            users.add(new User(Security.this.kuzzle, document.getString("_id"), document.getJSONObject("_source")));
           }
 
-          listener.onSuccess(new SecurityDocumentList(roles, result.getLong("total")));
+          Scroll scroll = new Scroll();
+
+          if (result.has("scrollId")) {
+            scroll.setScrollId(result.getString("scrollId"));
+          }
+
+          listener.onSuccess(new SecurityDocumentList(users, result.getLong("total"), scroll));
         } catch (JSONException e) {
           throw new RuntimeException(e);
         }
@@ -1252,6 +1337,78 @@ public class Security {
   }
 
   /**
+   * Returns the next users result set with scroll query.
+   *
+   * @param scroll   - Scroll object
+   * @param options  - Optional arguments
+   * @param listener - Callback listener
+   * @throws JSONException the json exception
+   */
+  public void scrollUsers(final Scroll scroll, final Options options, final ResponseListener<SecurityDocumentList> listener) throws JSONException {
+    JSONObject request;
+
+    try {
+      request = new JSONObject().put("body", new JSONObject());
+    }
+    catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+
+    if (listener == null) {
+      throw new IllegalArgumentException("listener cannot be null");
+    }
+
+    if (scroll.getScrollId() == null) {
+      throw new IllegalArgumentException("Security.scrollUsers: scrollId is required");
+    }
+
+    options.setScrollId(scroll.getScrollId());
+
+    try {
+      this.kuzzle.query(buildQueryArgs("scrollUsers"), request, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject object) {
+          try {
+            JSONArray hits = object.getJSONObject("result").getJSONArray("hits");
+            ArrayList<AbstractSecurityDocument> users = new ArrayList<>();
+
+            for (int i = 0; i < hits.length(); i++) {
+              JSONObject hit = hits.getJSONObject(i);
+              User user = new User(Security.this.kuzzle, hit.getString("_id"), hit.getJSONObject("_source"));
+
+              users.add(user);
+            }
+
+            SecurityDocumentList response = new SecurityDocumentList(users, hits.length(), scroll);
+
+            listener.onSuccess(response);
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Returns the next users result set with scroll query.
+   *
+   * @param scroll   - Scroll object
+   * @param listener - Callback listener
+   * @throws JSONException the json exception
+   */
+  public void scrollUsers(Scroll scroll, final ResponseListener<SecurityDocumentList> listener) throws JSONException {
+    this.scrollUsers(scroll, new Options(), listener);
+  }
+
+  /**
    * Update user.
    *
    * @param id       the id
@@ -1469,7 +1626,7 @@ public class Security {
     }
     try {
       JSONObject data = new JSONObject()
-          .put("_id", id);
+        .put("_id", id);
       kuzzle.query(buildQueryArgs("getUserRights"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
