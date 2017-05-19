@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
-public class getCredentialsFieldsTest {
+public class getCredentialFieldsTest {
   private Kuzzle kuzzle;
   private Security kuzzleSecurity;
   private ResponseListener listener;
@@ -50,18 +50,18 @@ public class getCredentialsFieldsTest {
         return null;
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    kuzzleSecurity.getCredentialsFields("strategy", null, listener);
+    kuzzleSecurity.getCredentialFields("strategy", null, listener);
   }
 
   @Test(expected = RuntimeException.class)
   public void testGetCredentialsFieldsQueryException() throws JSONException {
     doThrow(JSONException.class).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    kuzzleSecurity.getCredentialsFields("strategy", null, listener);
+    kuzzleSecurity.getCredentialFields("strategy", null, listener);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testListenerNull() {
-    kuzzleSecurity.getCredentialsFields("strategy", null, null);
+    kuzzleSecurity.getCredentialFields("strategy", null, null);
   }
 
   @Test
@@ -79,11 +79,11 @@ public class getCredentialsFieldsTest {
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
 
-    kuzzleSecurity.getCredentialsFields("strategy", mock(ResponseListener.class));
-    kuzzleSecurity.getCredentialsFields("strategy", mock(Options.class), mock(ResponseListener.class));
+    kuzzleSecurity.getCredentialFields("strategy", mock(ResponseListener.class));
+    kuzzleSecurity.getCredentialFields("strategy", mock(Options.class), mock(ResponseListener.class));
 
     verify(kuzzle, times(2)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "getCredentialsFields");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "getCredentialFields");
   }
 }

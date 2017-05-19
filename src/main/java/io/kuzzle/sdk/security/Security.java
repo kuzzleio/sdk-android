@@ -1551,7 +1551,7 @@ public class Security {
     try {
       JSONObject body = new JSONObject()
               .put("strategy", strategy)
-              .put("kuid", kuid)
+              .put("_id", kuid)
               .put("body", credentials);
       kuzzle.query(buildQueryArgs("security", "createCredentials"), body, options, new OnQueryDoneListener() {
         @Override
@@ -1627,7 +1627,7 @@ public class Security {
     try {
       JSONObject body = new JSONObject()
               .put("strategy", strategy)
-              .put("kuid", kuid);
+              .put("_id", kuid);
       kuzzle.query(buildQueryArgs("security", "deleteCredentials"), body, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -1659,8 +1659,8 @@ public class Security {
    *
    * @param listener
    */
-  public void getAllCredentialsFields(@NonNull final ResponseListener<JSONObject> listener) {
-    getAllCredentialsFields(null, listener);
+  public void getAllCredentialFields(@NonNull final ResponseListener<JSONObject> listener) {
+    getAllCredentialFields(null, listener);
   }
 
   /**
@@ -1669,13 +1669,13 @@ public class Security {
    * @param options
    * @param listener
    */
-  public void getAllCredentialsFields(final Options options, @NonNull final ResponseListener<JSONObject> listener) {
+  public void getAllCredentialFields(final Options options, @NonNull final ResponseListener<JSONObject> listener) {
     if (listener == null) {
-      throw new IllegalArgumentException("Security.getAllCredentialsFields: listener is mandatory.");
+      throw new IllegalArgumentException("Security.getAllCredentialFields: listener is mandatory.");
     }
     try {
       JSONObject body = new JSONObject();
-      kuzzle.query(buildQueryArgs("security", "getAllCredentialsFields"), body, options, new OnQueryDoneListener() {
+      kuzzle.query(buildQueryArgs("security", "getAllCredentialFields"), body, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
           try {
@@ -1702,8 +1702,8 @@ public class Security {
    * @param listener
    * @return
    */
-  public void getCredentialsFields(@NonNull final String strategy, @NonNull final ResponseListener<JSONObject> listener) {
-    getCredentialsFields(strategy, null, listener);
+  public void getCredentialFields(@NonNull final String strategy, @NonNull final ResponseListener<JSONObject> listener) {
+    getCredentialFields(strategy, null, listener);
   }
 
   /**
@@ -1714,14 +1714,14 @@ public class Security {
    * @param listener
    * @return
    */
-  public void getCredentialsFields(@NonNull final String strategy, final Options options, @NonNull final ResponseListener<JSONObject> listener) {
+  public void getCredentialFields(@NonNull final String strategy, final Options options, @NonNull final ResponseListener<JSONObject> listener) {
     if (listener == null) {
-      throw new IllegalArgumentException("Security.getAllCredentialsFields: listener is mandatory.");
+      throw new IllegalArgumentException("Security.getAllCredentialFields: listener is mandatory.");
     }
     try {
       JSONObject body = new JSONObject()
         .put("strategy", strategy);
-      kuzzle.query(buildQueryArgs("security", "getCredentialsFields"), body, options, new OnQueryDoneListener() {
+      kuzzle.query(buildQueryArgs("security", "getCredentialFields"), body, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
           try {
@@ -1769,7 +1769,7 @@ public class Security {
     try {
       JSONObject body = new JSONObject()
         .put("strategy", strategy)
-        .put("kuid", kuid);
+        .put("_id", kuid);
       kuzzle.query(buildQueryArgs("security", "getCredentials"), body, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -1818,7 +1818,7 @@ public class Security {
     try {
       JSONObject body = new JSONObject()
         .put("strategy", strategy)
-        .put("kuid", kuid);
+        .put("_id", kuid);
       kuzzle.query(buildQueryArgs("security", "hasCredentials"), body, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -1883,7 +1883,7 @@ public class Security {
     try {
       JSONObject body = new JSONObject()
         .put("strategy", strategy)
-        .put("kuid", kuid)
+        .put("_id", kuid)
         .put("body", credentials);
       kuzzle.query(buildQueryArgs("security", "updateCredentials"), body, options, new OnQueryDoneListener() {
         @Override
@@ -1940,7 +1940,7 @@ public class Security {
       JSONObject body = new JSONObject()
         .put("strategy", strategy)
         .put("credentials", credentials)
-        .put("kuid", kuid);
+        .put("_id", kuid);
       kuzzle.query(buildQueryArgs("security", "validateCredentials"), body, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
