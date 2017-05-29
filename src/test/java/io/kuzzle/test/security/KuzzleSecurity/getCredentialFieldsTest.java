@@ -5,6 +5,7 @@ import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.security.Security;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -70,7 +71,7 @@ public class getCredentialFieldsTest {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
         if (invocation.getArguments()[3] != null) {
-          ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject()));
+          ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONArray()));
           ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         }
         return null;

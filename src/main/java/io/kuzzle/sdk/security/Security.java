@@ -1702,7 +1702,7 @@ public class Security {
    * @param listener
    * @return
    */
-  public void getCredentialFields(@NonNull final String strategy, @NonNull final ResponseListener<JSONObject> listener) {
+  public void getCredentialFields(@NonNull final String strategy, @NonNull final ResponseListener<JSONArray> listener) {
     getCredentialFields(strategy, null, listener);
   }
 
@@ -1714,7 +1714,7 @@ public class Security {
    * @param listener
    * @return
    */
-  public void getCredentialFields(@NonNull final String strategy, final Options options, @NonNull final ResponseListener<JSONObject> listener) {
+  public void getCredentialFields(@NonNull final String strategy, final Options options, @NonNull final ResponseListener<JSONArray> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Security.getAllCredentialFields: listener is mandatory.");
     }
@@ -1725,7 +1725,7 @@ public class Security {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(response.getJSONObject("result"));
+            listener.onSuccess(response.getJSONArray("result"));
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
