@@ -23,18 +23,20 @@ public class Document {
 
   private String id;
   private JSONObject content;
+  private JSONObject meta;
   private long version = -1;
 
   /**
-   * Kuzzle handles documents either as realtime messages or as stored documents.
+   * Kuzzle handles documents either as real-time messages or as stored documents.
    * Document is the object representation of one of these documents.
    *
-   * @param kuzzleDataCollection - an instanciated Collection object
-   * @param id                   the id
-   * @param content              the content
+   * @param kuzzleDataCollection - An instantiated Collection object
+   * @param id                   - Unique document identifier
+   * @param content              - The content of the document
+   * @param meta                 - Document metadata
    * @throws JSONException the json exception
    */
-  public Document(@NonNull final Collection kuzzleDataCollection, final String id, final JSONObject content) throws JSONException {
+  public Document(@NonNull final Collection kuzzleDataCollection, final String id, final JSONObject content, final JSONObject meta) throws JSONException {
     if (kuzzleDataCollection == null) {
       throw new IllegalArgumentException("Document: Collection argument missing");
     }
@@ -44,43 +46,70 @@ public class Document {
     this.kuzzle = kuzzleDataCollection.getKuzzle();
     this.setId(id);
     this.setContent(content, true);
+    this.setMeta(meta, true);
     this.headers = kuzzleDataCollection.getHeaders();
   }
 
   /**
-   * Kuzzle handles documents either as realtime messages or as stored documents.
+   * Kuzzle handles documents either as real-time messages or as stored documents.
    * Document is the object representation of one of these documents.
    *
-   * @param kuzzleDataCollection the kuzzle data collection
+   * @param kuzzleDataCollection - An instantiated Collection object
+   * @param id                   - Unique document identifier
+   * @param content              - The content of the document
+   * @throws JSONException the json exception
+   */
+  public Document(@NonNull final Collection kuzzleDataCollection, final String id, final JSONObject content) throws JSONException {
+    this(kuzzleDataCollection, id, content, null);
+  }
+
+  /**
+   * Kuzzle handles documents either as real-time messages or as stored documents.
+   * Document is the object representation of one of these documents.
+   *
+   * @param kuzzleDataCollection - An instantiated Collection object
    * @throws JSONException the json exception
    */
   public Document(final Collection kuzzleDataCollection) throws JSONException {
-    this(kuzzleDataCollection, null, null);
+    this(kuzzleDataCollection, null, null, null);
   }
 
 
   /**
-   * Kuzzle handles documents either as realtime messages or as stored documents.
+   * Kuzzle handles documents either as real-time messages or as stored documents.
    * Document is the object representation of one of these documents.
    *
-   * @param kuzzleDataCollection the kuzzle data collection
-   * @param id                   the id
+   * @param kuzzleDataCollection - An instantiated Collection object
+   * @param id                   - Unique document identifier
    * @throws JSONException the json exception
    */
   public Document(final Collection kuzzleDataCollection, final String id) throws JSONException {
-    this(kuzzleDataCollection, id, null);
+    this(kuzzleDataCollection, id, null, null);
   }
 
   /**
-   * Kuzzle handles documents either as realtime messages or as stored documents.
+   * Kuzzle handles documents either as real-time messages or as stored documents.
    * Document is the object representation of one of these documents.
    *
-   * @param kuzzleDataCollection the kuzzle data collection
-   * @param content              the content
+   * @param kuzzleDataCollection - An instantiated Collection object
+   * @param content              - The content of the document
    * @throws JSONException the json exception
    */
   public Document(final Collection kuzzleDataCollection, final JSONObject content) throws JSONException {
-    this(kuzzleDataCollection, null, content);
+    this(kuzzleDataCollection, null, content, null);
+  }
+
+  /**
+   * Kuzzle handles documents either as real-time messages or as stored documents.
+   * Document is the object representation of one of these documents.
+   *
+   * @param kuzzleDataCollection - An instantiated Collection object
+   * @param content              - The content of the document
+   * @param meta                 - Document metadata
+   * @throws JSONException the json exception
+   */
+  public Document(final Collection kuzzleDataCollection, final JSONObject content, final JSONObject meta) throws JSONException {
+    this(kuzzleDataCollection, null, content, meta);
   }
 
   /**
@@ -212,7 +241,8 @@ public class Document {
             Document newDocument = new Document(
               Document.this.dataCollection,
               result.getString("_id"),
-              result.getJSONObject("_source")
+              result.getJSONObject("_source"),
+              result.getJSONObject("_meta")
             );
 
             newDocument.setVersion(result.getLong("_version"));
@@ -392,6 +422,63 @@ public class Document {
   }
 
   /**
+   * Sets metadata
+   *
+   * @param meta the metadata
+   * @param replace if true: replaces the current metadata with the provided ones, otherwise merges it
+   * @return the Kuzzle document
+   * @throws JSONException the json exception
+   */
+  public Document setMeta(final JSONObject meta, final boolean replace) throws JSONException {
+    if (replace) {
+      if (meta != null) {
+        this.meta = new JSONObject(meta.toString());
+      }
+      else {
+        this.meta = new JSONObject();
+      }
+    } else if (meta != null) {
+      for (Iterator iterator = meta.keys(); iterator.hasNext(); ) {
+        String key = (String) iterator.next();
+        this.meta.put(key, meta.get(key));
+      }
+    }
+
+    return this;
+  }
+
+  /**
+   * Sets metadata.
+   *
+   * @param key   the key
+   * @param value the value
+   * @return the Kuzzle document
+   * @throws JSONException the json exception
+   */
+  public Document setMeta(@NonNull final String key, final Object value) throws JSONException {
+    if (key == null) {
+      throw new IllegalArgumentException("Document.setMeta: key required");
+    }
+
+    this.meta.put(key, value);
+
+    return this;
+  }
+
+  /**
+   * Sets metadata.
+   *
+   * @param meta the metadata
+   * @return the Kuzzle document
+   * @throws JSONException the json exception
+   */
+  public Document setMeta(final JSONObject meta) throws JSONException {
+    this.setMeta(meta, false);
+    
+    return this;
+  }
+
+  /**
    * Listens to changes occuring on this document.
    * Throws an error if this document has not yet been created in Kuzzle.
    *
@@ -459,6 +546,31 @@ public class Document {
   public Object getContent(final String key) throws JSONException {
     if (this.content.has(key)) {
       return this.content.get(key);
+    }
+
+    return null;
+  }
+
+  /**
+   * Gets metadata.
+   *
+   * @return the metadata
+   */
+  public JSONObject getMeta() {
+    return this.meta;
+  }
+
+
+  /**
+   * Gets metadata by key.
+   *
+   * @param key the key
+   * @return the metadata
+   * @throws JSONException the json exception
+   */
+  public Object getMeta(final String key) throws JSONException {
+    if (this.meta.has(key)) {
+      return this.meta.get(key);
     }
 
     return null;
