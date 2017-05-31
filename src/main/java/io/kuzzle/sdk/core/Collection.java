@@ -968,9 +968,9 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mCreate(final JSONArray documents, final Options options, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
+  public Collection mCreateDocument(final JSONArray documents, final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
     if (documents.length() == 0) {
-      throw new IllegalArgumentException("Collection.mCreate: The document array should not be empty");
+      throw new IllegalArgumentException("Collection.mCreateDocument: The document array should not be empty");
     }
 
     JSONObject data = new JSONObject()
@@ -983,16 +983,20 @@ public class Collection {
       this.kuzzle.query(makeQueryArgs("document", "mCreate"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONObject("result"));
-          } catch (JSONException e) {
-            throw new RuntimeException(e);
+          if (listener != null) {
+            try {
+              listener.onSuccess(response.getJSONObject("result"));
+            } catch (JSONException e) {
+              throw new RuntimeException(e);
+            }
           }
         }
 
         @Override
         public void onError(JSONObject error) {
-          listener.onError(error);
+          if (listener != null) {
+            listener.onError(error);
+          }
         }
       });
     } catch (JSONException e) {
@@ -1009,8 +1013,29 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mCreate(final JSONArray documents, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
-    return this.mCreate(documents, new Options(), listener);
+  public Collection mCreateDocument(final JSONArray documents, final ResponseListener<JSONObject> listener) throws JSONException {
+    return this.mCreateDocument(documents, new Options(), listener);
+  }
+
+  /**
+   * Create the provided documents
+   *
+   * @param documents Array of documents to create
+   * @param options Optional parameters
+   * @return Collection kuzzle data collection
+   */
+  public Collection mCreateDocument(final JSONArray documents, Options options) throws JSONException {
+    return this.mCreateDocument(documents, options, null);
+  }
+
+  /**
+   * Create the provided documents
+   *
+   * @param documents Array of documents to create
+   * @return Collection kuzzle data collection
+   */
+  public Collection mCreateDocument(final JSONArray documents) throws JSONException {
+    return this.mCreateDocument(documents, new Options(), null);
   }
 
   /**
@@ -1021,9 +1046,9 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mCreateOrReplace(final JSONArray documents, final Options options, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
+  public Collection mCreateOrReplaceDocument(final JSONArray documents, final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
     if (documents.length() == 0) {
-      throw new IllegalArgumentException("Collection.mCreateOrReplace: The document array should not be empty");
+      throw new IllegalArgumentException("Collection.mCreateOrReplaceDocument: The document array should not be empty");
     }
 
     JSONObject data = new JSONObject()
@@ -1036,16 +1061,20 @@ public class Collection {
       this.kuzzle.query(makeQueryArgs("document", "mCreateOrReplace"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONObject("result"));
-          } catch (JSONException e) {
-            throw new RuntimeException(e);
+          if (listener != null) {
+            try {
+              listener.onSuccess(response.getJSONObject("result"));
+            } catch (JSONException e) {
+              throw new RuntimeException(e);
+            }
           }
         }
 
         @Override
         public void onError(JSONObject error) {
-          listener.onError(error);
+          if (listener != null) {
+            listener.onError(error);
+          }
         }
       });
     } catch (JSONException e) {
@@ -1062,8 +1091,29 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mCreateOrReplace(final JSONArray documents, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
-    return this.mCreateOrReplace(documents, new Options(), listener);
+  public Collection mCreateOrReplaceDocument(final JSONArray documents, final ResponseListener<JSONObject> listener) throws JSONException {
+    return this.mCreateOrReplaceDocument(documents, new Options(), listener);
+  }
+
+  /**
+   * Create or replace the provided documents
+   *
+   * @param documents Array of documents to create or replace
+   * @param options Optional parameters
+   * @return Collection kuzzle data collection
+   */
+  public Collection mCreateOrReplaceDocument(final JSONArray documents, Options options) throws JSONException {
+    return this.mCreateOrReplaceDocument(documents, options, null);
+  }
+
+  /**
+   * Create or replace the provided documents
+   *
+   * @param documents Array of documents to create or replace
+   * @return Collection kuzzle data collection
+   */
+  public Collection mCreateOrReplaceDocument(final JSONArray documents) throws JSONException {
+    return this.mCreateOrReplaceDocument(documents, new Options(), null);
   }
 
   /**
@@ -1074,9 +1124,9 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mDelete(final JSONArray documentIds, final Options options, @NonNull final ResponseListener<JSONArray> listener) throws JSONException {
+  public Collection mDeleteDocument(final JSONArray documentIds, final Options options, final ResponseListener<JSONArray> listener) throws JSONException {
     if (documentIds.length() == 0) {
-      throw new IllegalArgumentException("Collection.mDelete: The document IDs array should not be empty");
+      throw new IllegalArgumentException("Collection.mDeleteDocument: The document IDs array should not be empty");
     }
 
     JSONObject data = new JSONObject()
@@ -1089,16 +1139,20 @@ public class Collection {
       this.kuzzle.query(makeQueryArgs("document", "mDelete"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONArray("result"));
-          } catch (JSONException e) {
-            throw new RuntimeException(e);
+          if (listener != null) {
+            try {
+              listener.onSuccess(response.getJSONArray("result"));
+            } catch (JSONException e) {
+              throw new RuntimeException(e);
+            }
           }
         }
 
         @Override
         public void onError(JSONObject error) {
-          listener.onError(error);
+          if (listener != null) {
+            listener.onError(error);
+          }
         }
       });
     } catch (JSONException e) {
@@ -1115,8 +1169,29 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mDelete(final JSONArray documentIds, @NonNull final ResponseListener<JSONArray> listener) throws JSONException {
-    return this.mDelete(documentIds, new Options(), listener);
+  public Collection mDeleteDocument(final JSONArray documentIds, final ResponseListener<JSONArray> listener) throws JSONException {
+    return this.mDeleteDocument(documentIds, new Options(), listener);
+  }
+
+  /**
+   * Delete specific documents according to given IDs
+   *
+   * @param documentIds IDs of documents to delete
+   * @param options Optional parameters
+   * @return Collection kuzzle data collection
+   */
+  public Collection mDeleteDocument(final JSONArray documentIds, Options options) throws JSONException {
+    return this.mDeleteDocument(documentIds, options, null);
+  }
+
+  /**
+   * Delete specific documents according to given IDs
+   *
+   * @param documentIds IDs of documents to delete
+   * @return Collection kuzzle data collection
+   */
+  public Collection mDeleteDocument(final JSONArray documentIds) throws JSONException {
+    return this.mDeleteDocument(documentIds, new Options(), null);
   }
 
   /**
@@ -1127,9 +1202,9 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mGet(final JSONArray documentIds, final Options options, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
+  public Collection mGetDocument(final JSONArray documentIds, final Options options, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
     if (documentIds.length() == 0) {
-      throw new IllegalArgumentException("Collection.mGet: The document IDs array should not be empty");
+      throw new IllegalArgumentException("Collection.mGetDocument: The document IDs array should not be empty");
     }
 
     JSONObject data = new JSONObject()
@@ -1168,8 +1243,8 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mGet(final JSONArray documentIds, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
-    return this.mGet(documentIds, new Options(), listener);
+  public Collection mGetDocument(final JSONArray documentIds, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
+    return this.mGetDocument(documentIds, new Options(), listener);
   }
 
   /**
@@ -1180,9 +1255,9 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mReplace(final JSONArray documents, final Options options, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
+  public Collection mReplaceDocument(final JSONArray documents, final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
     if (documents.length() == 0) {
-      throw new IllegalArgumentException("Collection.mReplace: The document IDs array should not be empty");
+      throw new IllegalArgumentException("Collection.mReplaceDocument: The document array should not be empty");
     }
 
     JSONObject data = new JSONObject()
@@ -1195,16 +1270,20 @@ public class Collection {
       this.kuzzle.query(makeQueryArgs("document", "mReplace"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONObject("result"));
-          } catch (JSONException e) {
-            throw new RuntimeException(e);
+          if (listener != null) {
+            try {
+              listener.onSuccess(response.getJSONObject("result"));
+            } catch (JSONException e) {
+              throw new RuntimeException(e);
+            }
           }
         }
 
         @Override
         public void onError(JSONObject error) {
-          listener.onError(error);
+          if (listener != null) {
+            listener.onError(error);
+          }
         }
       });
     } catch (JSONException e) {
@@ -1221,8 +1300,29 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mReplace(final JSONArray documents, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
-    return this.mReplace(documents, new Options(), listener);
+  public Collection mReplaceDocument(final JSONArray documents, final ResponseListener<JSONObject> listener) throws JSONException {
+    return this.mReplaceDocument(documents, new Options(), listener);
+  }
+
+  /**
+   * Replace the provided documents
+   *
+   * @param documents Array of documents to replace
+   * @param options Optional parameters
+   * @return Collection kuzzle data collection
+   */
+  public Collection mReplaceDocument(final JSONArray documents, Options options) throws JSONException {
+    return this.mReplaceDocument(documents, options, null);
+  }
+
+  /**
+   * Replace the provided documents
+   *
+   * @param documents Array of documents to replace
+   * @return Collection kuzzle data collection
+   */
+  public Collection mReplaceDocument(final JSONArray documents) throws JSONException {
+    return this.mReplaceDocument(documents, new Options(), null);
   }
 
   /**
@@ -1233,9 +1333,9 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mUpdate(final JSONArray documents, final Options options, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
+  public Collection mUpdateDocument(final JSONArray documents, final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
     if (documents.length() == 0) {
-      throw new IllegalArgumentException("Collection.mReplace: The document IDs array should not be empty");
+      throw new IllegalArgumentException("Collection.mUpdateDocument: The document array should not be empty");
     }
 
     JSONObject data = new JSONObject()
@@ -1248,16 +1348,20 @@ public class Collection {
       this.kuzzle.query(makeQueryArgs("document", "mUpdate"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
-          try {
-            listener.onSuccess(response.getJSONObject("result"));
-          } catch (JSONException e) {
-            throw new RuntimeException(e);
+          if (listener != null) {
+            try {
+              listener.onSuccess(response.getJSONObject("result"));
+            } catch (JSONException e) {
+              throw new RuntimeException(e);
+            }
           }
         }
 
         @Override
         public void onError(JSONObject error) {
-          listener.onError(error);
+          if (listener != null) {
+            listener.onError(error);
+          }
         }
       });
     } catch (JSONException e) {
@@ -1274,8 +1378,29 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mUpdate(final JSONArray documents, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
-    return this.mUpdate(documents, new Options(), listener);
+  public Collection mUpdateDocument(final JSONArray documents, final ResponseListener<JSONObject> listener) throws JSONException {
+    return this.mUpdateDocument(documents, new Options(), listener);
+  }
+
+  /**
+   * Update the provided documents
+   *
+   * @param documents Array of documents to update
+   * @param options Optional parameters
+   * @return Collection kuzzle data collection
+   */
+  public Collection mUpdateDocument(final JSONArray documents, Options options) throws JSONException {
+    return this.mUpdateDocument(documents, options, null);
+  }
+
+  /**
+   * Update the provided documents
+   *
+   * @param documents Array of documents to update
+   * @return Collection kuzzle data collection
+   */
+  public Collection mUpdateDocument(final JSONArray documents) throws JSONException {
+    return this.mUpdateDocument(documents, new Options(), null);
   }
 
   /**

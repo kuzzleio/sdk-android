@@ -31,7 +31,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class mGetTest {
+public class mGetDocumentTest {
     private Kuzzle kuzzle;
     private Collection collection;
     private ResponseListener listener;
@@ -52,28 +52,28 @@ public class mGetTest {
     }
 
     @Test
-    public void checkMGetSignaturesVariants() throws JSONException {
+    public void checkMGetDocumentSignaturesVariants() throws JSONException {
         collection = spy(collection);
 
-        collection.mGet(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
-        collection.mGet(new JSONArray().put("foo").put("bar"), listener);
+        collection.mGetDocument(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
+        collection.mGetDocument(new JSONArray().put("foo").put("bar"), listener);
 
-        verify(collection, times(2)).mGet(any(JSONArray.class), any(Options.class), any(ResponseListener.class));
+        verify(collection, times(2)).mGetDocument(any(JSONArray.class), any(Options.class), any(ResponseListener.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testMGetIllegalArgument() throws JSONException {
-        collection.mGet(new JSONArray(), listener);
+    public void testMGetDocumentIllegalArgument() throws JSONException {
+        collection.mGetDocument(new JSONArray(), listener);
     }
 
     @Test(expected = RuntimeException.class)
     public void testMGetQueryException() throws JSONException {
         doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-        collection.mGet(new JSONArray().put("foo").put("bar"), listener);
+        collection.mGetDocument(new JSONArray().put("foo").put("bar"), listener);
     }
 
     @Test(expected = RuntimeException.class)
-    public void testMGetException() throws JSONException {
+    public void testMGetDocumentException() throws JSONException {
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -82,11 +82,11 @@ public class mGetTest {
             }
         }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
         doThrow(JSONException.class).when(listener).onSuccess(any(String.class));
-        collection.mGet(new JSONArray().put("foo").put("bar"), listener);
+        collection.mGetDocument(new JSONArray().put("foo").put("bar"), listener);
     }
 
     @Test
-    public void testMGet() throws JSONException {
+    public void testMGetDocument() throws JSONException {
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -111,8 +111,8 @@ public class mGetTest {
                 return null;
             }
         }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-        collection.mGet(new JSONArray().put("foo").put("bar"), mock(ResponseListener.class));
-        collection.mGet(new JSONArray().put("foo").put("bar"), new Options(), mock(ResponseListener.class));
+        collection.mGetDocument(new JSONArray().put("foo").put("bar"), mock(ResponseListener.class));
+        collection.mGetDocument(new JSONArray().put("foo").put("bar"), new Options(), mock(ResponseListener.class));
         ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
         verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
         assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");

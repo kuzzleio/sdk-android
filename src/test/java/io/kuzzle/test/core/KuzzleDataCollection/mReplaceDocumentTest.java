@@ -11,6 +11,7 @@ import org.mockito.stubbing.Answer;
 
 import java.net.URISyntaxException;
 
+import io.kuzzle.sdk.core.Document;
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Options;
@@ -31,7 +32,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class mCreateOrReplaceTest {
+public class mReplaceDocumentTest {
     private Kuzzle kuzzle;
     private Collection collection;
     private ResponseListener listener;
@@ -52,48 +53,64 @@ public class mCreateOrReplaceTest {
     }
 
     @Test
-    public void checkMCreateOrReplaceSignaturesVariants() throws JSONException {
+    public void checkMReplaceDocumentSignaturesVariants() throws JSONException {
         collection = spy(collection);
 
-        collection.mCreateOrReplace(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
-        collection.mCreateOrReplace(new JSONArray().put("foo").put("bar"), listener);
+        collection.mReplaceDocument(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
+        collection.mReplaceDocument(new JSONArray().put("foo").put("bar"), listener);
+        collection.mReplaceDocument(new JSONArray().put("foo").put("bar"), mock(Options.class));
+        collection.mReplaceDocument(new JSONArray().put("foo").put("bar"));
 
-        verify(collection, times(2)).mCreateOrReplace(any(JSONArray.class), any(Options.class), any(ResponseListener.class));
+        verify(collection, times(4)).mReplaceDocument(any(JSONArray.class), any(Options.class), any(ResponseListener.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testMCreateOrReplaceQueryException() throws JSONException {
-        doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-        collection.mCreateOrReplace(new JSONArray(), listener);
+    public void testMReplaceDocumentIllegalArgument() throws JSONException {
+        collection.mReplaceDocument(new JSONArray(), listener);
     }
 
     @Test(expected = RuntimeException.class)
-    public void testMCreateOrReplaceException() throws JSONException {
+    public void testMReplaceDocumentQueryException() throws JSONException {
+        doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+        collection.mReplaceDocument(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testMReplaceDocumentException() throws JSONException {
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", mock(JSONObject.class)));
+                ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("_id", "id-42")));
                 return null;
             }
         }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-        doThrow(JSONException.class).when(listener).onSuccess(any(JSONObject.class));
-        collection.mCreateOrReplace(new JSONArray(), listener);
+        doThrow(JSONException.class).when(listener).onSuccess(any(String.class));
+        collection.mReplaceDocument(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
     }
 
     @Test
-    public void testMCreateOrReplace() throws JSONException {
+    public void testMReplaceDocument() throws JSONException {
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", mock(JSONObject.class)));
+                JSONObject result = new JSONObject()
+                        .put("result", new JSONObject()
+                                .put("_id", "42")
+                                .put("_version", 1337)
+                                .put("_source", new JSONObject()));
+
+                ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(result);
                 ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
                 return null;
             }
         }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-        collection.mCreateOrReplace(new JSONArray().put("foo").put("bar"), new Options(), listener);
+        Document doc = new Document(collection);
+        doc.setContent("foo", "bar");
+        collection.mReplaceDocument(new JSONArray().put("foo").put("bar"), listener);
+        collection.mReplaceDocument(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
         ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-        verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+        verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
         assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");
-        assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "mCreateOrReplace");
+        assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "mReplace");
     }
 }

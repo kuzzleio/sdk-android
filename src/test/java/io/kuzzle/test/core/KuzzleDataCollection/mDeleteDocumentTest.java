@@ -12,12 +12,12 @@ import org.mockito.stubbing.Answer;
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
-import io.kuzzle.sdk.core.Collection;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.States;
+import io.kuzzle.test.testUtils.KuzzleDataCollectionExtend;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
 
@@ -31,9 +31,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class mCreateTest {
+public class mDeleteDocumentTest {
     private Kuzzle kuzzle;
-    private Collection collection;
+    private KuzzleDataCollectionExtend collection;
     private ResponseListener listener;
 
     @Before
@@ -47,53 +47,61 @@ public class mCreateTest {
         kuzzle = spy(extended);
         when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
-        collection = new Collection(kuzzle, "test", "index");
+        collection = new KuzzleDataCollectionExtend(kuzzle, "index", "test");
         listener = mock(ResponseListener.class);
     }
 
     @Test
-    public void checkMCreateSignaturesVariants() throws JSONException {
+    public void checkMDeleteDocumentSignaturesVariants() throws JSONException {
+        Options opts = mock(Options.class);
         collection = spy(collection);
 
-        collection.mCreate(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
-        collection.mCreate(new JSONArray().put("foo").put("bar"), listener);
+        collection.mDeleteDocument(new JSONArray().put("foo").put("bar"), opts, listener);
+        collection.mDeleteDocument(new JSONArray().put("foo").put("bar"), listener);
+        collection.mDeleteDocument(new JSONArray().put("foo").put("bar"), opts);
+        collection.mDeleteDocument(new JSONArray().put("foo").put("bar"));
 
-        verify(collection, times(2)).mCreate(any(JSONArray.class), any(Options.class), any(ResponseListener.class));
+        verify(collection, times(4)).mDeleteDocument(any(JSONArray.class), any(Options.class), any(ResponseListener.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testMCreateQueryException() throws JSONException {
-        doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-        collection.mCreate(new JSONArray(), listener);
+    public void testMDeleteDocumentIllegalArgument() throws JSONException {
+        collection.mDeleteDocument(new JSONArray(), listener);
     }
 
     @Test(expected = RuntimeException.class)
-    public void testMCreateException() throws JSONException {
+    public void testMDeleteDocumentQueryException() throws JSONException {
+        doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+        collection.mDeleteDocument(new JSONArray().put("foo").put("bar"), listener);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testMDeleteDocumentException() throws JSONException {
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", mock(JSONObject.class)));
+                ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONArray().put("_id").put("id-42")));
                 return null;
             }
         }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-        doThrow(JSONException.class).when(listener).onSuccess(any(JSONObject.class));
-        collection.mCreate(new JSONArray(), listener);
+        doThrow(JSONException.class).when(listener).onSuccess(any(String.class));
+        collection.mDeleteDocument(new JSONArray().put("foo").put("bar"), listener);
     }
 
     @Test
-    public void testMCreate() throws JSONException {
+    public void testMDeleteDocument() throws JSONException {
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", mock(JSONObject.class)));
+                ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONArray().put("foo").put("bar")));
                 ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
                 return null;
             }
         }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-        collection.mCreate(new JSONArray().put("foo").put("bar"), new Options(), listener);
+        collection.mDeleteDocument(new JSONArray().put("foo").put("bar"), listener);
         ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
         verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
         assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");
-        assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "mCreate");
+        assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "mDelete");
     }
 }

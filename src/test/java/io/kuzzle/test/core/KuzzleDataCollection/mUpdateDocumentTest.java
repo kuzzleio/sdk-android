@@ -32,7 +32,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class mUpdateTest {
+public class mUpdateDocumentTest {
     private Kuzzle kuzzle;
     private Collection collection;
     private ResponseListener listener;
@@ -53,28 +53,30 @@ public class mUpdateTest {
     }
 
     @Test
-    public void checkMUpdateSignaturesVariants() throws JSONException {
+    public void checkMUpdateDocumentSignaturesVariants() throws JSONException {
         collection = spy(collection);
 
-        collection.mUpdate(new JSONArray().put("foo").put("bar"), listener);
-        collection.mUpdate(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
+        collection.mUpdateDocument(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
+        collection.mUpdateDocument(new JSONArray().put("foo").put("bar"), listener);
+        collection.mUpdateDocument(new JSONArray().put("foo").put("bar"), mock(Options.class));
+        collection.mUpdateDocument(new JSONArray().put("foo").put("bar"));
 
-        verify(collection, times(2)).mUpdate(any(JSONArray.class), any(Options.class), any(ResponseListener.class));
+        verify(collection, times(4)).mUpdateDocument(any(JSONArray.class), any(Options.class), any(ResponseListener.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testMUpdateIllegalArgument() throws JSONException {
-        collection.mUpdate(new JSONArray(), listener);
+    public void testMUpdateDocumentIllegalArgument() throws JSONException {
+        collection.mUpdateDocument(new JSONArray(), listener);
     }
 
     @Test(expected = RuntimeException.class)
-    public void testMUpdateQueryException() throws JSONException {
+    public void testMUpdateDocumentQueryException() throws JSONException {
         doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-        collection.mUpdate(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
+        collection.mUpdateDocument(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
     }
 
     @Test(expected = RuntimeException.class)
-    public void testMUpdateException() throws JSONException {
+    public void testMUpdateDocumentException() throws JSONException {
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -83,11 +85,11 @@ public class mUpdateTest {
             }
         }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
         doThrow(JSONException.class).when(listener).onSuccess(any(String.class));
-        collection.mUpdate(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
+        collection.mUpdateDocument(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
     }
 
     @Test
-    public void testMUpdate() throws JSONException {
+    public void testMUpdateDocument() throws JSONException {
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -104,8 +106,8 @@ public class mUpdateTest {
         }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
         Document doc = new Document(collection);
         doc.setContent("foo", "bar");
-        collection.mUpdate(new JSONArray().put("foo").put("bar"), listener);
-        collection.mUpdate(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
+        collection.mUpdateDocument(new JSONArray().put("foo").put("bar"), listener);
+        collection.mUpdateDocument(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
         ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
         verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
         assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");
