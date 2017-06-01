@@ -999,6 +999,83 @@ public class Security {
   }
 
   /**
+   * Replaces an existing user in Kuzzle.
+   *
+   * @param id       - ID of the user to replace
+   * @param content  - Should contain a 'profileIds' attribute with the profile IDs
+   * @param options  - Optional arguments
+   * @param listener - Callback listener
+   * @throws JSONException the json exception
+   */
+  public void replaceUser(@NonNull final String id, @NonNull final JSONObject content, final Options options, final ResponseListener<User> listener) throws JSONException {
+    if (id == null) {
+      throw new IllegalArgumentException("Security.replaceUser: cannot replace user without an ID");
+    }
+
+    String action = "replaceUser";
+
+    JSONObject data = new JSONObject().put("_id", id).put("body", content);
+
+    if (listener != null) {
+      this.kuzzle.query(buildQueryArgs(action), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            JSONObject result = response.getJSONObject("result");
+            listener.onSuccess(new User(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+          }
+          catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    }
+    else {
+      this.kuzzle.query(buildQueryArgs(action), data, options);
+    }
+  }
+
+  /**
+   * Replaces an existing user in Kuzzle.
+   *
+   * @param id      - ID of the user to create
+   * @param content - Should contain a 'profile' attribute with the profile ID
+   * @param options - Optional arguments
+   * @throws JSONException the json exception
+   */
+  public void replaceUser(@NonNull final String id, @NonNull final JSONObject content, final Options options) throws JSONException {
+    replaceUser(id, content, options, null);
+  }
+
+  /**
+   * Replaces an existing user in Kuzzle.
+   *
+   * @param id       - ID of the user to create
+   * @param content  - Should contain a 'profile' attribute with the profile ID
+   * @param listener - Callback listener
+   * @throws JSONException the json exception
+   */
+  public void replaceUser(@NonNull final String id, @NonNull final JSONObject content, final ResponseListener<User> listener) throws JSONException {
+    replaceUser(id, content, null, listener);
+  }
+
+  /**
+   * Replaces an existing user in Kuzzle.
+   *
+   * @param id      - ID of the user to create
+   * @param content - Should contain a 'profile' attribute with the profile ID
+   * @throws JSONException the json exception
+   */
+  public void replaceUser(@NonNull final String id, @NonNull final JSONObject content) throws JSONException {
+    replaceUser(id, content, null, null);
+  }
+
+  /**
    * Executes a search on user according to a filter
    * /!\ There is a small delay between user creation and their existence in our persistent search layer,
    * usually a couple of seconds.
