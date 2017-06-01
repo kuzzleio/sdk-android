@@ -13,12 +13,14 @@ import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
+import io.kuzzle.sdk.security.Profile;
 import io.kuzzle.sdk.security.Security;
 import io.kuzzle.sdk.security.User;
 
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -30,24 +32,11 @@ import static org.mockito.Mockito.verify;
 public class KuzzleUserTest {
   private Kuzzle kuzzle;
   private User stubUser;
-  private ResponseListener listener;
-  private JSONObject stubProfile;
 
   @Before
   public void setUp() throws JSONException {
-    stubProfile = new JSONObject(
-      "{" +
-        "\"profile\": {" +
-        "\"_id\": \"bar\"," +
-        "\"_source\": {}" +
-        "}," +
-        "\"someuseless\": \"field\"" +
-        "}"
-    );
-
     kuzzle = mock(Kuzzle.class);
     kuzzle.security = new Security(kuzzle);
-    listener = mock(ResponseListener.class);
     stubUser = new User(kuzzle, "foo", null);
   }
 
@@ -55,7 +44,7 @@ public class KuzzleUserTest {
   public void testKuzzleUserConstructorNoContent() throws JSONException {
     User user = new User(kuzzle, "foo", null);
     assertEquals(user.id, "foo");
-    assertEquals(user.getProfiles(), null);
+    assertEquals(user.getProfileIds().length, 0);
     assertThat(user.content, instanceOf(JSONObject.class));
   }
 
@@ -69,7 +58,7 @@ public class KuzzleUserTest {
     );
     User user = new User(kuzzle, "foo", stubProfile);
     assertEquals(user.id, "foo");
-    assertEquals(user.getProfiles().getString(0), "bar");
+    assertEquals(user.getProfileIds()[0], "bar");
     assertThat(user.content, instanceOf(JSONObject.class));
     assertEquals(user.content.getString("someuseless"), "field");
   }
@@ -79,8 +68,8 @@ public class KuzzleUserTest {
     JSONObject stubProfile = new JSONObject("{\"profileIds\": [\"bar\"]}");
     User user = new User(kuzzle, "foo", stubProfile);
     assertEquals(user.id, "foo");
-    assertThat(user.getProfiles(), instanceOf(JSONArray.class));
-    assertEquals(user.getProfiles().getString(0), "bar");
+    assertThat(user.getProfileIds(), instanceOf(String[].class));
+    assertEquals(user.getProfileIds()[0], "bar");
     assertThat(user.content, instanceOf(JSONObject.class));
   }
 
@@ -89,7 +78,7 @@ public class KuzzleUserTest {
     String[] ids = new String[1];
     ids[0] = "foo";
     stubUser.setProfiles(ids);
-    assertEquals(stubUser.getProfiles().getString(0), "foo");
+    assertEquals(stubUser.getProfileIds()[0], "foo");
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -257,16 +246,16 @@ public class KuzzleUserTest {
     JSONObject serialized = stubUser.serialize();
     assertEquals(serialized.getString("_id"), stubUser.id);
     assertEquals(serialized.getJSONObject("body").getString("foo"), "bar");
-    assertEquals(serialized.getJSONObject("body").getJSONArray("profileIds").getString(0), stubUser.getProfiles().getString(0));
+    assertEquals(serialized.getJSONObject("body").getJSONArray("profileIds").getString(0), stubUser.getProfileIds()[0]);
   }
 
   @Test
-  public void testGetProfiles() throws JSONException {
+  public void testGetProfileIds() throws JSONException {
     JSONObject stubProfile = new JSONObject(
             "{\"profileIds\": [\"bar\"]}"
     );
     User user = new User(kuzzle, "foo", stubProfile);
-    assertEquals(user.getProfiles().getString(0), "bar");
+    assertEquals(user.getProfileIds()[0], "bar");
   }
 
   @Test
@@ -276,7 +265,7 @@ public class KuzzleUserTest {
     );
     User user = new User(kuzzle, "foo", stubProfile);
     user.addProfile("new profile");
-    assertEquals(user.getProfiles().getString(1), "new profile");
+    assertEquals(user.getProfileIds()[1], "new profile");
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -287,5 +276,119 @@ public class KuzzleUserTest {
     User user = new User(kuzzle, "foo", stubProfile);
     user.addProfile(null);
     doThrow(IllegalArgumentException.class).when(user).addProfile(eq((String)null));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testGetProfilesException() throws JSONException {
+    User user = new User(kuzzle, "foo", new JSONObject());
+    user.getProfiles(null);
+  }
+
+  @Test
+  public void testGetProfilesEmpty() throws JSONException {
+    User user = new User(kuzzle, "foo", new JSONObject());
+
+    user.getProfiles(new ResponseListener<Profile[]>() {
+      @Override
+      public void onSuccess(Profile[] response) {
+        assertEquals(response.length, 0);
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+        fail("onError callback should not have been invoked");
+      }
+    });
+  }
+
+  @Test
+  public void testGetProfiles() throws JSONException {
+    JSONArray profiles = new JSONArray().put("foo").put("bar").put("baz");
+    User user = new User(kuzzle, "foo", new JSONObject().put("profileIds", profiles));
+
+    Answer mockAnswer = new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation
+          .getArguments()[3])
+          .onSuccess(new JSONObject()
+            .put("result", new JSONObject()
+              .put("_id", "foobar")
+              .put("_source", new JSONObject()
+                .put("policies", new JSONArray())
+              )
+            )
+          );
+        return null;
+      }
+    };
+
+    doAnswer(mockAnswer)
+      .when(kuzzle)
+      .query(
+        any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class),
+        any(JSONObject.class),
+        any(Options.class),
+        any(OnQueryDoneListener.class)
+      );
+
+    user.getProfiles(new ResponseListener<Profile[]>() {
+      @Override
+      public void onSuccess(Profile[] response) {
+        assertEquals(response.length, 3);
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+        fail("onError should not have been invoked");
+      }
+    });
+
+    ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(3)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+  }
+
+  @Test
+  public void testGetProfilesError() throws JSONException {
+    JSONArray profiles = new JSONArray().put("foo").put("bar").put("baz");
+    User user = new User(kuzzle, "foo", new JSONObject().put("profileIds", profiles));
+    final boolean[] invoked = {false};
+
+    Answer mockAnswer = new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
+        return null;
+      }
+    };
+
+    doAnswer(mockAnswer)
+      .when(kuzzle)
+      .query(
+        any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class),
+        any(JSONObject.class),
+        any(Options.class),
+        any(OnQueryDoneListener.class)
+      );
+
+    user.getProfiles(new ResponseListener<Profile[]>() {
+      @Override
+      public void onSuccess(Profile[] response) {
+        fail("onSuccess should not have been invoked");
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+        if (invoked[0] == true) {
+          fail("onError invoked more than once");
+          return;
+        }
+
+        invoked[0] = true;
+      }
+    });
+
+    ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
+    verify(kuzzle, times(3)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
   }
 }
