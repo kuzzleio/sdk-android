@@ -1200,9 +1200,8 @@ public class Collection {
    * @param documentIds IDs of documents to retrieve
    * @param options Optional parameters
    * @param listener Response callback
-   * @return Collection kuzzle data collection
    */
-  public Collection mGetDocument(final JSONArray documentIds, final Options options, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
+  public void mGetDocument(final JSONArray documentIds, final Options options, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
     if (documentIds.length() == 0) {
       throw new IllegalArgumentException("Collection.mGetDocument: The document IDs array should not be empty");
     }
@@ -1232,8 +1231,6 @@ public class Collection {
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
-
-    return this;
   }
 
   /**
@@ -1241,10 +1238,9 @@ public class Collection {
    *
    * @param documentIds IDs of documents to retrieve
    * @param listener Response callback
-   * @return Collection kuzzle data collection
    */
-  public Collection mGetDocument(final JSONArray documentIds, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
-    return this.mGetDocument(documentIds, new Options(), listener);
+  public void mGetDocument(final JSONArray documentIds, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
+    this.mGetDocument(documentIds, new Options(), listener);
   }
 
   /**
