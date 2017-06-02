@@ -1521,7 +1521,7 @@ public class Security {
    * @param action
    * @return the KuzzleSecurityObject
    */
-  public Policies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull final String action) {
+  public Policies isActionAllowed(@NonNull final JSONObject[] policies, @NonNull final String controller, @NonNull final String action) {
     return this.isActionAllowed(policies, controller, action, null, null);
   }
 
@@ -1536,7 +1536,7 @@ public class Security {
    * @param index
    * @return the KuzzleSecurityObject
    */
-  public Policies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull  final String action, final String index) {
+  public Policies isActionAllowed(@NonNull final JSONObject[] policies, @NonNull final String controller, @NonNull  final String action, final String index) {
     return this.isActionAllowed(policies, controller, action, index, null);
   }
 
@@ -1552,7 +1552,7 @@ public class Security {
    * @param collection
    * @return the KuzzleSecurityObject
    */
-  public Policies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull final String action, final String index, final String collection) {
+  public Policies isActionAllowed(@NonNull final JSONObject[] policies, @NonNull final String controller, @NonNull final String action, final String index, final String collection) {
     if (policies == null) {
       throw new IllegalArgumentException("Security.isActionAllowed: policies are mandatory.");
     }
@@ -1563,40 +1563,42 @@ public class Security {
       throw new IllegalArgumentException("Security.isActionAllowed: action is mandatory.");
     }
 
-    JSONArray filteredPolicies;
+    JSONObject[] filteredPolicies;
     try {
       filteredPolicies = filterPolicy(policies, "controller", controller);
       filteredPolicies = filterPolicy(filteredPolicies, "action", action);
       filteredPolicies = filterPolicy(filteredPolicies, "index", index);
       filteredPolicies = filterPolicy(filteredPolicies, "collection", collection);
-      for (int i = 0; i < filteredPolicies.length(); i++) {
-        if (filteredPolicies.getJSONObject(i).getString("value").equals(Policies.allowed.toString())) {
+
+      for (JSONObject filteredPolicy : filteredPolicies) {
+        if (filteredPolicy.getString("value").equals(Policies.allowed.toString())) {
           return Policies.allowed;
         }
       }
-      for (int i = 0; i < filteredPolicies.length(); i++) {
-        if (filteredPolicies.getJSONObject(i).getString("value").equals(Policies.conditional.toString())) {
+
+      for (JSONObject filteredPolicy : filteredPolicies) {
+        if (filteredPolicy.getString("value").equals(Policies.conditional.toString())) {
           return Policies.conditional;
         }
       }
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
+
     return Policies.denied;
   }
 
-  private JSONArray  filterPolicy(final JSONArray policies, final String attr, final String attrInput) throws JSONException {
-    JSONArray filteredPolicies = new JSONArray();
-    for (int i = 0; i < policies.length(); i++) {
-      JSONObject policy = policies.getJSONObject(i);
+  private JSONObject[] filterPolicy(final JSONObject[] policies, final String attr, final String attrInput) throws JSONException {
+    ArrayList<JSONObject> filteredPolicies = new ArrayList<>();
+
+    for (JSONObject policy : policies) {
       String attrObject = policy.getString(attr);
       if (attrObject.equals(attrInput) || attrObject.equals("*")) {
-        filteredPolicies.put(policy);
+        filteredPolicies.add(policy);
       }
     }
-    return filteredPolicies;
+    return filteredPolicies.toArray(new JSONObject[0]);
   }
-
 
   /**
    * Gets the rights array of a given user.
@@ -1605,7 +1607,7 @@ public class Security {
    * @param listener
    * @return the Security instance
    */
-  public Security getUserRights(@NonNull final String id, @NonNull final ResponseListener<JSONArray> listener) {
+  public Security getUserRights(@NonNull final String id, @NonNull final ResponseListener<JSONObject[]> listener) {
     return getUserRights(id, null, listener);
   }
 
@@ -1617,7 +1619,7 @@ public class Security {
    * @param listener
    * @return the Security instance
    */
-  public Security getUserRights(@NonNull final String id, final Options options, @NonNull final ResponseListener<JSONArray> listener) {
+  public Security getUserRights(@NonNull final String id, final Options options, @NonNull final ResponseListener<JSONObject[]> listener) {
     if (id == null || id.isEmpty()) {
       throw new IllegalArgumentException("Security.getUserRights: id is mandatory.");
     }
@@ -1631,7 +1633,13 @@ public class Security {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(response.getJSONObject("result").getJSONArray("hits"));
+            JSONArray arr = response.getJSONObject("result").getJSONArray("hits");
+            JSONObject[] rights = new JSONObject[arr.length()];
+
+            for (int i = 0; i < arr.length(); i++) {
+              rights[i] = arr.getJSONObject(i);
+            }
+            listener.onSuccess(rights);
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }

@@ -6,6 +6,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.listeners.ResponseListener;
@@ -15,7 +18,7 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
  * This class handles profiles management in Kuzzle
  */
 public class Profile extends AbstractSecurityDocument {
-  private JSONArray policies = new JSONArray();
+  private ArrayList<JSONObject> policies = new ArrayList<>();
 
   /**
    * Instantiates a new Kuzzle profile.
@@ -34,7 +37,11 @@ public class Profile extends AbstractSecurityDocument {
       this.content = new JSONObject(content.toString());
 
       if (content.has("policies")) {
-        this.policies = content.getJSONArray("policies");
+        JSONArray arr = content.getJSONArray("policies");
+
+        for (int i = 0; i < arr.length(); i++) {
+          this.policies.add(arr.getJSONObject(i));
+        }
 
         this.content.remove("policies");
       }
@@ -52,8 +59,8 @@ public class Profile extends AbstractSecurityDocument {
   public Profile save(final Options options, final ResponseListener<Profile> listener) throws JSONException {
     JSONObject data;
 
-    if (this.policies.length() == 0) {
-      throw new IllegalArgumentException("Cannot save the profile " + this.id + ": no policies defined");
+    if (this.policies.size() == 0) {
+      throw new IllegalArgumentException("Cannot save the profile " + this.id + ": no policy defined");
     }
 
     data = this.serialize();
@@ -122,7 +129,7 @@ public class Profile extends AbstractSecurityDocument {
       throw new IllegalArgumentException("The policy must have, at least, a roleId set.");
     }
 
-    this.policies.put(policy);
+    this.policies.add(policy);
     return this;
   }
 
@@ -139,7 +146,7 @@ public class Profile extends AbstractSecurityDocument {
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
-    this.policies.put(policy);
+    this.policies.add(policy);
     return this;
   }
 
@@ -150,18 +157,14 @@ public class Profile extends AbstractSecurityDocument {
    * @return this roles
    * @throws IllegalArgumentException
    */
-  public Profile setPolicies(final JSONArray policies) throws IllegalArgumentException {
-    try {
-      for (int i = 0; i < policies.length(); i++) {
-        if (!policies.getJSONObject(i).has("roleId")) {
-          throw new IllegalArgumentException("All pocicies must have at least a roleId set.");
-        }
+  public Profile setPolicies(final JSONObject[] policies) throws IllegalArgumentException {
+    for(JSONObject policy : policies) {
+      if (!policy.has("roleId")) {
+        throw new IllegalArgumentException("All pocicies must have at least a roleId set.");
       }
-    } catch (JSONException e) {
-      throw new RuntimeException(e);
     }
 
-    this.policies = policies;
+    this.policies = new ArrayList<>(Arrays.asList(policies));
 
     return this;
   }
@@ -169,17 +172,15 @@ public class Profile extends AbstractSecurityDocument {
   /**
    * Replace the current policies list with a new one via its rolesIds
    *
-   * @param rolesIds - New roles list
+   * @param roleIds - New roles list
    * @return this roles
    */
-  public Profile setPolicies(final String rolesIds[]) {
+  public Profile setPolicies(final String[] roleIds) {
+    this.policies.clear();
+
     try {
-      for (int i = 0; i < rolesIds.length; i++) {
-        JSONObject policy = new JSONObject();
-
-        policy.put("roleId", rolesIds[i]);
-
-        this.policies.put(policy);
+      for (String roleId : roleIds) {
+        this.policies.add(new JSONObject().put("roleId", roleId));
       }
     } catch (JSONException e) {
       throw new RuntimeException(e);
@@ -198,8 +199,8 @@ public class Profile extends AbstractSecurityDocument {
       data = new JSONObject(),
       content = new JSONObject(this.content.toString());
 
-    if (this.policies.length() > 0) {
-      content.put("policies", this.policies);
+    if (this.policies.size() > 0) {
+      content.put("policies", new JSONArray(this.policies));
     }
 
     data
@@ -214,7 +215,7 @@ public class Profile extends AbstractSecurityDocument {
    *
    * @return a JSONArray of policies" objects
    */
-  public JSONArray getPolicies() {
-    return this.policies;
+  public JSONObject[] getPolicies() {
+    return this.policies.toArray(new JSONObject[0]);
   }
 }

@@ -606,7 +606,7 @@ public class Kuzzle {
    *
    * @param listener the listener
    */
-  public void getAllStatistics(@NonNull final ResponseListener<JSONArray> listener) {
+  public void getAllStatistics(@NonNull final ResponseListener<JSONObject[]> listener) {
     this.getAllStatistics(null, listener);
   }
 
@@ -617,7 +617,7 @@ public class Kuzzle {
    * @param options  the options
    * @param listener the listener
    */
-  public void getAllStatistics(final Options options, @NonNull final ResponseListener<JSONArray> listener) {
+  public void getAllStatistics(final Options options, @NonNull final ResponseListener<JSONObject[]> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.getAllStatistics: listener required");
     }
@@ -631,7 +631,14 @@ public class Kuzzle {
         @Override
         public void onSuccess(JSONObject object) {
           try {
-            listener.onSuccess(object.getJSONObject("result").getJSONArray("hits"));
+            JSONArray hits = object.getJSONObject("result").getJSONArray("hits");
+            JSONObject[] frames = new JSONObject[hits.length()];
+
+            for(int i = 0; i < hits.length(); i++) {
+              frames[i] = hits.getJSONObject(i);
+            }
+
+            listener.onSuccess(frames);
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
@@ -794,7 +801,7 @@ public class Kuzzle {
    *
    * @param listener the listener
    */
-  public void listCollections(@NonNull final ResponseListener<JSONObject> listener) {
+  public void listCollections(@NonNull final ResponseListener<JSONObject[]> listener) {
     this.listCollections(null, null, listener);
   }
 
@@ -804,7 +811,7 @@ public class Kuzzle {
    * @param index    the index
    * @param listener the listener
    */
-  public void listCollections(String index, @NonNull final ResponseListener<JSONObject> listener) {
+  public void listCollections(String index, @NonNull final ResponseListener<JSONObject[]> listener) {
     this.listCollections(index, null, listener);
   }
 
@@ -814,7 +821,7 @@ public class Kuzzle {
    * @param options  the options
    * @param listener the listener
    */
-  public void listCollections(Options options, @NonNull final ResponseListener<JSONObject> listener) {
+  public void listCollections(Options options, @NonNull final ResponseListener<JSONObject[]> listener) {
     this.listCollections(null, options, listener);
   }
 
@@ -825,7 +832,7 @@ public class Kuzzle {
    * @param options  the options
    * @param listener the listener
    */
-  public void listCollections(String index, Options options, @NonNull final ResponseListener<JSONObject> listener) {
+  public void listCollections(String index, Options options, @NonNull final ResponseListener<JSONObject[]> listener) {
     if (index == null) {
       if (this.defaultIndex == null) {
         throw new IllegalArgumentException("Kuzzle.listCollections: index required");
@@ -851,7 +858,14 @@ public class Kuzzle {
         @Override
         public void onSuccess(JSONObject collections) {
           try {
-            listener.onSuccess(collections.getJSONObject("result").getJSONObject("collections"));
+            JSONArray result = collections.getJSONObject("result").getJSONArray("collections");
+            JSONObject[] cols = new JSONObject[result.length()];
+
+            for (int i = 0; i < result.length(); i++) {
+              cols[i] = result.getJSONObject(i);
+            }
+
+            listener.onSuccess(cols);
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
@@ -2632,7 +2646,7 @@ public class Kuzzle {
    * @param listener
    * @return the Security instance
    */
-  public Kuzzle getMyRights(@NonNull final ResponseListener<JSONArray> listener) {
+  public Kuzzle getMyRights(@NonNull final ResponseListener<JSONObject[]> listener) {
     return getMyRights(null, listener);
   }
 
@@ -2643,7 +2657,7 @@ public class Kuzzle {
    * @param listener
    * @return the Security instance
    */
-  public Kuzzle getMyRights(final Options options, @NonNull final ResponseListener<JSONArray> listener) {
+  public Kuzzle getMyRights(final Options options, @NonNull final ResponseListener<JSONObject[]> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Security.getMyRights: listener is mandatory.");
     }
@@ -2652,7 +2666,14 @@ public class Kuzzle {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(response.getJSONObject("result").getJSONArray("hits"));
+            JSONArray hits = response.getJSONObject("result").getJSONArray("hits");
+            JSONObject[] rights = new JSONObject[hits.length()];
+
+            for (int i = 0; i < hits.length(); i++) {
+              rights[i] = hits.getJSONObject(i);
+            }
+
+            listener.onSuccess(rights);
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
