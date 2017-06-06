@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
@@ -597,19 +598,21 @@ public class Security {
    * Replace the existing profile otherwise
    *
    * @param id       - ID of the new profile
-   * @param content  - Should contain a 'roles' attributes containing the roles referenced by this profile
+   * @param policies  - list of policies attached to the new profile
    * @param options  - Optional arguments
    * @param listener - Callback lisener
    * @throws JSONException the json exception
    */
-  public void createProfile(@NonNull final String id, @NonNull final JSONArray content, final Options options, final ResponseListener<Profile> listener) throws JSONException {
+  public void createProfile(@NonNull final String id, @NonNull final JSONObject[] policies, final Options options, final ResponseListener<Profile> listener) throws JSONException {
     String action = "createProfile";
 
-    if (id == null || content == null) {
-      throw new IllegalArgumentException("Security.createProfile: cannot create a profile with null ID or roles");
+    if (id == null || policies == null) {
+      throw new IllegalArgumentException("Security.createProfile: cannot create a profile with null ID or policies");
     }
 
-    JSONObject data = new JSONObject().put("_id", id).put("body", new JSONObject().put("roles", content));
+    JSONObject data = new JSONObject()
+      .put("_id", id)
+      .put("body", new JSONObject().put("policies", new JSONArray(Arrays.asList(policies))));
 
     if (options != null && options.isReplaceIfExist()) {
       action = "createOrReplaceProfile";
@@ -647,12 +650,12 @@ public class Security {
    * Replace the existing profile otherwise
    *
    * @param id      - ID of the new profile
-   * @param content - Should contain a 'roles' attributes containing the roles referenced by this profile
+   * @param policies  - list of policies attached to the new profile
    * @param options - Optional arguments
    * @throws JSONException the json exception
    */
-  public void createProfile(@NonNull final String id, @NonNull final JSONArray content, final Options options) throws JSONException {
-    createProfile(id, content, options, null);
+  public void createProfile(@NonNull final String id, @NonNull final JSONObject[] policies, final Options options) throws JSONException {
+    createProfile(id, policies, options, null);
   }
 
   /**
@@ -663,12 +666,12 @@ public class Security {
    * Replace the existing profile otherwise
    *
    * @param id       - ID of the new profile
-   * @param content  - Should contain a 'roles' attributes containing the roles referenced by this profile
+   * @param policies  - list of policies attached to the new profile
    * @param listener - Callback lisener
    * @throws JSONException the json exception
    */
-  public void createProfile(@NonNull final String id, @NonNull final JSONArray content, final ResponseListener<Profile> listener) throws JSONException {
-    createProfile(id, content, null, listener);
+  public void createProfile(@NonNull final String id, @NonNull final JSONObject[] policies, final ResponseListener<Profile> listener) throws JSONException {
+    createProfile(id, policies, null, listener);
   }
 
   /**
@@ -679,11 +682,11 @@ public class Security {
    * Replace the existing profile otherwise
    *
    * @param id      - ID of the new profile
-   * @param content - Should contain a 'roles' attributes containing the roles referenced by this profile
+   * @param policies  - list of policies attached to the new profile
    * @throws JSONException the json exception
    */
-  public void createProfile(@NonNull final String id, @NonNull final JSONArray content) throws JSONException {
-    createProfile(id, content, null, null);
+  public void createProfile(@NonNull final String id, @NonNull final JSONObject[] policies) throws JSONException {
+    createProfile(id, policies, null, null);
   }
 
   /**
