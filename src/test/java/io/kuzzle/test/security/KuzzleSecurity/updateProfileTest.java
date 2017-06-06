@@ -26,20 +26,19 @@ public class updateProfileTest {
   private Kuzzle kuzzle;
   private Security kuzzleSecurity;
   private ResponseListener listener;
-  private JSONObject  content;
+  private JSONObject[] policies;
 
   @Before
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
     kuzzleSecurity = new Security(kuzzle);
     listener = mock(ResponseListener.class);
-    content = new JSONObject()
-        .put("foo", "bar");
+    policies = new JSONObject[]{new JSONObject().put("foo", "bar")};
   }
 
   @Test
   public void testUpdateProfileNoListener() throws JSONException {
-    kuzzleSecurity.updateProfile("foo", content, new Options());
+    kuzzleSecurity.updateProfile("foo", policies, new Options());
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
     assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "security");
@@ -65,7 +64,7 @@ public class updateProfileTest {
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.updateProfile("foobar", content, new ResponseListener<Profile>() {
+    kuzzleSecurity.updateProfile("foobar", policies, new ResponseListener<Profile>() {
       @Override
       public void onSuccess(Profile response) {
         assertEquals(response.getId(), "foobar");
@@ -99,11 +98,11 @@ public class updateProfileTest {
       }
     }).when(kuzzle).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.updateProfile("foobar", content, new Options(), listener);
+    kuzzleSecurity.updateProfile("foobar", policies, new Options(), listener);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testUpdateProfileNoID() throws JSONException {
-    kuzzleSecurity.updateProfile(null, content);
+    kuzzleSecurity.updateProfile(null, policies);
   }
 }

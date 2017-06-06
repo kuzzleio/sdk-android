@@ -839,33 +839,22 @@ public class Security {
   }
 
   /**
-   * Returns the next profiles result set with scroll query.
-   *
-   * @param scroll   - Scroll object
-   * @param listener - Callback listener
-   * @throws JSONException the json exception
-   */
-  public void scrollProfiles(Scroll scroll, final ResponseListener<SecurityDocumentList> listener) throws JSONException {
-    this.scrollProfiles(scroll, new Options(), listener);
-  }
-
-  /**
    * Update profile.
    *
    * @param id       the id
-   * @param content  the content
+   * @param policies  list of policies to apply to this profile
    * @param options  the options
    * @param listener the listener
    * @return Security this object
    * @throws JSONException the json exception
    */
-  public Security updateProfile(@NonNull final String id, final JSONObject content, final Options options, final ResponseListener<Profile> listener) throws JSONException {
+  public Security updateProfile(@NonNull final String id, final JSONObject[] policies, final Options options, final ResponseListener<Profile> listener) throws JSONException {
     if (id == null) {
       throw new IllegalArgumentException("Security.updateProfile: cannot update a profile with ID null");
     }
 
     JSONObject data = new JSONObject().put("_id", id);
-    data.put("body", content);
+    data.put("body", new JSONObject().put("policies", new JSONArray(Arrays.asList(policies))));
 
     if (listener != null) {
       this.kuzzle.query(buildQueryArgs("updateProfile"), data, options, new OnQueryDoneListener() {
@@ -893,41 +882,52 @@ public class Security {
   }
 
   /**
+   * Returns the next profiles result set with scroll query.
+   *
+   * @param scroll   - Scroll object
+   * @param listener - Callback listener
+   * @throws JSONException the json exception
+   */
+  public void scrollProfiles(Scroll scroll, final ResponseListener<SecurityDocumentList> listener) throws JSONException {
+    this.scrollProfiles(scroll, new Options(), listener);
+  }
+
+  /**
    * Update profile.
    *
    * @param id      the id
-   * @param content the content
+   * @param policies  list of policies to apply to this profile
    * @param options the options
    * @return Security this object
    * @throws JSONException the json exception
    */
-  public Security updateProfile(@NonNull final String id, final JSONObject content, final Options options) throws JSONException {
-    return updateProfile(id, content, options, null);
+  public Security updateProfile(@NonNull final String id, final JSONObject[] policies, final Options options) throws JSONException {
+    return updateProfile(id, policies, options, null);
   }
 
   /**
    * Update profile.
    *
    * @param id       the id
-   * @param content  the content
+   * @param policies  list of policies to apply to this profile
    * @param listener the listener
    * @return Security this object
    * @throws JSONException the json exception
    */
-  public Security updateProfile(@NonNull final String id, final JSONObject content, final ResponseListener<Profile> listener) throws JSONException {
-    return this.updateProfile(id, content, null, listener);
+  public Security updateProfile(@NonNull final String id, final JSONObject[] policies, final ResponseListener<Profile> listener) throws JSONException {
+    return this.updateProfile(id, policies, null, listener);
   }
 
   /**
    * Update profile.
    *
    * @param id      the id
-   * @param content the content
+   * @param policies  list of policies to apply to this profile
    * @return Security this object
    * @throws JSONException the json exception
    */
-  public Security updateProfile(@NonNull final String id, final JSONObject content) throws JSONException {
-    return updateProfile(id, content, null, null);
+  public Security updateProfile(@NonNull final String id, final JSONObject[] policies) throws JSONException {
+    return updateProfile(id, policies, null, null);
   }
 
   /**
