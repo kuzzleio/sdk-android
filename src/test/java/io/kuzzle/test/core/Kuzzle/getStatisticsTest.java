@@ -112,7 +112,7 @@ public class getStatisticsTest {
       "          websocket: 13\n" +
       "        },\n" +
       "        \"timestamp\": \"2016-01-13T13:46:19.917Z\"\n" +
-      "      },\n"  +
+      "      }\n"  +
       "    ]\n" +
       "  }" +
       "}");
