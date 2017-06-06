@@ -5,18 +5,15 @@
 Official Kuzzle Android SDK
 ======
 
-This SDK version requires Kuzzle v1.0.0-RC9 or higher.
-
 ## About Kuzzle
 
-For UI and linked objects developers, Kuzzle is an open-source solution that handles all the data management (CRUD, real-time storage, search, high-level features, etc).
+A backend software, self-hostable and ready to use to power modern apps.
 
 You can access the Kuzzle repository on [Github](https://github.com/kuzzleio/kuzzle)
 
-
 ## SDK Documentation
 
-The complete SDK documentation is available [here](http://kuzzle.io/sdk-documentation)
+The complete SDK documentation is available [here](http://docs.kuzzle.io/sdk-reference)
 
 ## Report an issue
 
@@ -92,20 +89,15 @@ myCollection.subscribe(options);
 ## Prerequisite
 
 To login using kuzzle you need at least one authentication plugin. You can refer [here](https://github.com/kuzzleio/kuzzle-plugin-auth-passport-local) for a local authentication plugin
-or [here](https://github.com/kuzzleio/kuzzle-plugin-auth-github) to refer to an OAuth plugin with github.
+or [here](https://github.com/kuzzleio/kuzzle-plugin-auth-passport-oauth) to refer to our OAuth2 plugin.
 
-## Login with local strategy
+To know more about how to log in with a Kuzzle SDK, please refer to our [documentation](http://docs.kuzzle.io/sdk-reference/kuzzle/login/)
 
 If you have the kuzzle-plugin-auth-passport-local installed you can login using either the Kuzzle's constructor or the login method.
 
-```java
-KuzzleOptions options = new KuzzleOptions();
-kuzzle = new Kuzzle("localhost", options);
-```
+### Login with an OAuth strategy
 
-## Login with an OAuth strategy
-
-If you have an OAUTH plugin like kuzzle-plugin-auth-passport-oauth you can login and use the KuzzleWebViewClient to make it easier to handle.
+If you have an OAUTH plugin like kuzzle-plugin-auth-passport-oauth, you may use the KuzzleWebViewClient class to handle the second authentication phase:
 
 ```java
 Handler handler = new Handler();
