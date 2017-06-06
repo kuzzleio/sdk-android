@@ -1,6 +1,5 @@
 package io.kuzzle.test.core.KuzzleDataCollection;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -36,6 +35,7 @@ public class mReplaceDocumentTest {
     private Kuzzle kuzzle;
     private Collection collection;
     private ResponseListener listener;
+    private Document[] documents;
 
     @Before
     public void setUp() throws URISyntaxException {
@@ -50,29 +50,40 @@ public class mReplaceDocumentTest {
 
         collection = new Collection(kuzzle, "test", "index");
         listener = mock(ResponseListener.class);
+
+        try {
+            documents = new Document[]{
+                new Document(collection, "foo"),
+                new Document(collection, "bar")
+            };
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
     public void checkMReplaceDocumentSignaturesVariants() throws JSONException {
         collection = spy(collection);
 
-        collection.mReplaceDocument(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
-        collection.mReplaceDocument(new JSONArray().put("foo").put("bar"), listener);
-        collection.mReplaceDocument(new JSONArray().put("foo").put("bar"), mock(Options.class));
-        collection.mReplaceDocument(new JSONArray().put("foo").put("bar"));
+        collection.mReplaceDocument(documents, mock(Options.class), listener);
+        collection.mReplaceDocument(documents, listener);
+        collection.mReplaceDocument(documents, mock(Options.class));
+        collection.mReplaceDocument(documents);
 
-        verify(collection, times(4)).mReplaceDocument(any(JSONArray.class), any(Options.class), any(ResponseListener.class));
+        verify(collection, times(4)).mReplaceDocument(any(Document[].class), any(Options.class), any(ResponseListener.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testMReplaceDocumentIllegalArgument() throws JSONException {
-        collection.mReplaceDocument(new JSONArray(), listener);
+        documents = new Document[]{};
+        collection.mReplaceDocument(documents, listener);
     }
 
     @Test(expected = RuntimeException.class)
     public void testMReplaceDocumentQueryException() throws JSONException {
+        documents = new Document[]{};
         doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-        collection.mReplaceDocument(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
+        collection.mReplaceDocument(documents, mock(Options.class), listener);
     }
 
     @Test(expected = RuntimeException.class)
@@ -85,7 +96,7 @@ public class mReplaceDocumentTest {
             }
         }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
         doThrow(JSONException.class).when(listener).onSuccess(any(String.class));
-        collection.mReplaceDocument(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
+        collection.mReplaceDocument(documents, mock(Options.class), listener);
     }
 
     @Test
@@ -106,8 +117,8 @@ public class mReplaceDocumentTest {
         }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
         Document doc = new Document(collection);
         doc.setContent("foo", "bar");
-        collection.mReplaceDocument(new JSONArray().put("foo").put("bar"), listener);
-        collection.mReplaceDocument(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
+        collection.mReplaceDocument(documents, listener);
+        collection.mReplaceDocument(documents, mock(Options.class), listener);
         ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
         verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
         assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");

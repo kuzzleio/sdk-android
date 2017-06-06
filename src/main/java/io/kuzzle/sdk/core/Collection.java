@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -238,16 +239,16 @@ public class Collection {
   }
 
   /**
-   * Returns the provided JSONArray of documents with each entry being serialized
+   * Returns the provided array of Documents with each one being serialized
    *
    * @param documents Array of documents
    * @return JSONArray A list of serialized documents
    */
-  public JSONArray serializeDocuments(JSONArray documents) throws JSONException {
+  private JSONArray serializeDocuments(Document[] documents) throws JSONException {
     JSONArray serializedDocuments = new JSONArray();
 
-    for (int i = 0; i < documents.length(); i++) {
-      serializedDocuments.put((documents.get(i) instanceof Document) ? ((Document) documents.get(i)).serialize() : documents.get(i));
+    for (Document document : documents) {
+      serializedDocuments.put(document.serialize());
     }
 
     return serializedDocuments;
@@ -968,8 +969,8 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mCreateDocument(final JSONArray documents, final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
-    if (documents.length() == 0) {
+  public Collection mCreateDocument(final Document[] documents, final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
+    if (documents.length == 0) {
       throw new IllegalArgumentException("Collection.mCreateDocument: The document array should not be empty");
     }
 
@@ -1013,7 +1014,7 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mCreateDocument(final JSONArray documents, final ResponseListener<JSONObject> listener) throws JSONException {
+  public Collection mCreateDocument(final Document[] documents, final ResponseListener<JSONObject> listener) throws JSONException {
     return this.mCreateDocument(documents, new Options(), listener);
   }
 
@@ -1024,7 +1025,7 @@ public class Collection {
    * @param options Optional parameters
    * @return Collection kuzzle data collection
    */
-  public Collection mCreateDocument(final JSONArray documents, Options options) throws JSONException {
+  public Collection mCreateDocument(final Document[] documents, Options options) throws JSONException {
     return this.mCreateDocument(documents, options, null);
   }
 
@@ -1034,7 +1035,7 @@ public class Collection {
    * @param documents Array of documents to create
    * @return Collection kuzzle data collection
    */
-  public Collection mCreateDocument(final JSONArray documents) throws JSONException {
+  public Collection mCreateDocument(final Document[] documents) throws JSONException {
     return this.mCreateDocument(documents, new Options(), null);
   }
 
@@ -1046,8 +1047,8 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mCreateOrReplaceDocument(final JSONArray documents, final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
-    if (documents.length() == 0) {
+  public Collection mCreateOrReplaceDocument(final Document[] documents, final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
+    if (documents.length == 0) {
       throw new IllegalArgumentException("Collection.mCreateOrReplaceDocument: The document array should not be empty");
     }
 
@@ -1091,7 +1092,7 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mCreateOrReplaceDocument(final JSONArray documents, final ResponseListener<JSONObject> listener) throws JSONException {
+  public Collection mCreateOrReplaceDocument(final Document[] documents, final ResponseListener<JSONObject> listener) throws JSONException {
     return this.mCreateOrReplaceDocument(documents, new Options(), listener);
   }
 
@@ -1102,7 +1103,7 @@ public class Collection {
    * @param options Optional parameters
    * @return Collection kuzzle data collection
    */
-  public Collection mCreateOrReplaceDocument(final JSONArray documents, Options options) throws JSONException {
+  public Collection mCreateOrReplaceDocument(final Document[] documents, Options options) throws JSONException {
     return this.mCreateOrReplaceDocument(documents, options, null);
   }
 
@@ -1112,26 +1113,26 @@ public class Collection {
    * @param documents Array of documents to create or replace
    * @return Collection kuzzle data collection
    */
-  public Collection mCreateOrReplaceDocument(final JSONArray documents) throws JSONException {
+  public Collection mCreateOrReplaceDocument(final Document[] documents) throws JSONException {
     return this.mCreateOrReplaceDocument(documents, new Options(), null);
   }
 
   /**
    * Delete specific documents according to given IDs
    *
-   * @param documentIds IDs of documents to delete
+   * @param documentIds Array of IDs of documents to delete
    * @param options Optional parameters
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mDeleteDocument(final JSONArray documentIds, final Options options, final ResponseListener<JSONArray> listener) throws JSONException {
-    if (documentIds.length() == 0) {
+  public Collection mDeleteDocument(final String[] documentIds, final Options options, final ResponseListener<JSONArray> listener) throws JSONException {
+    if (documentIds.length == 0) {
       throw new IllegalArgumentException("Collection.mDeleteDocument: The document IDs array should not be empty");
     }
 
     JSONObject data = new JSONObject()
       .put("body", new JSONObject()
-        .put("ids", documentIds)
+        .put("ids", new JSONArray(Arrays.asList(documentIds)))
       );
 
     try {
@@ -1165,50 +1166,50 @@ public class Collection {
   /**
    * Delete specific documents according to given IDs
    *
-   * @param documentIds IDs of documents to delete
+   * @param documentIds Array of IDs of documents to delete
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mDeleteDocument(final JSONArray documentIds, final ResponseListener<JSONArray> listener) throws JSONException {
+  public Collection mDeleteDocument(final String[] documentIds, final ResponseListener<JSONArray> listener) throws JSONException {
     return this.mDeleteDocument(documentIds, new Options(), listener);
   }
 
   /**
    * Delete specific documents according to given IDs
    *
-   * @param documentIds IDs of documents to delete
+   * @param documentIds Array of IDs of documents to delete
    * @param options Optional parameters
    * @return Collection kuzzle data collection
    */
-  public Collection mDeleteDocument(final JSONArray documentIds, Options options) throws JSONException {
+  public Collection mDeleteDocument(final String[] documentIds, Options options) throws JSONException {
     return this.mDeleteDocument(documentIds, options, null);
   }
 
   /**
    * Delete specific documents according to given IDs
    *
-   * @param documentIds IDs of documents to delete
+   * @param documentIds Array of IDs of documents to delete
    * @return Collection kuzzle data collection
    */
-  public Collection mDeleteDocument(final JSONArray documentIds) throws JSONException {
+  public Collection mDeleteDocument(final String[] documentIds) throws JSONException {
     return this.mDeleteDocument(documentIds, new Options(), null);
   }
 
   /**
    * Get specific documents according to given IDs
    *
-   * @param documentIds IDs of documents to retrieve
+   * @param documentIds Array of IDs of documents to retrieve
    * @param options Optional parameters
    * @param listener Response callback
    */
-  public void mGetDocument(final JSONArray documentIds, final Options options, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
-    if (documentIds.length() == 0) {
+  public void mGetDocument(final String[] documentIds, final Options options, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
+    if (documentIds.length == 0) {
       throw new IllegalArgumentException("Collection.mGetDocument: The document IDs array should not be empty");
     }
 
     JSONObject data = new JSONObject()
       .put("body", new JSONObject()
-        .put("ids", documentIds)
+        .put("ids", new JSONArray(Arrays.asList(documentIds)))
       );
 
     try {
@@ -1236,10 +1237,10 @@ public class Collection {
   /**
    * Get specific documents according to given IDs
    *
-   * @param documentIds IDs of documents to retrieve
+   * @param documentIds Array IDs of documents to retrieve
    * @param listener Response callback
    */
-  public void mGetDocument(final JSONArray documentIds, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
+  public void mGetDocument(final String[] documentIds, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
     this.mGetDocument(documentIds, new Options(), listener);
   }
 
@@ -1251,8 +1252,8 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mReplaceDocument(final JSONArray documents, final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
-    if (documents.length() == 0) {
+  public Collection mReplaceDocument(final Document[] documents, final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
+    if (documents.length == 0) {
       throw new IllegalArgumentException("Collection.mReplaceDocument: The document array should not be empty");
     }
 
@@ -1296,7 +1297,7 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mReplaceDocument(final JSONArray documents, final ResponseListener<JSONObject> listener) throws JSONException {
+  public Collection mReplaceDocument(final Document[] documents, final ResponseListener<JSONObject> listener) throws JSONException {
     return this.mReplaceDocument(documents, new Options(), listener);
   }
 
@@ -1307,7 +1308,7 @@ public class Collection {
    * @param options Optional parameters
    * @return Collection kuzzle data collection
    */
-  public Collection mReplaceDocument(final JSONArray documents, Options options) throws JSONException {
+  public Collection mReplaceDocument(final Document[] documents, Options options) throws JSONException {
     return this.mReplaceDocument(documents, options, null);
   }
 
@@ -1317,7 +1318,7 @@ public class Collection {
    * @param documents Array of documents to replace
    * @return Collection kuzzle data collection
    */
-  public Collection mReplaceDocument(final JSONArray documents) throws JSONException {
+  public Collection mReplaceDocument(final Document[] documents) throws JSONException {
     return this.mReplaceDocument(documents, new Options(), null);
   }
 
@@ -1329,8 +1330,8 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mUpdateDocument(final JSONArray documents, final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
-    if (documents.length() == 0) {
+  public Collection mUpdateDocument(final Document[] documents, final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
+    if (documents.length == 0) {
       throw new IllegalArgumentException("Collection.mUpdateDocument: The document array should not be empty");
     }
 
@@ -1374,7 +1375,7 @@ public class Collection {
    * @param listener Response callback
    * @return Collection kuzzle data collection
    */
-  public Collection mUpdateDocument(final JSONArray documents, final ResponseListener<JSONObject> listener) throws JSONException {
+  public Collection mUpdateDocument(final Document[] documents, final ResponseListener<JSONObject> listener) throws JSONException {
     return this.mUpdateDocument(documents, new Options(), listener);
   }
 
@@ -1385,7 +1386,7 @@ public class Collection {
    * @param options Optional parameters
    * @return Collection kuzzle data collection
    */
-  public Collection mUpdateDocument(final JSONArray documents, Options options) throws JSONException {
+  public Collection mUpdateDocument(final Document[] documents, Options options) throws JSONException {
     return this.mUpdateDocument(documents, options, null);
   }
 
@@ -1395,7 +1396,7 @@ public class Collection {
    * @param documents Array of documents to update
    * @return Collection kuzzle data collection
    */
-  public Collection mUpdateDocument(final JSONArray documents) throws JSONException {
+  public Collection mUpdateDocument(final Document[] documents) throws JSONException {
     return this.mUpdateDocument(documents, new Options(), null);
   }
 

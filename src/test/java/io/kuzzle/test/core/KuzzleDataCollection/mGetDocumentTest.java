@@ -35,6 +35,7 @@ public class mGetDocumentTest {
     private Kuzzle kuzzle;
     private Collection collection;
     private ResponseListener listener;
+    private String[] documentIds;
 
     @Before
     public void setUp() throws URISyntaxException {
@@ -49,27 +50,31 @@ public class mGetDocumentTest {
 
         collection = new Collection(kuzzle, "test", "index");
         listener = mock(ResponseListener.class);
+
+        documentIds = new String[]{"foo", "bar"};
     }
 
     @Test
     public void checkMGetDocumentSignaturesVariants() throws JSONException {
         collection = spy(collection);
 
-        collection.mGetDocument(new JSONArray().put("foo").put("bar"), mock(Options.class), listener);
-        collection.mGetDocument(new JSONArray().put("foo").put("bar"), listener);
+        collection.mGetDocument(documentIds, mock(Options.class), listener);
+        collection.mGetDocument(documentIds, listener);
 
-        verify(collection, times(2)).mGetDocument(any(JSONArray.class), any(Options.class), any(ResponseListener.class));
+        verify(collection, times(2)).mGetDocument(any(String[].class), any(Options.class), any(ResponseListener.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testMGetDocumentIllegalArgument() throws JSONException {
-        collection.mGetDocument(new JSONArray(), listener);
+        documentIds = new String[]{};
+        collection.mGetDocument(documentIds, listener);
     }
 
     @Test(expected = RuntimeException.class)
     public void testMGetQueryException() throws JSONException {
+        documentIds = new String[]{};
         doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-        collection.mGetDocument(new JSONArray().put("foo").put("bar"), listener);
+        collection.mGetDocument(documentIds, listener);
     }
 
     @Test(expected = RuntimeException.class)
@@ -82,7 +87,7 @@ public class mGetDocumentTest {
             }
         }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
         doThrow(JSONException.class).when(listener).onSuccess(any(String.class));
-        collection.mGetDocument(new JSONArray().put("foo").put("bar"), listener);
+        collection.mGetDocument(documentIds, listener);
     }
 
     @Test
@@ -111,8 +116,8 @@ public class mGetDocumentTest {
                 return null;
             }
         }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-        collection.mGetDocument(new JSONArray().put("foo").put("bar"), mock(ResponseListener.class));
-        collection.mGetDocument(new JSONArray().put("foo").put("bar"), new Options(), mock(ResponseListener.class));
+        collection.mGetDocument(documentIds, mock(ResponseListener.class));
+        collection.mGetDocument(documentIds, new Options(), mock(ResponseListener.class));
         ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
         verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
         assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");

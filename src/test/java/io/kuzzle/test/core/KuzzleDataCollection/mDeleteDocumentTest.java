@@ -35,6 +35,7 @@ public class mDeleteDocumentTest {
     private Kuzzle kuzzle;
     private KuzzleDataCollectionExtend collection;
     private ResponseListener listener;
+    private String[] documentIds;
 
     @Before
     public void setUp() throws URISyntaxException {
@@ -49,6 +50,8 @@ public class mDeleteDocumentTest {
 
         collection = new KuzzleDataCollectionExtend(kuzzle, "index", "test");
         listener = mock(ResponseListener.class);
+
+        documentIds = new String[]{"foo", "bar"};
     }
 
     @Test
@@ -56,23 +59,25 @@ public class mDeleteDocumentTest {
         Options opts = mock(Options.class);
         collection = spy(collection);
 
-        collection.mDeleteDocument(new JSONArray().put("foo").put("bar"), opts, listener);
-        collection.mDeleteDocument(new JSONArray().put("foo").put("bar"), listener);
-        collection.mDeleteDocument(new JSONArray().put("foo").put("bar"), opts);
-        collection.mDeleteDocument(new JSONArray().put("foo").put("bar"));
+        collection.mDeleteDocument(documentIds, opts, listener);
+        collection.mDeleteDocument(documentIds, listener);
+        collection.mDeleteDocument(documentIds, opts);
+        collection.mDeleteDocument(documentIds);
 
-        verify(collection, times(4)).mDeleteDocument(any(JSONArray.class), any(Options.class), any(ResponseListener.class));
+        verify(collection, times(4)).mDeleteDocument(any(String[].class), any(Options.class), any(ResponseListener.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testMDeleteDocumentIllegalArgument() throws JSONException {
-        collection.mDeleteDocument(new JSONArray(), listener);
+        documentIds = new String[]{};
+        collection.mDeleteDocument(documentIds, listener);
     }
 
     @Test(expected = RuntimeException.class)
     public void testMDeleteDocumentQueryException() throws JSONException {
+        documentIds = new String[]{};
         doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-        collection.mDeleteDocument(new JSONArray().put("foo").put("bar"), listener);
+        collection.mDeleteDocument(documentIds, listener);
     }
 
     @Test(expected = RuntimeException.class)
@@ -85,7 +90,7 @@ public class mDeleteDocumentTest {
             }
         }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
         doThrow(JSONException.class).when(listener).onSuccess(any(String.class));
-        collection.mDeleteDocument(new JSONArray().put("foo").put("bar"), listener);
+        collection.mDeleteDocument(documentIds, listener);
     }
 
     @Test
@@ -98,7 +103,7 @@ public class mDeleteDocumentTest {
                 return null;
             }
         }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-        collection.mDeleteDocument(new JSONArray().put("foo").put("bar"), listener);
+        collection.mDeleteDocument(documentIds, listener);
         ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
         verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
         assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");
