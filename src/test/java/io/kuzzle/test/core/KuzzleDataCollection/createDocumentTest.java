@@ -113,7 +113,8 @@ public class createDocumentTest {
           .put("result", new JSONObject()
             .put("_id", "foo")
             .put("_version", 1337)
-            .put("_source", new JSONObject()));
+            .put("_source", new JSONObject())
+            .put("_meta", new JSONObject()));
 
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(result);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));

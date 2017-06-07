@@ -1,6 +1,5 @@
 package io.kuzzle.test.security.KuzzleSecurity;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -11,15 +10,14 @@ import io.kuzzle.sdk.enums.Policies;
 import io.kuzzle.sdk.security.Security;
 
 import static junit.framework.Assert.assertEquals;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 public class isActionAllowedTest {
-
-  private Kuzzle kuzzle;
   private Security kuzzleSecurity;
-  private JSONArray policies;
+  private JSONObject[] policies;
 
   private JSONObject addProperties(final String ctrl, final String action, final String idx, final String collection, final String value) throws JSONException {
     return new JSONObject()
@@ -32,21 +30,22 @@ public class isActionAllowedTest {
 
   @Before
   public void setUp() throws JSONException {
-    kuzzle = mock(Kuzzle.class);
+    Kuzzle kuzzle = mock(Kuzzle.class);
     kuzzleSecurity = new Security(kuzzle);
-    policies = new JSONArray()
-        .put(addProperties("document", "get", "*", "*", Policies.allowed.toString()))
-        .put(addProperties("document", "count", "*", "*", Policies.allowed.toString()))
-        .put(addProperties("document", "search", "*", "*", Policies.allowed.toString()))
-        .put(addProperties("document", "*", "index1", "collection1", Policies.allowed.toString()))
-        .put(addProperties("document", "*", "index1", "collection2", Policies.allowed.toString()))
-        .put(addProperties("document", "update", "*", "*", Policies.allowed.toString()))
-        .put(addProperties("document", "create", "*", "*", Policies.allowed.toString()))
-        .put(addProperties("document", "createOrReplace", "*", "*", Policies.allowed.toString()))
-        .put(addProperties("document", "delete", "*", "*", Policies.conditional.toString()))
-        .put(addProperties("realtime", "publish", "index2", "*", Policies.allowed.toString()))
-        .put(addProperties("security", "searchUsers", "*", "*", Policies.allowed.toString()))
-        .put(addProperties("security", "updateUser", "*", "*", Policies.conditional.toString()));
+    policies = new JSONObject[]{
+      addProperties("document", "get", "*", "*", Policies.allowed.toString()),
+      addProperties("document", "count", "*", "*", Policies.allowed.toString()),
+      addProperties("document", "search", "*", "*", Policies.allowed.toString()),
+      addProperties("document", "*", "index1", "collection1", Policies.allowed.toString()),
+      addProperties("document", "*", "index1", "collection2", Policies.allowed.toString()),
+      addProperties("document", "update", "*", "*", Policies.allowed.toString()),
+      addProperties("document", "create", "*", "*", Policies.allowed.toString()),
+      addProperties("document", "createOrReplace", "*", "*", Policies.allowed.toString()),
+      addProperties("document", "delete", "*", "*", Policies.conditional.toString()),
+      addProperties("realtime", "publish", "index2", "*", Policies.allowed.toString()),
+      addProperties("security", "searchUsers", "*", "*", Policies.allowed.toString()),
+      addProperties("security", "updateUser", "*", "*", Policies.conditional.toString())
+    };
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -115,9 +114,9 @@ public class isActionAllowedTest {
   }
 
   @Test(expected = RuntimeException.class)
-  public void testJsonException() {
-    policies = spy(policies);
-    doThrow(JSONException.class).when(policies).length();
+  public void testJsonException() throws JSONException {
+    JSONObject spy = spy(policies[0]);
+    doThrow(JSONException.class).when(spy.getString(any(String.class)));
     kuzzleSecurity.isActionAllowed(policies, "document", "delete", "index1", "collection1");
   }
 

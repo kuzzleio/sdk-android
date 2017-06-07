@@ -108,7 +108,7 @@ public class Collection {
 
             for (int i = 0; i < hits.length(); i++) {
               JSONObject hit = hits.getJSONObject(i);
-              Document doc = new Document(Collection.this, hit.getString("_id"), hit.getJSONObject("_source"));
+              Document doc = new Document(Collection.this, hit.getString("_id"), hit.getJSONObject("_source"), hit.getJSONObject("_meta"));
 
               docs.add(doc);
             }
@@ -186,7 +186,7 @@ public class Collection {
 
             for (int i = 0; i < hits.length(); i++) {
               JSONObject hit = hits.getJSONObject(i);
-              Document doc = new Document(Collection.this, hit.getString("_id"), hit.getJSONObject("_source"));
+              Document doc = new Document(Collection.this, hit.getString("_id"), hit.getJSONObject("_source"), hit.getJSONObject("_meta"));
 
               docs.add(doc);
             }
@@ -525,7 +525,7 @@ public class Collection {
           if (listener != null) {
             try {
               JSONObject result = response.getJSONObject("result");
-              Document document = new Document(Collection.this, result.getString("_id"), result.getJSONObject("_source"));
+              Document document = new Document(Collection.this, result.getString("_id"), result.getJSONObject("_source"), result.getJSONObject("_meta"));
               document.setVersion(result.getLong("_version"));
               listener.onSuccess(document);
             } catch (JSONException e) {
@@ -867,59 +867,6 @@ public class Collection {
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  /**
-   * Retrieves all documents stored in this data collection.
-   *
-   * @param listener the listener
-   */
-  public void fetchAllDocuments(@NonNull final ResponseListener<ArrayList<Document>> listener) {
-    this.fetchAllDocuments(new Options(), listener);
-  }
-
-  /**
-   * Retrieves all documents stored in this data collection.
-   *
-   * @param options  the options
-   * @param listener the listener
-   */
-  public void fetchAllDocuments(final Options options, @NonNull final ResponseListener<ArrayList<Document>> listener) {
-    final ArrayList<Document> documents = new ArrayList<Document>();
-    JSONObject filters = new JSONObject();
-
-    if (listener == null) {
-      throw new IllegalArgumentException("Collection.fetchAllDocuments: listener required");
-    }
-
-    if (options.getFrom() == null) {
-      options.setFrom((long) 0);
-    }
-
-    if (options.getSize() == null) {
-      options.setSize((long) 1000);
-    }
-
-    this.search(filters, options, new ResponseListener<SearchResult>() {
-      @Override
-      public void onSuccess(SearchResult response) {
-        if (response != null) {
-          for (int i = 0; i < response.getDocuments().size(); i++) {
-            documents.add(response.getDocuments().get(i));
-          }
-
-          response.fetchNext(this);
-        }
-        else {
-          listener.onSuccess(documents);
-        }
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-        listener.onError(error);
-      }
-    });
   }
 
   /**

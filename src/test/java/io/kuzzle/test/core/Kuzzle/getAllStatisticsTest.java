@@ -1,6 +1,5 @@
 package io.kuzzle.test.core.Kuzzle;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -14,7 +13,6 @@ import java.util.Iterator;
 
 import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
-import io.kuzzle.sdk.enums.State;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.States;
@@ -127,14 +125,14 @@ public class getAllStatisticsTest {
         return null;
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    kuzzle.getAllStatistics(new ResponseListener<JSONArray>() {
+    kuzzle.getAllStatistics(new ResponseListener<JSONObject[]>() {
       @Override
-      public void onSuccess(JSONArray result) {
+      public void onSuccess(JSONObject[] result) {
         try {
-          for (int i = 0; i < result.length(); i++) {
-            for (Iterator ite = result.getJSONObject(i).keys(); ite.hasNext(); ) {
+          for (int i = 0; i < result.length; i++) {
+            for (Iterator ite = result[i].keys(); ite.hasNext(); ) {
               String key = (String) ite.next();
-              assertEquals(result.getJSONObject(i).get(key), response.getJSONArray("hits").getJSONObject(i).get(key));
+              assertEquals(result[i].get(key), response.getJSONArray("hits").getJSONObject(i).get(key));
             }
           }
         } catch (JSONException e) {
@@ -166,9 +164,9 @@ public class getAllStatisticsTest {
         return null;
       }
     }).when(kuzzle).query(eq(QueryArgsHelper.makeQueryArgs("server", "getAllStats")), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    kuzzle.getAllStatistics(new ResponseListener<JSONArray>() {
+    kuzzle.getAllStatistics(new ResponseListener<JSONObject[]>() {
       @Override
-      public void onSuccess(JSONArray object) {
+      public void onSuccess(JSONObject[] object) {
       }
 
       @Override

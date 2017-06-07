@@ -105,6 +105,7 @@ public class updateDocumentTest {
               .put("_id", "42")
               .put("_version", 1337)
               .put("_source", new JSONObject())
+              .put("_meta", new JSONObject())
           );
         if (invocation.getArguments()[3] != null) {
           ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);

@@ -116,6 +116,9 @@ public class scrollTest {
           "          \"status\": \"idle\",\n" +
           "          \"type\": \"customer\"\n" +
           "        },\n" +
+          "        \"_meta\": {\n" +
+          "          \"author\": \"foo\"\n" +
+          "        },\n" +
           "        \"_type\": \"users\"\n" +
           "      },\n" +
           "      {\n" +
@@ -130,6 +133,9 @@ public class scrollTest {
           "          \"sibling\": \"none\",\n" +
           "          \"status\": \"idle\",\n" +
           "          \"type\": \"cab\"\n" +
+          "        },\n" +
+          "        \"_meta\": {\n" +
+          "          \"author\": \"foo\"\n" +
           "        },\n" +
           "        \"_type\": \"users\"\n" +
           "      }\n" +
