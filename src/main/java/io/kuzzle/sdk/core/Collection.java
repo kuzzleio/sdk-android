@@ -870,59 +870,6 @@ public class Collection {
   }
 
   /**
-   * Retrieves all documents stored in this data collection.
-   *
-   * @param listener the listener
-   */
-  public void fetchAllDocuments(@NonNull final ResponseListener<ArrayList<Document>> listener) {
-    this.fetchAllDocuments(new Options(), listener);
-  }
-
-  /**
-   * Retrieves all documents stored in this data collection.
-   *
-   * @param options  the options
-   * @param listener the listener
-   */
-  public void fetchAllDocuments(final Options options, @NonNull final ResponseListener<ArrayList<Document>> listener) {
-    final ArrayList<Document> documents = new ArrayList<Document>();
-    JSONObject filters = new JSONObject();
-
-    if (listener == null) {
-      throw new IllegalArgumentException("Collection.fetchAllDocuments: listener required");
-    }
-
-    if (options.getFrom() == null) {
-      options.setFrom((long) 0);
-    }
-
-    if (options.getSize() == null) {
-      options.setSize((long) 1000);
-    }
-
-    this.search(filters, options, new ResponseListener<SearchResult>() {
-      @Override
-      public void onSuccess(SearchResult response) {
-        if (response != null) {
-          for (int i = 0; i < response.getDocuments().size(); i++) {
-            documents.add(response.getDocuments().get(i));
-          }
-
-          response.fetchNext(this);
-        }
-        else {
-          listener.onSuccess(documents);
-        }
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-        listener.onError(error);
-      }
-    });
-  }
-
-  /**
    * Instantiates a CollectionMapping object containing the current mapping of this collection.
    *
    * @param listener the listener
