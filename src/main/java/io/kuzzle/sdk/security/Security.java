@@ -38,7 +38,7 @@ public class Security {
    * @return JSONObject - Kuzzle.query() 1st argument object
    * @throws JSONException the json exception
    */
-  protected io.kuzzle.sdk.core.Kuzzle.QueryArgs buildQueryArgs(final String controller, @NonNull final String action) throws JSONException {
+  protected Kuzzle.QueryArgs buildQueryArgs(final String controller, @NonNull final String action) throws JSONException {
     io.kuzzle.sdk.core.Kuzzle.QueryArgs args = new io.kuzzle.sdk.core.Kuzzle.QueryArgs();
     args.action = action;
     args.controller = "security";
@@ -49,7 +49,7 @@ public class Security {
     return args;
   }
 
-  protected io.kuzzle.sdk.core.Kuzzle.QueryArgs buildQueryArgs(@NonNull final String action) throws JSONException {
+  protected Kuzzle.QueryArgs buildQueryArgs(@NonNull final String action) throws JSONException {
     return buildQueryArgs(null, action);
   }
 
@@ -1456,7 +1456,7 @@ public class Security {
    * @param listener
    * @return the Security instance
    */
-  public Security getUserRights(@NonNull final String id, @NonNull final ResponseListener<JSONArray> listener) {
+  public Security getUserRights(@NonNull final String id, @NonNull final ResponseListener<JSONObject[]> listener) {
     return getUserRights(id, null, listener);
   }
 
@@ -1468,7 +1468,7 @@ public class Security {
    * @param listener
    * @return the Security instance
    */
-  public Security getUserRights(@NonNull final String id, final Options options, @NonNull final ResponseListener<JSONArray> listener) {
+  public Security getUserRights(@NonNull final String id, final Options options, @NonNull final ResponseListener<JSONObject[]> listener) {
     if (id == null || id.isEmpty()) {
       throw new IllegalArgumentException("Security.getUserRights: id is mandatory.");
     }
@@ -1482,7 +1482,13 @@ public class Security {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(response.getJSONObject("result").getJSONArray("hits"));
+            JSONArray array = response.getJSONObject("result").getJSONArray("hits");
+            int length = array.length();
+            JSONObject[] rights = new JSONObject[length];
+            for (int i = 0; i < length; i++) {
+              rights[i] = array.getJSONObject(i);
+            }
+            listener.onSuccess(rights);
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
@@ -1702,7 +1708,7 @@ public class Security {
    * @param listener
    * @return
    */
-  public void getCredentialFields(@NonNull final String strategy, @NonNull final ResponseListener<JSONArray> listener) {
+  public void getCredentialFields(@NonNull final String strategy, @NonNull final ResponseListener<String[]> listener) {
     getCredentialFields(strategy, null, listener);
   }
 
@@ -1714,7 +1720,7 @@ public class Security {
    * @param listener
    * @return
    */
-  public void getCredentialFields(@NonNull final String strategy, final Options options, @NonNull final ResponseListener<JSONArray> listener) {
+  public void getCredentialFields(@NonNull final String strategy, final Options options, @NonNull final ResponseListener<String[]> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Security.getAllCredentialFields: listener is mandatory.");
     }
@@ -1725,7 +1731,13 @@ public class Security {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(response.getJSONArray("result"));
+            JSONArray array = response.getJSONObject("result").getJSONArray("hits");
+            int length = array.length();
+            String[] fields = new String[length];
+            for (int i = 0; i < length; i++) {
+              fields[i] = array.getString(i);
+            }
+            listener.onSuccess(fields);
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }

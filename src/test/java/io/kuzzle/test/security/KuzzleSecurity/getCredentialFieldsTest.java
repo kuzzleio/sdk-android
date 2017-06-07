@@ -71,7 +71,7 @@ public class getCredentialFieldsTest {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
         if (invocation.getArguments()[3] != null) {
-          ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONArray()));
+          ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", new JSONObject().put("hits", new JSONArray())));
           ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         }
         return null;
