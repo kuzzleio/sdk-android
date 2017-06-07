@@ -56,12 +56,12 @@ public class Options {
   private boolean alpha = false;
   private String by = null;
   private String direction = null;
-  private JSONArray get = null;
-  private JSONArray limit = null;
+  private String[] get = null;
+  private Integer[] limit = null;
   private boolean ch = false;
   private boolean incr = false;
   private String aggregate = null;
-  private JSONArray weights = null;
+  private Integer[] weights = null;
 
   // Used for getting collections
   private CollectionType collectionType = CollectionType.ALL;
@@ -651,20 +651,20 @@ public class Options {
     return this;
   }
 
-  public JSONArray getGet() {
+  public String[] getGet() {
     return get;
   }
 
-  public Options setGet(JSONArray get) {
+  public Options setGet(String[] get) {
     this.get = get;
     return this;
   }
 
-  public JSONArray getLimit() {
+  public Integer[] getLimit() {
     return limit;
   }
 
-  public Options setLimit(JSONArray limit) {
+  public Options setLimit(Integer[] limit) {
     this.limit = limit;
     return this;
   }
@@ -696,11 +696,11 @@ public class Options {
     return this;
   }
 
-  public JSONArray getWeights() {
+  public Integer[] getWeights() {
     return weights;
   }
 
-  public Options setWeights(JSONArray weights) {
+  public Options setWeights(Integer[] weights) {
     this.weights = weights;
     return this;
   }

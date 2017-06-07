@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
@@ -597,19 +598,21 @@ public class Security {
    * Replace the existing profile otherwise
    *
    * @param id       - ID of the new profile
-   * @param content  - Should contain a 'roles' attributes containing the roles referenced by this profile
+   * @param policies  - list of policies attached to the new profile
    * @param options  - Optional arguments
    * @param listener - Callback lisener
    * @throws JSONException the json exception
    */
-  public void createProfile(@NonNull final String id, @NonNull final JSONArray content, final Options options, final ResponseListener<Profile> listener) throws JSONException {
+  public void createProfile(@NonNull final String id, @NonNull final JSONObject[] policies, final Options options, final ResponseListener<Profile> listener) throws JSONException {
     String action = "createProfile";
 
-    if (id == null || content == null) {
-      throw new IllegalArgumentException("Security.createProfile: cannot create a profile with null ID or roles");
+    if (id == null || policies == null) {
+      throw new IllegalArgumentException("Security.createProfile: cannot create a profile with null ID or policies");
     }
 
-    JSONObject data = new JSONObject().put("_id", id).put("body", new JSONObject().put("roles", content));
+    JSONObject data = new JSONObject()
+      .put("_id", id)
+      .put("body", new JSONObject().put("policies", new JSONArray(Arrays.asList(policies))));
 
     if (options != null && options.isReplaceIfExist()) {
       action = "createOrReplaceProfile";
@@ -647,12 +650,12 @@ public class Security {
    * Replace the existing profile otherwise
    *
    * @param id      - ID of the new profile
-   * @param content - Should contain a 'roles' attributes containing the roles referenced by this profile
+   * @param policies  - list of policies attached to the new profile
    * @param options - Optional arguments
    * @throws JSONException the json exception
    */
-  public void createProfile(@NonNull final String id, @NonNull final JSONArray content, final Options options) throws JSONException {
-    createProfile(id, content, options, null);
+  public void createProfile(@NonNull final String id, @NonNull final JSONObject[] policies, final Options options) throws JSONException {
+    createProfile(id, policies, options, null);
   }
 
   /**
@@ -663,12 +666,12 @@ public class Security {
    * Replace the existing profile otherwise
    *
    * @param id       - ID of the new profile
-   * @param content  - Should contain a 'roles' attributes containing the roles referenced by this profile
+   * @param policies  - list of policies attached to the new profile
    * @param listener - Callback lisener
    * @throws JSONException the json exception
    */
-  public void createProfile(@NonNull final String id, @NonNull final JSONArray content, final ResponseListener<Profile> listener) throws JSONException {
-    createProfile(id, content, null, listener);
+  public void createProfile(@NonNull final String id, @NonNull final JSONObject[] policies, final ResponseListener<Profile> listener) throws JSONException {
+    createProfile(id, policies, null, listener);
   }
 
   /**
@@ -679,11 +682,11 @@ public class Security {
    * Replace the existing profile otherwise
    *
    * @param id      - ID of the new profile
-   * @param content - Should contain a 'roles' attributes containing the roles referenced by this profile
+   * @param policies  - list of policies attached to the new profile
    * @throws JSONException the json exception
    */
-  public void createProfile(@NonNull final String id, @NonNull final JSONArray content) throws JSONException {
-    createProfile(id, content, null, null);
+  public void createProfile(@NonNull final String id, @NonNull final JSONObject[] policies) throws JSONException {
+    createProfile(id, policies, null, null);
   }
 
   /**
@@ -836,33 +839,22 @@ public class Security {
   }
 
   /**
-   * Returns the next profiles result set with scroll query.
-   *
-   * @param scroll   - Scroll object
-   * @param listener - Callback listener
-   * @throws JSONException the json exception
-   */
-  public void scrollProfiles(Scroll scroll, final ResponseListener<SecurityDocumentList> listener) throws JSONException {
-    this.scrollProfiles(scroll, new Options(), listener);
-  }
-
-  /**
    * Update profile.
    *
    * @param id       the id
-   * @param content  the content
+   * @param policies  list of policies to apply to this profile
    * @param options  the options
    * @param listener the listener
    * @return Security this object
    * @throws JSONException the json exception
    */
-  public Security updateProfile(@NonNull final String id, final JSONObject content, final Options options, final ResponseListener<Profile> listener) throws JSONException {
+  public Security updateProfile(@NonNull final String id, final JSONObject[] policies, final Options options, final ResponseListener<Profile> listener) throws JSONException {
     if (id == null) {
       throw new IllegalArgumentException("Security.updateProfile: cannot update a profile with ID null");
     }
 
     JSONObject data = new JSONObject().put("_id", id);
-    data.put("body", content);
+    data.put("body", new JSONObject().put("policies", new JSONArray(Arrays.asList(policies))));
 
     if (listener != null) {
       this.kuzzle.query(buildQueryArgs("updateProfile"), data, options, new OnQueryDoneListener() {
@@ -890,41 +882,52 @@ public class Security {
   }
 
   /**
+   * Returns the next profiles result set with scroll query.
+   *
+   * @param scroll   - Scroll object
+   * @param listener - Callback listener
+   * @throws JSONException the json exception
+   */
+  public void scrollProfiles(Scroll scroll, final ResponseListener<SecurityDocumentList> listener) throws JSONException {
+    this.scrollProfiles(scroll, new Options(), listener);
+  }
+
+  /**
    * Update profile.
    *
    * @param id      the id
-   * @param content the content
+   * @param policies  list of policies to apply to this profile
    * @param options the options
    * @return Security this object
    * @throws JSONException the json exception
    */
-  public Security updateProfile(@NonNull final String id, final JSONObject content, final Options options) throws JSONException {
-    return updateProfile(id, content, options, null);
+  public Security updateProfile(@NonNull final String id, final JSONObject[] policies, final Options options) throws JSONException {
+    return updateProfile(id, policies, options, null);
   }
 
   /**
    * Update profile.
    *
    * @param id       the id
-   * @param content  the content
+   * @param policies  list of policies to apply to this profile
    * @param listener the listener
    * @return Security this object
    * @throws JSONException the json exception
    */
-  public Security updateProfile(@NonNull final String id, final JSONObject content, final ResponseListener<Profile> listener) throws JSONException {
-    return this.updateProfile(id, content, null, listener);
+  public Security updateProfile(@NonNull final String id, final JSONObject[] policies, final ResponseListener<Profile> listener) throws JSONException {
+    return this.updateProfile(id, policies, null, listener);
   }
 
   /**
    * Update profile.
    *
    * @param id      the id
-   * @param content the content
+   * @param policies  list of policies to apply to this profile
    * @return Security this object
    * @throws JSONException the json exception
    */
-  public Security updateProfile(@NonNull final String id, final JSONObject content) throws JSONException {
-    return updateProfile(id, content, null, null);
+  public Security updateProfile(@NonNull final String id, final JSONObject[] policies) throws JSONException {
+    return updateProfile(id, policies, null, null);
   }
 
   /**
@@ -1598,7 +1601,7 @@ public class Security {
    * @param action
    * @return the KuzzleSecurityObject
    */
-  public Policies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull final String action) {
+  public Policies isActionAllowed(@NonNull final JSONObject[] policies, @NonNull final String controller, @NonNull final String action) {
     return this.isActionAllowed(policies, controller, action, null, null);
   }
 
@@ -1613,7 +1616,7 @@ public class Security {
    * @param index
    * @return the KuzzleSecurityObject
    */
-  public Policies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull  final String action, final String index) {
+  public Policies isActionAllowed(@NonNull final JSONObject[] policies, @NonNull final String controller, @NonNull  final String action, final String index) {
     return this.isActionAllowed(policies, controller, action, index, null);
   }
 
@@ -1629,7 +1632,7 @@ public class Security {
    * @param collection
    * @return the KuzzleSecurityObject
    */
-  public Policies isActionAllowed(@NonNull final JSONArray policies, @NonNull final String controller, @NonNull final String action, final String index, final String collection) {
+  public Policies isActionAllowed(@NonNull final JSONObject[] policies, @NonNull final String controller, @NonNull final String action, final String index, final String collection) {
     if (policies == null) {
       throw new IllegalArgumentException("Security.isActionAllowed: policies are mandatory.");
     }
@@ -1640,40 +1643,42 @@ public class Security {
       throw new IllegalArgumentException("Security.isActionAllowed: action is mandatory.");
     }
 
-    JSONArray filteredPolicies;
+    JSONObject[] filteredPolicies;
     try {
       filteredPolicies = filterPolicy(policies, "controller", controller);
       filteredPolicies = filterPolicy(filteredPolicies, "action", action);
       filteredPolicies = filterPolicy(filteredPolicies, "index", index);
       filteredPolicies = filterPolicy(filteredPolicies, "collection", collection);
-      for (int i = 0; i < filteredPolicies.length(); i++) {
-        if (filteredPolicies.getJSONObject(i).getString("value").equals(Policies.allowed.toString())) {
+
+      for (JSONObject filteredPolicy : filteredPolicies) {
+        if (filteredPolicy.getString("value").equals(Policies.allowed.toString())) {
           return Policies.allowed;
         }
       }
-      for (int i = 0; i < filteredPolicies.length(); i++) {
-        if (filteredPolicies.getJSONObject(i).getString("value").equals(Policies.conditional.toString())) {
+
+      for (JSONObject filteredPolicy : filteredPolicies) {
+        if (filteredPolicy.getString("value").equals(Policies.conditional.toString())) {
           return Policies.conditional;
         }
       }
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
+
     return Policies.denied;
   }
 
-  private JSONArray  filterPolicy(final JSONArray policies, final String attr, final String attrInput) throws JSONException {
-    JSONArray filteredPolicies = new JSONArray();
-    for (int i = 0; i < policies.length(); i++) {
-      JSONObject policy = policies.getJSONObject(i);
+  private JSONObject[] filterPolicy(final JSONObject[] policies, final String attr, final String attrInput) throws JSONException {
+    ArrayList<JSONObject> filteredPolicies = new ArrayList<>();
+
+    for (JSONObject policy : policies) {
       String attrObject = policy.getString(attr);
       if (attrObject.equals(attrInput) || attrObject.equals("*")) {
-        filteredPolicies.put(policy);
+        filteredPolicies.add(policy);
       }
     }
-    return filteredPolicies;
+    return filteredPolicies.toArray(new JSONObject[0]);
   }
-
 
   /**
    * Gets the rights array of a given user.
@@ -1682,7 +1687,7 @@ public class Security {
    * @param listener
    * @return the Security instance
    */
-  public Security getUserRights(@NonNull final String id, @NonNull final ResponseListener<JSONArray> listener) {
+  public Security getUserRights(@NonNull final String id, @NonNull final ResponseListener<JSONObject[]> listener) {
     return getUserRights(id, null, listener);
   }
 
@@ -1694,7 +1699,7 @@ public class Security {
    * @param listener
    * @return the Security instance
    */
-  public Security getUserRights(@NonNull final String id, final Options options, @NonNull final ResponseListener<JSONArray> listener) {
+  public Security getUserRights(@NonNull final String id, final Options options, @NonNull final ResponseListener<JSONObject[]> listener) {
     if (id == null || id.isEmpty()) {
       throw new IllegalArgumentException("Security.getUserRights: id is mandatory.");
     }
@@ -1708,7 +1713,13 @@ public class Security {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(response.getJSONObject("result").getJSONArray("hits"));
+            JSONArray arr = response.getJSONObject("result").getJSONArray("hits");
+            JSONObject[] rights = new JSONObject[arr.length()];
+
+            for (int i = 0; i < arr.length(); i++) {
+              rights[i] = arr.getJSONObject(i);
+            }
+            listener.onSuccess(rights);
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
