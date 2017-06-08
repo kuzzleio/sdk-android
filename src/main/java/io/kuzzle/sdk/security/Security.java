@@ -40,11 +40,19 @@ public class Security {
    * @return JSONObject - Kuzzle.query() 1st argument object
    * @throws JSONException the json exception
    */
-  protected io.kuzzle.sdk.core.Kuzzle.QueryArgs buildQueryArgs(@NonNull final String action) throws JSONException {
+  protected Kuzzle.QueryArgs buildQueryArgs(final String controller, @NonNull final String action) throws JSONException {
     io.kuzzle.sdk.core.Kuzzle.QueryArgs args = new io.kuzzle.sdk.core.Kuzzle.QueryArgs();
     args.action = action;
     args.controller = "security";
+
+    if (controller != null) {
+      args.controller = controller;
+    }
     return args;
+  }
+
+  protected Kuzzle.QueryArgs buildQueryArgs(@NonNull final String action) throws JSONException {
+    return buildQueryArgs(null, action);
   }
 
   /**
@@ -1734,6 +1742,474 @@ public class Security {
       throw new RuntimeException(e);
     }
     return this;
+  }
+
+  /**
+   * Create credentials of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @param kuid
+   * @param credentials
+   * @return
+   */
+  public Security createCredentials(@NonNull final String strategy, @NonNull final String kuid, @NonNull final JSONObject credentials) {
+    return createCredentials(strategy, kuid, credentials, null, null);
+  }
+
+  /**
+   * Create credentials of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @param kuid
+   * @param credentials
+   * @param options
+   * @return
+   */
+  public Security createCredentials(@NonNull final String strategy, @NonNull final String kuid, @NonNull final JSONObject credentials, final Options options) {
+    return createCredentials(strategy, kuid, credentials, options, null);
+  }
+
+  /**
+   * Create credentials of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @param kuid
+   * @param credentials
+   * @param listener
+   * @return
+   */
+  public Security createCredentials(@NonNull final String strategy, @NonNull final String kuid, @NonNull final JSONObject credentials, final ResponseListener<JSONObject> listener) {
+    return createCredentials(strategy, kuid, credentials, null, listener);
+  }
+
+  /**
+   * Create credentials of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @param kuid
+   * @param credentials
+   * @param options
+   * @param listener
+   * @return
+   */
+  public Security createCredentials(@NonNull final String strategy, @NonNull final String kuid, @NonNull final JSONObject credentials, final Options options, final ResponseListener<JSONObject> listener) {
+    try {
+      JSONObject body = new JSONObject()
+              .put("strategy", strategy)
+              .put("_id", kuid)
+              .put("body", credentials);
+      kuzzle.query(buildQueryArgs("security", "createCredentials"), body, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            if (listener != null) {
+              listener.onSuccess(response.getJSONObject("result"));
+            }
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+
+    return this;
+  }
+
+  /**
+   * Delete credentials of the specified <strategy> for the user <kuid> .
+   *
+   * @param strategy
+   * @param kuid
+   * @return
+   */
+  public Security deleteCredentials(@NonNull final String strategy, @NonNull final String kuid) {
+    return deleteCredentials(strategy, kuid, null, null);
+  }
+
+  /**
+   * Delete credentials of the specified <strategy> for the user <kuid> .
+   *
+   * @param strategy
+   * @param kuid
+   * @param options
+   * @return
+   */
+  public Security deleteCredentials(@NonNull final String strategy, @NonNull final String kuid, final Options options) {
+    return deleteCredentials(strategy, kuid, options, null);
+  }
+
+  /**
+   * Delete credentials of the specified <strategy> for the user <kuid> .
+   *
+   * @param strategy
+   * @param kuid
+   * @param listener
+   * @return
+   */
+  public Security deleteCredentials(@NonNull final String strategy, @NonNull final String kuid, final ResponseListener<JSONObject> listener) {
+    return deleteCredentials(strategy, kuid, null, listener);
+  }
+
+  /**
+   * Delete credentials of the specified <strategy> for the user <kuid> .
+   *
+   * @param strategy
+   * @param kuid
+   * @param options
+   * @param listener
+   * @return
+   */
+  public Security deleteCredentials(@NonNull final String strategy, @NonNull final String kuid, final Options options, final ResponseListener<JSONObject> listener) {
+    try {
+      JSONObject body = new JSONObject()
+              .put("strategy", strategy)
+              .put("_id", kuid);
+      kuzzle.query(buildQueryArgs("security", "deleteCredentials"), body, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            if (listener != null) {
+              listener.onSuccess(response.getJSONObject("result"));
+            }
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+
+    return this;
+  }
+
+  /**
+   * Retrieve a list of accepted fields per authentication strategy.
+   *
+   * @param listener
+   */
+  public void getAllCredentialFields(@NonNull final ResponseListener<JSONObject> listener) {
+    getAllCredentialFields(null, listener);
+  }
+
+  /**
+   * Retrieve a list of accepted fields per authentication strategy.
+   *
+   * @param options
+   * @param listener
+   */
+  public void getAllCredentialFields(final Options options, @NonNull final ResponseListener<JSONObject> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("Security.getAllCredentialFields: listener is mandatory.");
+    }
+    try {
+      JSONObject body = new JSONObject();
+      kuzzle.query(buildQueryArgs("security", "getAllCredentialFields"), body, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Retrieve the list of accepted field names by the specified <strategy>.
+   *
+   * @param strategy
+   * @param listener
+   * @return
+   */
+  public void getCredentialFields(@NonNull final String strategy, @NonNull final ResponseListener<String[]> listener) {
+    getCredentialFields(strategy, null, listener);
+  }
+
+  /**
+   * Retrieve the list of accepted field names by the specified <strategy>.
+   *
+   * @param strategy
+   * @param options
+   * @param listener
+   * @return
+   */
+  public void getCredentialFields(@NonNull final String strategy, final Options options, @NonNull final ResponseListener<String[]> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("Security.getAllCredentialFields: listener is mandatory.");
+    }
+    try {
+      JSONObject body = new JSONObject()
+        .put("strategy", strategy);
+      kuzzle.query(buildQueryArgs("security", "getCredentialFields"), body, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            JSONArray array = response.getJSONObject("result").getJSONArray("hits");
+            int length = array.length();
+            String[] fields = new String[length];
+            for (int i = 0; i < length; i++) {
+              fields[i] = array.getString(i);
+            }
+            listener.onSuccess(fields);
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Get credential information of the specified <strategy> for the user <kuid>.
+   *
+   * @param strategy
+   * @param kuid
+   * @param listener
+   * @return
+   */
+  public void getCredentials(@NonNull final String strategy, @NonNull final String kuid, @NonNull final ResponseListener<JSONObject> listener) {
+    getCredentials(strategy, kuid, null, listener);
+  }
+
+  /**
+   * Get credential information of the specified <strategy> for the user <kuid>.
+   *
+   * @param strategy
+   * @param kuid
+   * @param options
+   * @param listener
+   * @return
+   */
+  public void getCredentials(@NonNull final String strategy, @NonNull final String kuid, final Options options, @NonNull final ResponseListener<JSONObject> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("Security.getCredentials: listener is mandatory.");
+    }
+    try {
+      JSONObject body = new JSONObject()
+        .put("strategy", strategy)
+        .put("_id", kuid);
+      kuzzle.query(buildQueryArgs("security", "getCredentials"), body, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Check the existence of the specified <strategy>’s credentials for the user <kuid>.
+   *
+   * @param strategy
+   * @param kuid
+   * @param listener
+   * @return
+   */
+  public void hasCredentials(@NonNull final String strategy, @NonNull final String kuid, @NonNull final ResponseListener<Boolean> listener) {
+    hasCredentials(strategy, kuid, null, listener);
+  }
+
+  /**
+   * Check the existence of the specified <strategy>’s credentials for the user <kuid>.
+   *
+   * @param strategy
+   * @param kuid
+   * @param options
+   * @param listener
+   * @return
+   */
+  public void hasCredentials(@NonNull final String strategy, @NonNull final String kuid, final Options options, @NonNull final ResponseListener<Boolean> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("Security.hasCredentials: listener is mandatory.");
+    }
+    try {
+      JSONObject body = new JSONObject()
+        .put("strategy", strategy)
+        .put("_id", kuid);
+      kuzzle.query(buildQueryArgs("security", "hasCredentials"), body, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getBoolean("result"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public Security updateCredentials(@NonNull final String strategy, @NonNull final String kuid, @NonNull final JSONObject credentials) {
+    return updateCredentials(strategy, kuid, credentials, null, null);
+  }
+
+  /**
+   * Updates credentials of the specified <strategy> for the user <kuid>.
+   *
+   * @param strategy
+   * @param kuid
+   * @param credentials
+   * @param options
+   * @return
+   */
+  public Security updateCredentials(@NonNull final String strategy, @NonNull final String kuid, @NonNull final JSONObject credentials, final Options options) {
+    return updateCredentials(strategy, kuid, credentials, options, null);
+  }
+
+  /**
+   * Updates credentials of the specified <strategy> for the user <kuid>.
+   *
+   * @param strategy
+   * @param kuid
+   * @param credentials
+   * @param listener
+   * @return
+   */
+  public Security updateCredentials(@NonNull final String strategy, @NonNull final String kuid, @NonNull final JSONObject credentials, final ResponseListener<JSONObject> listener) {
+    return updateCredentials(strategy, kuid, credentials, null, listener);
+  }
+
+  /**
+   * Updates credentials of the specified <strategy> for the user <kuid>.
+   *
+   * @param strategy
+   * @param kuid
+   * @param credentials
+   * @param options
+   * @param listener
+   * @return
+   */
+  public Security updateCredentials(@NonNull final String strategy, @NonNull final String kuid, @NonNull final JSONObject credentials, final Options options, final ResponseListener<JSONObject> listener) {
+    try {
+      JSONObject body = new JSONObject()
+        .put("strategy", strategy)
+        .put("_id", kuid)
+        .put("body", credentials);
+      kuzzle.query(buildQueryArgs("security", "updateCredentials"), body, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            if (listener != null) {
+              listener.onSuccess(response.getJSONObject("result"));
+            }
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+
+    return this;
+  }
+
+  /**
+   * Validate credentials of the specified <strategy> for the user <kuid>.
+   *
+   * @param strategy
+   * @param kuid
+   * @param credentials
+   * @param listener
+   */
+  public void validateCredentials(@NonNull final String strategy, @NonNull final String kuid, final JSONObject credentials, @NonNull final ResponseListener<Boolean> listener) {
+    validateCredentials(strategy, kuid, credentials, null, listener);
+  }
+
+  /**
+   * Validate credentials of the specified <strategy> for the user <kuid>.
+   *
+   * @param strategy
+   * @param kuid
+   * @param options
+   * @param listener
+   * @return
+   */
+  public void validateCredentials(@NonNull final String strategy, @NonNull final String kuid, final JSONObject credentials, final Options options, @NonNull final ResponseListener<Boolean> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("Security.getCredentials: listener is mandatory.");
+    }
+    try {
+      JSONObject body = new JSONObject()
+        .put("strategy", strategy)
+        .put("credentials", credentials)
+        .put("_id", kuid);
+      kuzzle.query(buildQueryArgs("security", "validateCredentials"), body, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getBoolean("result"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }
