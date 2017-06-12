@@ -197,16 +197,145 @@ public class Collection {
             }
 
             response = new SearchResult(
-                    Collection.this,
-                    object.getJSONObject("result").getInt("total"),
-                    docs,
-                    new JSONObject(),
-                    options,
-                    filters,
-                    options.getPrevious()
+              Collection.this,
+              object.getJSONObject("result").getInt("total"),
+              docs,
+              new JSONObject(),
+              options,
+              filters,
+              options.getPrevious()
             );
 
             listener.onSuccess(response);
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Scrolls through specifications using the provided scrollId
+   *
+   * @param scrollId string
+   * @param listener Response callback
+   */
+  public void scrollSpecifications(@NonNull final String scrollId, @NonNull final ResponseListener<JSONObject> listener) {
+    this.scrollSpecifications(scrollId, new Options(), listener);
+  }
+
+  /**
+   * Scrolls through specifications using the provided scrollId
+   *
+   * @param scrollId string
+   * @param options Options Optional parameters
+   * @param listener Response callback
+   */
+  public void scrollSpecifications(@NonNull final String scrollId, final Options options, @NonNull final ResponseListener<JSONObject> listener) {
+    this.kuzzle.isValid();
+
+    JSONObject data = new JSONObject();
+
+    if (scrollId == null) {
+      throw new RuntimeException("Collection.scrollSpecifications: scrollId is required");
+    }
+
+    if (listener == null) {
+      throw new IllegalArgumentException("listener cannot be null");
+    }
+
+    try {
+      data.put("scrollId", scrollId);
+
+      this.kuzzle.addHeaders(data, this.getHeaders());
+
+      this.kuzzle.query(makeQueryArgs("collection", "scrollSpecifications"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+          public void onError(JSONObject error) {
+            listener.onError(error);
+          }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Searches specifications across indexes/collections according to the provided filters
+   *
+   * @param listener Response callback
+   */
+  public void searchSpecifications(@NonNull final ResponseListener<JSONObject> listener) {
+    this.searchSpecifications(null, new Options(), listener);
+  }
+
+  /**
+   * Searches specifications across indexes/collections according to the provided filters
+   *
+   * @param filters JSONObject Optional filters in ElasticSearch Query DSL format
+   * @param listener Response callback
+   */
+  public void searchSpecifications(final JSONObject filters, @NonNull final ResponseListener<JSONObject> listener) {
+    this.searchSpecifications(filters, new Options(), listener);
+  }
+
+  /**
+   * Searches specifications across indexes/collections according to the provided filters
+   *
+   * @param options Options Optional parameters
+   * @param listener Response callback
+   */
+  public void searchSpecifications(final Options options, @NonNull final ResponseListener<JSONObject> listener) {
+    this.searchSpecifications(null, options, listener);
+  }
+
+  /**
+   * Searches specifications across indexes/collections according to the provided filters
+   *
+   * @param filters JSONObject Optional filters in ElasticSearch Query DSL format
+   * @param options Options Optional parameters
+   * @param listener Response callback
+   */
+  public void searchSpecifications(final JSONObject filters, final Options options, @NonNull final ResponseListener<JSONObject> listener) {
+    this.kuzzle.isValid();
+
+    JSONObject data = new JSONObject();
+
+    if (listener == null) {
+      throw new IllegalArgumentException("listener cannot be null");
+    }
+
+    try {
+      if (filters != null) {
+        data.put("body", new JSONObject()
+          .put("query", filters)
+        );
+      }
+
+      this.kuzzle.addHeaders(data, this.getHeaders());
+
+      this.kuzzle.query(makeQueryArgs("collection", "searchSpecifications"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result"));
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
@@ -751,6 +880,73 @@ public class Collection {
   }
 
   /**
+   * Deletes the current specifications of this collection
+   *
+   * @return Collection Kuzzle data collection
+   */
+  public Collection deleteSpecifications() throws JSONException {
+    return this.deleteSpecifications(new Options(), null);
+  }
+
+  /**
+   * Deletes the current specifications of this collection
+   *
+   * @param options Options Optional parameters
+   * @return Collection Kuzzle data collection
+   */
+  public Collection deleteSpecifications(final Options options) throws JSONException {
+    return this.deleteSpecifications(options, null);
+  }
+
+  /**
+   * Deletes the current specifications of this collection
+   *
+   * @param listener Response callback
+   * @return Collection Kuzzle data collection
+   */
+  public Collection deleteSpecifications(final ResponseListener<JSONObject> listener) throws JSONException {
+    return this.deleteSpecifications(new Options(), listener);
+  }
+
+  /**
+   * Deletes the current specifications of this collection
+   *
+   * @param options Options Optional parameters
+   * @param listener Response callback
+   * @return Collection Kuzzle data collection
+   */
+  public Collection deleteSpecifications(final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
+    JSONObject data = new JSONObject();
+
+    try {
+      this.kuzzle.addHeaders(data, this.getHeaders());
+      this.kuzzle.query(makeQueryArgs("collection", "deleteSpecifications"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          if (listener != null) {
+            try {
+              listener.onSuccess(response.getJSONObject("result"));
+            } catch (JSONException e) {
+              throw new RuntimeException(e);
+            }
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+
+    return this;
+  }
+
+  /**
    * Document factory kuzzle document.
    *
    * @return the kuzzle document
@@ -893,6 +1089,47 @@ public class Collection {
    */
   public void getMapping(@NonNull final ResponseListener<CollectionMapping> listener) {
     this.getMapping(null, listener);
+  }
+
+  /**
+   * Retrieves the current specifications of this collection
+   *
+   * @param listener Response callback
+   */
+  public void getSpecifications(@NonNull final ResponseListener<JSONObject> listener) throws JSONException {
+    this.getSpecifications(new Options(), listener);
+  }
+
+  /**
+   * Retrieves the current specifications of this collection
+   *
+   * @param options Optional parameters
+   * @param listener Response callback
+   */
+  public void getSpecifications(final Options options, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
+    JSONObject data = new JSONObject()
+      .put("body", new JSONObject());
+
+    try {
+      this.kuzzle.addHeaders(data, this.getHeaders());
+      this.kuzzle.query(makeQueryArgs("collection", "getSpecifications"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
@@ -1547,6 +1784,57 @@ public class Collection {
   }
 
   /**
+   * Validates the provided specifications
+   *
+   * @param specifications JSONObject Specifications content
+   * @param listener Response callback
+   */
+  public void validateSpecifications(@NonNull JSONObject specifications, @NonNull ResponseListener<Boolean> listener) throws JSONException {
+    this.validateSpecifications(specifications, new Options(), listener);
+  }
+
+  /**
+   * Validates the provided specifications
+   *
+   * @param specifications JSONObject Specifications content
+   * @param options Options Optional parameters
+   * @param listener Response callback
+   */
+  public void validateSpecifications(@NonNull JSONObject specifications, Options options, @NonNull final ResponseListener<Boolean> listener) throws JSONException {
+    if (specifications == null) {
+      throw new IllegalArgumentException("Collection.validateSpecifications: specifications cannot be null");
+    }
+
+    JSONObject data = new JSONObject()
+      .put("body", new JSONObject()
+        .put(this.getIndex(), new JSONObject()
+          .put(this.getCollection(), specifications)
+        )
+      );
+
+    try {
+      this.kuzzle.addHeaders(data, this.getHeaders());
+      this.kuzzle.query(makeQueryArgs("collection", "validateSpecifications"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result").getBoolean("valid"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
    * Room factory kuzzle room.
    *
    * @return the kuzzle room
@@ -1806,6 +2094,86 @@ public class Collection {
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
+    return this;
+  }
+
+  /**
+   * Updates the current specifications of this collection
+   *
+   * @param specifications JSONObject Specifications content
+   * @return Collection Kuzzle data collection
+   */
+  public Collection updateSpecifications(@NonNull final JSONObject specifications) throws JSONException {
+    return this.updateSpecifications(specifications, new Options(), null);
+  }
+
+  /**
+   * Updates the current specifications of this collection
+   *
+   * @param specifications JSONObject Specifications content
+   * @param options Options Optional parameters
+   * @return Collection Kuzzle data collection
+   */
+  public Collection updateSpecifications(@NonNull final JSONObject specifications, final Options options) throws JSONException {
+    return this.updateSpecifications(specifications, options, null);
+  }
+
+  /**
+   * Updates the current specifications of this collection
+   *
+   * @param specifications JSONObject Specifications content
+   * @param listener Response callback
+   * @return Collection Kuzzle data collection
+   */
+  public Collection updateSpecifications(@NonNull final JSONObject specifications, final ResponseListener<JSONObject> listener) throws JSONException {
+    return this.updateSpecifications(specifications, new Options(), listener);
+  }
+
+  /**
+   * Updates the current specifications of this collection
+   *
+   * @param specifications JSONObject Specifications content
+   * @param options Options Optional parameters
+   * @param listener Response callback
+   * @return Collection Kuzzle data collection
+   */
+  public Collection updateSpecifications(@NonNull final JSONObject specifications, final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
+    if (specifications == null) {
+      throw new IllegalArgumentException("Collection.updateSpecifications: specifications cannot be null");
+    }
+
+    JSONObject data = new JSONObject()
+      .put("body", new JSONObject()
+        .put(this.getIndex(), new JSONObject()
+          .put(this.getCollection(), specifications)
+        )
+      );
+
+    try {
+      this.kuzzle.addHeaders(data, this.getHeaders());
+      this.kuzzle.query(makeQueryArgs("collection", "updateSpecifications"), data, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          if (listener != null) {
+            try {
+              listener.onSuccess(response.getJSONObject("result"));
+            } catch (JSONException e) {
+              throw new RuntimeException(e);
+            }
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+
     return this;
   }
 
