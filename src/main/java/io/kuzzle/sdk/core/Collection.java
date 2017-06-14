@@ -904,7 +904,7 @@ public class Collection {
    * @param listener Response callback
    * @return Collection Kuzzle data collection
    */
-  public Collection deleteSpecifications(final ResponseListener<JSONObject> listener) throws JSONException {
+  public Collection deleteSpecifications(final ResponseListener<Boolean> listener) throws JSONException {
     return this.deleteSpecifications(new Options(), listener);
   }
 
@@ -915,7 +915,7 @@ public class Collection {
    * @param listener Response callback
    * @return Collection Kuzzle data collection
    */
-  public Collection deleteSpecifications(final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
+  public Collection deleteSpecifications(final Options options, final ResponseListener<Boolean> listener) throws JSONException {
     JSONObject data = new JSONObject();
 
     try {
@@ -925,7 +925,7 @@ public class Collection {
         public void onSuccess(JSONObject response) {
           if (listener != null) {
             try {
-              listener.onSuccess(response.getJSONObject("result"));
+              listener.onSuccess(response.getBoolean("result"));
             } catch (JSONException e) {
               throw new RuntimeException(e);
             }
