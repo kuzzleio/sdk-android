@@ -66,6 +66,11 @@ public class validateSpecificationsTest {
         collection.validateSpecifications(null, listener);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testValidateSpecificationsIllegalListener() throws JSONException {
+        collection.validateSpecifications(null, null);
+    }
+
     @Test(expected = RuntimeException.class)
     public void testValidateSpecificationsQueryException() throws JSONException {
         doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));

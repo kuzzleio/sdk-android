@@ -1805,6 +1805,10 @@ public class Collection {
       throw new IllegalArgumentException("Collection.validateSpecifications: specifications cannot be null");
     }
 
+    if (listener == null) {
+      throw new IllegalArgumentException("listener cannot be null");
+    }
+
     JSONObject data = new JSONObject()
       .put("body", new JSONObject()
         .put(this.getIndex(), new JSONObject()
