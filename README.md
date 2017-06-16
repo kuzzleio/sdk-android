@@ -23,7 +23,7 @@ https://github.com/kuzzleio/kuzzle-sdk/issues
 
 ## Installation
 
-You can configure your android project to get the Kuzzle's android SDK from jcenter in your build.gradle:
+You can configure your Android project to get Kuzzle's Android SDK from jcenter in your build.gradle:
 
     buildscript {
         repositories {
@@ -43,55 +43,73 @@ You can configure your android project to get the Kuzzle's android SDK from jcen
 
 ```java
 Kuzzle kuzzle = new Kuzzle("host", new ResponseListener<Void>() {
-@Override
-public void onSuccess(Void object) {
-    // Handle success
-    KuzzleDocument doc = new KuzzleDocument(dataCollection);
-    doc.setContent("foo", "bar").save();
-}
+    @Override
+    public void onSuccess(Void object) {
+        // Handle success
+        Document doc = new Document(dataCollection);
+        try {
+            doc.setContent("foo", "bar").save();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
-@Override
-public void onError(JSONObject error) {
-    // Handle error
-}
+    @Override
+    public void onError(JSONObject error) {
+        // Handle error
+    }
 });
 ```
 
-## KuzzleDocument
+## Document
 
-KuzzleDocument is an encapsulation of a JSONObject.
+Document is an encapsulation of a JSONObject.
 
 ```java
-KuzzleDataCollection myCollection = new KuzzleDataCollection(kuzzle, "myNewCollection");
-KuzzleDocument myDocument = new KuzzleDocument(myCollection);
+Collection myCollection = new Collection(kuzzle, "myNewCollection", "myNewIndex");
+Document myDocument = new Document(myCollection);
+
 // Add properties to the body
 myDocument.setContent("foo", "bar");
+
 // Persist the document
 myDocument.save();
+
 // Send it on real time (not persistent)
 myDocument.publish();
 ```
 
 ## Adding metadata
 
-As stated [here](http://kuzzle.io/api-reference/#sending-metadata) you can add metadata to a subscription.
+As stated [here](http://docs.kuzzle.io/api-reference/#sending-metadata) you can add metadata to a subscription.
 
 ```java
-KuzzleOptions options = new KuzzleOptions();
+RoomOptions options = new RoomOptions();
 JSONObject metadata = new JSONObject();
+
 metadata.put("foo", "bar");
-options.setMetadata(metadata);
-myCollection.subscribe(options);
+options.setVolatile(metadata);
+kuzzle.collection("foo", "test").subscribe(options, new ResponseListener<NotificationResponse>() {
+    @Override
+    public void onSuccess(NotificationResponse response) {
+        
+    }
+
+    @Override
+    public void onError(JSONObject error) {
+
+    }
+});
 ```
 
 # Login
 
 ## Prerequisite
 
-To login using kuzzle you need at least one authentication plugin. You can refer [here](https://github.com/kuzzleio/kuzzle-plugin-auth-passport-local) for a local authentication plugin
+To login using Kuzzle you need at least one authentication plugin. You can refer [here](https://github.com/kuzzleio/kuzzle-plugin-auth-passport-local) for a local authentication plugin
 or [here](https://github.com/kuzzleio/kuzzle-plugin-auth-passport-oauth) to refer to our OAuth2 plugin.
 
-To know more about how to log in with a Kuzzle SDK, please refer to our [documentation](http://docs.kuzzle.io/sdk-reference/kuzzle/login/)
+To know more about how to log in with a Kuzzle SDK, please refer to our [documentation](http://docs.kuzzle.io/sdk-reference/#login)
 
 If you have the kuzzle-plugin-auth-passport-local installed you can login using either the Kuzzle's constructor or the login method.
 
