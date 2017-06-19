@@ -474,7 +474,7 @@ public class Kuzzle {
               public void onSuccess(TokenValidity response) {
                 if (!response.isValid()) {
                   Kuzzle.this.jwtToken = null;
-                  Kuzzle.this.emitEvent(Event.jwtTokenExpired);
+                  Kuzzle.this.emitEvent(Event.tokenExpired);
                 }
 
                 Kuzzle.this.reconnect();
@@ -483,7 +483,7 @@ public class Kuzzle {
               @Override
               public void onError(JSONObject error) {
                 Kuzzle.this.jwtToken = null;
-                Kuzzle.this.emitEvent(Event.jwtTokenExpired);
+                Kuzzle.this.emitEvent(Event.tokenExpired);
                 Kuzzle.this.reconnect();
               }
             });
@@ -1610,7 +1610,7 @@ public class Kuzzle {
           try {
             // checking token expiration
             if (!((JSONObject) args[0]).isNull("error") && ((JSONObject) args[0]).getJSONObject("error").getString("message").equals("Token expired") && !((JSONObject) args[0]).getString("action").equals("logout")) {
-              emitEvent(Event.jwtTokenExpired, listener);
+              emitEvent(Event.tokenExpired, listener);
             }
 
             if (listener != null) {

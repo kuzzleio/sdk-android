@@ -267,14 +267,14 @@ public class queryTest {
   }
 
   @Test
-  public void shouldTriggerJwtTokenExpiredEvent() throws JSONException {
+  public void shouldTriggerTokenExpiredEvent() throws JSONException {
     EventListener fake = spy(new EventListener() {
       @Override
       public void trigger(Object... args) {
 
       }
     });
-    kuzzle.addListener(Event.jwtTokenExpired, fake);
+    kuzzle.addListener(Event.tokenExpired, fake);
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
