@@ -79,16 +79,16 @@ myDocument.save();
 myDocument.publish();
 ```
 
-## Adding metadata
+## Adding volatile data
 
-As stated [here](http://docs.kuzzle.io/api-reference/#sending-metadata) you can add metadata to a subscription.
+As stated [here](http://docs.kuzzle.io/api-documentation/volatile-data/) you can add volatile data to a subscription.
 
 ```java
 RoomOptions options = new RoomOptions();
-JSONObject metadata = new JSONObject();
+JSONObject volatileData = new JSONObject();
 
-metadata.put("foo", "bar");
-options.setVolatile(metadata);
+volatileData.put("foo", "bar");
+options.setVolatile(volatileData);
 kuzzle.collection("foo", "test").subscribe(options, new ResponseListener<NotificationResponse>() {
     @Override
     public void onSuccess(NotificationResponse response) {
@@ -109,7 +109,7 @@ kuzzle.collection("foo", "test").subscribe(options, new ResponseListener<Notific
 To login using Kuzzle you need at least one authentication plugin. You can refer [here](https://github.com/kuzzleio/kuzzle-plugin-auth-passport-local) for a local authentication plugin
 or [here](https://github.com/kuzzleio/kuzzle-plugin-auth-passport-oauth) to refer to our OAuth2 plugin.
 
-To know more about how to log in with a Kuzzle SDK, please refer to our [documentation](http://docs.kuzzle.io/sdk-reference/#login)
+To know more about how to log in with a Kuzzle SDK, please refer to our [documentation](http://docs.kuzzle.io/sdk-reference/kuzzle/login/)
 
 If you have the kuzzle-plugin-auth-passport-local installed you can login using either the Kuzzle's constructor or the login method.
 
