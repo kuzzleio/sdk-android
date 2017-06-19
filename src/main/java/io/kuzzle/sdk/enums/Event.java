@@ -8,7 +8,7 @@ public enum Event {
   reconnected,
   connected,
   error,
-  jwtTokenExpired,
+  tokenExpired,
   loginAttempt,
   offlineQueuePush,
   offlineQueuePop

@@ -12,7 +12,6 @@ import io.kuzzle.sdk.enums.Users;
 
 public class NotificationResponse {
   private int status;
-  private JSONObject error;
   private String  index;
   private String  collection;
   private String  controller;
@@ -28,14 +27,13 @@ public class NotificationResponse {
   public NotificationResponse(final Kuzzle kuzzle, final JSONObject object) {
     try {
       this.status = object.getInt("status");
-      this.error = (object.isNull("error") ? null : object.getJSONObject("error"));
       this.index = object.getString("index");
       this.collection = object.getString("collection");
       this.controller = object.getString("controller");
       this.action = object.getString("action");
       this.state = (object.isNull("state") ? null : State.valueOf(object.getString("state").toUpperCase()));
       this._volatile = object.getJSONObject("volatile");
-      this.requestId = object.getString("requestId");
+      this.requestId = object.isNull("requestId") ? null : object.getString("requestId");
       this.result = (object.isNull("result") ? null : object.getJSONObject("result"));
       this.scope = (object.isNull("scope") ? null : Scope.valueOf(object.getString("scope").toUpperCase()));
       this.users = (object.isNull("user") ? null : Users.valueOf(object.getString("user").toUpperCase()));
@@ -50,10 +48,6 @@ public class NotificationResponse {
 
   public int getStatus() {
     return status;
-  }
-
-  public JSONObject getError() {
-    return error;
   }
 
   public String getIndex() {
