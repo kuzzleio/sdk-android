@@ -77,43 +77,12 @@ public class SearchResult implements KuzzleList<Document> {
     JSONObject filters;
     Options options;
 
-    if (this.filters == null) {
-      this.filters = new JSONObject();
-    }
-
     try {
-      filters = this.filters;
       options = new Options(this.options);
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
     options.setPrevious(this);
-
-    // retrieve next results using ES's search_after
-    if (options.getFrom() == null && options.getSize() != null && filters.has("sort")) {
-      if (this.fetchedDocument >= this.getTotal()) {
-        listener.onSuccess(null);
-
-        return;
-      }
-
-      try {
-        JSONArray searchAfter = new JSONArray();
-
-        for (int i = 0; i < filters.getJSONArray("sort").length(); i++) {
-          Document doc = this.getDocuments().get(this.getDocuments().size() - 1);
-          searchAfter.put(doc.getContent().get(filters.getJSONArray("sort").getJSONObject(i).keys().next()));
-        }
-
-        filters.put("search_after", searchAfter);
-      } catch (JSONException e) {
-        throw new RuntimeException(e);
-      }
-
-      this.collection.search(filters, options, listener);
-
-      return;
-    }
 
     // retrieve next results with scroll if original search use it
     if (options.getScrollId() != null) {
@@ -131,13 +100,49 @@ public class SearchResult implements KuzzleList<Document> {
         options.setSize(null);
       }
 
-      this.collection.scroll(options.getScrollId(), options, filters, listener);
+      this.collection.scroll(options.getScrollId(), options, this.filters, listener);
+
+      return;
+    }
+
+    // retrieve next results using ES's search_after
+    if (options.getSize() != null && this.filters.has("sort")) {
+      if (this.fetchedDocument >= this.getTotal()) {
+        listener.onSuccess(null);
+
+        return;
+      }
+
+      if (options.getFrom() != null) {
+        options.setFrom(null);
+      }
+
+      try {
+        JSONArray searchAfter = new JSONArray();
+
+        for (int i = 0; i < this.filters.getJSONArray("sort").length(); i++) {
+          Document doc = this.getDocuments().get(this.getDocuments().size() - 1);
+          searchAfter.put(doc.getContent().get(this.filters.getJSONArray("sort").getJSONObject(i).keys().next()));
+        }
+
+        this.filters.put("search_after", searchAfter);
+      } catch (JSONException e) {
+        throw new RuntimeException(e);
+      }
+
+      this.collection.search(this.filters, options, listener);
 
       return;
     }
 
     // retrieve next results with  from/size if original search use it
     if (options.getFrom() != null && options.getSize() != null) {
+      try {
+        filters = new JSONObject(this.filters.toString());
+      } catch (JSONException e) {
+        throw new RuntimeException(e);
+      }
+
       options.setFrom(options.getFrom() + options.getSize());
 
       if (options.getFrom() >= this.getTotal()) {
