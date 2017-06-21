@@ -31,7 +31,7 @@ You can configure your android project to get the Kuzzle's android SDK from jcen
     buildscript {
         repositories {
             maven {
-                url  "http://dl.bintray.com/kblondel/maven"
+                url  "http://dl.bintray.com/kuzzle/maven"
             }
             jcenter()
         }
