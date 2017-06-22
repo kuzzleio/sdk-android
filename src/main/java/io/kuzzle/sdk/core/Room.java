@@ -206,18 +206,18 @@ public class Room {
         listener.onError((JSONObject) args);
       }
       else {
-        String key = ((JSONObject) args).getString("requestId");
+        String requestId = ((JSONObject) args).has("requestId") ? ((JSONObject) args).getString("requestId") : null;
 
         if (((JSONObject) args).getString("action").equals("jwtTokenExpired")) {
           Room.this.kuzzle.jwtToken = null;
           Room.this.kuzzle.emitEvent(Event.jwtTokenExpired);
         }
 
-        if (Room.this.kuzzle.getRequestHistory().containsKey(key)) {
+        if (requestId != null && Room.this.kuzzle.getRequestHistory().containsKey(requestId)) {
           if (Room.this.subscribeToSelf) {
             listener.onSuccess(new NotificationResponse(kuzzle, (JSONObject) args));
           }
-          Room.this.kuzzle.getRequestHistory().remove(key);
+          Room.this.kuzzle.getRequestHistory().remove(requestId);
         } else {
           listener.onSuccess(new NotificationResponse(kuzzle, (JSONObject) args));
         }
