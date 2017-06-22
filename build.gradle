@@ -140,8 +140,6 @@ install {
 // from: 'https://raw.githubusercontent.com/nisrulz/JCenter/master/bintrayv1.gradle'
 apply plugin: 'com.jfrog.bintray'
 
-version = libraryVersion
-
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from android.sourceSets.main.java.srcDirs

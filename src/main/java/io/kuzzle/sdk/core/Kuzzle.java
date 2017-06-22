@@ -1,7 +1,6 @@
 package io.kuzzle.sdk.core;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -39,6 +38,7 @@ import io.kuzzle.sdk.util.EventList;
 import io.kuzzle.sdk.util.OfflineQueueLoader;
 import io.kuzzle.sdk.util.QueryObject;
 import io.kuzzle.sdk.util.QueueFilter;
+import io.kuzzle.sdk_android.BuildConfig;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -474,7 +474,7 @@ public class Kuzzle {
               public void onSuccess(TokenValidity response) {
                 if (!response.isValid()) {
                   Kuzzle.this.jwtToken = null;
-                  Kuzzle.this.emitEvent(Event.jwtTokenExpired);
+                  Kuzzle.this.emitEvent(Event.tokenExpired);
                 }
 
                 Kuzzle.this.reconnect();
@@ -483,7 +483,7 @@ public class Kuzzle {
               @Override
               public void onError(JSONObject error) {
                 Kuzzle.this.jwtToken = null;
-                Kuzzle.this.emitEvent(Event.jwtTokenExpired);
+                Kuzzle.this.emitEvent(Event.tokenExpired);
                 Kuzzle.this.reconnect();
               }
             });
@@ -1360,6 +1360,7 @@ public class Kuzzle {
       }
     }
 
+    _volatile.put("sdkVersion", this.getSdkVersion());
     object.put("volatile", _volatile);
 
     if (queryArgs.collection != null) {
@@ -1609,7 +1610,7 @@ public class Kuzzle {
           try {
             // checking token expiration
             if (!((JSONObject) args[0]).isNull("error") && ((JSONObject) args[0]).getJSONObject("error").getString("message").equals("Token expired") && !((JSONObject) args[0]).getString("action").equals("logout")) {
-              emitEvent(Event.jwtTokenExpired, listener);
+              emitEvent(Event.tokenExpired, listener);
             }
 
             if (listener != null) {
@@ -1705,6 +1706,15 @@ public class Kuzzle {
    */
   public JSONObject getHeaders() {
     return this.headers;
+  }
+
+  /**
+   * Returns the current SDK version.
+   *
+   * @return String
+   */
+  public String getSdkVersion() {
+    return BuildConfig.VERSION_NAME;
   }
 
   /**

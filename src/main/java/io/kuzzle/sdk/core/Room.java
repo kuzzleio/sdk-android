@@ -202,32 +202,23 @@ public class Room {
     }
 
     try {
-      if (!((JSONObject) args).isNull("error")) {
-        listener.onError((JSONObject) args);
+      String requestId = ((JSONObject) args).has("requestId") ? ((JSONObject) args).getString("requestId") : null;
+
+      if (((JSONObject) args).getString("type").equals("TokenExpired")) {
+        Room.this.kuzzle.jwtToken = null;
+        Room.this.kuzzle.emitEvent(Event.tokenExpired);
       }
-      else {
-        String requestId = ((JSONObject) args).has("requestId") ? ((JSONObject) args).getString("requestId") : null;
 
-        if (((JSONObject) args).getString("action").equals("jwtTokenExpired")) {
-          Room.this.kuzzle.jwtToken = null;
-          Room.this.kuzzle.emitEvent(Event.jwtTokenExpired);
-        }
-
-        if (requestId != null && Room.this.kuzzle.getRequestHistory().containsKey(requestId)) {
-          if (Room.this.subscribeToSelf) {
-            listener.onSuccess(new NotificationResponse(kuzzle, (JSONObject) args));
-          }
-          Room.this.kuzzle.getRequestHistory().remove(requestId);
-        } else {
+      if (requestId != null && Room.this.kuzzle.getRequestHistory().containsKey(requestId)) {
+        if (Room.this.subscribeToSelf) {
           listener.onSuccess(new NotificationResponse(kuzzle, (JSONObject) args));
         }
+        Room.this.kuzzle.getRequestHistory().remove(requestId);
+      } else {
+        listener.onSuccess(new NotificationResponse(kuzzle, (JSONObject) args));
       }
     } catch (JSONException e) {
-      try {
-        listener.onError(((JSONObject) args).getJSONObject("error"));
-      } catch (JSONException err) {
-        throw new RuntimeException(e);
-      }
+      throw new RuntimeException(e);
     }
   }
 
