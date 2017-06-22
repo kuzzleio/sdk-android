@@ -1003,10 +1003,10 @@ public class Collection {
    */
   public void documentExists(@NonNull final String documentId, final Options options, final ResponseListener<JSONObject> listener) {
     if (documentId == null) {
-      throw new IllegalArgumentException("Collection.fetchDocument: documentId required");
+      throw new IllegalArgumentException("Collection.documentExists: documentId required");
     }
     if (listener == null) {
-      throw new IllegalArgumentException("Collection.fetchDocument: listener required");
+      throw new IllegalArgumentException("Collection.documentExists: listener required");
     }
 
     try {

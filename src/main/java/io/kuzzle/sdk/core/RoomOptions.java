@@ -28,40 +28,50 @@ public class RoomOptions {
    *
    * @param subscribeToSelf the subscribe to self
    */
-  public void setSubscribeToSelf(boolean subscribeToSelf) {
+  public RoomOptions setSubscribeToSelf(boolean subscribeToSelf) {
     this.subscribeToSelf = subscribeToSelf;
+
+    return this;
   }
 
   public JSONObject getVolatile() {
     return _volatile;
   }
 
-  public void setVolatile(JSONObject _volatile) {
+  public RoomOptions setVolatile(JSONObject _volatile) {
     this._volatile = _volatile;
+
+    return this;
   }
 
   public Scope getScope() {
     return scope;
   }
 
-  public void setScope(Scope scope) {
+  public RoomOptions setScope(Scope scope) {
     this.scope = scope;
+
+    return this;
   }
 
   public State getState() {
     return state;
   }
 
-  public void setState(State state) {
+  public RoomOptions setState(State state) {
     this.state = state;
+
+    return this;
   }
 
   public Users getUsers() {
     return users;
   }
 
-  public void setUsers(Users users) {
+  public RoomOptions setUsers(Users users) {
     this.users = users;
+
+    return this;
   }
 
 }
