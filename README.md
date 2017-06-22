@@ -5,8 +5,6 @@
 Official Kuzzle Android SDK
 ======
 
-This SDK version requires Kuzzle v1.0.0-RC9 or higher.
-
 ## About Kuzzle
 
 A backend software, self-hostable and ready to use to power modern apps.
@@ -41,8 +39,6 @@ You can configure your android project to get the Kuzzle's android SDK from jcen
     dependencies {
         compile 'io.kuzzle:sdk-android:2.2.0'
     }
-
-## Basic usage
 
 ## License
 
