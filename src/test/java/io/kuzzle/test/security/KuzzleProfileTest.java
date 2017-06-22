@@ -1,6 +1,5 @@
 package io.kuzzle.test.security;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -17,7 +16,6 @@ import io.kuzzle.sdk.security.Profile;
 import io.kuzzle.sdk.security.Security;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -31,13 +29,11 @@ import static org.mockito.Mockito.verify;
 public class KuzzleProfileTest {
   private Kuzzle kuzzle;
   private Profile stubProfile;
-  private ResponseListener listener;
 
   @Before
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
     kuzzle.security = new Security(kuzzle);
-    listener = mock(ResponseListener.class);
     stubProfile = new Profile(kuzzle, "foo", null);
   }
 
@@ -45,7 +41,7 @@ public class KuzzleProfileTest {
   public void testConstructorNoContent() throws JSONException {
     Profile profile = new Profile(kuzzle, "foo", null);
     assertEquals(profile.id, "foo");
-    assertEquals(profile.getPolicies().length(), 0);
+    assertEquals(profile.getPolicies().length, 0);
     assertThat(profile.content, instanceOf(JSONObject.class));
     assertEquals(profile.content.length(), 0);
   }
@@ -59,8 +55,8 @@ public class KuzzleProfileTest {
     );
     Profile profile = new Profile(kuzzle, "foo", content);
     assertEquals(profile.id, "foo");
-    assertEquals(profile.getPolicies().length(), 3);
-    assertEquals(profile.getPolicies().getJSONObject(2).getString("roleId"), "baz");
+    assertEquals(profile.getPolicies().length, 3);
+    assertEquals(profile.getPolicies()[2].getString("roleId"), "baz");
     assertThat(profile.content, instanceOf(JSONObject.class));
     assertEquals(profile.content.length(), 0);
   }
@@ -78,8 +74,8 @@ public class KuzzleProfileTest {
     );
     Profile profile = new Profile(kuzzle, "foo", content);
     assertEquals(profile.id, "foo");
-    assertEquals(profile.getPolicies().length(), 3);
-    assertEquals(profile.getPolicies().getJSONObject(2).getString("roleId"), "baz");
+    assertEquals(profile.getPolicies().length, 3);
+    assertEquals(profile.getPolicies()[2].getString("roleId"), "baz");
     assertThat(profile.content, instanceOf(JSONObject.class));
     assertEquals(profile.content.length(), 0);
   }
@@ -87,8 +83,8 @@ public class KuzzleProfileTest {
   @Test
   public void testAddPolicyObject() throws JSONException {
     stubProfile.addPolicy(new JSONObject().put("roleId", "some role"));
-    assertEquals(stubProfile.getPolicies().length(), 1);
-    assertTrue(stubProfile.getPolicies().getJSONObject(0).getString("roleId") == "some role");
+    assertEquals(stubProfile.getPolicies().length, 1);
+    assertEquals(stubProfile.getPolicies()[0].getString("roleId"), "some role");
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -100,8 +96,8 @@ public class KuzzleProfileTest {
   @Test
   public void testAddPolicyID() throws JSONException {
     stubProfile.addPolicy("another role");
-    assertEquals(stubProfile.getPolicies().length(), 1);
-    assertTrue(stubProfile.getPolicies().getJSONObject(0).getString("roleId") == "another role");
+    assertEquals(stubProfile.getPolicies().length, 1);
+    assertEquals(stubProfile.getPolicies()[0].getString("roleId"), "another role");
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -157,14 +153,18 @@ public class KuzzleProfileTest {
 
   @Test
   public void testSetPoliciesObjectList() throws JSONException {
-    JSONArray policies = new JSONArray("[{\"roleId\": \"bar\"},{\"roleId\": \"baz\"},{\"roleId\": \"qux\"}]");
+    JSONObject[] policies = new JSONObject[]{
+      new JSONObject().put("roleId", "bar"),
+      new JSONObject().put("roleId", "baz"),
+      new JSONObject().put("roleId", "qux")
+    };
 
     stubProfile.addPolicy("foo");
     stubProfile.setPolicies(policies);
-    assertEquals(stubProfile.getPolicies().length(), 3);
-    assertEquals(stubProfile.getPolicies().getJSONObject(0).getString("roleId"), "bar");
-    assertEquals(stubProfile.getPolicies().getJSONObject(1).getString("roleId"), "baz");
-    assertEquals(stubProfile.getPolicies().getJSONObject(2).getString("roleId"), "qux");
+    assertEquals(stubProfile.getPolicies().length, 3);
+    assertEquals(stubProfile.getPolicies()[0].getString("roleId"), "bar");
+    assertEquals(stubProfile.getPolicies()[1].getString("roleId"), "baz");
+    assertEquals(stubProfile.getPolicies()[2].getString("roleId"), "qux");
   }
 
   @Test
@@ -172,19 +172,24 @@ public class KuzzleProfileTest {
     String[] policies = {"bar", "baz", "qux"};
 
     stubProfile.addPolicy("foo");
+    assertEquals(stubProfile.getPolicies().length, 1);
+
     stubProfile.setPolicies(policies);
-    assertEquals(stubProfile.getPolicies().length(), 4);
-    assertEquals(stubProfile.getPolicies().getJSONObject(0).getString("roleId"), "foo");
-    assertEquals(stubProfile.getPolicies().getJSONObject(1).getString("roleId"), "bar");
-    assertEquals(stubProfile.getPolicies().getJSONObject(2).getString("roleId"), "baz");
-    assertEquals(stubProfile.getPolicies().getJSONObject(3).getString("roleId"), "qux");
+    assertEquals(stubProfile.getPolicies().length, 3);
+    assertEquals(stubProfile.getPolicies()[0].getString("roleId"), "bar");
+    assertEquals(stubProfile.getPolicies()[1].getString("roleId"), "baz");
+    assertEquals(stubProfile.getPolicies()[2].getString("roleId"), "qux");
+
+    stubProfile.addPolicy("foo");
+    assertEquals(stubProfile.getPolicies().length, 4);
+    assertEquals(stubProfile.getPolicies()[3].getString("roleId"), "foo");
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testSetBadPolicies() throws JSONException {
-    stubProfile.setPolicies(new JSONArray("[{\"bad\":\"policy\"}]"));
+    stubProfile.setPolicies(new JSONObject[]{new JSONObject().put("bad", "policy")});
 
-    doThrow(IllegalArgumentException.class).when(stubProfile).setPolicies(any(JSONArray.class));
+    doThrow(IllegalArgumentException.class).when(stubProfile).setPolicies(any(JSONObject[].class));
   }
 
   @Test

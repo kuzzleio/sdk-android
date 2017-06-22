@@ -103,7 +103,8 @@ public class refreshTest {
           .put("result", new JSONObject()
             .put("_id", "42")
             .put("_version", 1337)
-            .put("_source", new JSONObject().put("foo", "bar")));
+            .put("_source", new JSONObject().put("foo", "bar"))
+            .put("_meta", new JSONObject().put("author", "foo")));
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(null);
         return null;

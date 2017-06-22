@@ -81,7 +81,7 @@ public class queryTest {
     JSONObject request = (JSONObject) argument.getValue();
     assertEquals(request.getString("controller"), args.controller);
     assertEquals(request.getString("action"), args.action);
-    assertEquals(request.getJSONObject("metadata").length(), 0);
+    assertEquals(request.getJSONObject("volatile").length(), 1);
     assertEquals(request.has("index"), false);
     assertEquals(request.has("collection"), false);
     assertEquals(request.has("headers"), false);
@@ -102,7 +102,7 @@ public class queryTest {
     assertEquals(request.getString("index"), args.index);
     assertEquals(request.has("collection"), false);
     assertEquals(request.has("headers"), false);
-    assertEquals(request.getJSONObject("metadata").length(), 0);
+    assertEquals(request.getJSONObject("volatile").length(), 1);
     assertNotNull(request.getString("requestId"));
   }
 
@@ -120,7 +120,7 @@ public class queryTest {
     assertEquals(request.getString("collection"), args.collection);
     assertEquals(request.has("index"), false);
     assertEquals(request.has("headers"), false);
-    assertEquals(request.getJSONObject("metadata").length(), 0);
+    assertEquals(request.getJSONObject("volatile").length(), 1);
     assertNotNull(request.getString("requestId"));
   }
 
@@ -135,7 +135,7 @@ public class queryTest {
     JSONObject request = (JSONObject) argument.getValue();
     assertEquals(request.getString("controller"), args.controller);
     assertEquals(request.getString("action"), args.action);
-    assertEquals(request.getJSONObject("metadata").length(), 0);
+    assertEquals(request.getJSONObject("volatile").length(), 1);
     assertEquals(request.has("index"), false);
     assertEquals(request.has("collection"), false);
     assertNotNull(request.getString("requestId"));
@@ -155,7 +155,7 @@ public class queryTest {
     JSONObject request = (JSONObject) argument.getValue();
     assertEquals(request.getString("controller"), args.controller);
     assertEquals(request.getString("action"), args.action);
-    assertEquals(request.getJSONObject("metadata").length(), 0);
+    assertEquals(request.getJSONObject("volatile").length(), 1);
     assertEquals(request.has("index"), false);
     assertEquals(request.has("collection"), false);
     assertEquals(request.has("headers"), false);
@@ -163,23 +163,36 @@ public class queryTest {
   }
 
   @Test
-  public void shouldAddMetadata() throws JSONException {
+  public void shouldAddVolatile() throws JSONException {
     JSONObject
-      kuzzleMetadata = new JSONObject().put("foo", "foo").put("bar", "bar"),
-      optionsMetadata = new JSONObject().put("qux", "qux").put("foo", "bar");
-    Options opts = new Options().setMetadata(optionsMetadata);
+      kuzzleVolatile = new JSONObject().put("foo", "foo").put("bar", "bar"),
+      optionsVolatile = new JSONObject().put("qux", "qux").put("foo", "bar");
+    Options opts = new Options().setVolatile(optionsVolatile);
 
-    kuzzle.setMetadata(kuzzleMetadata);
+    kuzzle.setVolatile(kuzzleVolatile);
     kuzzle.query(args, new JSONObject(), opts);
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
     verify(socket).emit(any(String.class), (JSONObject) argument.capture());
 
-    JSONObject metadata = ((JSONObject) argument.getValue()).getJSONObject("metadata");
-    assertEquals(metadata.length(), 3);
-    assertEquals(metadata.getString("foo"), "bar"); // options take precedence over kuzzle metadata
-    assertEquals(metadata.getString("bar"), "bar");
-    assertEquals(metadata.getString("qux"), "qux");
+    JSONObject _volatile = ((JSONObject) argument.getValue()).getJSONObject("volatile");
+    assertEquals(_volatile.length(), 4);
+    assertEquals(_volatile.getString("sdkVersion"), kuzzle.getSdkVersion());
+    assertEquals(_volatile.getString("foo"), "bar"); // options take precedence over kuzzle volatile data
+    assertEquals(_volatile.getString("bar"), "bar");
+    assertEquals(_volatile.getString("qux"), "qux");
+  }
+
+  @Test
+  public void shouldSendSdkVersionInVolatile() throws JSONException  {
+    kuzzle.query(args, new JSONObject(), new Options());
+
+    ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
+    verify(socket).emit(any(String.class), (JSONObject) argument.capture());
+
+    JSONObject _volatile = ((JSONObject) argument.getValue()).getJSONObject("volatile");
+    assertEquals(_volatile.length(), 1);
+    assertEquals(_volatile.getString("sdkVersion"), kuzzle.getSdkVersion());
   }
 
   @Test
@@ -254,14 +267,14 @@ public class queryTest {
   }
 
   @Test
-  public void shouldTriggerJwtTokenExpiredEvent() throws JSONException {
+  public void shouldTriggerTokenExpiredEvent() throws JSONException {
     EventListener fake = spy(new EventListener() {
       @Override
       public void trigger(Object... args) {
 
       }
     });
-    kuzzle.addListener(Event.jwtTokenExpired, fake);
+    kuzzle.addListener(Event.tokenExpired, fake);
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {

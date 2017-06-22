@@ -2,9 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'jacoco-android'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'com.github.dcendents.android-maven'
-
-version = "2.2.0"
-
+version = "3.0.0"
 buildscript {
     repositories {
         jcenter()
@@ -61,6 +59,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     testCompile 'org.hamcrest:hamcrest-junit:2.0.0.0'
     testCompile 'org.mockito:mockito-core:1.9.5'
+    testCompile 'org.skyscreamer:jsonassert:1.5.0'
     // for not mocking JSONObject
     testCompile files('libs-test/json-20140107.jar')
     androidTestCompile 'junit:junit:4.12'
@@ -138,8 +137,6 @@ install {
 
 // from: 'https://raw.githubusercontent.com/nisrulz/JCenter/master/bintrayv1.gradle'
 apply plugin: 'com.jfrog.bintray'
-
-version = libraryVersion
 
 task sourcesJar(type: Jar) {
     classifier = 'sources'

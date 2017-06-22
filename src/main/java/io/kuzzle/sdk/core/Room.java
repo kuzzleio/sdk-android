@@ -48,9 +48,9 @@ public class Room {
    */
   protected JSONObject headers;
   /**
-   * The Metadata.
+   * The Volatile property.
    */
-  protected JSONObject metadata;
+  protected JSONObject _volatile;
   /**
    * The Subscribe to self.
    */
@@ -136,7 +136,7 @@ public class Room {
     }
 
     this.subscribeToSelf = opts.isSubscribeToSelf();
-    this.metadata = opts.getMetadata();
+    this._volatile = opts.getVolatile();
     this.scope = opts.getScope();
     this.state = opts.getState();
     this.users = opts.getUsers();
@@ -202,32 +202,23 @@ public class Room {
     }
 
     try {
-      if (!((JSONObject) args).isNull("error")) {
-        listener.onError((JSONObject) args);
+      String requestId = ((JSONObject) args).has("requestId") ? ((JSONObject) args).getString("requestId") : null;
+
+      if (((JSONObject) args).getString("type").equals("TokenExpired")) {
+        Room.this.kuzzle.jwtToken = null;
+        Room.this.kuzzle.emitEvent(Event.tokenExpired);
       }
-      else {
-        String key = ((JSONObject) args).getString("requestId");
 
-        if (((JSONObject) args).getString("action").equals("jwtTokenExpired")) {
-          Room.this.kuzzle.jwtToken = null;
-          Room.this.kuzzle.emitEvent(Event.jwtTokenExpired);
-        }
-
-        if (Room.this.kuzzle.getRequestHistory().containsKey(key)) {
-          if (Room.this.subscribeToSelf) {
-            listener.onSuccess(new NotificationResponse(kuzzle, (JSONObject) args));
-          }
-          Room.this.kuzzle.getRequestHistory().remove(key);
-        } else {
+      if (requestId != null && Room.this.kuzzle.getRequestHistory().containsKey(requestId)) {
+        if (Room.this.subscribeToSelf) {
           listener.onSuccess(new NotificationResponse(kuzzle, (JSONObject) args));
         }
+        Room.this.kuzzle.getRequestHistory().remove(requestId);
+      } else {
+        listener.onSuccess(new NotificationResponse(kuzzle, (JSONObject) args));
       }
     } catch (JSONException e) {
-      try {
-        listener.onError(((JSONObject) args).getJSONObject("error"));
-      } catch (JSONException err) {
-        throw new RuntimeException(e);
-      }
+      throw new RuntimeException(e);
     }
   }
 
@@ -316,7 +307,7 @@ public class Room {
           .put("state", this.state.toString().toLowerCase())
           .put("users", this.users.toString().toLowerCase());
 
-      options.setMetadata(this.metadata);
+      options.setVolatile(this._volatile);
       this.kuzzle.addHeaders(subscribeQuery, this.headers);
 
       new Thread(new Runnable() {
@@ -530,22 +521,22 @@ public class Room {
   }
 
   /**
-   * Gets metadata.
+   * Gets volatile data.
    *
-   * @return the metadata
+   * @return the volatile property
    */
-  public JSONObject getMetadata() {
-    return metadata;
+  public JSONObject getVolatile() {
+    return _volatile;
   }
 
   /**
-   * Sets metadata.
+   * Sets volatile metadata.
    *
-   * @param metadata the metadata
-   * @return the metadata
+   * @param _volatile the volatile property
+   * @return kuzzle instance
    */
-  public Room setMetadata(final JSONObject metadata) {
-    this.metadata = metadata;
+  public Room setVolatile(final JSONObject _volatile) {
+    this._volatile = _volatile;
     return this;
   }
 

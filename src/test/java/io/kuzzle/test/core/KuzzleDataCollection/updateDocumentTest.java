@@ -4,6 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -17,6 +18,7 @@ import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.States;
+import io.kuzzle.sdk.util.KuzzleJSONObject;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.socket.client.Socket;
 
@@ -103,6 +105,7 @@ public class updateDocumentTest {
               .put("_id", "42")
               .put("_version", 1337)
               .put("_source", new JSONObject())
+              .put("_meta", new JSONObject())
           );
         if (invocation.getArguments()[3] != null) {
           ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
@@ -139,5 +142,16 @@ public class updateDocumentTest {
       }
     });
     verify(kuzzle, times(6)).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+  }
+
+  @Test
+  public void testRetryOnConflict() throws JSONException {
+    Options opts = new Options().setRetryOnConflict(42);
+    Document doc = new Document(collection);
+    ArgumentCaptor capturedQuery = ArgumentCaptor.forClass(KuzzleJSONObject.class);
+
+    collection.updateDocument("foo", doc.serialize(), opts);
+    verify(kuzzle).query(any(Kuzzle.QueryArgs.class), (JSONObject)capturedQuery.capture(), any(Options.class), any(OnQueryDoneListener.class));
+    assertEquals(((JSONObject)capturedQuery.getValue()).getInt("retryOnConflict"), 42);
   }
 }

@@ -38,6 +38,7 @@ import io.kuzzle.sdk.util.EventList;
 import io.kuzzle.sdk.util.OfflineQueueLoader;
 import io.kuzzle.sdk.util.QueryObject;
 import io.kuzzle.sdk.util.QueueFilter;
+import io.kuzzle.sdk_android.BuildConfig;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -71,9 +72,9 @@ public class Kuzzle {
    */
   protected JSONObject headers = new JSONObject();
   /**
-   * The Metadata.
+   * The Volatile property.
    */
-  protected JSONObject metadata;
+  protected JSONObject _volatile;
   /**
    * The target Kuzzle host
    */
@@ -86,6 +87,7 @@ public class Kuzzle {
    * The Connection callback.
    */
   protected ResponseListener<Void> connectionCallback;
+
   /**
    * The State.
    */
@@ -93,7 +95,7 @@ public class Kuzzle {
   /**
    * The Reconnection delay.
    */
-  protected long  reconnectionDelay;
+  protected long reconnectionDelay;
   /**
    * The Auto resubscribe.
    */
@@ -210,20 +212,24 @@ public class Kuzzle {
    * @param event the event
    * @param args  the args
    */
-  protected void emitEvent(Event event, Object ...args) {
+  protected void emitEvent(Event event, Object... args) {
     long now = System.currentTimeMillis();
 
     if (this.eventListeners.containsKey(event)) {
       EventList l = this.eventListeners.get(event);
 
       if (l.lastEmitted < now - this.EVENT_TIMEOUT) {
-        for(io.kuzzle.sdk.util.Event e : l.values()) {
+        for (io.kuzzle.sdk.util.Event e : l.values()) {
           e.trigger(args);
         }
 
         l.lastEmitted = now;
       }
     }
+  }
+
+  public States getState() {
+    return state;
   }
 
   /**
@@ -249,7 +255,7 @@ public class Kuzzle {
     this.autoResubscribe = opt.isAutoResubscribe();
     this.defaultIndex = opt.getDefaultIndex();
     this.headers = opt.getHeaders();
-    this.metadata = opt.getMetadata();
+    this._volatile = opt.getVolatile();
     this.port = opt.getPort();
     this.queueMaxSize = opt.getQueueMaxSize();
     this.queueTTL = opt.getQueueTTL();
@@ -286,7 +292,7 @@ public class Kuzzle {
    * Instantiates a new Kuzzle.
    *
    * @param host target Kuzzle host name or IP address
-   * @param cb  the cb
+   * @param cb   the cb
    * @throws URISyntaxException the uri syntax exception
    */
   public Kuzzle(@NonNull final String host, final ResponseListener<Void> cb) throws URISyntaxException {
@@ -296,7 +302,7 @@ public class Kuzzle {
   /**
    * Instantiates a new Kuzzle.
    *
-   * @param host target Kuzzle host name or IP address
+   * @param host    target Kuzzle host name or IP address
    * @param options the options
    * @throws URISyntaxException the uri syntax exception
    */
@@ -307,13 +313,11 @@ public class Kuzzle {
   /**
    * Adds a listener to a Kuzzle global event. When an event is fired, listeners are called in the order of their
    * insertion.
-   * The ID returned by this function is required to remove this listener at a later time.
    *
    * @param kuzzleEvent - name of the global event to subscribe to
    * @param listener    the event listener
-   * @return {string} Unique listener ID
    */
-  public String addListener(final Event kuzzleEvent, final EventListener listener) {
+  public Kuzzle addListener(final Event kuzzleEvent, final EventListener listener) {
     this.isValid();
 
     io.kuzzle.sdk.util.Event e = new io.kuzzle.sdk.util.Event(kuzzleEvent) {
@@ -327,9 +331,8 @@ public class Kuzzle {
       eventListeners.put(kuzzleEvent, new EventList());
     }
 
-    String id = e.getId().toString();
-    eventListeners.get(kuzzleEvent).put(id, e);
-    return id;
+    eventListeners.get(kuzzleEvent).put(listener, e);
+    return this;
   }
 
   /**
@@ -471,7 +474,7 @@ public class Kuzzle {
               public void onSuccess(TokenValidity response) {
                 if (!response.isValid()) {
                   Kuzzle.this.jwtToken = null;
-                  Kuzzle.this.emitEvent(Event.jwtTokenExpired);
+                  Kuzzle.this.emitEvent(Event.tokenExpired);
                 }
 
                 Kuzzle.this.reconnect();
@@ -480,7 +483,7 @@ public class Kuzzle {
               @Override
               public void onError(JSONObject error) {
                 Kuzzle.this.jwtToken = null;
-                Kuzzle.this.emitEvent(Event.jwtTokenExpired);
+                Kuzzle.this.emitEvent(Event.tokenExpired);
                 Kuzzle.this.reconnect();
               }
             });
@@ -535,6 +538,69 @@ public class Kuzzle {
   }
 
   /**
+   * Create an index in Kuzzle
+   *
+   * @param index
+   * @param cb
+   * @return
+   */
+  public Kuzzle createIndex(@NonNull final String index, final ResponseListener<JSONObject> cb) {
+    return createIndex(index, null, cb);
+  }
+
+  /**
+   * Create an index in Kuzzle
+   *
+   * @param index
+   * @return
+   */
+  public Kuzzle createIndex(@NonNull final String index) {
+    return createIndex(index, null, null);
+  }
+
+  /**
+   * Create an index in Kuzzle
+   *
+   * @param index
+   * @param options
+   * @param cb
+   * @return
+   */
+  public Kuzzle createIndex(@NonNull final String index, final Options options, final ResponseListener<JSONObject> cb) {
+    if (index == null && defaultIndex == null) {
+      throw new IllegalArgumentException("Collection.createIndex: index required");
+    }
+
+    QueryArgs args = new QueryArgs();
+    args.controller = "index";
+    args.action = "create";
+
+    JSONObject request = new JSONObject();
+    try {
+      request.put("index", index == null ? defaultIndex : index);
+      this.query(args, request, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            cb.onSuccess(response.getJSONObject("result"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          cb.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+
+    return this;
+  }
+
+  /**
    * Empties the offline queue without replaying it.
    *
    * @return Kuzzle instance
@@ -549,7 +615,7 @@ public class Kuzzle {
    *
    * @param listener the listener
    */
-  public void getAllStatistics(@NonNull final ResponseListener<JSONArray> listener) {
+  public void getAllStatistics(@NonNull final ResponseListener<JSONObject[]> listener) {
     this.getAllStatistics(null, listener);
   }
 
@@ -560,7 +626,7 @@ public class Kuzzle {
    * @param options  the options
    * @param listener the listener
    */
-  public void getAllStatistics(final Options options, @NonNull final ResponseListener<JSONArray> listener) {
+  public void getAllStatistics(final Options options, @NonNull final ResponseListener<JSONObject[]> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.getAllStatistics: listener required");
     }
@@ -574,7 +640,14 @@ public class Kuzzle {
         @Override
         public void onSuccess(JSONObject object) {
           try {
-            listener.onSuccess(object.getJSONObject("result").getJSONArray("hits"));
+            JSONArray hits = object.getJSONObject("result").getJSONArray("hits");
+            JSONObject[] frames = new JSONObject[hits.length()];
+
+            for(int i = 0; i < hits.length(); i++) {
+              frames[i] = hits.getJSONObject(i);
+            }
+
+            listener.onSuccess(frames);
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
@@ -595,7 +668,7 @@ public class Kuzzle {
    *
    * @param listener the listener
    */
-  public void getStatistics(@NonNull final ResponseListener<JSONObject> listener) {
+  public void getStatistics(@NonNull final ResponseListener<JSONObject[]> listener) {
     this.getStatistics(null, listener);
   }
 
@@ -606,13 +679,14 @@ public class Kuzzle {
    * @param options  the options
    * @param listener the listener
    */
-  public void getStatistics(final Options options, @NonNull final ResponseListener<JSONObject> listener) {
+  public void getStatistics(final Options options, @NonNull final ResponseListener<JSONObject[]> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.getStatistics: listener required");
     }
     this.isValid();
     JSONObject body = new JSONObject();
     JSONObject data = new JSONObject();
+
     try {
       body.put("body", data);
       QueryArgs args = new QueryArgs();
@@ -622,7 +696,7 @@ public class Kuzzle {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(response.getJSONObject("result"));
+            listener.onSuccess(new JSONObject[]{response.getJSONObject("result")});
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
@@ -644,7 +718,7 @@ public class Kuzzle {
    * @param timestamp the timestamp
    * @param listener  the listener
    */
-  public void getStatistics(long timestamp, @NonNull final ResponseListener<JSONArray> listener) {
+  public void getStatistics(long timestamp, @NonNull final ResponseListener<JSONObject[]> listener) {
     this.getStatistics(timestamp, null, listener);
   }
 
@@ -655,7 +729,7 @@ public class Kuzzle {
    * @param options   the options
    * @param listener  the listener
    */
-  public void getStatistics(long timestamp, final Options options, @NonNull final ResponseListener<JSONArray> listener) {
+  public void getStatistics(long timestamp, final Options options, @NonNull final ResponseListener<JSONObject[]> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Kuzzle.getStatistics: listener required");
     }
@@ -663,6 +737,7 @@ public class Kuzzle {
     this.isValid();
     JSONObject body = new JSONObject();
     JSONObject data = new JSONObject();
+
     try {
       data.put("since", timestamp);
       body.put("body", data);
@@ -673,7 +748,14 @@ public class Kuzzle {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(response.getJSONObject("result").getJSONArray("hits"));
+            JSONArray hits = response.getJSONObject("result").getJSONArray("hits");
+            JSONObject[] stats = new JSONObject[hits.length()];
+
+            for (int i = 0; i < hits.length(); i++) {
+              stats[i] = hits.getJSONObject(i);
+            }
+
+            listener.onSuccess(stats);
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
@@ -737,7 +819,7 @@ public class Kuzzle {
    *
    * @param listener the listener
    */
-  public void listCollections(@NonNull final ResponseListener<JSONObject> listener) {
+  public void listCollections(@NonNull final ResponseListener<JSONObject[]> listener) {
     this.listCollections(null, null, listener);
   }
 
@@ -747,7 +829,7 @@ public class Kuzzle {
    * @param index    the index
    * @param listener the listener
    */
-  public void listCollections(String index, @NonNull final ResponseListener<JSONObject> listener) {
+  public void listCollections(String index, @NonNull final ResponseListener<JSONObject[]> listener) {
     this.listCollections(index, null, listener);
   }
 
@@ -757,7 +839,7 @@ public class Kuzzle {
    * @param options  the options
    * @param listener the listener
    */
-  public void listCollections(Options options, @NonNull final ResponseListener<JSONObject> listener) {
+  public void listCollections(Options options, @NonNull final ResponseListener<JSONObject[]> listener) {
     this.listCollections(null, options, listener);
   }
 
@@ -768,7 +850,7 @@ public class Kuzzle {
    * @param options  the options
    * @param listener the listener
    */
-  public void listCollections(String index, Options options, @NonNull final ResponseListener<JSONObject> listener) {
+  public void listCollections(String index, Options options, @NonNull final ResponseListener<JSONObject[]> listener) {
     if (index == null) {
       if (this.defaultIndex == null) {
         throw new IllegalArgumentException("Kuzzle.listCollections: index required");
@@ -794,7 +876,14 @@ public class Kuzzle {
         @Override
         public void onSuccess(JSONObject collections) {
           try {
-            listener.onSuccess(collections.getJSONObject("result").getJSONObject("collections"));
+            JSONArray result = collections.getJSONObject("result").getJSONArray("collections");
+            JSONObject[] cols = new JSONObject[result.length()];
+
+            for (int i = 0; i < result.length(); i++) {
+              cols[i] = result.getJSONObject(i);
+            }
+
+            listener.onSuccess(cols);
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
@@ -949,16 +1038,16 @@ public class Kuzzle {
     try {
       Options options = new Options();
       JSONObject query = new JSONObject();
-      JSONObject body;
+      JSONObject body = new JSONObject();
       if (credentials != null) {
-        body = new JSONObject(credentials.toString());
-      } else {
-        body = new JSONObject().put("strategy", strategy);
+        body = credentials;
       }
 
       if (expiresIn >= 0) {
         body.put("expiresIn", expiresIn);
       }
+
+      query.put("strategy", strategy);
 
       query.put("body", body);
       QueryArgs args = new QueryArgs();
@@ -988,8 +1077,8 @@ public class Kuzzle {
         public void onError(JSONObject error) {
           try {
             emitEvent(Event.loginAttempt, new JSONObject()
-                .put("success", false)
-                .put("error", error));
+              .put("success", false)
+              .put("error", error));
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
@@ -1014,7 +1103,7 @@ public class Kuzzle {
           @Override
           public void run() {
             try {
-              HttpURLConnection conn = (HttpURLConnection)  URI.create(url).toURL().openConnection();
+              HttpURLConnection conn = (HttpURLConnection) URI.create(url).toURL().openConnection();
               conn.setRequestMethod("GET");
               conn.setUseCaches(false);
 
@@ -1034,14 +1123,14 @@ public class Kuzzle {
                   loginCallback.onSuccess(response.getJSONObject("result"));
                 }
               } else {
-                  emitEvent(Event.loginAttempt, new JSONObject()
-                      .put("success", false)
-                      .put("error", response.getJSONObject("error")));
+                emitEvent(Event.loginAttempt, new JSONObject()
+                  .put("success", false)
+                  .put("error", response.getJSONObject("error")));
                 if (loginCallback != null) {
                   loginCallback.onError(response.getJSONObject("error"));
                 }
               }
-            } catch (JSONException|IOException e) {
+            } catch (JSONException | IOException e) {
               e.printStackTrace();
             }
           }
@@ -1229,14 +1318,14 @@ public class Kuzzle {
       .put("action", queryArgs.action)
       .put("controller", queryArgs.controller);
 
-    // Global metadata
-    JSONObject meta = new JSONObject();
-    for (Iterator ite = this.metadata.keys(); ite.hasNext();) {
+    // Global volatile data
+    JSONObject _volatile = new JSONObject();
+    for (Iterator ite = this._volatile.keys(); ite.hasNext(); ) {
       String key = (String) ite.next();
-      meta.put(key, this.metadata.get(key));
+      _volatile.put(key, this._volatile.get(key));
     }
 
-    // Metadata for this query
+    // Volatile data for this query
     if (options != null) {
       if (!options.isQueuable() && this.state != States.CONNECTED) {
         discardRequest(listener, object);
@@ -1247,10 +1336,10 @@ public class Kuzzle {
         object.put("refresh", options.getRefresh());
       }
 
-      if (options.getMetadata() != null) {
-        for (Iterator iterator = options.getMetadata().keys(); iterator.hasNext(); ) {
+      if (options.getVolatile() != null) {
+        for (Iterator iterator = options.getVolatile().keys(); iterator.hasNext(); ) {
           String key = (String) iterator.next();
-          meta.put(key, options.getMetadata().get(key));
+          _volatile.put(key, options.getVolatile().get(key));
         }
       }
 
@@ -1261,9 +1350,18 @@ public class Kuzzle {
       if (options.getSize() != null) {
         object.put("size", options.getSize());
       }
+
+      if (options.getScroll() != null) {
+        object.put("scroll", options.getScroll());
+      }
+
+      if (options.getScrollId() != null) {
+        object.put("scrollId", options.getScrollId());
+      }
     }
 
-    object.put("metadata", meta);
+    _volatile.put("sdkVersion", this.getSdkVersion());
+    object.put("volatile", _volatile);
 
     if (queryArgs.collection != null) {
       object.put("collection", queryArgs.collection);
@@ -1344,13 +1442,13 @@ public class Kuzzle {
   /**
    * Removes a listener from an event.
    *
-   * @param event      the type
-   * @param listenerId the listener id
+   * @param event    the type
+   * @param listener the listener
    * @return the kuzzle
    */
-  public Kuzzle removeListener(Event event, String listenerId) {
+  public Kuzzle removeListener(Event event, EventListener listener) {
     if (eventListeners.containsKey(event)) {
-      eventListeners.get(event).remove(listenerId);
+      eventListeners.get(event).remove(listener);
     }
 
     return this;
@@ -1363,7 +1461,7 @@ public class Kuzzle {
    * - after a successful login attempt, to subscribe with the new credentials
    */
   protected void renewSubscriptions() {
-    for(Map<String, Room> roomSubscriptions: subscriptions.values()) {
+    for (Map<String, Room> roomSubscriptions : subscriptions.values()) {
       for (Room room : roomSubscriptions.values()) {
         room.renew(room.getListener(), room.getSubscribeListener());
       }
@@ -1511,8 +1609,8 @@ public class Kuzzle {
         public void call(Object... args) {
           try {
             // checking token expiration
-            if (!((JSONObject) args[0]).isNull("error") && ((JSONObject) args[0]).getJSONObject("error").getString("message").equals("Token expired") && !((JSONObject)args[0]).getString("action").equals("logout")) {
-              emitEvent(Event.jwtTokenExpired, listener);
+            if (!((JSONObject) args[0]).isNull("error") && ((JSONObject) args[0]).getJSONObject("error").getString("message").equals("Token expired") && !((JSONObject) args[0]).getString("action").equals("logout")) {
+              emitEvent(Event.tokenExpired, listener);
             }
 
             if (listener != null) {
@@ -1608,6 +1706,15 @@ public class Kuzzle {
    */
   public JSONObject getHeaders() {
     return this.headers;
+  }
+
+  /**
+   * Returns the current SDK version.
+   *
+   * @return String
+   */
+  public String getSdkVersion() {
+    return BuildConfig.VERSION_NAME;
   }
 
   /**
@@ -1822,7 +1929,7 @@ public class Kuzzle {
   /**
    * Clean up the queue, ensuring the queryTTL and queryMaxSize properties are respected
    */
-  private void  cleanQueue() {
+  private void cleanQueue() {
     Date now = new Date();
     Calendar cal = Calendar.getInstance();
     cal.setTime(now);
@@ -1849,7 +1956,7 @@ public class Kuzzle {
     }
   }
 
-  private void  mergeOfflineQueueWithLoader() {
+  private void mergeOfflineQueueWithLoader() {
     KuzzleQueue<QueryObject> additionalOfflineQueue = this.offlineQueueLoader.load();
     try {
       for (QueryObject additionalQuery : additionalOfflineQueue) {
@@ -1996,7 +2103,7 @@ public class Kuzzle {
   public Kuzzle unsetJwtToken() {
     this.jwtToken = null;
 
-    for(Map<String, Room> roomSubscriptions: subscriptions.values()) {
+    for (Map<String, Room> roomSubscriptions : subscriptions.values()) {
       for (Room room : roomSubscriptions.values()) {
         room.unsubscribe();
       }
@@ -2022,8 +2129,7 @@ public class Kuzzle {
       this.jwtToken = result.getString("jwt");
       this.renewSubscriptions();
       this.emitEvent(Event.loginAttempt, new JSONObject().put("success", true));
-    }
-    else {
+    } else {
       this.emitEvent(Event.loginAttempt, new JSONObject()
         .put("success", false)
         .put("error", "Cannot find a valid JWT token in the following object: " + response.toString())
@@ -2063,23 +2169,23 @@ public class Kuzzle {
   }
 
   /**
-   * Setter for the metadata property
+   * Setter for the volatile property
    *
-   * @param newMetadata the new metadata
-   * @return metadata metadata
+   * @param _volatile the new volatile data
+   * @return kuzzle instance
    */
-  public Kuzzle setMetadata(JSONObject newMetadata) {
-    this.metadata = newMetadata;
+  public Kuzzle setVolatile(JSONObject _volatile) {
+    this._volatile = _volatile;
     return this;
   }
 
   /**
-   * Getter for the metadata property
+   * Getter for the volatile property
    *
-   * @return metadata metadata
+   * @return _volatile volatile data
    */
-  public JSONObject getMetadata() {
-    return this.metadata;
+  public JSONObject getVolatile() {
+    return this._volatile;
   }
 
 
@@ -2418,13 +2524,17 @@ public class Kuzzle {
           try {
             boolean result = response.getBoolean("result");
             listener.onSuccess(result);
-          } catch(JSONException e) { throw new RuntimeException(e); }
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
         }
 
         @Override
-        public void onError(JSONObject error) { listener.onError(error); }
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
       });
-    } catch(JSONException e) {
+    } catch (JSONException e) {
       throw new RuntimeException(e);
     }
   }
@@ -2544,7 +2654,9 @@ public class Kuzzle {
           try {
             boolean result = response.getBoolean("result");
             listener.onSuccess(result);
-          } catch (JSONException e) { throw new RuntimeException(e); }
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
         }
 
         @Override
@@ -2554,8 +2666,8 @@ public class Kuzzle {
           }
         }
       });
-    } catch(JSONException e) {
-      throw  new RuntimeException(e);
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
     }
 
     return this;
@@ -2567,7 +2679,7 @@ public class Kuzzle {
    * @param listener
    * @return the Security instance
    */
-  public Kuzzle getMyRights(@NonNull final ResponseListener<JSONArray> listener) {
+  public Kuzzle getMyRights(@NonNull final ResponseListener<JSONObject[]> listener) {
     return getMyRights(null, listener);
   }
 
@@ -2578,7 +2690,7 @@ public class Kuzzle {
    * @param listener
    * @return the Security instance
    */
-  public Kuzzle getMyRights(final Options options, @NonNull final ResponseListener<JSONArray> listener) {
+  public Kuzzle getMyRights(final Options options, @NonNull final ResponseListener<JSONObject[]> listener) {
     if (listener == null) {
       throw new IllegalArgumentException("Security.getMyRights: listener is mandatory.");
     }
@@ -2587,7 +2699,14 @@ public class Kuzzle {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(response.getJSONObject("result").getJSONArray("hits"));
+            JSONArray hits = response.getJSONObject("result").getJSONArray("hits");
+            JSONObject[] rights = new JSONObject[hits.length()];
+
+            for (int i = 0; i < hits.length(); i++) {
+              rights[i] = hits.getJSONObject(i);
+            }
+
+            listener.onSuccess(rights);
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
@@ -2604,6 +2723,17 @@ public class Kuzzle {
     return this;
   }
 
+  protected io.kuzzle.sdk.core.Kuzzle.QueryArgs buildQueryArgs(final String controller, @NonNull String action) {
+    io.kuzzle.sdk.core.Kuzzle.QueryArgs args = new io.kuzzle.sdk.core.Kuzzle.QueryArgs();
+    args.action = action;
+    args.controller = "security";
+    if (controller != null) {
+      args.controller = controller;
+    }
+    args.action = action;
+    return args;
+  }
+
   /**
    * Helper function meant to easily build the first Kuzzle.query() argument
    *
@@ -2612,16 +2742,14 @@ public class Kuzzle {
    * @throws JSONException the json exception
    */
   protected io.kuzzle.sdk.core.Kuzzle.QueryArgs buildQueryArgs(@NonNull final String action) throws JSONException {
-    io.kuzzle.sdk.core.Kuzzle.QueryArgs args = new io.kuzzle.sdk.core.Kuzzle.QueryArgs();
-    args.action = action;
-    args.controller = "security";
-    return args;
+    return buildQueryArgs(null, action);
   }
 
   /**
    * Invokes a query listener with a custom error message and status
+   *
    * @param listener - query listener to discard
-   * @param query - discarded query
+   * @param query    - discarded query
    */
   protected void discardRequest(final OnQueryDoneListener listener, JSONObject query) throws JSONException {
     if (listener != null) {
@@ -2630,6 +2758,317 @@ public class Kuzzle {
         .put("message", "Unable to execute request: not connected to a Kuzzle server.\nDiscarded request: " + query.toString());
 
       listener.onError(err);
+    }
+  }
+
+  /**
+   * Create credentials of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @param credentials
+   * @return
+   */
+  public Kuzzle createMyCredentials(@NonNull final String strategy, final JSONObject credentials) {
+    return createMyCredentials(strategy, credentials, null, null);
+  }
+
+  /**
+   * Create credentials of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @param credentials
+   * @param options
+   * @return
+   */
+  public Kuzzle createMyCredentials(@NonNull final String strategy, final JSONObject credentials, final Options options) {
+    return createMyCredentials(strategy, credentials, options, null);
+  }
+
+  /**
+   * Create credentials of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @param credentials
+   * @param listener
+   * @return
+   */
+  public Kuzzle createMyCredentials(@NonNull final String strategy, final JSONObject credentials, final ResponseListener<JSONObject> listener) {
+    return createMyCredentials(strategy, credentials, null, listener);
+  }
+
+  /**
+   * Create credentials of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @param credentials
+   * @param options
+   * @param listener
+   * @return
+   */
+  public Kuzzle createMyCredentials(@NonNull final String strategy, final JSONObject credentials, final Options options, final ResponseListener<JSONObject> listener) {
+    try {
+      JSONObject body = new JSONObject()
+        .put("strategy", strategy)
+        .put("body", credentials);
+      Kuzzle.this.query(buildQueryArgs("auth", "createMyCredentials"), body, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            if (listener != null) {
+              listener.onSuccess(response.getJSONObject("result"));
+            }
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+
+    return this;
+  }
+
+  /**
+   * Delete credentials of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @return
+   */
+  public Kuzzle deleteMyCredentials(@NonNull final String strategy) {
+    return deleteMyCredentials(strategy, null, null);
+  }
+
+  /**
+   * Delete credentials of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @param options
+   * @return
+   */
+  public Kuzzle deleteMyCredentials(@NonNull final String strategy, final Options options) {
+    return deleteMyCredentials(strategy, options, null);
+  }
+
+  /**
+   * Delete credentials of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @param listener
+   * @return
+   */
+  public Kuzzle deleteMyCredentials(@NonNull final String strategy, final ResponseListener<JSONObject> listener) {
+    return deleteMyCredentials(strategy, null, listener);
+  }
+
+  /**
+   * Delete credentials of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @param options
+   * @param listener
+   * @return
+   */
+  public Kuzzle deleteMyCredentials(@NonNull final String strategy, final Options options, final ResponseListener<JSONObject> listener) {
+    try {
+      JSONObject body = new JSONObject()
+        .put("strategy", strategy);
+      Kuzzle.this.query(buildQueryArgs("auth", "deleteMyCredentials"), body, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            if (listener != null) {
+              listener.onSuccess(response.getJSONObject("result"));
+            }
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+
+    return this;
+  }
+
+  /**
+   * Get credential information of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @param listener
+   */
+  public void getMyCredentials(@NonNull final String strategy, @NonNull final ResponseListener<JSONObject> listener) {
+    getMyCredentials(strategy, null, listener);
+  }
+
+  /**
+   * Get credential information of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @param options
+   * @param listener
+   */
+  public void getMyCredentials(@NonNull final String strategy, final Options options, @NonNull final ResponseListener<JSONObject> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("Kuzzle.getMyCredentials: listener is mandatory");
+    }
+    try {
+      JSONObject body = new JSONObject()
+        .put("strategy", strategy);
+      Kuzzle.this.query(buildQueryArgs("auth", "getMyCredentials"), body, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getJSONObject("result"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Update credentials of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @param credentials
+   * @return
+   */
+  public Kuzzle updateMyCredentials(@NonNull final String strategy, final JSONObject credentials) {
+    return updateMyCredentials(strategy, credentials, null, null);
+  }
+
+  /**
+   * Update credentials of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @param credentials
+   * @param options
+   * @return
+   */
+  public Kuzzle updateMyCredentials(@NonNull final String strategy, final JSONObject credentials, final Options options) {
+    return updateMyCredentials(strategy, credentials, options, null);
+  }
+
+  /**
+   * Update credentials of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @param credentials
+   * @param listener
+   * @return
+   */
+  public Kuzzle updateMyCredentials(@NonNull final String strategy, final JSONObject credentials, final ResponseListener<JSONObject> listener) {
+    return updateMyCredentials(strategy, credentials, null, listener);
+  }
+
+  /**
+   * Update credentials of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @param credentials
+   * @param options
+   * @param listener
+   * @return
+   */
+  public Kuzzle updateMyCredentials(@NonNull final String strategy, final JSONObject credentials, final Options options, final ResponseListener<JSONObject> listener) {
+    try {
+      JSONObject body = new JSONObject()
+        .put("strategy", strategy)
+        .put("body", credentials);
+      Kuzzle.this.query(buildQueryArgs("auth", "updateMyCredentials"), body, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            if (listener != null) {
+              listener.onSuccess(response.getJSONObject("result"));
+            }
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          if (listener != null) {
+            listener.onError(error);
+          }
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+
+    return this;
+  }
+
+  /**
+   * Validate credentials of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @param credentials
+   * @param listener
+   */
+  public void validateMyCredentials(@NonNull final String strategy, final JSONObject credentials, @NonNull final ResponseListener<Boolean> listener) {
+    validateMyCredentials(strategy, credentials, null, listener);
+  }
+
+  /**
+   * Validate credentials of the specified <strategy> for the current user.
+   *
+   * @param strategy
+   * @param credentials
+   * @param options
+   * @param listener
+   */
+  public void validateMyCredentials(@NonNull final String strategy, final JSONObject credentials, final Options options, @NonNull final ResponseListener<Boolean> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("Kuzzle.validateMyCredentials: listener is mandatory");
+    }
+    try {
+      JSONObject body = new JSONObject()
+        .put("strategy", strategy)
+        .put("body", credentials);
+      Kuzzle.this.query(buildQueryArgs("auth", "validateMyCredentials"), body, options, new OnQueryDoneListener() {
+        @Override
+        public void onSuccess(JSONObject response) {
+          try {
+            listener.onSuccess(response.getBoolean("result"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        @Override
+        public void onError(JSONObject error) {
+          listener.onError(error);
+        }
+      });
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
     }
   }
 }

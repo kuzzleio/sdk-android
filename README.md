@@ -5,18 +5,16 @@
 Official Kuzzle Android SDK
 ======
 
-This SDK version requires Kuzzle v1.0.0-RC9 or higher.
-
 ## About Kuzzle
 
-For UI and linked objects developers, Kuzzle is an open-source solution that handles all the data management (CRUD, real-time storage, search, high-level features, etc).
+A backend software, self-hostable and ready to use to power modern apps.
 
 You can access the Kuzzle repository on [Github](https://github.com/kuzzleio/kuzzle)
 
 
 ## SDK Documentation
 
-The complete SDK documentation is available [here](http://kuzzle.io/sdk-documentation)
+The complete SDK documentation is available [here](http://docs.kuzzle.io/sdk-reference)
 
 ## Report an issue
 
@@ -41,7 +39,6 @@ You can configure your android project to get the Kuzzle's android SDK from jcen
     dependencies {
         compile 'io.kuzzle:sdk-android:2.2.0'
     }
-
 
 ## License
 

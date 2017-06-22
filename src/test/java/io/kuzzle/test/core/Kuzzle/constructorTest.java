@@ -117,7 +117,7 @@ public class constructorTest {
   }
 
   @Test
-  public void testMetadataOptions() throws URISyntaxException, JSONException {
+  public void testVolatileOptions() throws URISyntaxException, JSONException {
     Options options = new Options();
     options.setQueuable(false);
     options.setConnect(Mode.MANUAL);
@@ -128,24 +128,24 @@ public class constructorTest {
 
     JSONObject meta = new JSONObject();
     meta.put("foo", "bar");
-    options.setMetadata(meta);
+    options.setVolatile(meta);
 
     JSONObject jsonObj = new JSONObject();
     jsonObj.put("requestId", "42");
 
     extended.query(QueryArgsHelper.makeQueryArgs("controller", "action"), jsonObj, options, null);
     verify(s).emit(eq("kuzzle"), eq(jsonObj));
-    assertEquals(jsonObj.getJSONObject("metadata").getString("foo"), "bar");
+    assertEquals(jsonObj.getJSONObject("volatile").getString("foo"), "bar");
   }
 
   @Test
-  public void testMetadataInKuzzle() throws JSONException, URISyntaxException {
+  public void testVolatileInKuzzle() throws JSONException, URISyntaxException {
     JSONObject jsonObj = new JSONObject();
     jsonObj.put("requestId", "42");
     JSONObject meta = new JSONObject();
     meta.put("foo", "bar");
     Options options = new Options();
-    options.setMetadata(meta);
+    options.setVolatile(meta);
     options.setQueuable(false);
     options.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", options, null);
@@ -153,7 +153,7 @@ public class constructorTest {
     extended.setState(States.CONNECTED);
     extended.query(QueryArgsHelper.makeQueryArgs("controller", "action"), jsonObj, options);
     verify(s).emit(eq("kuzzle"), eq(jsonObj));
-    assertEquals(jsonObj.getJSONObject("metadata").getString("foo"), "bar");
+    assertEquals(jsonObj.getJSONObject("volatile").getString("foo"), "bar");
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -242,10 +242,10 @@ public class constructorTest {
   }
 
   @Test
-  public void exposeMetadataGetterSetter() {
-    JSONObject meta = new JSONObject();
-    assertThat(kuzzle.setMetadata(meta), instanceOf(KuzzleExtend.class));
-    assertEquals(meta, kuzzle.getMetadata());
+  public void exposeVolatileGetterSetter() {
+    JSONObject _volatile = new JSONObject();
+    assertThat(kuzzle.setVolatile(_volatile), instanceOf(KuzzleExtend.class));
+    assertEquals(_volatile, kuzzle.getVolatile());
   }
 
   @Test

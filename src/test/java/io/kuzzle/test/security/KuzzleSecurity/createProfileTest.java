@@ -37,7 +37,7 @@ public class createProfileTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testCreateProfileNoID() throws JSONException {
-    kuzzleSecurity.createProfile(null, new JSONArray());
+    kuzzleSecurity.createProfile(null, new JSONObject[0]);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -47,7 +47,7 @@ public class createProfileTest {
 
   @Test
   public void testCreateProfileNoListener() throws JSONException {
-    kuzzleSecurity.createProfile("foo", new JSONArray(), new Options());
+    kuzzleSecurity.createProfile("foo", new JSONObject[0], new Options());
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
@@ -58,7 +58,7 @@ public class createProfileTest {
   public void testCreateProfileReplaceIfExists() throws JSONException {
     Options options = new Options().setReplaceIfExist(true);
 
-    kuzzleSecurity.createProfile("foo", new JSONArray(), options);
+    kuzzleSecurity.createProfile("foo", new JSONObject[0], options);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
@@ -86,7 +86,7 @@ public class createProfileTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.createProfile("foobar", new JSONArray(), new ResponseListener<Profile>() {
+    kuzzleSecurity.createProfile("foobar", new JSONObject[0], new ResponseListener<Profile>() {
       @Override
       public void onSuccess(Profile response) {
         assertEquals(response.id, "foobar");
@@ -120,6 +120,6 @@ public class createProfileTest {
       }
     }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
 
-    kuzzleSecurity.createProfile("foobar", new JSONArray(), listener);
+    kuzzleSecurity.createProfile("foobar", new JSONObject[0], listener);
   }
 }

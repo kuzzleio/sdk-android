@@ -50,9 +50,9 @@ public class notificationHandlerTest {
       .put("collection", "collection")
       .put("controller", "controller")
       .put("action", "action")
-      .put("state", "ALL")
-      .put("scope", "ALL")
-      .put("metadata", new JSONObject())
+      .put("state", "all")
+      .put("scope", "all")
+      .put("volatile", new JSONObject())
       .put("result", new JSONObject())
       .put("requestId", "42");
     mockResponse.put("result", new JSONObject().put("channel", "channel").put("roomId", "42"));
@@ -66,17 +66,6 @@ public class notificationHandlerTest {
     RoomExtend renew = new RoomExtend(new Collection(k, "test", "index"));
     // Should throw an exception
     renew.callAfterRenew(null);
-  }
-
-  @Test
-  public void testCallAfterRenewWithError() throws JSONException {
-    RoomExtend renew = new RoomExtend(new Collection(k, "test", "index"));
-    JSONObject errorResponse = new JSONObject();
-    errorResponse.put("error", "error");
-    ResponseListener listener = mock(ResponseListener.class);
-    renew.setListener(listener);
-    renew.callAfterRenew(errorResponse);
-    verify(listener, atLeastOnce()).onError(any(JSONObject.class));
   }
 
   @Test
@@ -144,7 +133,7 @@ public class notificationHandlerTest {
   }
 
   @Test
-  public void testJwtTokenExpiredNotification() throws JSONException, URISyntaxException {
+  public void testTokenExpiredNotification() throws JSONException, URISyntaxException {
     k = new Kuzzle("localhost");
     EventListener listener = spy(new EventListener() {
       @Override
@@ -152,12 +141,12 @@ public class notificationHandlerTest {
 
       }
     });
-    k.addListener(Event.jwtTokenExpired, listener);
+    k.addListener(Event.tokenExpired, listener);
     RoomExtend renew = new RoomExtend(new Collection(k, "test", "index"));
     renew.setListener(mock(ResponseListener.class));
     JSONObject mockResponse = new JSONObject().put("result", new JSONObject());
     mockResponse.put("requestId", "42");
-    mockNotif.put("action", "jwtTokenExpired");
+    mockNotif.put("type", "TokenExpired");
     renew.callAfterRenew(mockNotif);
     verify(listener, times(1)).trigger();
   }
