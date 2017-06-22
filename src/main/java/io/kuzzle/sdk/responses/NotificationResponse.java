@@ -32,7 +32,7 @@ public class NotificationResponse {
       this.controller = object.getString("controller");
       this.action = object.getString("action");
       this.state = (object.isNull("state") ? null : State.valueOf(object.getString("state").toUpperCase()));
-      this._volatile = object.getJSONObject("volatile");
+      this._volatile = object.isNull("volatile") ? new JSONObject() : object.getJSONObject("volatile");
       this.requestId = object.isNull("requestId") ? null : object.getString("requestId");
       this.result = (object.isNull("result") ? null : object.getJSONObject("result"));
       this.scope = (object.isNull("scope") ? null : Scope.valueOf(object.getString("scope").toUpperCase()));
