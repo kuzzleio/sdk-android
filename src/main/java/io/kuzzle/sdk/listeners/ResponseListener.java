@@ -9,14 +9,14 @@ public interface ResponseListener<T> {
   /**
    * On success.
    *
-   * @param response the object
+   * @param response Raw Kuzzle API response
    */
   void onSuccess(T response);
 
   /**
    * On error.
    *
-   * @param error the error
+   * @param error Raw Kuzzle API error content
    */
   void onError(JSONObject error);
 }

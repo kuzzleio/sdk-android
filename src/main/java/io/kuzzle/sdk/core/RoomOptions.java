@@ -15,18 +15,19 @@ public class RoomOptions {
   private Users users = Users.NONE;
 
   /**
-   * Is subscribe to self boolean.
+   * subscribeToSelf property getter
    *
-   * @return the boolean
+   * @return subscribeToSelf property value
    */
   public boolean isSubscribeToSelf() {
     return subscribeToSelf;
   }
 
   /**
-   * Sets subscribe to self.
+   * subscribeToSelf property setter
    *
-   * @param subscribeToSelf the subscribe to self
+   * @param subscribeToSelf New subscribeToSelf value
+   * @return  this
    */
   public RoomOptions setSubscribeToSelf(boolean subscribeToSelf) {
     this.subscribeToSelf = subscribeToSelf;
@@ -34,40 +35,76 @@ public class RoomOptions {
     return this;
   }
 
+  /**
+   * volatile property getter
+   * @return volatile property value
+   */
   public JSONObject getVolatile() {
     return _volatile;
   }
 
+  /**
+   * volatile property setter
+   * @param  _volatile New volatile value
+   * @return this
+   */
   public RoomOptions setVolatile(JSONObject _volatile) {
     this._volatile = _volatile;
 
     return this;
   }
 
+  /**
+   * scope property getter
+   * @return scope property value
+   */
   public Scope getScope() {
     return scope;
   }
 
+  /**
+   * scope property setter
+   * @param  scope New scope value
+   * @return this
+   */
   public RoomOptions setScope(Scope scope) {
     this.scope = scope;
 
     return this;
   }
 
+  /**
+   * state property getter
+   * @return state property value
+   */
   public State getState() {
     return state;
   }
 
+  /**
+   * state property setter
+   * @param  state New state value
+   * @return this
+   */
   public RoomOptions setState(State state) {
     this.state = state;
 
     return this;
   }
 
+  /**
+   * users property getter
+   * @return users property value
+   */
   public Users getUsers() {
     return users;
   }
 
+  /**
+   * users property setter
+   * @param  users New users value
+   * @return this
+   */
   public RoomOptions setUsers(Users users) {
     this.users = users;
 

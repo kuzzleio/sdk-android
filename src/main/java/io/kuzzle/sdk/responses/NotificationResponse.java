@@ -24,6 +24,12 @@ public class NotificationResponse {
   private Document document;
   private JSONObject  result;
 
+  /**
+   * Response notification representation
+   * @see  <a href="http://docs.kuzzle.io/sdk-reference/essentials/notifications/">SDK Reference</a>
+   * @param  kuzzle Kuzzle instance to attach
+   * @param  object Raw Kuzzle API notification
+   */
   public NotificationResponse(final Kuzzle kuzzle, final JSONObject object) {
     try {
       this.status = object.getInt("status");
@@ -46,83 +52,87 @@ public class NotificationResponse {
     }
   }
 
+  /**
+   * @return Notification status value
+   */
   public int getStatus() {
     return status;
   }
 
+  /**
+   * @return Impacted data index value
+   */
   public String getIndex() {
     return index;
   }
 
+  /**
+   * @return Impacted data collection value
+   */
   public String getCollection() {
     return collection;
   }
 
+  /**
+   * @return Invoked Kuzzle API controller 
+   */
   public String getController() {
     return controller;
   }
 
+  /**
+   * @return Executed API controller action 
+   */
   public String getAction() {
     return action;
   }
 
-  public void setAction(String action) {
-    this.action = action;
-  }
-
+  /**
+   * @return Notification state 
+   */
   public State getState() {
     return state;
   }
 
-  public void setState(State state) {
-    this.state = state;
-  }
-
+  /**
+   * @return Notification scope 
+   */
   public Scope getScope() {
     return scope;
   }
 
-  public void setScope(Scope scope) {
-    this.scope = scope;
-  }
-
+  /**
+   * @return Notification volatile data 
+   */
   public JSONObject getVolatile() {
     return _volatile;
   }
 
-  public void setVolatile(JSONObject _volatile) {
-    this._volatile = _volatile;
-  }
-
+  /**
+   * @return Origin request unique ID
+   */
   public String getRequestId() {
     return requestId;
   }
 
-  public void setRequestId(String requestId) {
-    this.requestId = requestId;
-  }
-
+  /**
+   * @return Notification content
+   */
   public Document getDocument() {
     return document;
   }
 
-  public void setDocument(Document document) {
-    this.document = document;
-  }
-
+  /**
+   * @return Notification raw content
+   */
   public JSONObject getResult() {
     return result;
   }
 
-  public void setResult(JSONObject result) {
-    this.result = result;
-  }
-
+  /**
+   * @return Notification users state
+   */
   public Users getUsers() {
     return users;
-  }
-
-  public void setUsers(Users users) {
-    this.users = users;
   }
 }

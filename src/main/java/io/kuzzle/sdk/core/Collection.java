@@ -17,11 +17,7 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.SearchResult;
 import io.kuzzle.sdk.responses.NotificationResponse;
 
-/**
- * The type Kuzzle data collection.
- */
 public class Collection {
-
   private final Kuzzle kuzzle;
   private final String collection;
   private final String index;
@@ -29,18 +25,14 @@ public class Collection {
   private JSONObject subscribeError = null;
   private Room subscribeRoom = null;
 
-  /**
-   * The Headers.
-   */
   protected JSONObject headers;
 
   /**
-   * A data collection is a set of data managed by Kuzzle. It acts like a data table for persistent documents,
-   * or like a room for pub/sub messages.
+   * Constructor
    *
-   * @param kuzzle     the kuzzle
-   * @param collection the collection
-   * @param index      the index
+   * @param kuzzle  Kuzzle instance
+   * @param collection  Data collection name
+   * @param index  Parent data index name
    */
   public Collection(@NonNull final Kuzzle kuzzle, @NonNull final String collection, @NonNull final String index) {
     if (kuzzle == null) {
@@ -63,13 +55,7 @@ public class Collection {
   }
 
   /**
-   * Executes a search on the data collection.
-   * /!\ There is a small delay between documents creation and their existence in our search layer,
-   * usually a couple of seconds.
-   * That means that a document that was just been created won’t be returned by this function.
-   *
-   * @param filter   the filter
-   * @param listener the listener
+   * {@link #search(JSONObject, Options, ResponseListener)}
    */
   public void search(final JSONObject filter, final ResponseListener<SearchResult> listener) {
     this.search(filter, new Options(), listener);
@@ -81,9 +67,9 @@ public class Collection {
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function.
    *
-   * @param filters  the filters
-   * @param options  the options
-   * @param listener the listener
+   * @param filters  Search filters to apply
+   * @param options  Request options
+   * @param listener  Response callback listener
    */
   public void search(final JSONObject filters, @NonNull final Options options, @NonNull final ResponseListener<SearchResult> listener) {
     if (listener == null) {
@@ -148,14 +134,27 @@ public class Collection {
     }
   }
 
+  /**
+   * {@link #scroll(String, Options, ResponseListener)}
+   */
   public void scroll(String scrollId, final ResponseListener<SearchResult> listener) {
     this.scroll(scrollId, new Options(), new JSONObject(), listener);
   }
 
+  /**
+   * {@link #scroll(String, Options, ResponseListener)}
+   */
   public void scroll(String scrollId, final Options options, final ResponseListener<SearchResult> listener) {
     this.scroll(scrollId, options, new JSONObject(), listener);
   }
 
+  /**
+   * Gets the next page of results from a previous search or scroll request
+   * 
+   * @param scrollId  Scroll unique identifier
+   * @param options  Request options
+   * @param listener  Response callback listener
+   */
   public void scroll(String scrollId, final Options options, final JSONObject filters, final ResponseListener<SearchResult> listener) {
     JSONObject request;
 
@@ -223,10 +222,7 @@ public class Collection {
   }
 
   /**
-   * Scrolls through specifications using the provided scrollId
-   *
-   * @param scrollId string
-   * @param listener Response callback
+   * {@link #scrollSpecifications(String, Options, ResponseListener)}
    */
   public void scrollSpecifications(@NonNull final String scrollId, @NonNull final ResponseListener<JSONObject> listener) {
     this.scrollSpecifications(scrollId, new Options(), listener);
@@ -235,9 +231,9 @@ public class Collection {
   /**
    * Scrolls through specifications using the provided scrollId
    *
-   * @param scrollId string
-   * @param options Options Optional parameters
-   * @param listener Response callback
+   * @param scrollId  Scroll unique identifier
+   * @param options  Request options
+   * @param listener  Response callback listener
    */
   public void scrollSpecifications(@NonNull final String scrollId, final Options options, @NonNull final ResponseListener<JSONObject> listener) {
     this.kuzzle.isValid();
@@ -278,29 +274,21 @@ public class Collection {
   }
 
   /**
-   * Searches specifications across indexes/collections according to the provided filters
-   *
-   * @param listener Response callback
+   * {@link #searchSpecifications(JSONObject, Options, ResponseListener)}
    */
   public void searchSpecifications(@NonNull final ResponseListener<JSONObject> listener) {
     this.searchSpecifications(null, new Options(), listener);
   }
 
   /**
-   * Searches specifications across indexes/collections according to the provided filters
-   *
-   * @param filters JSONObject Optional filters in ElasticSearch Query DSL format
-   * @param listener Response callback
+   * {@link #searchSpecifications(JSONObject, Options, ResponseListener)}
    */
   public void searchSpecifications(final JSONObject filters, @NonNull final ResponseListener<JSONObject> listener) {
     this.searchSpecifications(filters, new Options(), listener);
   }
 
   /**
-   * Searches specifications across indexes/collections according to the provided filters
-   *
-   * @param options Options Optional parameters
-   * @param listener Response callback
+   * {@link #searchSpecifications(JSONObject, Options, ResponseListener)}
    */
   public void searchSpecifications(final Options options, @NonNull final ResponseListener<JSONObject> listener) {
     this.searchSpecifications(null, options, listener);
@@ -309,9 +297,9 @@ public class Collection {
   /**
    * Searches specifications across indexes/collections according to the provided filters
    *
-   * @param filters JSONObject Optional filters in ElasticSearch Query DSL format
-   * @param options Options Optional parameters
-   * @param listener Response callback
+   * @param filters Optional filters in ElasticSearch Query DSL format
+   * @param options  Request options
+   * @param listener  Response callback listener
    */
   public void searchSpecifications(final JSONObject filters, final Options options, @NonNull final ResponseListener<JSONObject> listener) {
     this.kuzzle.isValid();
@@ -354,11 +342,11 @@ public class Collection {
   /**
    * Make query args kuzzle . query args.
    *
-   * @param controller the controller
-   * @param action     the action
-   * @return the kuzzle . query args
+   * @param controller  API Controller to invoke
+   * @param action  Controller action name
+   * @return Built query arguments
    */
-  public io.kuzzle.sdk.core.Kuzzle.QueryArgs makeQueryArgs(final String controller, final String action) {
+  protected io.kuzzle.sdk.core.Kuzzle.QueryArgs makeQueryArgs(final String controller, final String action) {
     io.kuzzle.sdk.core.Kuzzle.QueryArgs args = new io.kuzzle.sdk.core.Kuzzle.QueryArgs();
     args.action = action;
     args.controller = controller;
@@ -370,8 +358,8 @@ public class Collection {
   /**
    * Returns the provided array of Documents with each one being serialized
    *
-   * @param documents Array of documents
-   * @return JSONArray A list of serialized documents
+   * @param documents  Array of Document objects
+   * @return A list of serialized documents
    */
   private JSONArray serializeDocuments(Document[] documents) throws JSONException {
     JSONArray serializedDocuments = new JSONArray();
@@ -384,19 +372,14 @@ public class Collection {
   }
 
   /**
-   * Count kuzzle data collection.
-   *
-   * @param filters  the filters
-   * @param listener the listener
+   * {@link #count(JSONObject, Options, ResponseListener)}
    */
   public void count(final JSONObject filters, @NonNull final ResponseListener<Integer> listener) {
     this.count(filters, null, listener);
   }
 
   /**
-   * Count kuzzle data collection.
-   *
-   * @param listener the listener
+   * {@link #count(JSONObject, Options, ResponseListener)}
    */
   public void count(@NonNull final ResponseListener<Integer> listener) {
     this.count(null, null, listener);
@@ -408,9 +391,9 @@ public class Collection {
    * usually a couple of seconds.
    * That means that a document that was just been created won’t be returned by this function
    *
-   * @param filters  the filters
-   * @param options  the options
-   * @param listener the cb
+   * @param filters  Search filters
+   * @param options  Request options
+   * @param listener  Response callback listener
    */
   public void count(final JSONObject filters, final Options options, @NonNull final ResponseListener<Integer> listener) {
     if (listener == null) {
@@ -441,22 +424,21 @@ public class Collection {
   }
 
   /**
-   * Create a new empty data collection, with no associated mapping.
-   * Kuzzle automatically creates data collections when storing documents, but there are cases where we want to create and prepare data collections before storing documents in it.
-   *
-   * @param options the options
-   * @return the kuzzle data collection
+   * {@link #create(Options, ResponseListener)}
    */
   public Collection create(final Options options) {
     return this.create(options, null);
   }
 
   /**
-   * Create a new empty data collection, with no associated mapping.
-   * Kuzzle automatically creates data collections when storing documents, but there are cases where we want to create and prepare data collections before storing documents in it.
-   *
-   * @param listener the listener
-   * @return the kuzzle data collection
+   * {@link #create(Options, ResponseListener)}
+   */
+  public Collection create() {
+    return this.create(null, null);
+  }
+
+  /**
+   * {@link #create(Options, ResponseListener)}
    */
   public Collection create(final ResponseListener<JSONObject> listener) {
     return this.create(null, listener);
@@ -466,19 +448,9 @@ public class Collection {
    * Create a new empty data collection, with no associated mapping.
    * Kuzzle automatically creates data collections when storing documents, but there are cases where we want to create and prepare data collections before storing documents in it.
    *
-   * @return the kuzzle data collection
-   */
-  public Collection create() {
-    return this.create(null, null);
-  }
-
-  /**
-   * Create a new empty data collection, with no associated mapping.
-   * Kuzzle automatically creates data collections when storing documents, but there are cases where we want to create and prepare data collections before storing documents in it.
-   *
-   * @param options  the options
-   * @param listener the listener
-   * @return the kuzzle data collection
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @return this
    */
   public Collection create(final Options options, final ResponseListener<JSONObject> listener) {
     JSONObject data = new JSONObject();
@@ -510,137 +482,89 @@ public class Collection {
   }
 
   /**
-   * Create document kuzzle data collection.
-   *
-   * @param id      - document ID
-   * @param content - document content
-   * @return this object
-   * @throws JSONException the json exception
+   * {@link #createDocument(String, JSONObject, Options, ResponseListener)}
    */
   public Collection createDocument(final String id, @NonNull final JSONObject content) throws JSONException {
     return this.createDocument(id, content, null, null);
   }
 
   /**
-   * Create document kuzzle data collection.
-   *
-   * @param id      - document ID
-   * @param content - document content
-   * @param opts    - optional arguments
-   * @return this object
-   * @throws JSONException the json exception
+   * {@link #createDocument(String, JSONObject, Options, ResponseListener)}
    */
-  public Collection createDocument(final String id, @NonNull final JSONObject content, Options opts) throws JSONException {
-    return this.createDocument(id, content, opts, null);
+  public Collection createDocument(final String id, @NonNull final JSONObject content, Options options) throws JSONException {
+    return this.createDocument(id, content, options, null);
   }
 
   /**
-   * Create document kuzzle data collection.
-   *
-   * @param id       - document ID
-   * @param content  - document content
-   * @param listener - result listener
-   * @return this object
-   * @throws JSONException the json exception
+   * {@link #createDocument(String, JSONObject, Options, ResponseListener)}
    */
   public Collection createDocument(final String id, @NonNull final JSONObject content, final ResponseListener<Document> listener) throws JSONException {
     return this.createDocument(id, content, null, listener);
   }
 
   /**
-   * Create document kuzzle data collection.
-   *
-   * @param content - document content
-   * @return this object
-   * @throws JSONException the json exception
+   * {@link #createDocument(String, JSONObject, Options, ResponseListener)}
    */
   public Collection createDocument(@NonNull final JSONObject content) throws JSONException {
     return this.createDocument(null, content, null, null);
   }
 
   /**
-   * Create document kuzzle data collection.
-   *
-   * @param content - document content
-   * @param opts    - optional arguments
-   * @return this object
-   * @throws JSONException the json exception
+   * {@link #createDocument(String, JSONObject, Options, ResponseListener)}
    */
-  public Collection createDocument(@NonNull final JSONObject content, Options opts) throws JSONException {
-    return this.createDocument(null, content, opts, null);
+  public Collection createDocument(@NonNull final JSONObject content, Options options) throws JSONException {
+    return this.createDocument(null, content, options, null);
   }
 
   /**
-   * Create document kuzzle data collection.
-   *
-   * @param content  - document content
-   * @param listener - result listener
-   * @return this object
-   * @throws JSONException the json exception
+   * {@link #createDocument(String, JSONObject, Options, ResponseListener)}
    */
   public Collection createDocument(@NonNull final JSONObject content, final ResponseListener<Document> listener) throws JSONException {
     return this.createDocument(null, content, null, listener);
   }
 
   /**
-   * Create document kuzzle data collection.
-   *
-   * @param content  - document content
-   * @param opts     - optional arguments
-   * @param listener - result listener
-   * @return this object
-   * @throws JSONException the json exception
+   * {@link #createDocument(String, JSONObject, Options, ResponseListener)}
    */
-  public Collection createDocument(@NonNull final JSONObject content, Options opts, final ResponseListener<Document> listener) throws JSONException {
-    return this.createDocument(null, content, opts, listener);
+  public Collection createDocument(@NonNull final JSONObject content, Options options, final ResponseListener<Document> listener) throws JSONException {
+    return this.createDocument(null, content, options, listener);
   }
 
   /**
    * Create document kuzzle data collection.
    *
-   * @param id       - document ID
-   * @param content  - document content
-   * @param opts     - optional arguments
-   * @param listener - result listener
-   * @return this object
-   * @throws JSONException the json exception
+   * @param id        document ID
+   * @param content   document content
+   * @param options      Request options
+   * @param listener  Response callback listener
+   * @return this
+   * @throws JSONException 
    */
-  public Collection createDocument(final String id, @NonNull final JSONObject content, Options opts, final ResponseListener<Document> listener) throws JSONException {
+  public Collection createDocument(final String id, @NonNull final JSONObject content, Options options, final ResponseListener<Document> listener) throws JSONException {
     if (content == null) {
       throw new IllegalArgumentException("Cannot create an empty document");
     }
 
     Document doc = new Document(this, id, content);
-    return this.createDocument(doc, opts, listener);
+    return this.createDocument(doc, options, listener);
   }
 
   /**
-   * Create a new document in Kuzzle
-   *
-   * @param document the document
-   * @return kuzzle data collection
+   * {@link #createDocument(Document, Options, ResponseListener)}
    */
   public Collection createDocument(final Document document) {
     return this.createDocument(document, null, null);
   }
 
   /**
-   * Create a new document in kuzzle
-   *
-   * @param document the document
-   * @param options  the options
-   * @return the kuzzle data collection
+   * {@link #createDocument(Document, Options, ResponseListener)}
    */
   public Collection createDocument(final Document document, final Options options) {
     return this.createDocument(document, options, null);
   }
 
   /**
-   * Create document kuzzle data collection.
-   *
-   * @param document the document
-   * @param listener the listener
-   * @return the kuzzle data collection
+   * {@link #createDocument(Document, Options, ResponseListener)}
    */
   public Collection createDocument(final Document document, final ResponseListener<Document> listener) {
     return this.createDocument(document, null, listener);
@@ -650,9 +574,9 @@ public class Collection {
    * Create a new document in kuzzle
    *
    * @param document the document
-   * @param options  the options
-   * @param listener the listener
-   * @return the kuzzle data collection
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @return this
    */
   public Collection createDocument(final Document document, final Options options, final ResponseListener<Document> listener) {
     String action = "create";
@@ -694,70 +618,51 @@ public class Collection {
   }
 
   /**
-   * Data mapping factory kuzzle data mapping.
-   *
-   * @return the kuzzle data mapping
+   * {@link #collectionMapping(JSONObject)}
    */
   public CollectionMapping collectionMapping() {
     return new CollectionMapping(this);
   }
 
   /**
-   * Data mapping factory kuzzle data mapping.
+   * CollectionMapping constructor, attaching it to this
+   * Collection object
    *
-   * @param mapping the mapping
-   * @return the kuzzle data mapping
+   * @param mapping  Raw mapping to declare
+   * @return a newly instantiated CollectionMapping object
    */
   public CollectionMapping collectionMapping(JSONObject mapping) {
     return new CollectionMapping(this, mapping);
   }
 
-
   /**
-   * Delete a persistent document.
-   * There is a small delay between documents creation and their existence in our search layer,
-   * usually a couple of seconds.
-   * That means that a document that was just been created won’t be returned by this function
-   *
-   * @param documentId the document id
-   * @return Collection kuzzle data collection
+   * {@link #deleteDocument(String, Options, ResponseListener)}
    */
   public Collection deleteDocument(@NonNull final String documentId) {
     return this.deleteDocument(documentId, null, null);
   }
 
   /**
-   * Delete document kuzzle data collection.
-   *
-   * @param documentId the document id
-   * @param options    the options
-   * @return the kuzzle data collection
+   * {@link #deleteDocument(String, Options, ResponseListener)}
    */
   public Collection deleteDocument(@NonNull final String documentId, Options options) {
     return this.deleteDocument(documentId, options, null);
   }
 
   /**
-   * Delete a persistent document.
-   * There is a small delay between documents creation and their existence in our search layer,
-   * usually a couple of seconds.
-   * That means that a document that was just been created won’t be returned by this function
-   *
-   * @param documentId the document id
-   * @param listener   the listener
-   * @return Collection kuzzle data collection
+   * {@link #deleteDocument(String, Options, ResponseListener)}
    */
   public Collection deleteDocument(@NonNull final String documentId, final ResponseListener<String> listener) {
     return this.deleteDocument(documentId, null, listener);
   }
 
   /**
-   * Delete document kuzzle data collection.
+   * Delete a single document
    *
-   * @param documentId the document id
-   * @param options    the options
-   * @param listener   the listener
-   * @return the kuzzle data collection
+   * @param documentId  Document unique identifier
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @return this
    */
   public Collection deleteDocument(@NonNull final String documentId, final Options options, final ResponseListener<String> listener) {
     if (documentId == null) {
@@ -767,50 +672,33 @@ public class Collection {
   }
 
   /**
-   * Delete a persistent document.
-   * There is a small delay between documents creation and their existence in our search layer,
-   * usually a couple of seconds.
-   * That means that a document that was just been created won’t be returned by this function
-   *
-   * @param filters the filters
-   * @return Collection kuzzle data collection
+   * {@link #deleteDocument(JSONObject, Options, ResponseListener)}
    */
   public Collection deleteDocument(@NonNull final JSONObject filters) {
     return this.deleteDocument(filters, null, null);
   }
 
   /**
-   * Delete document kuzzle data collection.
-   *
-   * @param filters the filters
-   * @param options the options
-   * @return the kuzzle data collection
+   * {@link #deleteDocument(JSONObject, Options, ResponseListener)}
    */
   public Collection deleteDocument(@NonNull final JSONObject filters, final Options options) {
     return this.deleteDocument(filters, options, null);
   }
 
   /**
-   * Delete a persistent document.
-   * There is a small delay between documents creation and their existence in our search layer,
-   * usually a couple of seconds.
-   * That means that a document that was just been created won’t be returned by this function
-   *
-   * @param filters  the filters
-   * @param listener the listener
-   * @return Collection kuzzle data collection
+   * {@link #deleteDocument(JSONObject, Options, ResponseListener)}
    */
   public Collection deleteDocument(@NonNull final JSONObject filters, final ResponseListener<String[]> listener) {
     return this.deleteDocument(filters, null, listener);
   }
 
   /**
-   * Delete document kuzzle data collection.
+   * Delete documents using search filters
    *
-   * @param filters  the filters
-   * @param options  the options
-   * @param listener the listener
-   * @return the kuzzle data collection
+   * @param filters  Search filters
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @return this
    */
   public Collection deleteDocument(@NonNull final JSONObject filters, final Options options, final ResponseListener<String[]> listener) {
     if (filters == null) {
@@ -820,17 +708,14 @@ public class Collection {
   }
 
   /**
-   * Delete a persistent document.
-   * There is a small delay between documents creation and their existence in our search layer,
-   * usually a couple of seconds.
-   * That means that a document that was just been created won’t be returned by this function
-   *
-   * @param documentId the document id
-   * @param filter     the filter
-   * @param options    the options
-   * @param listener   the listener
-   * @param listener2  the listener 2
-   * @return Collection kuzzle data collection
+   * Delete either a single document or multiple ones using search filters
+   * 
+   * @param documentId  Document unique identifier
+   * @param filter  Search fitlers
+   * @param options  Request options
+   * @param listener  Response callback listener (single document delete)
+   * @param listener2  Response callback listener (document search delete)
+   * @return this
    */
   protected Collection deleteDocument(final String documentId, final JSONObject filter, final Options options, final ResponseListener<String> listener, final ResponseListener<String[]> listener2) {
     JSONObject data = new JSONObject();
@@ -880,40 +765,33 @@ public class Collection {
   }
 
   /**
-   * Deletes the current specifications of this collection
-   *
-   * @return Collection Kuzzle data collection
+   * {@link #deleteSpecifications(Options, ResponseListener)}
    */
   public Collection deleteSpecifications() throws JSONException {
     return this.deleteSpecifications(new Options(), null);
   }
 
   /**
-   * Deletes the current specifications of this collection
-   *
-   * @param options Options Optional parameters
-   * @return Collection Kuzzle data collection
+   * {@link #deleteSpecifications(Options, ResponseListener)}
    */
   public Collection deleteSpecifications(final Options options) throws JSONException {
     return this.deleteSpecifications(options, null);
   }
 
   /**
-   * Deletes the current specifications of this collection
-   *
-   * @param listener Response callback
-   * @return Collection Kuzzle data collection
+   * {@link #deleteSpecifications(Options, ResponseListener)}
    */
   public Collection deleteSpecifications(final ResponseListener<JSONObject> listener) throws JSONException {
     return this.deleteSpecifications(new Options(), listener);
   }
 
   /**
-   * Deletes the current specifications of this collection
+   * Deletes the current specifications for this collection
    *
-   * @param options Options Optional parameters
-   * @param listener Response callback
-   * @return Collection Kuzzle data collection
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @return this
+   * @throws JSONException
    */
   public Collection deleteSpecifications(final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
     JSONObject data = new JSONObject();
@@ -947,59 +825,53 @@ public class Collection {
   }
 
   /**
-   * Document factory kuzzle document.
-   *
-   * @return the kuzzle document
-   * @throws JSONException the json exception
+   * {@link #document(String, JSONObject)}
    */
   public Document document() throws JSONException {
     return new Document(this);
   }
 
   /**
-   * Document factory kuzzle document.
-   *
-   * @param id the id
-   * @return the kuzzle document
-   * @throws JSONException the json exception
+   * {@link #document(String, JSONObject)}
    */
   public Document document(final String id) throws JSONException {
     return new Document(this, id);
   }
 
   /**
-   * Document factory kuzzle document.
-   *
-   * @param content the content
-   * @return the kuzzle document
-   * @throws JSONException the json exception
+   * {@link #document(String, JSONObject)}
    */
   public Document document(final JSONObject content) throws JSONException {
     return new Document(this, content);
   }
 
   /**
-   * Document factory kuzzle document.
+   * Instantiates a Document object with a preset unique
+   * identifier and content.
+   * This document is attached to this data collection
    *
-   * @param id      the id
-   * @param content the content
-   * @return the kuzzle document
-   * @throws JSONException the json exception
+   * @param id  Document unique identifier
+   * @param content  Document content
+   * @return newly instantiated Document object
+   * @throws JSONException 
    */
   public Document document(final String id, final JSONObject content) throws JSONException {
     return new Document(this, id, content);
   }
 
+  /**
+   * {@link #documentExists(String, Options, ResponseListener)}
+   */
   public void documentExists(@NonNull final String documentId, @NonNull final ResponseListener<JSONObject> listener) {
     this.documentExists(documentId, null, listener);
   }
 
   /**
-   * Returns a boolean indicating whether or not a document with provided ID exists.
+   * Asks Kuzzle API if the provided document exists
    *
-   * @param documentId the document id
-   * @param options    the options
-   * @param listener   the listener
+   * @param documentId  Document unique identifier
+   * @param options  Request options
+   * @param listener  Response callback listener
    */
   public void documentExists(@NonNull final String documentId, final Options options, final ResponseListener<JSONObject> listener) {
     if (documentId == null) {
@@ -1030,21 +902,18 @@ public class Collection {
   }
 
   /**
-   * Fetch document kuzzle data collection.
-   *
-   * @param documentId the document id
-   * @param listener   the listener
+   * {@link #fetchDocument(String, Options, ResponseListener)}
    */
   public void fetchDocument(@NonNull final String documentId, @NonNull final ResponseListener<Document> listener) {
     this.fetchDocument(documentId, null, listener);
   }
 
   /**
-   * Retrieve a single stored document using its unique document ID.
+   * Fetch a document from Kuzzle
    *
-   * @param documentId the document id
-   * @param options    the options
-   * @param listener   the listener
+   * @param documentId  Document unique identifier
+   * @param options  Request options
+   * @param listener  Response callback listener
    */
   public void fetchDocument(@NonNull final String documentId, final Options options, final ResponseListener<Document> listener) {
     if (documentId == null) {
@@ -1083,28 +952,38 @@ public class Collection {
   }
 
   /**
-   * Instantiates a CollectionMapping object containing the current mapping of this collection.
-   *
-   * @param listener the listener
+   * {@link #getMapping(Options, ResponseListener)}
    */
   public void getMapping(@NonNull final ResponseListener<CollectionMapping> listener) {
     this.getMapping(null, listener);
   }
 
   /**
-   * Retrieves the current specifications of this collection
+   * Get the mapping for this data collection
    *
-   * @param listener Response callback
+   * @param options  Request options
+   * @param listener  Response callback listener
+   */
+  public void getMapping(final Options options, @NonNull final ResponseListener<CollectionMapping> listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("Collection.getMapping: listener required");
+    }
+    new CollectionMapping(this).refresh(options, listener);
+  }
+
+  /**
+   * {@link #getSpecifications(Options, ResponseListener)}
    */
   public void getSpecifications(@NonNull final ResponseListener<JSONObject> listener) throws JSONException {
     this.getSpecifications(new Options(), listener);
   }
 
   /**
-   * Retrieves the current specifications of this collection
+   * Get the specifications for this collection
    *
-   * @param options Optional parameters
-   * @param listener Response callback
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @throws JSONException 
    */
   public void getSpecifications(final Options options, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
     JSONObject data = new JSONObject()
@@ -1133,25 +1012,13 @@ public class Collection {
   }
 
   /**
-   * Instantiates a CollectionMapping object containing the current mapping of this collection.
+   * Create multiple documents
    *
-   * @param options  the options
-   * @param listener the listener
-   */
-  public void getMapping(final Options options, @NonNull final ResponseListener<CollectionMapping> listener) {
-    if (listener == null) {
-      throw new IllegalArgumentException("Collection.getMapping: listener required");
-    }
-    new CollectionMapping(this).refresh(options, listener);
-  }
-
-  /**
-   * Create the provided documents
-   *
-   * @param documents Array of documents to create
-   * @param options Optional parameters
-   * @param listener Response callback
-   * @return Collection kuzzle data collection
+   * @param documents  Array of Document objects to create
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @return this
+   * @throws JSONException 
    */
   public Collection mCreateDocument(final Document[] documents, final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
     if (documents.length == 0) {
@@ -1192,44 +1059,34 @@ public class Collection {
   }
 
   /**
-   * Create the provided documents
-   *
-   * @param documents Array of documents to create
-   * @param listener Response callback
-   * @return Collection kuzzle data collection
+   * {@link #mCreateDocument(Document[], Options, ResponseListener)}
    */
   public Collection mCreateDocument(final Document[] documents, final ResponseListener<JSONObject> listener) throws JSONException {
     return this.mCreateDocument(documents, new Options(), listener);
   }
 
   /**
-   * Create the provided documents
-   *
-   * @param documents Array of documents to create
-   * @param options Optional parameters
-   * @return Collection kuzzle data collection
+   * {@link #mCreateDocument(Document[], Options, ResponseListener)}
    */
   public Collection mCreateDocument(final Document[] documents, Options options) throws JSONException {
     return this.mCreateDocument(documents, options, null);
   }
 
   /**
-   * Create the provided documents
-   *
-   * @param documents Array of documents to create
-   * @return Collection kuzzle data collection
+   * {@link #mCreateDocument(Document[], Options, ResponseListener)}
    */
   public Collection mCreateDocument(final Document[] documents) throws JSONException {
     return this.mCreateDocument(documents, new Options(), null);
   }
 
   /**
-   * Create or replace the provided documents
+   * Create or replace multiple documents
    *
-   * @param documents Array of documents to create or replace
-   * @param options Optional parameters
-   * @param listener Response callback
-   * @return Collection kuzzle data collection
+   * @param documents  Array of Document objects to create or replace
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @return this
+   * @throws JSONException
    */
   public Collection mCreateOrReplaceDocument(final Document[] documents, final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
     if (documents.length == 0) {
@@ -1270,44 +1127,34 @@ public class Collection {
   }
 
   /**
-   * Create or replace the provided documents
-   *
-   * @param documents Array of documents to create or replace
-   * @param listener Response callback
-   * @return Collection kuzzle data collection
+   * {@link #mCreateOrReplaceDocument(Document[], Options, ResponseListener)}
    */
   public Collection mCreateOrReplaceDocument(final Document[] documents, final ResponseListener<JSONObject> listener) throws JSONException {
     return this.mCreateOrReplaceDocument(documents, new Options(), listener);
   }
 
   /**
-   * Create or replace the provided documents
-   *
-   * @param documents Array of documents to create or replace
-   * @param options Optional parameters
-   * @return Collection kuzzle data collection
+   * {@link #mCreateOrReplaceDocument(Document[], Options, ResponseListener)}
    */
   public Collection mCreateOrReplaceDocument(final Document[] documents, Options options) throws JSONException {
     return this.mCreateOrReplaceDocument(documents, options, null);
   }
 
   /**
-   * Create or replace the provided documents
-   *
-   * @param documents Array of documents to create or replace
-   * @return Collection kuzzle data collection
+   * {@link #mCreateOrReplaceDocument(Document[], Options, ResponseListener)}
    */
   public Collection mCreateOrReplaceDocument(final Document[] documents) throws JSONException {
     return this.mCreateOrReplaceDocument(documents, new Options(), null);
   }
 
   /**
-   * Delete specific documents according to given IDs
+   * Delete multiple documents using their unique IDs
    *
-   * @param documentIds Array of IDs of documents to delete
-   * @param options Optional parameters
-   * @param listener Response callback
-   * @return Collection kuzzle data collection
+   * @param documentIds  Array of document IDs to delete
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @return this
+   * @throws JSONException
    */
   public Collection mDeleteDocument(final String[] documentIds, final Options options, final ResponseListener<JSONArray> listener) throws JSONException {
     if (documentIds.length == 0) {
@@ -1348,43 +1195,33 @@ public class Collection {
   }
 
   /**
-   * Delete specific documents according to given IDs
-   *
-   * @param documentIds Array of IDs of documents to delete
-   * @param listener Response callback
-   * @return Collection kuzzle data collection
+   * {@link #mDeleteDocument(String[], Options, ResponseListener)}
    */
   public Collection mDeleteDocument(final String[] documentIds, final ResponseListener<JSONArray> listener) throws JSONException {
     return this.mDeleteDocument(documentIds, new Options(), listener);
   }
 
   /**
-   * Delete specific documents according to given IDs
-   *
-   * @param documentIds Array of IDs of documents to delete
-   * @param options Optional parameters
-   * @return Collection kuzzle data collection
+   * {@link #mDeleteDocument(String[], Options, ResponseListener)}
    */
   public Collection mDeleteDocument(final String[] documentIds, Options options) throws JSONException {
     return this.mDeleteDocument(documentIds, options, null);
   }
 
   /**
-   * Delete specific documents according to given IDs
-   *
-   * @param documentIds Array of IDs of documents to delete
-   * @return Collection kuzzle data collection
+   * {@link #mDeleteDocument(String[], Options, ResponseListener)}
    */
   public Collection mDeleteDocument(final String[] documentIds) throws JSONException {
     return this.mDeleteDocument(documentIds, new Options(), null);
   }
 
   /**
-   * Get specific documents according to given IDs
+   * Fetch multiple documents 
    *
-   * @param documentIds Array of IDs of documents to retrieve
-   * @param options Optional parameters
-   * @param listener Response callback
+   * @param documentIds  Array of document IDs to retrieve
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @throws JSONException
    */
   public void mGetDocument(final String[] documentIds, final Options options, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
     if (documentIds.length == 0) {
@@ -1419,22 +1256,20 @@ public class Collection {
   }
 
   /**
-   * Get specific documents according to given IDs
-   *
-   * @param documentIds Array IDs of documents to retrieve
-   * @param listener Response callback
+   * {@link #mGetDocument(String[], Options, ResponseListener)}
    */
   public void mGetDocument(final String[] documentIds, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
     this.mGetDocument(documentIds, new Options(), listener);
   }
 
   /**
-   * Replace the provided documents
+   * Replace multiple documents
    *
-   * @param documents Array of documents to replace
-   * @param options Optional parameters
-   * @param listener Response callback
-   * @return Collection kuzzle data collection
+   * @param documents  Array of Document objects to replace
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @return this
+   * @throws JSONException
    */
   public Collection mReplaceDocument(final Document[] documents, final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
     if (documents.length == 0) {
@@ -1475,44 +1310,34 @@ public class Collection {
   }
 
   /**
-   * Replace the provided documents
-   *
-   * @param documents Array of documents to replace
-   * @param listener Response callback
-   * @return Collection kuzzle data collection
+   * {@link #mReplaceDocument(Document[], Options, ResponseListener)}
    */
   public Collection mReplaceDocument(final Document[] documents, final ResponseListener<JSONObject> listener) throws JSONException {
     return this.mReplaceDocument(documents, new Options(), listener);
   }
 
   /**
-   * Replace the provided documents
-   *
-   * @param documents Array of documents to replace
-   * @param options Optional parameters
-   * @return Collection kuzzle data collection
+   * {@link #mReplaceDocument(Document[], Options, ResponseListener)}
    */
   public Collection mReplaceDocument(final Document[] documents, Options options) throws JSONException {
     return this.mReplaceDocument(documents, options, null);
   }
 
   /**
-   * Replace the provided documents
-   *
-   * @param documents Array of documents to replace
-   * @return Collection kuzzle data collection
+   * {@link #mReplaceDocument(Document[], Options, ResponseListener)}
    */
   public Collection mReplaceDocument(final Document[] documents) throws JSONException {
     return this.mReplaceDocument(documents, new Options(), null);
   }
 
   /**
-   * Update the provided documents
+   * Update multiple documents
    *
-   * @param documents Array of documents to update
-   * @param options Optional parameters
-   * @param listener Response callback
-   * @return Collection kuzzle data collection
+   * @param documents  Array of Document objects to update
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @return this
+   * @throws JSONException
    */
   public Collection mUpdateDocument(final Document[] documents, final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
     if (documents.length == 0) {
@@ -1553,66 +1378,54 @@ public class Collection {
   }
 
   /**
-   * Update the provided documents
-   *
-   * @param documents Array of documents to update
-   * @param listener Response callback
-   * @return Collection kuzzle data collection
+   * {@link #mUpdateDocument(Document[], Options, ResponseListener)}
    */
   public Collection mUpdateDocument(final Document[] documents, final ResponseListener<JSONObject> listener) throws JSONException {
     return this.mUpdateDocument(documents, new Options(), listener);
   }
 
   /**
-   * Update the provided documents
-   *
-   * @param documents Array of documents to update
-   * @param options Optional parameters
-   * @return Collection kuzzle data collection
+   * {@link #mUpdateDocument(Document[], Options, ResponseListener)}
    */
   public Collection mUpdateDocument(final Document[] documents, Options options) throws JSONException {
     return this.mUpdateDocument(documents, options, null);
   }
 
   /**
-   * Update the provided documents
-   *
-   * @param documents Array of documents to update
-   * @return Collection kuzzle data collection
+   * {@link #mUpdateDocument(Document[], Options, ResponseListener)}
    */
   public Collection mUpdateDocument(final Document[] documents) throws JSONException {
     return this.mUpdateDocument(documents, new Options(), null);
   }
 
   /**
-   * Publish a realtime message
-   *
-   * @param document the document
-   * @return kuzzle data collection
+   * {@link #publishMessage(Document, Options, ResponseListener)}
    */
   public Collection publishMessage(final Document document) {
     return this.publishMessage(document, null, null);
   }
 
   /**
-   * Publish a realtime message
-   *
-   * @param document the content
-   * @param listener response callback
-   * @return the kuzzle data collection
+   * {@link #publishMessage(Document, Options, ResponseListener)}
    */
   public Collection publishMessage(@NonNull final Document document, final ResponseListener<JSONObject> listener) {
     return this.publishMessage(document, null, listener);
   }
 
+  /**
+   * {@link #publishMessage(Document, Options, ResponseListener)}
+   */
+  public Collection publishMessage(@NonNull final Document document, final Options options) {
+    return this.publishMessage(document, options, null);
+  }
 
   /**
-   * Publish a realtime message
+   * Publish a real-time message
    *
-   * @param document the content
-   * @param options the options
-   * @param listener response callback
-   * @return the kuzzle data collection
+   * @param document  Document to publish
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @return this
    */
   public Collection publishMessage(@NonNull final Document document, final Options options, final ResponseListener<JSONObject> listener) {
     if (document == null) {
@@ -1623,56 +1436,33 @@ public class Collection {
   }
 
   /**
-   * Publish a realtime message
-   *
-   * @param document the document
-   * @param options  the options
-   * @return the kuzzle data collection
-   */
-  public Collection publishMessage(@NonNull final Document document, final Options options) {
-    return this.publishMessage(document, options, null);
-  }
-
-  /**
-   * Publish a realtime message
-   *
-   * @param content the content
-   * @return the kuzzle data collection
+   * {@link #publishMessage(JSONObject, Options, ResponseListener)}
    */
   public Collection publishMessage(@NonNull final JSONObject content) {
     return this.publishMessage(content, null, null);
   }
 
   /**
-   * Publish a realtime message
-   *
-   * @param content the content
-   * @param listener response callback
-   * @return the kuzzle data collection
+   * {@link #publishMessage(JSONObject, Options, ResponseListener)}
    */
   public Collection publishMessage(@NonNull final JSONObject content, final ResponseListener<JSONObject> listener) {
     return this.publishMessage(content, null, listener);
   }
 
-
   /**
-   * Publish a realtime message
-   *
-   * @param content the content
-   * @param options the options
-   * @return the kuzzle data collection
+   * {@link #publishMessage(JSONObject, Options, ResponseListener)}
    */
   public Collection publishMessage(@NonNull final JSONObject content, final Options options) {
     return this.publishMessage(content, options, null);
   }
 
   /**
-   * Publish a realtime message
+   * Publish a real-time message
    *
-   * @param content the content
-   * @param options the options
-   * @param listener response callback
-   * @return the kuzzle data collection
+   * @param content  Message content
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @return this
    */
   public Collection publishMessage(@NonNull final JSONObject content, final Options options, final ResponseListener<JSONObject> listener) {
     if (content == null) {
@@ -1704,35 +1494,21 @@ public class Collection {
   }
 
   /**
-   * Replace an existing document with a new one.
-   *
-   * @param documentId the document id
-   * @param content    the content
-   * @return the kuzzle data collection
+   * {@link #replaceDocument(String, JSONObject, Options, ResponseListener)}
    */
   public Collection replaceDocument(@NonNull final String documentId, final JSONObject content) {
     return this.replaceDocument(documentId, content, null, null);
   }
 
   /**
-   * Replace document kuzzle data collection.
-   *
-   * @param documentId the document id
-   * @param content    the content
-   * @param listener   the listener
-   * @return the kuzzle data collection
+   * {@link #replaceDocument(String, JSONObject, Options, ResponseListener)}
    */
   public Collection replaceDocument(@NonNull final String documentId, final JSONObject content, final ResponseListener<Document> listener) {
     return this.replaceDocument(documentId, content, null, listener);
   }
 
   /**
-   * Replace document kuzzle data collection.
-   *
-   * @param documentId the document id
-   * @param content    the content
-   * @param options    the options
-   * @return the kuzzle data collection
+   * {@link #replaceDocument(String, JSONObject, Options, ResponseListener)}
    */
   public Collection replaceDocument(@NonNull final String documentId, final JSONObject content, final Options options) {
     return this.replaceDocument(documentId, content, options, null);
@@ -1741,11 +1517,11 @@ public class Collection {
   /**
    * Replace an existing document with a new one.
    *
-   * @param documentId the document id
-   * @param content    the content
-   * @param options    the options
-   * @param listener   the listener
-   * @return Collection kuzzle data collection
+   * @param documentId  Document unique identifier
+   * @param content  New document content
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @return this
    */
   public Collection replaceDocument(@NonNull final String documentId, final JSONObject content, final Options options, final ResponseListener<Document> listener) {
     if (documentId == null) {
@@ -1784,10 +1560,7 @@ public class Collection {
   }
 
   /**
-   * Validates the provided specifications
-   *
-   * @param specifications JSONObject Specifications content
-   * @param listener Response callback
+   * {@link #validateSpecifications(JSONObject, Options, ResponseListener)}
    */
   public void validateSpecifications(@NonNull JSONObject specifications, @NonNull ResponseListener<Boolean> listener) throws JSONException {
     this.validateSpecifications(specifications, new Options(), listener);
@@ -1796,9 +1569,10 @@ public class Collection {
   /**
    * Validates the provided specifications
    *
-   * @param specifications JSONObject Specifications content
-   * @param options Options Optional parameters
-   * @param listener Response callback
+   * @param specifications  Specifications content
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @throws JSONException
    */
   public void validateSpecifications(@NonNull JSONObject specifications, Options options, @NonNull final ResponseListener<Boolean> listener) throws JSONException {
     if (specifications == null) {
@@ -1839,40 +1613,36 @@ public class Collection {
   }
 
   /**
-   * Room factory kuzzle room.
-   *
-   * @return the kuzzle room
+   * {@link #room(RoomOptions)}
    */
   public Room room() {
     return this.room(null);
   }
 
   /**
-   * Room factory kuzzle room.
+   * Room object constructor, attaching it to this
+   * data collection
    *
-   * @param options the options
-   * @return the kuzzle room
+   * @param options  Request options
+   * @return a newly instantiated Room object
    */
   public Room room(RoomOptions options) {
     return new Room(this, options);
   }
 
   /**
-   * Sets headers.
-   *
-   * @param content the content
-   * @return the headers
+   * {@link #setHeaders(JSONObject, boolean)}
    */
   public Collection setHeaders(final JSONObject content) {
     return this.setHeaders(content, false);
   }
 
   /**
-   * Sets headers.
+   * Sets headers global to this data collection
    *
-   * @param content the content
-   * @param replace the replace
-   * @return the headers
+   * @param content  Headers content
+   * @param replace  true: replace existing headers, false: append
+   * @return this
    */
   public Collection setHeaders(final JSONObject content, final boolean replace) {
     try {
@@ -1899,37 +1669,26 @@ public class Collection {
   }
 
   /**
-   * Subscribes to this data collection with a set of filters.
-   * To subscribe to the entire data collection, simply provide an empty filter.
-   *
-   * @param filters  the filters
-   * @param listener the listener
-   * @return the kuzzle room
+   * {@link #subscribe(JSONObject, RoomOptions, ResponseListener)}
    */
   public SubscribeListener subscribe(final JSONObject filters, @NonNull final ResponseListener<NotificationResponse> listener) {
     return this.subscribe(filters, null, listener);
   }
 
   /**
-   * Subscribes to this data collection with a set of filters.
-   * To subscribe to the entire data collection, simply provide an empty filter.
-   *
-   * @param options  the options
-   * @param listener the listener
-   * @return the kuzzle room
+   * {@link #subscribe(JSONObject, RoomOptions, ResponseListener)}
    */
   public SubscribeListener subscribe(final RoomOptions options, @NonNull final ResponseListener<NotificationResponse> listener) {
     return this.subscribe(null, options, listener);
   }
 
   /**
-   * Subscribes to this data collection with a set of filters.
-   * To subscribe to the entire data collection, simply provide an empty filter.
+   * Subscribes to this data collection with a set of Kuzzle DSL filters.
    *
-   * @param filters  the filters
-   * @param options  the options
-   * @param listener the listener
-   * @return kuzzle room
+   * @param filters  Subscription filters
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @return an object with a onDone() callback triggered when the subscription is active
    */
   public SubscribeListener subscribe(final JSONObject filters, final RoomOptions options, @NonNull final ResponseListener<NotificationResponse> listener) {
     if (listener == null) {
@@ -1945,32 +1704,21 @@ public class Collection {
   }
 
   /**
-   * Truncate the data collection, removing all stored documents but keeping all associated mappings.
-   * This method is a lot faster than removing all documents using a query.
-   *
-   * @return the kuzzle data collection
+   * {@link #truncate(Options, ResponseListener)}
    */
   public Collection truncate() {
     return this.truncate(null, null);
   }
 
   /**
-   * Truncate the data collection, removing all stored documents but keeping all associated mappings.
-   * This method is a lot faster than removing all documents using a query.
-   *
-   * @param options the options
-   * @return the kuzzle data collection
+   * {@link #truncate(Options, ResponseListener)}
    */
   public Collection truncate(final Options options) {
     return this.truncate(options, null);
   }
 
   /**
-   * Truncate the data collection, removing all stored documents but keeping all associated mappings.
-   * This method is a lot faster than removing all documents using a query.
-   *
-   * @param listener the listener
-   * @return the kuzzle data collection
+   * {@link #truncate(Options, ResponseListener)}
    */
   public Collection truncate(final ResponseListener<JSONObject> listener) {
     return this.truncate(null, listener);
@@ -1978,11 +1726,10 @@ public class Collection {
 
   /**
    * Truncate the data collection, removing all stored documents but keeping all associated mappings.
-   * This method is a lot faster than removing all documents using a query.
    *
-   * @param options  the options
-   * @param listener the listener
-   * @return the kuzzle data collection
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @return this
    */
   public Collection truncate(final Options options, final ResponseListener<JSONObject> listener) {
     JSONObject  data = new JSONObject();
@@ -2014,35 +1761,21 @@ public class Collection {
   }
 
   /**
-   * Update parts of a document
-   *
-   * @param documentId the document id
-   * @param content    the content
-   * @return the kuzzle data collection
+   * {@link #updateDocument(String, JSONObject, Options, ResponseListener)}
    */
   public Collection updateDocument(@NonNull final String documentId, @NonNull final JSONObject content) {
     return this.updateDocument(documentId, content, null, null);
   }
 
   /**
-   * Update parts of a document
-   *
-   * @param documentId the document id
-   * @param content    the content
-   * @param options    the options
-   * @return the kuzzle data collection
+   * {@link #updateDocument(String, JSONObject, Options, ResponseListener)}
    */
   public Collection updateDocument(@NonNull final String documentId, @NonNull final JSONObject content, final Options options) {
     return this.updateDocument(documentId, content, options, null);
   }
 
   /**
-   * Update parts of a document
-   *
-   * @param documentId the document id
-   * @param content    the content
-   * @param listener   the listener
-   * @return the kuzzle data collection
+   * {@link #updateDocument(String, JSONObject, Options, ResponseListener)}
    */
   public Collection updateDocument(@NonNull final String documentId, @NonNull final JSONObject content, final ResponseListener<Document> listener) {
     return this.updateDocument(documentId, content, null, listener);
@@ -2051,11 +1784,11 @@ public class Collection {
   /**
    * Update parts of a document
    *
-   * @param documentId the document id
-   * @param content    the content
-   * @param options    the options
-   * @param listener   the listener
-   * @return kuzzle data collection
+   * @param documentId  Document unique identifier
+   * @param content  Document content to update
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @return this
    */
   public Collection updateDocument(@NonNull final String documentId, @NonNull final JSONObject content, final Options options, final ResponseListener<Document> listener) {
     if (documentId == null) {
@@ -2102,32 +1835,21 @@ public class Collection {
   }
 
   /**
-   * Updates the current specifications of this collection
-   *
-   * @param specifications JSONObject Specifications content
-   * @return Collection Kuzzle data collection
+   * {@link #updateSpecifications(JSONObject, Options, ResponseListener)}
    */
   public Collection updateSpecifications(@NonNull final JSONObject specifications) throws JSONException {
     return this.updateSpecifications(specifications, new Options(), null);
   }
 
   /**
-   * Updates the current specifications of this collection
-   *
-   * @param specifications JSONObject Specifications content
-   * @param options Options Optional parameters
-   * @return Collection Kuzzle data collection
+   * {@link #updateSpecifications(JSONObject, Options, ResponseListener)}
    */
   public Collection updateSpecifications(@NonNull final JSONObject specifications, final Options options) throws JSONException {
     return this.updateSpecifications(specifications, options, null);
   }
 
   /**
-   * Updates the current specifications of this collection
-   *
-   * @param specifications JSONObject Specifications content
-   * @param listener Response callback
-   * @return Collection Kuzzle data collection
+   * {@link #updateSpecifications(JSONObject, Options, ResponseListener)}
    */
   public Collection updateSpecifications(@NonNull final JSONObject specifications, final ResponseListener<JSONObject> listener) throws JSONException {
     return this.updateSpecifications(specifications, new Options(), listener);
@@ -2136,10 +1858,10 @@ public class Collection {
   /**
    * Updates the current specifications of this collection
    *
-   * @param specifications JSONObject Specifications content
-   * @param options Options Optional parameters
-   * @param listener Response callback
-   * @return Collection Kuzzle data collection
+   * @param specifications  Updated specifications content
+   * @param options  Request options
+   * @param listener  Response callback listener
+   * @return this
    */
   public Collection updateSpecifications(@NonNull final JSONObject specifications, final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
     if (specifications == null) {
@@ -2182,36 +1904,36 @@ public class Collection {
   }
 
   /**
-   * Gets kuzzle.
+   * Get the attached Kuzzle object instance.
    *
-   * @return the kuzzle
+   * @return attached Kuzzle object instance
    */
   public Kuzzle getKuzzle() {
     return kuzzle;
   }
 
   /**
-   * Gets collection.
+   * Get this data collection name
    *
-   * @return the collection
+   * @return data collection name
    */
   public String getCollection() {
     return collection;
   }
 
   /**
-   * Getter for the "index" property
+   * Get the parent data index name
    *
-   * @return index
+   * @return parent data index name
    */
   public String getIndex() {
     return this.index;
   }
 
   /**
-   * Gets headers.
+   * Get the data collection global headers
    *
-   * @return the headers
+   * @return data collection global headers
    */
   public JSONObject getHeaders() {
     return this.headers;

@@ -23,10 +23,10 @@ public class Profile extends AbstractSecurityDocument {
   /**
    * Instantiates a new Kuzzle profile.
    *
-   * @param kuzzle  the kuzzle
-   * @param id      the id
-   * @param content the content
-   * @throws JSONException the json exception
+   * @param kuzzle  Kuzzle instance to attach
+   * @param id      Profile unique ID
+   * @param content Profile content
+   * @throws JSONException 
    */
   public Profile(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
     super(kuzzle, id, null);
@@ -51,10 +51,10 @@ public class Profile extends AbstractSecurityDocument {
   /**
    * Save this profile in Kuzzle
    *
-   * @param options  - Optional arguments
-   * @param listener - Callback listener
-   * @return this kuzzle profile
-   * @throws JSONException the json exception
+   * @param options  Request optional arguments
+   * @param listener Callback listener
+   * @return this 
+   * @throws JSONException 
    */
   public Profile save(final Options options, final ResponseListener<Profile> listener) throws JSONException {
     JSONObject data;
@@ -86,32 +86,21 @@ public class Profile extends AbstractSecurityDocument {
   }
 
   /**
-   * Save this profile in Kuzzle
-   *
-   * @param listener - Callback listener
-   * @return this kuzzle profile
-   * @throws JSONException the json exception
+   * {@link #save(Options, ResponseListener)}
    */
   public Profile save(final ResponseListener<Profile> listener) throws JSONException {
     return this.save(null, listener);
   }
 
   /**
-   * Save this profile in Kuzzle
-   *
-   * @param options - Optional arguments
-   * @return this kuzzle profile
-   * @throws JSONException the json exception
+   * {@link #save(Options, ResponseListener)}
    */
   public Profile save(final Options options) throws JSONException {
     return this.save(options, null);
   }
 
   /**
-   * Save this profile in Kuzzle
-   *
-   * @return this kuzzle profile
-   * @throws JSONException the json exception
+   * {@link #save(Options, ResponseListener)}
    */
   public Profile save() throws JSONException {
     return this.save(null, null);
@@ -120,8 +109,8 @@ public class Profile extends AbstractSecurityDocument {
   /**
    * Add a new role to the list of allowed roles of this profile
    *
-   * @param policy - Policy to add to this profile
-   * @return this kuzzle profile
+   * @param policy Policy to add to this profile
+   * @return this 
    * @throws IllegalArgumentException
    */
   public Profile addPolicy(final JSONObject policy) throws IllegalArgumentException {
@@ -136,8 +125,8 @@ public class Profile extends AbstractSecurityDocument {
   /**
    * Add a new policy to the list of policies of this profile via its roleId
    *
-   * @param  roleId - Name of the role to add to this profile
-   * @return this kuzzle profile
+   * @param  roleId Name of the role to add to this profile
+   * @return this 
    */
   public Profile addPolicy(final String roleId) {
     JSONObject policy = new JSONObject();
@@ -153,8 +142,8 @@ public class Profile extends AbstractSecurityDocument {
   /**
    * Replace the current policies list with a new one
    *
-   * @param policies - New policies list
-   * @return this roles
+   * @param policies New policies list
+   * @return this 
    * @throws IllegalArgumentException
    */
   public Profile setPolicies(final JSONObject[] policies) throws IllegalArgumentException {
@@ -172,8 +161,8 @@ public class Profile extends AbstractSecurityDocument {
   /**
    * Replace the current policies list with a new one via its rolesIds
    *
-   * @param roleIds - New roles list
-   * @return this roles
+   * @param roleIds New roles identifiers list
+   * @return this 
    */
   public Profile setPolicies(final String[] roleIds) {
     this.policies.clear();
@@ -192,7 +181,7 @@ public class Profile extends AbstractSecurityDocument {
   /**
    * Serialize the content of this object to a JSON Object
    * @return a serialized version of this object
-   * @throws JSONException the json exception
+   * @throws JSONException 
    */
   public JSONObject serialize() throws JSONException {
     JSONObject
@@ -213,7 +202,7 @@ public class Profile extends AbstractSecurityDocument {
   /**
    * Return the list of the policies assigned to this profile
    *
-   * @return a JSONArray of policies" objects
+   * @return a JSONArray of policies objects
    */
   public JSONObject[] getPolicies() {
     return this.policies.toArray(new JSONObject[0]);

@@ -12,9 +12,6 @@ import io.kuzzle.sdk.listeners.SubscribeListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.NotificationResponse;
 
-/**
- * The type Kuzzle document.
- */
 public class Document {
   private final Collection dataCollection;
   private final String collection;
@@ -34,7 +31,7 @@ public class Document {
    * @param id                   - Unique document identifier
    * @param content              - The content of the document
    * @param meta                 - Document metadata
-   * @throws JSONException the json exception
+   * @throws JSONException 
    */
   public Document(@NonNull final Collection kuzzleDataCollection, final String id, final JSONObject content, final JSONObject meta) throws JSONException {
     if (kuzzleDataCollection == null) {
@@ -57,7 +54,7 @@ public class Document {
    * @param kuzzleDataCollection - An instantiated Collection object
    * @param id                   - Unique document identifier
    * @param content              - The content of the document
-   * @throws JSONException the json exception
+   * @throws JSONException 
    */
   public Document(@NonNull final Collection kuzzleDataCollection, final String id, final JSONObject content) throws JSONException {
     this(kuzzleDataCollection, id, content, null);
@@ -68,7 +65,7 @@ public class Document {
    * Document is the object representation of one of these documents.
    *
    * @param kuzzleDataCollection - An instantiated Collection object
-   * @throws JSONException the json exception
+   * @throws JSONException 
    */
   public Document(final Collection kuzzleDataCollection) throws JSONException {
     this(kuzzleDataCollection, null, null, null);
@@ -81,7 +78,7 @@ public class Document {
    *
    * @param kuzzleDataCollection - An instantiated Collection object
    * @param id                   - Unique document identifier
-   * @throws JSONException the json exception
+   * @throws JSONException 
    */
   public Document(final Collection kuzzleDataCollection, final String id) throws JSONException {
     this(kuzzleDataCollection, id, null, null);
@@ -93,7 +90,7 @@ public class Document {
    *
    * @param kuzzleDataCollection - An instantiated Collection object
    * @param content              - The content of the document
-   * @throws JSONException the json exception
+   * @throws JSONException 
    */
   public Document(final Collection kuzzleDataCollection, final JSONObject content) throws JSONException {
     this(kuzzleDataCollection, null, content, null);
@@ -106,42 +103,38 @@ public class Document {
    * @param kuzzleDataCollection - An instantiated Collection object
    * @param content              - The content of the document
    * @param meta                 - Document metadata
-   * @throws JSONException the json exception
+   * @throws JSONException 
    */
   public Document(final Collection kuzzleDataCollection, final JSONObject content, final JSONObject meta) throws JSONException {
     this(kuzzleDataCollection, null, content, meta);
   }
 
   /**
-   * Delete kuzzle document.
-   *
-   * @param options the options
+   * {@link #delete(Options, ResponseListener)}
    */
   public void delete(final Options options) {
     this.delete(options, null);
   }
 
   /**
-   * Delete kuzzle document.
-   *
-   * @param listener the listener
+   * {@link #delete(Options, ResponseListener)}
    */
   public void delete(final ResponseListener<String> listener) {
     this.delete(null, listener);
   }
 
   /**
-   * Delete kuzzle document.
+   * {@link #delete(Options, ResponseListener)}
    */
   public void delete() {
     this.delete(null, null);
   }
 
   /**
-   * Deletes this document in Kuzzle.
+   * Delete this document from Kuzzle
    *
-   * @param options  the options
-   * @param listener the listener
+   * @param options - Request options
+   * @param listener - Response callback listener
    */
   public void delete(final Options options, final ResponseListener<String> listener) {
     try {
@@ -174,10 +167,19 @@ public class Document {
     }
   }
 
+  /**
+   * {@link #exists(Options, ResponseListener)}
+   */
   public void exists(@NonNull final ResponseListener<JSONObject> listener) {
     this.exists(null, listener);
   }
 
+  /**
+   * Ask Kuzzle if this document exists
+   * 
+   * @param options - Request options
+   * @param listener - Response callback listener
+   */
   public void exists(final Options options, @NonNull final ResponseListener<JSONObject> listener) {
     if (this.id == null) {
       throw new IllegalStateException("Document.exists: cannot check if the document exists if no id has been provided");
@@ -206,19 +208,17 @@ public class Document {
   }
 
   /**
-   * Gets a refreshed copy of the current object
-   *
-   * @param listener the listener
+   * {@link #refresh(Options, ResponseListener)}
    */
   public void refresh(@NonNull final ResponseListener<Document> listener) {
     this.refresh(null, listener);
   }
 
   /**
-   * Gets a refreshed copy of the current object
+   * Gets a refreshed copy of this document from Kuzzle
    *
-   * @param options  the options
-   * @param listener the listener
+   * @param options - Request options
+   * @param listener - Response callback listener
    */
   public void refresh(final Options options, @NonNull final ResponseListener<Document> listener) {
     if (this.id == null) {
@@ -263,35 +263,21 @@ public class Document {
   }
 
   /**
-   * Saves this document into Kuzzle.
-   * If this is a new document, this function will create it in Kuzzle and the id property will be made available.
-   * Otherwise, this method will replace the latest version of this document in Kuzzle by the current content of this object.
-   *
-   * @return the kuzzle document
+   * {@link #save(Options, ResponseListener)}
    */
   public Document save() {
     return save(null, null);
   }
 
   /**
-   * Saves this document into Kuzzle.
-   * If this is a new document, this function will create it in Kuzzle and the id property will be made available.
-   * Otherwise, this method will replace the latest version of this document in Kuzzle by the current content of this object.
-   *
-   * @param options the options
-   * @return the kuzzle document
+   * {@link #save(Options, ResponseListener)}
    */
   public Document save(final Options options) {
     return this.save(options, null);
   }
 
   /**
-   * Saves this document into Kuzzle.
-   * If this is a new document, this function will create it in Kuzzle and the id property will be made available.
-   * Otherwise, this method will replace the latest version of this document in Kuzzle by the current content of this object.
-   *
-   * @param listener the listener
-   * @return the kuzzle document
+   * {@link #save(Options, ResponseListener)}
    */
   public Document save(final ResponseListener<Document> listener) {
     return save(null, listener);
@@ -302,9 +288,9 @@ public class Document {
    * If this is a new document, this function will create it in Kuzzle and the id property will be made available.
    * Otherwise, this method will replace the latest version of this document in Kuzzle by the current content of this object.
    *
-   * @param options  the options
-   * @param listener the listener
-   * @return kuzzle document
+   * @param options - Request options
+   * @param listener - Response callback listener
+   * @return this
    */
   public Document save(final Options options, final ResponseListener<Document> listener) {
     try {
@@ -338,10 +324,17 @@ public class Document {
   }
 
   /**
-   * Sends the content of this document as a realtime message.
+   * {@link #publish(Options)}
+   */
+  public Document publish() {
+    return this.publish(null);
+  }
+
+  /**
+   * Sends the content of this document as a real-time message.
    *
-   * @param options the options
-   * @return kuzzle document
+   * @param options - Request options
+   * @return this
    */
   public Document publish(final Options options) {
     try {
@@ -353,21 +346,20 @@ public class Document {
   }
 
   /**
-   * Publish kuzzle document.
-   *
-   * @return the kuzzle document
+   * {@link #setContent(JSONObject, boolean)}
    */
-  public Document publish() {
-    return this.publish(null);
+  public Document setContent(final JSONObject content) throws JSONException {
+    this.setContent(content, false);
+    return this;
   }
 
   /**
-   * Sets content
+   * Sets this document content
    *
-   * @param content the data
-   * @param replace the replace
-   * @return content content
-   * @throws JSONException the json exception
+   * @param content - New content for this document
+   * @param replace - true: replace the current content, false (default): update/append it
+   * @return this
+   * @throws JSONException 
    */
   public Document setContent(final JSONObject content, final boolean replace) throws JSONException {
     if (replace) {
@@ -393,12 +385,12 @@ public class Document {
   }
 
   /**
-   * Sets content.
+   * Set a document field value
    *
-   * @param key   the key
-   * @param value the value
-   * @return the content
-   * @throws JSONException the json exception
+   * @param key - Field name to set
+   * @param value - New field value
+   * @return this
+   * @throws JSONException 
    */
   public Document setContent(@NonNull final String key, final Object value) throws JSONException {
     if (key == null) {
@@ -410,24 +402,21 @@ public class Document {
   }
 
   /**
-   * Sets content.
-   *
-   * @param data the data
-   * @return the content
-   * @throws JSONException the json exception
+   * {@link #setMeta(JSONObject, boolean)}
    */
-  public Document setContent(final JSONObject data) throws JSONException {
-    this.setContent(data, false);
+  public Document setMeta(final JSONObject meta) throws JSONException {
+    this.setMeta(meta, false);
+    
     return this;
   }
 
   /**
-   * Sets metadata
+   * Set document metadata
    *
-   * @param meta the metadata
-   * @param replace if true: replaces the current metadata with the provided ones, otherwise merges it
-   * @return the Kuzzle document
-   * @throws JSONException the json exception
+   * @param meta - Metadata content
+   * @param replace - true: replace, false (default): append/update otherwise
+   * @return this
+   * @throws JSONException 
    */
   public Document setMeta(final JSONObject meta, final boolean replace) throws JSONException {
     if (replace) {
@@ -448,12 +437,12 @@ public class Document {
   }
 
   /**
-   * Sets metadata.
+   * Set a metadata field value
    *
-   * @param key   the key
-   * @param value the value
-   * @return the Kuzzle document
-   * @throws JSONException the json exception
+   * @param key - Metadata field name
+   * @param value - Metadata field value
+   * @return this
+   * @throws JSONException
    */
   public Document setMeta(@NonNull final String key, final Object value) throws JSONException {
     if (key == null) {
@@ -466,36 +455,19 @@ public class Document {
   }
 
   /**
-   * Sets metadata.
-   *
-   * @param meta the metadata
-   * @return the Kuzzle document
-   * @throws JSONException the json exception
-   */
-  public Document setMeta(final JSONObject meta) throws JSONException {
-    this.setMeta(meta, false);
-    
-    return this;
-  }
-
-  /**
-   * Listens to changes occuring on this document.
-   * Throws an error if this document has not yet been created in Kuzzle.
-   *
-   * @param listener the listener
-   * @return the kuzzle document
+   * {@link #subscribe(RoomOptions, ResponseListener)}
    */
   public SubscribeListener subscribe(@NonNull final ResponseListener<NotificationResponse> listener) {
     return this.subscribe(null, listener);
   }
 
   /**
-   * Listens to changes occuring on this document.
+   * Subscribe to changes occuring on this document.
    * Throws an error if this document has not yet been created in Kuzzle.
    *
-   * @param options  the options
-   * @param listener the listener
-   * @return kuzzle document
+   * @param options - Room object constructor options
+   * @param listener - Response callback listener
+   * @return an object with a "onDone" callback triggered when the subscription is active
    */
   public SubscribeListener subscribe(final RoomOptions options, @NonNull final ResponseListener<NotificationResponse> listener) {
     if (this.id == null) {
@@ -518,18 +490,18 @@ public class Document {
   }
 
   /**
-   * Gets collection.
+   * Get the parent data collection name
    *
-   * @return the collection
+   * @return parent data collection name
    */
   public String getCollection() {
     return collection;
   }
 
   /**
-   * Gets content.
+   * Document content getter
    *
-   * @return the content
+   * @return current document content
    */
   public JSONObject getContent() {
     return this.content;
@@ -537,11 +509,11 @@ public class Document {
 
 
   /**
-   * Gets content from body
+   * Get document content field
    *
-   * @param key the key
-   * @return the content
-   * @throws JSONException the json exception
+   * @param key - Field name to get
+   * @return field value
+   * @throws JSONException 
    */
   public Object getContent(final String key) throws JSONException {
     if (this.content.has(key)) {
@@ -552,9 +524,9 @@ public class Document {
   }
 
   /**
-   * Gets metadata.
+   * Document metadata getter
    *
-   * @return the metadata
+   * @return this document metadata
    */
   public JSONObject getMeta() {
     return this.meta;
@@ -562,11 +534,11 @@ public class Document {
 
 
   /**
-   * Gets metadata by key.
+   * Get a metadata field value
    *
-   * @param key the key
-   * @return the metadata
-   * @throws JSONException the json exception
+   * @param key - Metadata field name to get
+   * @return metadata field value
+   * @throws JSONException 
    */
   public Object getMeta(final String key) throws JSONException {
     if (this.meta.has(key)) {
@@ -577,25 +549,18 @@ public class Document {
   }
 
   /**
-   * Helper function allowing to set headers while chaining calls.
-   * If the replace argument is set to true, replace the current headers with the provided content.
-   * Otherwise, it appends the content to the current headers, only replacing already existing values
-   *
-   * @param content the headers
-   * @return the headers
+   * {@link #setHeaders(JSONObject, boolean)}
    */
   public Document setHeaders(final JSONObject content) {
     return this.setHeaders(content, false);
   }
 
   /**
-   * Helper function allowing to set headers while chaining calls.
-   * If the replace argument is set to true, replace the current headers with the provided content.
-   * Otherwise, it appends the content to the current headers, only replacing already existing values
-   *
+   * Replace or append/update global headers for this object
+   * 
    * @param content - new headers content
-   * @param replace - default: false = append the content. If true: replace the current headers with tj
-   * @return the headers
+   * @param replace - true: replace the current headers, false (default): append/update
+   * @return this
    */
   public Document setHeaders(final JSONObject content, final boolean replace) {
     try {
@@ -622,28 +587,28 @@ public class Document {
   }
 
   /**
-   * Gets headers.
+   * Get the global headers for this object
    *
-   * @return the headers
+   * @return global headers for this object
    */
   public JSONObject getHeaders() {
     return this.headers;
   }
 
   /**
-   * Gets id.
+   * Unique identifier getter
    *
-   * @return the id
+   * @return this document unique identifier
    */
   public String getId() {
     return this.id;
   }
 
   /**
-   * Sets id.
+   * Set this document unique identifier
    *
-   * @param id the id
-   * @return the id
+   * @param id - New document unique identifier
+   * @return this
    */
   public Document setId(final String id) {
     this.id = id;
@@ -651,16 +616,16 @@ public class Document {
   }
 
   /**
-   * Gets version.
+   * Get this document version 
    *
-   * @return the version
+   * @return this document version
    */
   public long getVersion() {
     return this.version;
   }
 
   /**
-   * Serializes this object into a plain old JSON object
+   * Serializes this document into a plain old JSON object
    *
    * @return JSON object representing this document
    */
@@ -691,13 +656,16 @@ public class Document {
   }
 
   /**
-   * Sets version.
+   * Set this document version
    *
-   * @param version the version
+   * @param version - New document version
+   * @return  this
    */
-  public void setVersion(long version) {
+  public Document setVersion(long version) {
     if (version > 0) {
       this.version = version;
     }
+
+    return this;
   }
 }
