@@ -18,10 +18,10 @@ public class Role extends AbstractSecurityDocument {
   /**
    * Instantiates a new Kuzzle role.
    *
-   * @param kuzzle  the kuzzle
-   * @param id      the id
-   * @param content the content
-   * @throws JSONException the json exception
+   * @param kuzzle  Kuzzle instance to attach
+   * @param id      Role unique identifier
+   * @param content Role content
+   * @throws JSONException 
    */
   public Role(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
     super(kuzzle, id, content);
@@ -32,10 +32,10 @@ public class Role extends AbstractSecurityDocument {
   /**
    * Save this role in Kuzzle
    *
-   * @param options  - Optional configuration
-   * @param listener - Optional callback listener
-   * @return Role this object
-   * @throws JSONException the json exception
+   * @param options  Request optional configuration
+   * @param listener Optional callback listener
+   * @return this
+   * @throws JSONException 
    */
   public Role save(final Options options, final ResponseListener<Role> listener) throws JSONException {
     JSONObject data = this.serialize();
@@ -61,32 +61,21 @@ public class Role extends AbstractSecurityDocument {
   }
 
   /**
-   * Save this role in Kuzzle
-   *
-   * @param listener - Optional callback listener
-   * @return Role this object
-   * @throws JSONException the json exception
+   * {@link #save(Options, ResponseListener)}
    */
   public Role save(final ResponseListener<Role> listener) throws JSONException {
     return this.save(null, listener);
   }
 
   /**
-   * Save this role in Kuzzle
-   *
-   * @param options - Optional configuration
-   * @return Role this object
-   * @throws JSONException the json exception
+   * {@link #save(Options, ResponseListener)}
    */
   public Role save(final Options options) throws JSONException {
     return this.save(options, null);
   }
 
   /**
-   * Save this role in Kuzzle
-   *
-   * @return Role this object
-   * @throws JSONException the json exception
+   * {@link #save(Options, ResponseListener)}
    */
   public Role save() throws JSONException {
     return this.save(null, null);

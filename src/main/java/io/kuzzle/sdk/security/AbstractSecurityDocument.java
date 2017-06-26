@@ -14,38 +14,20 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
  * Base class for the Role, Profile and User classes
  */
 public class AbstractSecurityDocument {
-  /**
-   * The Kuzzle.
-   */
   protected final Kuzzle kuzzle;
-  /**
-   * The Kuzzle security.
-   */
   protected final Security kuzzleSecurity;
-  /**
-   * The Delete action name.
-   */
   protected String deleteActionName;
-  /**
-   * The Update action name.
-   */
   protected String  updateActionName;
-  /**
-   * The Id.
-   */
   public final String id;
-  /**
-   * The Content.
-   */
   public JSONObject content;
 
   /**
    * Instantiates a new Abstract kuzzle security document.
    *
-   * @param kuzzle  the kuzzle
-   * @param id      the id
-   * @param content the content
-   * @throws JSONException the json exception
+   * @param kuzzle  Kuzzle instance to link
+   * @param id      Security document unique ID
+   * @param content Security document content
+   * @throws JSONException 
    */
   public AbstractSecurityDocument(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
     if (id == null) {
@@ -66,9 +48,9 @@ public class AbstractSecurityDocument {
   /**
    * Sets the content of this object
    *
-   * @param content - new content
-   * @return AbstractSecurityDocument - this object
-   * @throws JSONException the json exception
+   * @param content New content
+   * @return this
+   * @throws JSONException 
    */
   public AbstractSecurityDocument setContent(@NonNull final JSONObject content) throws JSONException {
     if (content == null) {
@@ -83,8 +65,8 @@ public class AbstractSecurityDocument {
   /**
    * Serializes this object to a plain-old JSON object
    *
-   * @return JSONObject - the serialized version of this object
-   * @throws JSONException the json exception
+   * @return The serialized version of this object
+   * @throws JSONException 
    */
   public JSONObject serialize() throws JSONException {
     JSONObject data;
@@ -99,9 +81,9 @@ public class AbstractSecurityDocument {
   /**
    * Delete this role/profile/user from Kuzzle
    *
-   * @param options  - Optional configuration
-   * @param listener - Optional response callback
-   * @throws JSONException the json exception
+   * @param options  Optional configuration
+   * @param listener Optional response callback
+   * @throws JSONException 
    */
   public void delete(final Options options, final ResponseListener<String> listener) throws JSONException {
     JSONObject data = new JSONObject().put("_id", this.id);
@@ -129,29 +111,21 @@ public class AbstractSecurityDocument {
   }
 
   /**
-   * Delete this role/profile/user from Kuzzle
-   *
-   * @param listener - Optional response callback
-   * @throws JSONException the json exception
+   * {@link #delete(Options, ResponseListener)}
    */
   public void delete(final ResponseListener<String> listener) throws JSONException {
     this.delete(null, listener);
   }
 
   /**
-   * Delete this role/profile/user from Kuzzle
-   *
-   * @param options - Optional configuration
-   * @throws JSONException the json exception
+   * {@link #delete(Options, ResponseListener)}
    */
   public void delete(final Options options) throws JSONException {
     this.delete(options, null);
   }
 
   /**
-   * Delete this role/profile/user from Kuzzle
-   *
-   * @throws JSONException the json exception
+   * {@link #delete(Options, ResponseListener)}
    */
   public void delete() throws JSONException {
     this.delete(null, null);
@@ -176,35 +150,21 @@ public class AbstractSecurityDocument {
   }
 
   /**
-   * Perform a partial update on this object
-   *
-   * @param content - content used to update the object
-   * @return AbstractSecurityDocument this object
-   * @throws JSONException - JSONException
+   * {@link #update(JSONObject, Options, ResponseListener)}
    */
   public AbstractSecurityDocument update(final JSONObject content) throws JSONException {
     return this.update(content, null, null);
   }
 
   /**
-   * Perform a partial update on this object
-   *
-   * @param content - content used to update the object
-   * @param options - optional arguments
-   * @return AbstractSecurityDocument this object
-   * @throws JSONException - JSONException
+   * {@link #update(JSONObject, Options, ResponseListener)}
    */
   public AbstractSecurityDocument update(final JSONObject content, final Options options) throws JSONException {
     return this.update(content, options, null);
   }
 
   /**
-   * Perform a partial update on this object
-   *
-   * @param content - content used to update the object
-   * @param listener the listener
-   * @return AbstractSecurityDocument this object
-   * @throws JSONException the json exception
+   * {@link #update(JSONObject, Options, ResponseListener)}
    */
   public AbstractSecurityDocument update(final JSONObject content, final ResponseListener<AbstractSecurityDocument> listener) throws JSONException {
     return this.update(content, null, listener);
@@ -213,11 +173,11 @@ public class AbstractSecurityDocument {
   /**
    * Perform a partial update on this object
    *
-   * @param content - content used to update the object
-   * @param options  the options
-   * @param listener the listener
-   * @return AbstractSecurityDocument this object
-   * @throws JSONException the json exception
+   * @param content Content used to update the object
+   * @param options Request optional parameters
+   * @param listener Response callback listener
+   * @return this
+   * @throws JSONException 
    */
   public AbstractSecurityDocument update(final JSONObject content, final Options options, final ResponseListener<AbstractSecurityDocument> listener) throws JSONException {
     JSONObject data = new JSONObject()
