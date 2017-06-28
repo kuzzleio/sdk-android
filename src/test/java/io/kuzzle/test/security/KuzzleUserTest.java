@@ -37,12 +37,12 @@ public class KuzzleUserTest {
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
     kuzzle.security = new Security(kuzzle);
-    stubUser = new User(kuzzle, "foo", null);
+    stubUser = new User(kuzzle, "foo", null, null);
   }
 
   @Test
   public void testKuzzleUserConstructorNoContent() throws JSONException {
-    User user = new User(kuzzle, "foo", null);
+    User user = new User(kuzzle, "foo", null, null);
     assertEquals(user.id, "foo");
     assertEquals(user.getProfileIds().length, 0);
     assertThat(user.content, instanceOf(JSONObject.class));
@@ -56,7 +56,7 @@ public class KuzzleUserTest {
         "\"someuseless\": \"field\"" +
       "}"
     );
-    User user = new User(kuzzle, "foo", stubProfile);
+    User user = new User(kuzzle, "foo", stubProfile, null);
     assertEquals(user.id, "foo");
     assertEquals(user.getProfileIds()[0], "bar");
     assertThat(user.content, instanceOf(JSONObject.class));
@@ -66,11 +66,24 @@ public class KuzzleUserTest {
   @Test
   public void testKuzzleUserConstructorProfileWithContent() throws JSONException {
     JSONObject stubProfile = new JSONObject("{\"profileIds\": [\"bar\"]}");
-    User user = new User(kuzzle, "foo", stubProfile);
+    User user = new User(kuzzle, "foo", stubProfile, null);
     assertEquals(user.id, "foo");
     assertThat(user.getProfileIds(), instanceOf(String[].class));
     assertEquals(user.getProfileIds()[0], "bar");
     assertThat(user.content, instanceOf(JSONObject.class));
+  }
+
+  @Test
+  public void testKuzzleUserConstructorMeta() throws JSONException {
+    JSONObject meta = new JSONObject()
+      .put("createdAt", "0123456789")
+      .put("author", "-1");
+    User user = new User(kuzzle, "foo", null, meta);
+    assertEquals(user.id, "foo");
+    assertEquals(user.getMeta().length(), 2);
+    assertEquals(user.getMeta().getString("createdAt"), "0123456789");
+    assertEquals(user.getMeta().getString("author"), "-1");
+    assertThat(user.meta, instanceOf(JSONObject.class));
   }
 
   @Test
@@ -254,7 +267,7 @@ public class KuzzleUserTest {
     JSONObject stubProfile = new JSONObject(
             "{\"profileIds\": [\"bar\"]}"
     );
-    User user = new User(kuzzle, "foo", stubProfile);
+    User user = new User(kuzzle, "foo", stubProfile, null);
     assertEquals(user.getProfileIds()[0], "bar");
   }
 
@@ -263,7 +276,7 @@ public class KuzzleUserTest {
     JSONObject stubProfile = new JSONObject(
             "{\"profileIds\": [\"bar\"]}"
     );
-    User user = new User(kuzzle, "foo", stubProfile);
+    User user = new User(kuzzle, "foo", stubProfile, null);
     user.addProfile("new profile");
     assertEquals(user.getProfileIds()[1], "new profile");
   }
@@ -273,20 +286,20 @@ public class KuzzleUserTest {
     JSONObject stubProfile = new JSONObject(
             "{\"profileIds\": [\"bar\"]}"
     );
-    User user = new User(kuzzle, "foo", stubProfile);
+    User user = new User(kuzzle, "foo", stubProfile, null);
     user.addProfile(null);
     doThrow(IllegalArgumentException.class).when(user).addProfile(eq((String)null));
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetProfilesException() throws JSONException {
-    User user = new User(kuzzle, "foo", new JSONObject());
+    User user = new User(kuzzle, "foo", new JSONObject(), null);
     user.getProfiles(null);
   }
 
   @Test
   public void testGetProfilesEmpty() throws JSONException {
-    User user = new User(kuzzle, "foo", new JSONObject());
+    User user = new User(kuzzle, "foo", new JSONObject(), null);
 
     user.getProfiles(new ResponseListener<Profile[]>() {
       @Override
@@ -304,7 +317,7 @@ public class KuzzleUserTest {
   @Test
   public void testGetProfiles() throws JSONException {
     JSONArray profiles = new JSONArray().put("foo").put("bar").put("baz");
-    User user = new User(kuzzle, "foo", new JSONObject().put("profileIds", profiles));
+    User user = new User(kuzzle, "foo", new JSONObject().put("profileIds", profiles), null);
 
     Answer mockAnswer = new Answer() {
       @Override
@@ -317,6 +330,7 @@ public class KuzzleUserTest {
               .put("_source", new JSONObject()
                 .put("policies", new JSONArray())
               )
+              .put("_meta", new JSONObject())
             )
           );
         return null;
@@ -351,7 +365,7 @@ public class KuzzleUserTest {
   @Test
   public void testGetProfilesError() throws JSONException {
     JSONArray profiles = new JSONArray().put("foo").put("bar").put("baz");
-    User user = new User(kuzzle, "foo", new JSONObject().put("profileIds", profiles));
+    User user = new User(kuzzle, "foo", new JSONObject().put("profileIds", profiles), null);
     final boolean[] invoked = {false};
 
     Answer mockAnswer = new Answer() {

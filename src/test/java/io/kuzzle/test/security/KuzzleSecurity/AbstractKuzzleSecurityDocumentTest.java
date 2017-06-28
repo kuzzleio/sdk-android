@@ -37,7 +37,7 @@ public class AbstractKuzzleSecurityDocumentTest {
     kuzzle = mock(Kuzzle.class);
     kuzzle.security = new Security(kuzzle);
     listener = mock(ResponseListener.class);
-    stubRole = new Role(kuzzle, "foo", new JSONObject("{\"foo\":\"bar\"}"));
+    stubRole = new Role(kuzzle, "foo", new JSONObject("{\"foo\":\"bar\"}"), null);
   }
 
   @Test(expected = IllegalArgumentException.class)

@@ -39,7 +39,7 @@ public class getProfileTest {
   }
 
   @Test(expected = RuntimeException.class)
-  public void testgetProfileBadResponse() throws JSONException {
+  public void testGetProfileBadResponse() throws JSONException {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -55,11 +55,11 @@ public class getProfileTest {
   }
 
   @Test
-  public void testgetProfileGoodFullResponse() throws JSONException {
+  public void testGetProfileGoodFullResponse() throws JSONException {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        JSONObject response = new JSONObject("{\"result\":{\"_id\":\"foobar\",\"_source\":{\"policies\":[{\"roleId\":\"baz\",\"restrictedTo\":[{\"index\":\"qux\"}],\"allowInternalIndex\":true}]}}}");
+        JSONObject response = new JSONObject("{\"result\":{\"_id\":\"foobar\",\"_source\":{\"policies\":[{\"roleId\":\"baz\",\"restrictedTo\":[{\"index\":\"qux\"}],\"allowInternalIndex\":true}]},\"_meta\":{}}}");
 
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
@@ -72,11 +72,11 @@ public class getProfileTest {
   }
 
   @Test
-  public void testgetProfileGoodMinimalResponse() throws JSONException {
+  public void testGetProfileGoodMinimalResponse() throws JSONException {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        JSONObject response = new JSONObject("{\"result\":{\"_id\":\"foobar\",\"_source\":{\"policies\":[{\"roleId\":\"baz\"}]}}}");
+        JSONObject response = new JSONObject("{\"result\":{\"_id\":\"foobar\",\"_source\":{\"policies\":[{\"roleId\":\"baz\"}]},\"_meta\":{}}}");
 
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
@@ -89,11 +89,11 @@ public class getProfileTest {
   }
 
   @Test
-  public void testgetProfileGoodWithRestrictedToResponse() throws JSONException {
+  public void testGetProfileGoodWithRestrictedToResponse() throws JSONException {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        JSONObject response = new JSONObject("{\"result\":{\"_id\":\"foobar\",\"_source\":{\"policies\":[{\"roleId\":\"baz\"}],\"restrictedTo\":[{\"index\":\"qux\"}]}}}");
+        JSONObject response = new JSONObject("{\"result\":{\"_id\":\"foobar\",\"_source\":{\"policies\":[{\"roleId\":\"baz\"}],\"restrictedTo\":[{\"index\":\"qux\"}]},\"_meta\":{}}}");
 
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
@@ -106,11 +106,11 @@ public class getProfileTest {
   }
 
   @Test
-  public void testgetProfileGoodWithAllowInternalIndexResponse() throws JSONException {
+  public void testGetProfileGoodWithAllowInternalIndexResponse() throws JSONException {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        JSONObject response = new JSONObject("{\"result\":{\"_id\":\"foobar\",\"_source\":{\"policies\":[{\"roleId\":\"baz\"}],\"allowInternalIndex\":true}}}");
+        JSONObject response = new JSONObject("{\"result\":{\"_id\":\"foobar\",\"_source\":{\"policies\":[{\"roleId\":\"baz\"}],\"allowInternalIndex\":true},\"_meta\":{}}}");
 
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));

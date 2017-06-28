@@ -26,10 +26,11 @@ public class Profile extends AbstractSecurityDocument {
    * @param kuzzle  Kuzzle instance to attach
    * @param id      Profile unique ID
    * @param content Profile content
+   * @param meta Profile metadata
    * @throws JSONException 
    */
-  public Profile(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
-    super(kuzzle, id, null);
+  public Profile(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content, final JSONObject meta) throws JSONException {
+    super(kuzzle, id, null, meta);
     this.deleteActionName = "deleteProfile";
     this.updateActionName = "updateProfile";
 
