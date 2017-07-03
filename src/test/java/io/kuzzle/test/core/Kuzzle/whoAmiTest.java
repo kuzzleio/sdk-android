@@ -64,7 +64,12 @@ public class whoAmiTest {
             .put("_source", new JSONObject()
               .put("profile", new JSONObject()
                 .put("_id", "admin")
-                .put("roles", "")))));
+                .put("roles", "")
+              )
+            )
+            .put("_meta", new JSONObject())
+          )
+        );
 
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;

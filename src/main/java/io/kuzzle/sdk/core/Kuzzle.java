@@ -2152,7 +2152,7 @@ public class Kuzzle {
         public void onSuccess(JSONObject response) {
           try {
             JSONObject result = response.getJSONObject("result");
-            listener.onSuccess(new User(Kuzzle.this, result.getString("_id"), result.getJSONObject("_source")));
+            listener.onSuccess(new User(Kuzzle.this, result.getString("_id"), result.getJSONObject("_source"), result.getJSONObject("_meta")));
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }

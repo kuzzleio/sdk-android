@@ -1,6 +1,5 @@
 package io.kuzzle.sdk.security;
 
-
 import android.support.annotation.NonNull;
 
 import org.json.JSONException;
@@ -21,10 +20,11 @@ public class Role extends AbstractSecurityDocument {
    * @param kuzzle  Kuzzle instance to attach
    * @param id      Role unique identifier
    * @param content Role content
+   * @param meta Role metadata
    * @throws JSONException 
    */
-  public Role(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
-    super(kuzzle, id, content);
+  public Role(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content, final JSONObject meta) throws JSONException {
+    super(kuzzle, id, content, meta);
     this.deleteActionName = "deleteRole";
     this.updateActionName = "updateRole";
   }

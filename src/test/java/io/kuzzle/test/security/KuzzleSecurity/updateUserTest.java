@@ -52,12 +52,13 @@ public class updateUserTest {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
         JSONObject response = new JSONObject(
-            "{" +
-                "\"result\": {" +
-                "\"_id\": \"foobar\"," +
-                "\"_source\": {}" +
-                "}" +
-                "}");
+          "{" +
+            "\"result\": {" +
+              "\"_id\": \"foobar\"," +
+              "\"_source\": {}," +
+              "\"_meta\": {}" +
+            "}" +
+          "}");
 
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
