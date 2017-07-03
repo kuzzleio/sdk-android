@@ -170,7 +170,7 @@ public class Document {
   /**
    * {@link #exists(Options, ResponseListener)}
    */
-  public void exists(@NonNull final ResponseListener<JSONObject> listener) {
+  public void exists(@NonNull final ResponseListener<Boolean> listener) {
     this.exists(null, listener);
   }
 
@@ -180,7 +180,7 @@ public class Document {
    * @param options - Request options
    * @param listener - Response callback listener
    */
-  public void exists(final Options options, @NonNull final ResponseListener<JSONObject> listener) {
+  public void exists(final Options options, @NonNull final ResponseListener<Boolean> listener) {
     if (this.id == null) {
       throw new IllegalStateException("Document.exists: cannot check if the document exists if no id has been provided");
     }
@@ -193,8 +193,11 @@ public class Document {
       this.kuzzle.query(this.dataCollection.makeQueryArgs("document", "exists"), this.serialize(), options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject object) {
-          listener.onSuccess(object);
-          ;
+          try {
+            listener.onSuccess(object.getBoolean("result"));
+          } catch (JSONException e) {
+            throw new RuntimeException(e);
+          }
         }
 
         @Override
