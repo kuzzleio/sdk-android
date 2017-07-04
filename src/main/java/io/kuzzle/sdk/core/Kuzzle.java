@@ -912,7 +912,7 @@ public class Kuzzle {
       }
 
       if (expiresIn >= 0) {
-        body.put("expiresIn", expiresIn);
+        query.put("expiresIn", expiresIn);
       }
 
       query.put("strategy", strategy);
