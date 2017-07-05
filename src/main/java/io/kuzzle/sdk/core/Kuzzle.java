@@ -1303,7 +1303,7 @@ public class Kuzzle {
 
   /**
    * Renew all registered subscriptions. Usually called after:
-   * - a connection, if subscriptions occured before
+   * - a connection, if subscriptions occurred before
    * - a reconnection
    * - after a successful login attempt, to subscribe with the new credentials
    */
@@ -1430,7 +1430,7 @@ public class Kuzzle {
    */
   protected Socket createSocket() throws URISyntaxException {
     IO.Options opt = new IO.Options();
-    opt.forceNew = true;
+    opt.forceNew = false;
     opt.reconnection = this.autoReconnect;
     opt.reconnectionDelay = this.reconnectionDelay;
     return IO.socket("http://" + host + ":" + this.port, opt);

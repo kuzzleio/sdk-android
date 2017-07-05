@@ -44,8 +44,12 @@ public class NotificationResponse {
       this.scope = (object.isNull("scope") ? null : Scope.valueOf(object.getString("scope").toUpperCase()));
       this.users = (object.isNull("user") ? null : Users.valueOf(object.getString("user").toUpperCase()));
       if (!object.getJSONObject("result").isNull("_source")) {
-        this.document = new Document(new Collection(kuzzle, this.collection, this.index), object.getJSONObject("result"));
-        this.document.setId(this.result.getString("_id"));
+        JSONObject content = object.getJSONObject("result");
+        String id = content.getString("_id");
+        JSONObject meta = content.isNull("_meta") ? new JSONObject() : content.getJSONObject("_meta");
+        content.remove("_id");
+        content.remove("_meta");
+        this.document = new Document(new Collection(kuzzle, this.collection, this.index), id, content, meta);
       }
     } catch (JSONException e) {
       throw new RuntimeException(e);
