@@ -176,7 +176,7 @@ public class Collection {
     options.setScrollId(scrollId);
 
     try {
-      this.kuzzle.query(makeQueryArgs("document", "scroll"), request, options, new OnQueryDoneListener() {
+      this.kuzzle.query(this.kuzzle.buildQueryArgs("document", "scroll"), request, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject object) {
           try {
