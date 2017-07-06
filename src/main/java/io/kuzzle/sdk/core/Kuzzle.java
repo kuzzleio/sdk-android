@@ -1,7 +1,6 @@
 package io.kuzzle.sdk.core;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -39,6 +38,7 @@ import io.kuzzle.sdk.util.EventList;
 import io.kuzzle.sdk.util.OfflineQueueLoader;
 import io.kuzzle.sdk.util.QueryObject;
 import io.kuzzle.sdk.util.QueueFilter;
+import io.kuzzle.sdk_android.BuildConfig;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -51,112 +51,38 @@ public class Kuzzle {
   private final int MAX_EMIT_TIMEOUT = 10;
   private final int EVENT_TIMEOUT = 200;
 
-  /**
-   * The Event listeners.
-   */
   protected ConcurrentHashMap<Event, EventList> eventListeners = new ConcurrentHashMap<>();
-  /**
-   * The Socket.
-   */
   protected Socket socket;
-  /**
-   * The Collections.
-   */
   protected Map<String, Map<String, Collection>> collections = new ConcurrentHashMap<>();
-  /**
-   * The Auto reconnect.
-   */
   protected boolean autoReconnect = true;
-  /**
-   * The Headers.
-   */
   protected JSONObject headers = new JSONObject();
-  /**
-   * The Volatile property.
-   */
   protected JSONObject _volatile;
-  /**
-   * The target Kuzzle host
-   */
   protected String host;
-  /**
-   * Target Kuzzle network port
-   */
   protected Integer port;
-  /**
-   * The Connection callback.
-   */
   protected ResponseListener<Void> connectionCallback;
-
-  /**
-   * The State.
-   */
   protected States state = States.INITIALIZING;
-  /**
-   * The Reconnection delay.
-   */
   protected long reconnectionDelay;
-  /**
-   * The Auto resubscribe.
-   */
   protected boolean autoResubscribe;
-  /**
-   * The Auto queue.
-   */
   protected boolean autoQueue;
-  /**
-   * The Auto replay.
-   */
   protected boolean autoReplay;
-  /**
-   * The Queue filter.
-   */
+
   protected QueueFilter queueFilter = new QueueFilter() {
     @Override
     public boolean filter(JSONObject object) {
       return true;
     }
   };
-  /**
-   * The Replay interval.
-   */
+
   protected long replayInterval;
-  /**
-   * The Queuing.
-   */
   protected boolean queuing = false;
-  /**
-   * The Default index.
-   */
   protected String defaultIndex;
-
-  /**
-   * The Request history.
-   */
   protected ConcurrentHashMap<String, Date> requestHistory = new ConcurrentHashMap<>();
-
-  /**
-   * The Offline queue.
-   */
   protected KuzzleQueue<QueryObject> offlineQueue = new KuzzleQueue<>();
-  /**
-   * The Queue ttl.
-   */
   protected int queueTTL;
-  /**
-   * The Queue max size.
-   */
   protected int queueMaxSize;
-
-  /**
-   * The Jwt token.
-   */
   protected String jwtToken = null;
 
-  /**
-   * The Subscriptions.
-   */
-/*
+  /*
    This property contains the centralized subscription list in the following format:
     roomId:
       kuzzleRoomID_1: kuzzleRoomInstance_1,
@@ -183,25 +109,10 @@ public class Kuzzle {
 
   public MemoryStorage memoryStorage;
 
-  /**
-   * The type Query args.
-   */
   public static class QueryArgs {
-    /**
-     * The Controller.
-     */
     public String controller;
-    /**
-     * The Action.
-     */
     public String action;
-    /**
-     * The Index.
-     */
     public String index;
-    /**
-     * The Collection.
-     */
     public String collection;
   }
 
@@ -209,8 +120,8 @@ public class Kuzzle {
    * Emit an event to all registered listeners
    * An event cannot be emitted multiple times before a timeout has been reached.
    *
-   * @param event the event
-   * @param args  the args
+   * @param event - Event name to emit
+   * @param args - Event payload
    */
   protected void emitEvent(Event event, Object... args) {
     long now = System.currentTimeMillis();
@@ -228,17 +139,21 @@ public class Kuzzle {
     }
   }
 
+  /**
+   * Connection status getter
+   * @return Connection status
+   */
   public States getState() {
     return state;
   }
 
   /**
-   * Kuzzle object constructor.
+   * Constructor
    *
-   * @param host               target host name or IP address
-   * @param options            the options
-   * @param connectionCallback the connection callback
-   * @throws URISyntaxException the uri syntax exception
+   * @param host - Target host name or IP address
+   * @param options - Request options
+   * @param connectionCallback - On success callback listener
+   * @throws URISyntaxException 
    */
   public Kuzzle(@NonNull final String host, final Options options, final ResponseListener<Void> connectionCallback) throws URISyntaxException {
     if (host == null || host.isEmpty()) {
@@ -279,43 +194,44 @@ public class Kuzzle {
   }
 
   /**
-   * Instantiates a new Kuzzle.
+   * Constructor
    *
-   * @param host target Kuzzle host name or IP address
-   * @throws URISyntaxException the uri syntax exception
+   * @param host - Target Kuzzle host name or IP address
+   * @throws URISyntaxException
    */
   public Kuzzle(@NonNull final String host) throws URISyntaxException {
     this(host, null, null);
   }
 
   /**
-   * Instantiates a new Kuzzle.
+   * Constructor
    *
-   * @param host target Kuzzle host name or IP address
-   * @param cb   the cb
-   * @throws URISyntaxException the uri syntax exception
+   * @param host - Target Kuzzle host name or IP address
+   * @param cb - On success connection callback listener
+   * @throws URISyntaxException 
    */
   public Kuzzle(@NonNull final String host, final ResponseListener<Void> cb) throws URISyntaxException {
     this(host, null, cb);
   }
 
   /**
-   * Instantiates a new Kuzzle.
+   * Constructor
    *
-   * @param host    target Kuzzle host name or IP address
-   * @param options the options
-   * @throws URISyntaxException the uri syntax exception
+   * @param host - Target Kuzzle host name or IP address
+   * @param options - Request options
+   * @throws URISyntaxException 
    */
   public Kuzzle(@NonNull final String host, Options options) throws URISyntaxException {
     this(host, options, null);
   }
 
   /**
-   * Adds a listener to a Kuzzle global event. When an event is fired, listeners are called in the order of their
-   * insertion.
+   * Adds a listener to a Kuzzle global event. When an event is triggered, 
+   * listeners are called in the order of their insertion.
    *
-   * @param kuzzleEvent - name of the global event to subscribe to
-   * @param listener    the event listener
+   * @param kuzzleEvent - Name of the global event to subscribe to
+   * @param listener - Response callback listener
+   * @return this
    */
   public Kuzzle addListener(final Event kuzzleEvent, final EventListener listener) {
     this.isValid();
@@ -336,10 +252,10 @@ public class Kuzzle {
   }
 
   /**
-   * Check token kuzzle.
+   * Check an authentication token validity
    *
-   * @param token    the token
-   * @param listener the listener
+   * @param token - Token to check (JWT)
+   * @param listener - Response callback listener
    */
   public void checkToken(@NonNull final String token, @NonNull final ResponseListener<TokenValidity> listener) {
     if (listener == null) {
@@ -388,8 +304,8 @@ public class Kuzzle {
   /**
    * Connects to a Kuzzle instance using the provided host and port.
    *
-   * @return kuzzle kuzzle
-   * @throws URISyntaxException the uri syntax exception
+   * @return this
+   * @throws URISyntaxException 
    */
   public Kuzzle connect() throws URISyntaxException {
     if (!this.isValidState()) {
@@ -474,7 +390,7 @@ public class Kuzzle {
               public void onSuccess(TokenValidity response) {
                 if (!response.isValid()) {
                   Kuzzle.this.jwtToken = null;
-                  Kuzzle.this.emitEvent(Event.jwtTokenExpired);
+                  Kuzzle.this.emitEvent(Event.tokenExpired);
                 }
 
                 Kuzzle.this.reconnect();
@@ -483,7 +399,7 @@ public class Kuzzle {
               @Override
               public void onError(JSONObject error) {
                 Kuzzle.this.jwtToken = null;
-                Kuzzle.this.emitEvent(Event.jwtTokenExpired);
+                Kuzzle.this.emitEvent(Event.tokenExpired);
                 Kuzzle.this.reconnect();
               }
             });
@@ -502,10 +418,10 @@ public class Kuzzle {
   }
 
   /**
-   * Data collection factory kuzzle data collection.
+   * Collection object factory. Default index must be set.
    *
-   * @param collection the collection
-   * @return the kuzzle data collection
+   * @param collection - Data collection name
+   * @return Instantiated Collection object
    */
   public Collection collection(@NonNull final String collection) {
     this.isValid();
@@ -517,11 +433,11 @@ public class Kuzzle {
   }
 
   /**
-   * Create a new instance of a Collection object
+   * Collection object factory
    *
-   * @param collection - The name of the data collection you want to manipulate
-   * @param index      the index
-   * @return {object} A Collection instance
+   * @param collection - Data collection name
+   * @param index - Parent data index name
+   * @return Instantiated Collection object
    */
   public Collection collection(@NonNull final String collection, @NonNull final String index) {
     this.isValid();
@@ -538,33 +454,26 @@ public class Kuzzle {
   }
 
   /**
-   * Create an index in Kuzzle
-   *
-   * @param index
-   * @param cb
-   * @return
+   * {@link #createIndex(String, Options, ResponseListener)}
    */
   public Kuzzle createIndex(@NonNull final String index, final ResponseListener<JSONObject> cb) {
     return createIndex(index, null, cb);
   }
 
   /**
-   * Create an index in Kuzzle
-   *
-   * @param index
-   * @return
+   * {@link #createIndex(String, Options, ResponseListener)}
    */
   public Kuzzle createIndex(@NonNull final String index) {
     return createIndex(index, null, null);
   }
 
   /**
-   * Create an index in Kuzzle
+   * Create a new data index
    *
-   * @param index
-   * @param options
-   * @param cb
-   * @return
+   * @param index - index name to create
+   * @param options - Request options
+   * @param cb - Response callback listener
+   * @return this
    */
   public Kuzzle createIndex(@NonNull final String index, final Options options, final ResponseListener<JSONObject> cb) {
     if (index == null && defaultIndex == null) {
@@ -603,7 +512,7 @@ public class Kuzzle {
   /**
    * Empties the offline queue without replaying it.
    *
-   * @return Kuzzle instance
+   * @return this
    */
   public Kuzzle flushQueue() {
     this.getOfflineQueue().clear();
@@ -611,20 +520,17 @@ public class Kuzzle {
   }
 
   /**
-   * Gets all statistics.
-   *
-   * @param listener the listener
+   * {@link #getAllStatistics(Options, ResponseListener)}
    */
   public void getAllStatistics(@NonNull final ResponseListener<JSONObject[]> listener) {
     this.getAllStatistics(null, listener);
   }
 
   /**
-   * Kuzzle monitors active connections, and ongoing/completed/failed requests.
-   * This method returns all available statistics from Kuzzle.
+   * Get all Kuzzle usage statistics frames
    *
-   * @param options  the options
-   * @param listener the listener
+   * @param options - Request options
+   * @param listener - Response callback listener
    */
   public void getAllStatistics(final Options options, @NonNull final ResponseListener<JSONObject[]> listener) {
     if (listener == null) {
@@ -664,20 +570,17 @@ public class Kuzzle {
   }
 
   /**
-   * Gets statistics.
-   *
-   * @param listener the listener
+   * {@link #getStatistics(Options, ResponseListener)}
    */
   public void getStatistics(@NonNull final ResponseListener<JSONObject[]> listener) {
     this.getStatistics(null, listener);
   }
 
   /**
-   * Kuzzle monitors active connections, and ongoing/completed/failed requests.
-   * This method allows getting the last statistics frame
+   * Get Kuzzle usage statistics
    *
-   * @param options  the options
-   * @param listener the listener
+   * @param options - Request options
+   * @param listener - Response callback listener
    */
   public void getStatistics(final Options options, @NonNull final ResponseListener<JSONObject[]> listener) {
     if (listener == null) {
@@ -713,21 +616,18 @@ public class Kuzzle {
   }
 
   /**
-   * Gets statistics.
-   *
-   * @param timestamp the timestamp
-   * @param listener  the listener
+   * {@link #getStatistics(long, Options, ResponseListener)}
    */
   public void getStatistics(long timestamp, @NonNull final ResponseListener<JSONObject[]> listener) {
     this.getStatistics(timestamp, null, listener);
   }
 
   /**
-   * Kuzzle monitors active connections, and ongoing/completed/failed requests starting from a provided timestamp
+   * Get Kuzzle usage statistics starting from a provided timestamp
    *
-   * @param timestamp the timestamp
-   * @param options   the options
-   * @param listener  the listener
+   * @param timestamp - Statistic starting time to retrieve
+   * @param options - Request options
+   * @param listener - Response callback listener
    */
   public void getStatistics(long timestamp, final Options options, @NonNull final ResponseListener<JSONObject[]> listener) {
     if (listener == null) {
@@ -772,9 +672,7 @@ public class Kuzzle {
   }
 
   /**
-   * Gets server info.
-   *
-   * @param listener the listener
+   * {@link #getServerInfo(Options, ResponseListener)}
    */
   public void getServerInfo(@NonNull final ResponseListener<JSONObject> listener) {
     this.getServerInfo(null, listener);
@@ -783,8 +681,8 @@ public class Kuzzle {
   /**
    * Gets server info.
    *
-   * @param options  the options
-   * @param listener the listener
+   * @param options - Request options
+   * @param listener - Response callback listener
    */
   public void getServerInfo(final Options options, @NonNull final ResponseListener<JSONObject> listener) {
     if (listener == null) {
@@ -815,40 +713,35 @@ public class Kuzzle {
   }
 
   /**
-   * Returns the list of known persisted data collections.
-   *
-   * @param listener the listener
+   * {@link #listCollections(Options, ResponseListener)}
    */
   public void listCollections(@NonNull final ResponseListener<JSONObject[]> listener) {
     this.listCollections(null, null, listener);
   }
 
   /**
-   * List collections kuzzle.
-   *
-   * @param index    the index
-   * @param listener the listener
+   * {@link #listCollections(String, Options, ResponseListener)}
    */
   public void listCollections(String index, @NonNull final ResponseListener<JSONObject[]> listener) {
     this.listCollections(index, null, listener);
   }
 
   /**
-   * List collections kuzzle.
+   * List data collections on the default data index
    *
-   * @param options  the options
-   * @param listener the listener
+   * @param options - Request options
+   * @param listener - Response callback listener
    */
   public void listCollections(Options options, @NonNull final ResponseListener<JSONObject[]> listener) {
     this.listCollections(null, options, listener);
   }
 
   /**
-   * Returns the list of known persisted data collections.
+   * List data collections
    *
-   * @param index    the index
-   * @param options  the options
-   * @param listener the listener
+   * @param index - Parent data index name
+   * @param options - Request options
+   * @param listener - Response callback listener
    */
   public void listCollections(String index, Options options, @NonNull final ResponseListener<JSONObject[]> listener) {
     if (index == null) {
@@ -900,19 +793,17 @@ public class Kuzzle {
   }
 
   /**
-   * List indexes kuzzle.
-   *
-   * @param listener the listener
+   * {@link #listIndexes(Options, ResponseListener)}
    */
   public void listIndexes(@NonNull final ResponseListener<String[]> listener) {
     this.listIndexes(null, listener);
   }
 
   /**
-   * List indexes kuzzle.
+   * List data indexes 
    *
-   * @param options  the options
-   * @param listener the listener
+   * @param options - Request options
+   * @param listener - Response callback listener
    */
   public void listIndexes(final Options options, @NonNull final ResponseListener<String[]> listener) {
     if (listener == null) {
@@ -949,84 +840,61 @@ public class Kuzzle {
   }
 
   /**
-   * Login kuzzle.
-   *
-   * @param strategy the strategy
+   * {@link #login(String, JSONObject, int, ResponseListener)}
    */
   public void login(@NonNull final String strategy) {
     this.login(strategy, null, -1, null);
   }
 
   /**
-   * Log a user according to the strategy and credentials.
-   *
-   * @param strategy    the strategy
-   * @param credentials login credentials
+   * {@link #login(String, JSONObject, int, ResponseListener)}
    */
   public void login(@NonNull final String strategy, final JSONObject credentials) {
     this.login(strategy, credentials, -1, null);
   }
 
   /**
-   * Login kuzzle.
-   *
-   * @param strategy  the strategy
-   * @param expiresIn the expires in
+   * {@link #login(String, JSONObject, int, ResponseListener)}
    */
   public void login(@NonNull final String strategy, final int expiresIn) {
     this.login(strategy, null, expiresIn, null);
   }
 
   /**
-   * Log a user according to the strategy and credentials.
-   *
-   * @param strategy    the strategy
-   * @param credentials login credentials
-   * @param expiresIn   the expires in
+   * {@link #login(String, JSONObject, int, ResponseListener)}
    */
   public void login(@NonNull final String strategy, final JSONObject credentials, final int expiresIn) {
     this.login(strategy, credentials, expiresIn, null);
   }
 
   /**
-   * Login kuzzle.
-   *
-   * @param strategy    the strategy
-   * @param credentials login credentials
-   * @param listener    the listener
+   * {@link #login(String, JSONObject, int, ResponseListener)}
    */
   public void login(@NonNull final String strategy, final JSONObject credentials, final ResponseListener<JSONObject> listener) {
     this.login(strategy, credentials, -1, listener);
   }
 
   /**
-   * Login kuzzle.
-   *
-   * @param strategy the strategy
-   * @param listener the listener
+   * {@link #login(String, JSONObject, int, ResponseListener)}
    */
   public void login(@NonNull final String strategy, final ResponseListener<JSONObject> listener) {
     this.login(strategy, null, -1, listener);
   }
 
   /**
-   * Login kuzzle.
-   *
-   * @param strategy  the strategy
-   * @param expiresIn the expires in
-   * @param listener  the listener
+   * {@link #login(String, JSONObject, int, ResponseListener)}
    */
   public void login(@NonNull final String strategy, final int expiresIn, final ResponseListener<JSONObject> listener) {
     this.login(strategy, null, expiresIn, listener);
   }
 
   /**
-   * Log a user according to the strategy and credentials.
+   * Log- Strategy name to use for the authentication
    *
-   * @param strategy    the strategy
-   * @param credentials login credentials
-   * @param expiresIn   the expires in
-   * @param listener    callback called when strategy's redirectUri is received
+   * @param strategy - Strategy name to use for the authentication
+   * @param credentials - Login credentials
+   * @param expiresIn - Token expiration delay
+   * @param listener - Response callback listener
    */
   public void login(@NonNull final String strategy, final JSONObject credentials, int expiresIn, final ResponseListener<JSONObject> listener) {
     if (strategy == null) {
@@ -1152,7 +1020,7 @@ public class Kuzzle {
   }
 
   /**
-   * Disconnects from Kuzzle and invalidate this instance.
+   * Disconnect from Kuzzle and invalidate this instance.
    * Does not fire a disconnected event.
    */
   public void disconnect() {
@@ -1166,19 +1034,17 @@ public class Kuzzle {
   }
 
   /**
-   * Logout kuzzle.
-   *
-   * @return the kuzzle
+   * {@link #logout(ResponseListener)}
    */
   public Kuzzle logout() {
     return this.logout(null);
   }
 
   /**
-   * Logout kuzzle.
+   * Logout method
    *
-   * @param listener the listener
-   * @return the kuzzle
+   * @param listener - Response callback listener
+   * @return this
    */
   public Kuzzle logout(final ResponseListener<Void> listener) {
     Options options = new Options();
@@ -1214,9 +1080,7 @@ public class Kuzzle {
   }
 
   /**
-   * Now kuzzle.
-   *
-   * @param listener the listener
+   * {@link #now(Options, ResponseListener)}
    */
   public void now(@NonNull final ResponseListener<Date> listener) {
     this.now(null, listener);
@@ -1225,8 +1089,8 @@ public class Kuzzle {
   /**
    * Returns the current Kuzzle UTC timestamp
    *
-   * @param options  the options
-   * @param listener the listener
+   * @param options - Request options
+   * @param listener - Response callback listener
    */
   public void now(final Options options, @NonNull final ResponseListener<Date> listener) {
     if (listener == null) {
@@ -1258,38 +1122,21 @@ public class Kuzzle {
   }
 
   /**
-   * Query kuzzle.
-   *
-   * @param queryArgs the query args
-   * @param query     the query
-   * @return the kuzzle
-   * @throws JSONException the json exception
+   * {@link #query(QueryArgs, JSONObject, Options, OnQueryDoneListener)}
    */
   public Kuzzle query(final QueryArgs queryArgs, final JSONObject query) throws JSONException {
     return this.query(queryArgs, query, null, null);
   }
 
   /**
-   * Query kuzzle.
-   *
-   * @param queryArgs the query args
-   * @param query     the query
-   * @param options   the options
-   * @return the kuzzle
-   * @throws JSONException the json exception
+   * {@link #query(QueryArgs, JSONObject, Options, OnQueryDoneListener)}
    */
   public Kuzzle query(final QueryArgs queryArgs, final JSONObject query, final Options options) throws JSONException {
     return this.query(queryArgs, query, options, null);
   }
 
   /**
-   * Query kuzzle.
-   *
-   * @param queryArgs the query args
-   * @param query     the query
-   * @param listener  the listener
-   * @return the kuzzle
-   * @throws JSONException the json exception
+   * {@link #query(QueryArgs, JSONObject, Options, OnQueryDoneListener)}
    */
   public Kuzzle query(final QueryArgs queryArgs, final JSONObject query, final OnQueryDoneListener listener) throws JSONException {
     return this.query(queryArgs, query, null, listener);
@@ -1299,12 +1146,12 @@ public class Kuzzle {
    * This is a low-level method, exposed to allow advanced SDK users to bypass high-level methods.
    * Base method used to send queries to Kuzzle
    *
-   * @param queryArgs the query args
-   * @param query     - The query data
-   * @param options   the options
-   * @param listener  the listener
-   * @return the kuzzle
-   * @throws JSONException the json exception
+   * @param queryArgs - API route description
+   * @param query - Query content
+   * @param options - Request options
+   * @param listener - Response callback listener
+   * @return this
+   * @throws JSONException 
    */
   public Kuzzle query(final QueryArgs queryArgs, final JSONObject query, final Options options, final OnQueryDoneListener listener) throws JSONException {
     this.isValid();
@@ -1360,6 +1207,7 @@ public class Kuzzle {
       }
     }
 
+    _volatile.put("sdkVersion", this.getSdkVersion());
     object.put("volatile", _volatile);
 
     if (queryArgs.collection != null) {
@@ -1415,9 +1263,9 @@ public class Kuzzle {
   }
 
   /**
-   * Removes all listeners, either from a specific event or from all events
+   * Removes all listeners, either from all events
    *
-   * @return kuzzle kuzzle
+   * @return this
    */
   public Kuzzle removeAllListeners() {
     this.eventListeners.clear();
@@ -1425,14 +1273,14 @@ public class Kuzzle {
   }
 
   /**
-   * Remove all listeners kuzzle.
+   * Remove all listeners kuzzle from the provided event name
    *
-   * @param type the type
-   * @return the kuzzle
+   * @param event - Event name
+   * @return this
    */
-  public Kuzzle removeAllListeners(Event type) {
-    if (eventListeners.containsKey(type)) {
-      eventListeners.get(type).clear();
+  public Kuzzle removeAllListeners(Event event) {
+    if (eventListeners.containsKey(event)) {
+      eventListeners.get(event).clear();
     }
 
     return this;
@@ -1441,9 +1289,9 @@ public class Kuzzle {
   /**
    * Removes a listener from an event.
    *
-   * @param event    the type
-   * @param listener the listener
-   * @return the kuzzle
+   * @param event - Event name
+   * @param listener - Response callback listener
+   * @return this
    */
   public Kuzzle removeListener(Event event, EventListener listener) {
     if (eventListeners.containsKey(event)) {
@@ -1471,7 +1319,7 @@ public class Kuzzle {
    * Replays the requests queued during offline mode.
    * Works only if the SDK is not in a disconnected state, and if the autoReplay option is set to false.
    *
-   * @return kuzzle kuzzle
+   * @return this
    */
   public Kuzzle replayQueue() {
     if (this.state != States.OFFLINE && !this.autoReplay) {
@@ -1482,13 +1330,7 @@ public class Kuzzle {
   }
 
   /**
-   * Helper function allowing to set headers while chaining calls.
-   * If the replace argument is set to true, replace the current headers with the provided content.
-   * Otherwise, it appends the content to the current headers, only replacing already existing values
-   *
-   * @param content the headers
-   * @return the headers
-   * @throws JSONException the json exception
+   * {@link #setHeaders(JSONObject, boolean)}
    */
   public Kuzzle setHeaders(final JSONObject content) throws JSONException {
     return this.setHeaders(content, false);
@@ -1499,9 +1341,9 @@ public class Kuzzle {
    * If the replace argument is set to true, replace the current headers with the provided content.
    * Otherwise, it appends the content to the current headers, only replacing already existing values
    *
-   * @param content - new headers content
-   * @param replace - default: false = append the content. If true: replace the current headers with tj
-   * @return the headers
+   * @param content - New headers content
+   * @param replace - false = append to existing headers (default) - true = replace
+   * @return this
    */
   public Kuzzle setHeaders(final JSONObject content, boolean replace) {
     if (this.headers == null) {
@@ -1527,7 +1369,7 @@ public class Kuzzle {
   /**
    * Starts the requests queuing. Works only during offline mode, and if the autoQueue option is set to false.
    *
-   * @return kuzzle kuzzle
+   * @return this
    */
   public Kuzzle startQueuing() {
     if (this.state == States.OFFLINE && !this.autoQueue) {
@@ -1539,7 +1381,7 @@ public class Kuzzle {
   /**
    * Stops the requests queuing. Works only during offline mode, and if the autoQueue option is set to false.
    *
-   * @return kuzzle kuzzle
+   * @return this
    */
   public Kuzzle stopQueuing() {
     if (this.state == States.OFFLINE && !this.autoQueue) {
@@ -1551,7 +1393,7 @@ public class Kuzzle {
   /**
    * Is valid sate boolean.
    *
-   * @return the boolean
+   * @return current state validity
    */
   protected boolean isValidState() {
     switch (this.state) {
@@ -1581,6 +1423,11 @@ public class Kuzzle {
     this.emitEvent(Event.reconnected);
   }
 
+  /**
+   * Create a new connection socket
+   * @return created socket
+   * @throws URISyntaxException
+   */
   protected Socket createSocket() throws URISyntaxException {
     IO.Options opt = new IO.Options();
     opt.forceNew = true;
@@ -1592,9 +1439,9 @@ public class Kuzzle {
   /**
    * Emit request.
    *
-   * @param request  the request
-   * @param listener the listener
-   * @throws JSONException the json exception
+   * @param request - Request to emit
+   * @param listener - Response callback listener
+   * @throws JSONException 
    */
   protected void emitRequest(final JSONObject request, final OnQueryDoneListener listener) throws JSONException {
     Date now = new Date();
@@ -1609,7 +1456,7 @@ public class Kuzzle {
           try {
             // checking token expiration
             if (!((JSONObject) args[0]).isNull("error") && ((JSONObject) args[0]).getJSONObject("error").getString("message").equals("Token expired") && !((JSONObject) args[0]).getString("action").equals("logout")) {
-              emitEvent(Event.jwtTokenExpired, listener);
+              emitEvent(Event.tokenExpired, listener);
             }
 
             if (listener != null) {
@@ -1653,8 +1500,8 @@ public class Kuzzle {
   /**
    * Helper function copying headers to the query data
    *
-   * @param query   the query
-   * @param headers the headers
+   * @param query - Query to update
+   * @param headers - Headers to set
    */
   public void addHeaders(JSONObject query, final JSONObject headers) {
     try {
@@ -1670,28 +1517,28 @@ public class Kuzzle {
   }
 
   /**
-   * Is auto reconnect boolean.
+   * autoReconnect option getter
    *
-   * @return the boolean
+   * @return autoReconnect option value
    */
   public boolean isAutoReconnect() {
     return autoReconnect;
   }
 
   /**
-   * Getter for the AutoResubscribe property
+   * autoResubscribe option getter
    *
-   * @return boolean boolean
+   * @return autoResubscribe option value
    */
   public boolean isAutoResubscribe() {
     return this.autoResubscribe;
   }
 
   /**
-   * Setter for the AutoResubscribe property
+   * autoResubscribe option setter
    *
-   * @param resubscribe the resubscribe
-   * @return auto resubscribe
+   * @param resubscribe - autoResubscribe new value
+   * @return this
    */
   public Kuzzle setAutoResubscribe(boolean resubscribe) {
     this.autoResubscribe = resubscribe;
@@ -1699,20 +1546,29 @@ public class Kuzzle {
   }
 
   /**
-   * Gets headers.
+   * Global headers getter
    *
-   * @return the headers
+   * @return global headers
    */
   public JSONObject getHeaders() {
     return this.headers;
   }
 
   /**
+   * Returns the current SDK version.
+   *
+   * @return Current SDK version
+   */
+  public String getSdkVersion() {
+    return BuildConfig.VERSION_NAME;
+  }
+
+  /**
    * Add pending subscription kuzzle.
    *
-   * @param id   the id
-   * @param room the room
-   * @return kuzzle kuzzle
+   * @param id - Room instance unique ID
+   * @param room - Associated Room instance
+   * @return this
    */
   protected Kuzzle addPendingSubscription(final String id, final Room room) {
     this.subscriptions.get("pending").put(id, room);
@@ -1720,10 +1576,10 @@ public class Kuzzle {
   }
 
   /**
-   * Delete pending subscription kuzzle.
+   * Delete a pending subscription 
    *
-   * @param id the id
-   * @return the kuzzle
+   * @param id - Unique ID of the Room instance to delete
+   * @return this
    */
   protected Kuzzle deletePendingSubscription(final String id) {
     ConcurrentHashMap<String, Room> pending = this.subscriptions.get("pending");
@@ -1736,12 +1592,12 @@ public class Kuzzle {
   }
 
   /**
-   * Add subscription kuzzle.
+   * Add a new subscription
    *
-   * @param roomId     Room's unique ID
-   * @param id         Room object unique ID
-   * @param kuzzleRoom Room instance
-   * @return kuzzle kuzzle
+   * @param roomId - Subscription identifier
+   * @param id - Room instance unique ID
+   * @param kuzzleRoom - Associated Room instance
+   * @return this
    */
   protected Kuzzle addSubscription(final String roomId, final String id, final Room kuzzleRoom) {
     ConcurrentHashMap<String, Room> room = this.subscriptions.get(roomId);
@@ -1757,36 +1613,36 @@ public class Kuzzle {
   }
 
   /**
-   * Gets socket.
+   * Connection socket getter
    *
-   * @return the socket
+   * @return Connection socket
    */
   protected Socket getSocket() {
     return socket;
   }
 
   /**
-   * Sets socket.
+   * Connection socket setter
    *
-   * @param socket the socket
+   * @param socket - New connection socket
    */
   protected void setSocket(Socket socket) {
     this.socket = socket;
   }
 
   /**
-   * Sets offline queue.
+   * Add a query to the offline queue
    *
-   * @param object the object
-   * @return the offline queue
+   * @param query - Query to queue
+   * @return this
    */
-  public Kuzzle setOfflineQueue(final QueryObject object) {
-    this.offlineQueue.addToQueue(object);
+  public Kuzzle setOfflineQueue(final QueryObject query) {
+    this.offlineQueue.addToQueue(query);
     return this;
   }
 
   /**
-   * Gets offline queue.
+   * Offline queue getter
    *
    * @return offline queue
    */
@@ -1796,10 +1652,10 @@ public class Kuzzle {
 
 
   /**
-   * Sets queue filter.
+   * Sets offline queue filter.
    *
-   * @param queueFilter the queue filter
-   * @return queue filter
+   * @param queueFilter - Offline queue global filter
+   * @return this
    */
   public Kuzzle setQueueFilter(QueueFilter queueFilter) {
     this.queueFilter = queueFilter;
@@ -1807,18 +1663,18 @@ public class Kuzzle {
   }
 
   /**
-   * Gets queue filter.
+   * Offline queue filter getter
    *
-   * @return queue filter
+   * @return Offline queue filter
    */
   public QueueFilter getQueueFilter() {
     return this.queueFilter;
   }
 
   /**
-   * Is auto replay boolean.
+   * autoReplay option getter
    *
-   * @return the boolean
+   * @return autoReplay option value
    */
   public boolean isAutoReplay() {
     return autoReplay;
@@ -1826,18 +1682,18 @@ public class Kuzzle {
 
 
   /**
-   * Gets network port
+   * Kuzzle server port getter
    *
-   * @return integer
+   * @return Kuzzle server port
    */
   public int getPort() {
     return port;
   }
 
   /**
-   * Sets the network port
+   * Kuzzle server port setter
    *
-   * @param port the new port
+   * @param port - New Kuzzle server port
    * @return this
    */
   public Kuzzle setPort(int port) {
@@ -1846,19 +1702,19 @@ public class Kuzzle {
   }
 
   /**
-   * Gets the kuzzle host
+   * Kuzzle server host name getter
    *
-   * @return string
+   * @return Kuzzle server host name
    */
   public String getHost() {
     return this.host;
   }
 
   /**
-   * Sets the kuzzle host instance
+   * Kuzzle server host name setter
    *
-   * @param host the new host to set
-   * @return
+   * @param host - New host name
+   * @return this
    */
   public Kuzzle setHost(String host) {
     this.host = host;
@@ -1866,9 +1722,9 @@ public class Kuzzle {
   }
 
   /**
-   * Sets auto replay.
+   * autoReplay option setter
    *
-   * @param autoReplay the auto replay
+   * @param autoReplay - New autoReplay option value
    * @return this
    */
   public Kuzzle setAutoReplay(boolean autoReplay) {
@@ -1877,10 +1733,10 @@ public class Kuzzle {
   }
 
   /**
-   * Setter for the QueueMaxSize property
+   * queueMaxSize option setter
    *
-   * @param newMaxSize the new max size
-   * @return queue max size
+   * @param newMaxSize - New queueMaxSize value
+   * @return this
    */
   public Kuzzle setQueueMaxSize(int newMaxSize) {
     this.queueMaxSize = Math.max(0, newMaxSize);
@@ -1888,28 +1744,28 @@ public class Kuzzle {
   }
 
   /**
-   * Gets queue max size.
+   * queueMaxSize option getter
    *
-   * @return the queue max size
+   * @return queueMaxSize option value
    */
   public int getQueueMaxSize() {
     return this.queueMaxSize;
   }
 
   /**
-   * Is auto queue boolean.
+   * autoQueue option getter
    *
-   * @return the boolean
+   * @return autoQueue option value
    */
   public boolean isAutoQueue() {
     return autoQueue;
   }
 
   /**
-   * Sets auto queue.
+   * autoQueue option setter
    *
-   * @param autoQueue the auto queue
-   * @return the auto queue
+   * @param autoQueue - New autoQueue option value
+   * @return this
    */
   public Kuzzle setAutoQueue(final boolean autoQueue) {
     this.autoQueue = autoQueue;
@@ -1995,11 +1851,11 @@ public class Kuzzle {
   }
 
   /**
-   * Delete subscription kuzzle.
+   * Delete a suscription
    *
-   * @param roomId the room id
-   * @param id     the id
-   * @return the kuzzle
+   * @param roomId - Subscription unique ID
+   * @param id  - Room instance unique ID
+   * @return this
    */
   protected Kuzzle deleteSubscription(final String roomId, final String id) {
     if (this.subscriptions.containsKey(roomId)) {
@@ -2016,8 +1872,8 @@ public class Kuzzle {
   /**
    * Gets subscriptions.
    *
-   * @param roomId the room id
-   * @return the subscriptions
+   * @param roomId - Subscription unique ID
+   * @return matching registered subscriptions
    */
   protected Map<String, Room> getSubscriptions(String roomId) {
     if (roomId != null && this.subscriptions.containsKey(roomId)) {
@@ -2030,35 +1886,35 @@ public class Kuzzle {
   /**
    * Getter for the pendingSubscriptions private property
    *
-   * @return pending subscriptions
+   * @return pendingSubscriptions property value
    */
   protected Map<String, Room> getPendingSubscriptions() {
     return this.subscriptions.get("pending");
   }
 
   /**
-   * Gets request history.
+   * requestHistory getter
    *
-   * @return the request history
+   * @return Request history
    */
   protected Map<String, Date> getRequestHistory() {
     return requestHistory;
   }
 
   /**
-   * Gets index.
+   * Default index getter
    *
-   * @return the index
+   * @return Default index value
    */
   public String getDefaultIndex() {
     return this.defaultIndex;
   }
 
   /**
-   * Sets default index.
+   * Default index setter
    *
-   * @param index the index
-   * @return the default index
+   * @param index - New default index name
+   * @return this
    */
   public Kuzzle setDefaultIndex(@NonNull final String index) {
     if (index == null || index.isEmpty()) {
@@ -2069,13 +1925,13 @@ public class Kuzzle {
   }
 
   /**
-   * Sets jwt token and trigger the 'loginAttempt' event.
+   * Set a new JWT and trigger the 'loginAttempt' event.
    *
-   * @param jwtToken the jwt token
-   * @return this object
+   * @param jwt - New authentication JSON Web Token
+   * @return this 
    */
-  public Kuzzle setJwtToken(final String jwtToken) {
-    this.jwtToken = jwtToken;
+  public Kuzzle setJwtToken(final String jwt) {
+    this.jwtToken = jwt;
     try {
       this.renewSubscriptions();
       this.emitEvent(Event.loginAttempt, new JSONObject().put("success", true));
@@ -2086,9 +1942,9 @@ public class Kuzzle {
   }
 
   /**
-   * Unset the jwtToken and unsubscribe all rooms if any
+   * Unset the authentication token and cancel all subscriptions
    *
-   * @return Kuzzle instance
+   * @return this
    */
   public Kuzzle unsetJwtToken() {
     this.jwtToken = null;
@@ -2102,11 +1958,11 @@ public class Kuzzle {
   }
 
   /**
-   * Sets the JWT Token from a Kuzzle response object
+   * Sets the authentication token from a Kuzzle response object
    *
-   * @param response a Kuzzle response containing a jwt token
-   * @return this object
-   * @throws JSONException the json exception
+   * @param response - A Kuzzle API response
+   * @return this 
+   * @throws JSONException 
    */
   public Kuzzle setJwtToken(@NonNull final JSONObject response) throws JSONException {
     JSONObject result;
@@ -2130,19 +1986,19 @@ public class Kuzzle {
   }
 
   /**
-   * Gets jwt token.
+   * Authentication token getter
    *
-   * @return the jwt token
+   * @return Current JWT
    */
   public String getJwtToken() {
     return this.jwtToken;
   }
 
   /**
-   * Setter for the QueueTTL property
+   * queueTTL option getter
    *
-   * @param newTTL the new ttl
-   * @return queue ttl
+   * @param newTTL - New queueTTL value
+   * @return this
    */
   public Kuzzle setQueueTTL(int newTTL) {
     this.queueTTL = Math.max(0, newTTL);
@@ -2150,19 +2006,19 @@ public class Kuzzle {
   }
 
   /**
-   * Getter for the QueueTTL property
+   * queueTTL option getter
    *
-   * @return queue ttl
+   * @return queue ttl value
    */
   public int getQueueTTL() {
     return this.queueTTL;
   }
 
   /**
-   * Setter for the volatile property
+   * Global volatile data setter
    *
-   * @param _volatile the new volatile data
-   * @return kuzzle instance
+   * @param _volatile - New global volatile data content
+   * @return this
    */
   public Kuzzle setVolatile(JSONObject _volatile) {
     this._volatile = _volatile;
@@ -2170,9 +2026,9 @@ public class Kuzzle {
   }
 
   /**
-   * Getter for the volatile property
+   * Global volatile data getter
    *
-   * @return _volatile volatile data
+   * @return Global volatile data
    */
   public JSONObject getVolatile() {
     return this._volatile;
@@ -2180,10 +2036,10 @@ public class Kuzzle {
 
 
   /**
-   * Sets replay interval.
+   * replayInterval option setter
    *
-   * @param interval the interval
-   * @return the replay interval
+   * @param interval - New replayInterval value
+   * @return this
    */
   public Kuzzle setReplayInterval(long interval) {
     this.replayInterval = Math.max(0, interval);
@@ -2191,71 +2047,60 @@ public class Kuzzle {
   }
 
   /**
-   * Getter for the ReplayInterval property
+   * replayInterval option getter
    *
-   * @return replay interval
+   * @return replayInterval value
    */
   public long getReplayInterval() {
     return this.replayInterval;
   }
 
   /**
-   * Getter for the ReconnectionDelay property
+   * reconnectionDelay option getter
    *
-   * @return reconnection delay
+   * @return reconnectionDelay value
    */
   public long getReconnectionDelay() {
     return this.reconnectionDelay;
   }
 
   /**
-   * Sets offline queue loader.
+   * Offline queue loader setter
    *
-   * @param offlineQueueLoader the offline queue loader
+   * @param offlineQueueLoader - Offline queue loader function
    */
   public void setOfflineQueueLoader(OfflineQueueLoader offlineQueueLoader) {
     this.offlineQueueLoader = offlineQueueLoader;
   }
 
   /**
-   * Update current user in Kuzzle.
-   *
-   * @param content
-   * @return itself
+   * {@link #updateSelf(JSONObject, Options, ResponseListener)}
    */
   public Kuzzle updateSelf(final JSONObject content) {
     return updateSelf(content, null, null);
   }
 
   /**
-   * Update current user in Kuzzle.
-   *
-   * @param content
-   * @param options
-   * @return itself
+   * {@link #updateSelf(JSONObject, Options, ResponseListener)}
    */
   public Kuzzle updateSelf(final JSONObject content, final Options options) {
     return updateSelf(content, options, null);
   }
 
   /**
-   * Update current user in Kuzzle.
-   *
-   * @param content
-   * @param listener
-   * @return itself
+   * {@link #updateSelf(JSONObject, Options, ResponseListener)}
    */
   public Kuzzle updateSelf(final JSONObject content, final ResponseListener listener) {
     return updateSelf(content, null, listener);
   }
 
   /**
-   * Update current user in Kuzzle.
+   * Update the currently authenticated user informations
    *
-   * @param content
-   * @param options
-   * @param listener
-   * @return itself
+   * @param content - Current user infos to update
+   * @param options - Request options
+   * @param listener - Response callback listener
+   * @return this
    */
   public Kuzzle updateSelf(final JSONObject content, final Options options, final ResponseListener<JSONObject> listener) {
     QueryArgs args = new QueryArgs();
@@ -2289,7 +2134,7 @@ public class Kuzzle {
   /**
    * Retrieves current user information
    *
-   * @param listener the listener
+   * @param listener - Response callback listener
    */
   public void whoAmI(@NonNull final ResponseListener<User> listener) {
     if (listener == null) {
@@ -2307,7 +2152,7 @@ public class Kuzzle {
         public void onSuccess(JSONObject response) {
           try {
             JSONObject result = response.getJSONObject("result");
-            listener.onSuccess(new User(Kuzzle.this, result.getString("_id"), result.getJSONObject("_source")));
+            listener.onSuccess(new User(Kuzzle.this, result.getString("_id"), result.getJSONObject("_source"), result.getJSONObject("_meta")));
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
@@ -2324,84 +2169,65 @@ public class Kuzzle {
   }
 
   /**
-   * Forces the current/provided index to refresh
-   *
-   * @return itself
+   * {@link #refreshIndex(Options, ResponseListener)}
    */
   public Kuzzle refreshIndex() {
     return this.refreshIndex(null, null, null);
   }
 
   /**
-   * Forces the current/provided index to refresh
-   *
-   * @param index
-   * @return itself
+   * {@link #refreshIndex(String, Options, ResponseListener)}
    */
   public Kuzzle refreshIndex(String index) {
     return this.refreshIndex(index, null, null);
   }
 
   /**
-   * Forces the current/provided index to refresh
-   *
-   * @param index
-   * @param listener
-   * @return itself
+   * {@link #refreshIndex(String, Options, ResponseListener)}
    */
   public Kuzzle refreshIndex(String index, final ResponseListener<JSONObject> listener) {
     return this.refreshIndex(index, null, listener);
   }
 
   /**
-   * Forces the current/provided index to refresh
-   *
-   * @param index
-   * @param options
-   * @return itself
+   * {@link #refreshIndex(String, Options, ResponseListener)}
    */
   public Kuzzle refreshIndex(String index, final Options options) {
     return this.refreshIndex(index, options, null);
   }
 
   /**
-   * Forces the current/provided index to refresh
-   *
-   * @param options
-   * @return itself
+   * {@link #refreshIndex(Options, ResponseListener)}
    */
   public Kuzzle refreshIndex(final Options options) {
     return this.refreshIndex(null, options, null);
   }
 
   /**
-   * Forces the current/provided index to refresh
+   * Forces the default data index to refresh on each modification
    *
-   * @param options
-   * @param listener
-   * @return itself
+   * @param options - Request options
+   * @param listener - Response callback listener
+   * @return this
    */
   public Kuzzle refreshIndex(final Options options, final ResponseListener<JSONObject> listener) {
     return this.refreshIndex(null, options, listener);
   }
 
   /**
-   * Forces the current/provided index to refresh
-   *
-   * @param listener
-   * @return itself
+   * {@link #refreshIndex(Options, ResponseListener)}
    */
   public Kuzzle refreshIndex(final ResponseListener<JSONObject> listener) {
     return this.refreshIndex(null, null, listener);
   }
 
   /**
-   * Forces the current/provided index to refresh
+   * Forces the provided data index to refresh on each modification
    *
-   * @param index
-   * @param options
-   * @param listener
-   * @return itself
+   * @param index - Data index name
+   * @param options - Request options
+   * @param listener - Response callback listener
+   * @return this
    */
   public Kuzzle refreshIndex(String index, final Options options, final ResponseListener<JSONObject> listener) {
     if (index == null) {
@@ -2451,42 +2277,36 @@ public class Kuzzle {
     return this;
   }
 
-
   /**
-   * Gets the current/provided index autorefresh status
-   *
-   * @param listener
+   * {@link #getAutoRefresh(Options, ResponseListener)}
    */
   public void getAutoRefresh(@NonNull final ResponseListener<Boolean> listener) {
     this.getAutoRefresh(null, null, listener);
   }
 
   /**
-   * Gets the current/provided index autorefresh status
-   *
-   * @param index
-   * @param listener
+   * {@link #getAutoRefresh(String, Options, ResponseListener)}
    */
   public void getAutoRefresh(String index, @NonNull final ResponseListener<Boolean> listener) {
     this.getAutoRefresh(index, null, listener);
   }
 
   /**
-   * Gets the current/provided index autorefresh status
+   * Gets the autoRefresh value for the default data index 
    *
-   * @param options
-   * @param listener
+   * @param options - Request options
+   * @param listener - Response callback listener
    */
   public void getAutoRefresh(Options options, @NonNull final ResponseListener<Boolean> listener) {
     this.getAutoRefresh(null, options, listener);
   }
 
   /**
-   * Gets the current/provided index autorefresh status
+   * Gets the autoRefresh value for the provided data index name
    *
-   * @param index
-   * @param options
-   * @param listener
+   * @param index - Data index name
+   * @param options - Request options
+   * @param listener - Response callback listener
    */
   public void getAutoRefresh(String index, final Options options, @NonNull final ResponseListener<Boolean> listener) {
     if (listener == null) {
@@ -2530,92 +2350,67 @@ public class Kuzzle {
   }
 
   /**
-   * (Un)Sets the autorefresh status for the current/given index
-   *
-   * @param autoRefresh
-   * @return itself
+   * {@link #setAutoRefresh(boolean, Options, ResponseListener)}
    */
   public Kuzzle setAutoRefresh(final boolean autoRefresh) {
     return this.setAutoRefresh(null, autoRefresh, null, null);
   }
 
   /**
-   * (Un)Sets the autorefresh status for the current/given index
-   *
-   * @param autoRefresh
-   * @param listener
-   * @return itself
+   * {@link #setAutoRefresh(boolean, Options, ResponseListener)}
    */
   public Kuzzle setAutoRefresh(final boolean autoRefresh, final ResponseListener<Boolean> listener) {
     return this.setAutoRefresh(null, autoRefresh, null, listener);
   }
 
   /**
-   * (Un)Sets the autorefresh status for the current/given index
-   *
-   * @param index
-   * @param autoRefresh
-   * @return itself
+   * {@link #setAutoRefresh(String, boolean, Options, ResponseListener)}
    */
   public Kuzzle setAutoRefresh(String index, final boolean autoRefresh) {
     return this.setAutoRefresh(index, autoRefresh, null, null);
   }
 
   /**
-   * (Un)Sets the autorefresh status for the current/given index
-   *
-   * @param autoRefresh
-   * @param options
-   * @return itself
+   * {@link #setAutoRefresh(boolean, Options, ResponseListener)}
    */
   public Kuzzle setAutoRefresh(final boolean autoRefresh, final Options options) {
     return this.setAutoRefresh(null, autoRefresh, options, null);
   }
 
   /**
-   * (Un)Sets the autorefresh status for the current/given index
-   *
-   * @param index
-   * @param autoRefresh
-   * @param options
-   * @return itself
+   * {@link #setAutoRefresh(String, boolean, Options, ResponseListener)}
    */
   public Kuzzle setAutoRefresh(String index, final boolean autoRefresh, final Options options) {
     return this.setAutoRefresh(index, autoRefresh, options, null);
   }
 
   /**
-   * (Un)Sets the autorefresh status for the current/given index
-   *
-   * @param index
-   * @param autoRefresh
-   * @param listener
-   * @return itself
+   * {@link #setAutoRefresh(String, boolean, Options, ResponseListener)}
    */
   public Kuzzle setAutoRefresh(String index, final boolean autoRefresh, final ResponseListener<Boolean> listener) {
     return this.setAutoRefresh(index, autoRefresh, null, listener);
   }
 
   /**
-   * (Un)Sets the autorefresh status for the current/given index
+   * autoRefresh status setter for the default data index 
    *
-   * @param autoRefresh
-   * @param options
-   * @param listener
-   * @return itself
+   * @param autoRefresh - New autoRefresh property value
+   * @param options - Request options
+   * @param listener - Response callback listener
+   * @return this
    */
   public Kuzzle setAutoRefresh(final boolean autoRefresh, final Options options, final ResponseListener<Boolean> listener) {
     return this.setAutoRefresh(null, autoRefresh, options, listener);
   }
 
   /**
-   * (Un)Sets the autorefresh status for the current/given index
+   * autorefresh status setter for the provided data index name
    *
-   * @param index
-   * @param autoRefresh
-   * @param options
-   * @param listener
-   * @return itself
+   * @param index - Data index name
+   * @param autoRefresh - New autoRefresh property value
+   * @param options - Request options
+   * @param listener - Response callback listener
+   * @return this
    */
   public Kuzzle setAutoRefresh(String index, final boolean autoRefresh, final Options options, final ResponseListener<Boolean> listener) {
     if (index == null) {
@@ -2664,21 +2459,18 @@ public class Kuzzle {
   }
 
   /**
-   * Gets the rights array of the currently logged user.
-   *
-   * @param listener
-   * @return the Security instance
+   * {@link #getMyRights(Options, ResponseListener)}
    */
   public Kuzzle getMyRights(@NonNull final ResponseListener<JSONObject[]> listener) {
     return getMyRights(null, listener);
   }
 
   /**
-   * Gets the rights array of the currently logged user.
+   * Gets the rights array for the currently logged user.
    *
-   * @param options
-   * @param listener
-   * @return the Security instance
+   * @param options - Request options
+   * @param listener - Response callback listener
+   * @return this
    */
   public Kuzzle getMyRights(final Options options, @NonNull final ResponseListener<JSONObject[]> listener) {
     if (listener == null) {
@@ -2727,9 +2519,9 @@ public class Kuzzle {
   /**
    * Helper function meant to easily build the first Kuzzle.query() argument
    *
-   * @param action - Security controller action name
+   * @param action - API controller action name
    * @return JSONObject - Kuzzle.query() 1st argument object
-   * @throws JSONException the json exception
+   * @throws JSONException 
    */
   protected io.kuzzle.sdk.core.Kuzzle.QueryArgs buildQueryArgs(@NonNull final String action) throws JSONException {
     return buildQueryArgs(null, action);
@@ -2738,8 +2530,9 @@ public class Kuzzle {
   /**
    * Invokes a query listener with a custom error message and status
    *
-   * @param listener - query listener to discard
+   * @param listener - Response callback listener
    * @param query    - discarded query
+   * @throws  JSONException
    */
   protected void discardRequest(final OnQueryDoneListener listener, JSONObject query) throws JSONException {
     if (listener != null) {
@@ -2752,48 +2545,34 @@ public class Kuzzle {
   }
 
   /**
-   * Create credentials of the specified <strategy> for the current user.
-   *
-   * @param strategy
-   * @param credentials
-   * @return
+   * {@link #createMyCredentials(String, JSONObject, Options, ResponseListener)}
    */
   public Kuzzle createMyCredentials(@NonNull final String strategy, final JSONObject credentials) {
     return createMyCredentials(strategy, credentials, null, null);
   }
 
   /**
-   * Create credentials of the specified <strategy> for the current user.
-   *
-   * @param strategy
-   * @param credentials
-   * @param options
-   * @return
+   * {@link #createMyCredentials(String, JSONObject, Options, ResponseListener)}
    */
   public Kuzzle createMyCredentials(@NonNull final String strategy, final JSONObject credentials, final Options options) {
     return createMyCredentials(strategy, credentials, options, null);
   }
 
   /**
-   * Create credentials of the specified <strategy> for the current user.
-   *
-   * @param strategy
-   * @param credentials
-   * @param listener
-   * @return
+   * {@link #createMyCredentials(String, JSONObject, Options, ResponseListener)}
    */
   public Kuzzle createMyCredentials(@NonNull final String strategy, final JSONObject credentials, final ResponseListener<JSONObject> listener) {
     return createMyCredentials(strategy, credentials, null, listener);
   }
 
   /**
-   * Create credentials of the specified <strategy> for the current user.
+   * Create credentials of the specified strategy for the current user.
    *
-   * @param strategy
-   * @param credentials
-   * @param options
-   * @param listener
-   * @return
+   * @param strategy - impacted strategy name
+   * @param credentials - credentials to create
+   * @param options - Request options
+   * @param listener - Response callback listener
+   * @return this
    */
   public Kuzzle createMyCredentials(@NonNull final String strategy, final JSONObject credentials, final Options options, final ResponseListener<JSONObject> listener) {
     try {
@@ -2827,44 +2606,33 @@ public class Kuzzle {
   }
 
   /**
-   * Delete credentials of the specified <strategy> for the current user.
-   *
-   * @param strategy
-   * @return
+   * {@link #deleteMyCredentials(String, Options, ResponseListener)}
    */
   public Kuzzle deleteMyCredentials(@NonNull final String strategy) {
     return deleteMyCredentials(strategy, null, null);
   }
 
   /**
-   * Delete credentials of the specified <strategy> for the current user.
-   *
-   * @param strategy
-   * @param options
-   * @return
+   * {@link #deleteMyCredentials(String, Options, ResponseListener)}
    */
   public Kuzzle deleteMyCredentials(@NonNull final String strategy, final Options options) {
     return deleteMyCredentials(strategy, options, null);
   }
 
   /**
-   * Delete credentials of the specified <strategy> for the current user.
-   *
-   * @param strategy
-   * @param listener
-   * @return
+   * {@link #deleteMyCredentials(String, Options, ResponseListener)}
    */
   public Kuzzle deleteMyCredentials(@NonNull final String strategy, final ResponseListener<JSONObject> listener) {
     return deleteMyCredentials(strategy, null, listener);
   }
 
   /**
-   * Delete credentials of the specified <strategy> for the current user.
+   * Delete credentials of the specified strategy for the current user.
    *
-   * @param strategy
-   * @param options
-   * @param listener
-   * @return
+   * @param strategy- Name of the strategy to remove
+   * @param options - Request options
+   * @param listener - Response callback listener
+   * @return this
    */
   public Kuzzle deleteMyCredentials(@NonNull final String strategy, final Options options, final ResponseListener<JSONObject> listener) {
     try {
@@ -2897,21 +2665,18 @@ public class Kuzzle {
   }
 
   /**
-   * Get credential information of the specified <strategy> for the current user.
-   *
-   * @param strategy
-   * @param listener
+   * {@link #getMyCredentials(String, Options, ResponseListener)}
    */
   public void getMyCredentials(@NonNull final String strategy, @NonNull final ResponseListener<JSONObject> listener) {
     getMyCredentials(strategy, null, listener);
   }
 
   /**
-   * Get credential information of the specified <strategy> for the current user.
+   * Get credential information of the specified strategy for the current user.
    *
-   * @param strategy
-   * @param options
-   * @param listener
+   * @param strategy - Strategy name to get
+   * @param options - Request options
+   * @param listener - Response callback listener
    */
   public void getMyCredentials(@NonNull final String strategy, final Options options, @NonNull final ResponseListener<JSONObject> listener) {
     if (listener == null) {
@@ -2941,48 +2706,34 @@ public class Kuzzle {
   }
 
   /**
-   * Update credentials of the specified <strategy> for the current user.
-   *
-   * @param strategy
-   * @param credentials
-   * @return
+   * {@link #updateMyCredentials(String, JSONObject, Options, ResponseListener)}
    */
   public Kuzzle updateMyCredentials(@NonNull final String strategy, final JSONObject credentials) {
     return updateMyCredentials(strategy, credentials, null, null);
   }
 
   /**
-   * Update credentials of the specified <strategy> for the current user.
-   *
-   * @param strategy
-   * @param credentials
-   * @param options
-   * @return
+   * {@link #updateMyCredentials(String, JSONObject, Options, ResponseListener)}
    */
   public Kuzzle updateMyCredentials(@NonNull final String strategy, final JSONObject credentials, final Options options) {
     return updateMyCredentials(strategy, credentials, options, null);
   }
 
   /**
-   * Update credentials of the specified <strategy> for the current user.
-   *
-   * @param strategy
-   * @param credentials
-   * @param listener
-   * @return
+   * {@link #updateMyCredentials(String, JSONObject, Options, ResponseListener)}
    */
   public Kuzzle updateMyCredentials(@NonNull final String strategy, final JSONObject credentials, final ResponseListener<JSONObject> listener) {
     return updateMyCredentials(strategy, credentials, null, listener);
   }
 
   /**
-   * Update credentials of the specified <strategy> for the current user.
+   * Update credentials of the specified strategy for the current user.
    *
-   * @param strategy
-   * @param credentials
-   * @param options
-   * @param listener
-   * @return
+   * @param strategy - Strategy name to update
+   * @param credentials - Updated credentials content
+   * @param options - Request options
+   * @param listener - Response callback listener
+   * @return this
    */
   public Kuzzle updateMyCredentials(@NonNull final String strategy, final JSONObject credentials, final Options options, final ResponseListener<JSONObject> listener) {
     try {
@@ -3016,23 +2767,19 @@ public class Kuzzle {
   }
 
   /**
-   * Validate credentials of the specified <strategy> for the current user.
-   *
-   * @param strategy
-   * @param credentials
-   * @param listener
+   * {@link #validateMyCredentials(String, JSONObject, Options, ResponseListener)}
    */
   public void validateMyCredentials(@NonNull final String strategy, final JSONObject credentials, @NonNull final ResponseListener<Boolean> listener) {
     validateMyCredentials(strategy, credentials, null, listener);
   }
 
   /**
-   * Validate credentials of the specified <strategy> for the current user.
+   * Validate credentials of the specified strategy for the current user.
    *
-   * @param strategy
-   * @param credentials
-   * @param options
-   * @param listener
+   * @param strategy - Strategy name to validate
+   * @param credentials - Credentials content
+   * @param options - Request options
+   * @param listener - Response callback listener
    */
   public void validateMyCredentials(@NonNull final String strategy, final JSONObject credentials, final Options options, @NonNull final ResponseListener<Boolean> listener) {
     if (listener == null) {

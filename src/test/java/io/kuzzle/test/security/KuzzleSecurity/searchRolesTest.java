@@ -52,18 +52,19 @@ public class searchRolesTest {
         JSONObject response = new JSONObject(
           "{" +
             "\"result\": {" +
-            "\"hits\": [" +
-            "{" +
-            "\"_id\": \"foobar\"," +
-            "\"_source\": {" +
-            "\"_id\": \"foobar\"," +
-            "\"indexes\": {}" +
+              "\"hits\": [" +
+                "{" +
+                  "\"_id\": \"foobar\"," +
+                  "\"_source\": {" +
+                    "\"_id\": \"foobar\"," +
+                    "\"indexes\": {}" +
+                  "}," +
+                  "\"_meta\": {}" +
+                "}" +
+              "]," +
+              "\"total\": 1" +
             "}" +
-            "}" +
-            "]," +
-            "\"total\": 1" +
-            "}" +
-            "}");
+          "}");
 
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));

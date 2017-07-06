@@ -25,63 +25,21 @@ import io.kuzzle.sdk.responses.NotificationResponse;
 import io.kuzzle.sdk.state.States;
 import io.socket.emitter.Emitter;
 
-/**
- * The type Kuzzle room.
- */
 public class Room {
 
   private String id = UUID.randomUUID().toString();
-  /**
-   * The Collection.
-   */
   protected String collection;
-  /**
-   * The Data collection.
-   */
   protected Collection dataCollection;
-  /**
-   * The Filters.
-   */
   protected JSONObject filters = new JSONObject();
-  /**
-   * The Headers.
-   */
   protected JSONObject headers;
-  /**
-   * The Volatile property.
-   */
   protected JSONObject _volatile;
-  /**
-   * The Subscribe to self.
-   */
   protected boolean subscribeToSelf;
-  /**
-   * The Room id.
-   */
   protected String roomId;
-  /**
-   * The Kuzzle.
-   */
   protected Kuzzle kuzzle;
-  /**
-   * The Channel.
-   */
   protected String channel;
-  /**
-   * The Scope.
-   */
   protected Scope scope;
-  /**
-   * The State.
-   */
   protected State state;
-  /**
-   * The Users.
-   */
   protected Users users;
-  /**
-   * The Listener.
-   */
   protected ResponseListener<NotificationResponse> listener;
 
   // Used to avoid subscription renewals to trigger multiple times because of
@@ -89,18 +47,15 @@ public class Room {
   private long lastRenewal = 0;
   private long renewalDelay = 500;
 
-  /**
-   * The Subscribing.
-   */
-// Used to delay method calls when subscription is in progress
+  // Used to delay method calls when subscription is in progress
   protected boolean subscribing = false;
   private ArrayList<Runnable> queue = new ArrayList<>();
   private SubscribeListener doneListener;
 
   /**
-   * Instantiates a new Kuzzle room.
-   *
-   * @param kuzzleDataCollection the kuzzle data collection
+   * Constructor
+   * 
+   * @param kuzzleDataCollection Data collection to link
    */
   public Room(@NonNull final Collection kuzzleDataCollection) {
     this(kuzzleDataCollection, null);
@@ -113,8 +68,8 @@ public class Room {
    * Once you have subscribed, if a pub/sub message is published matching your filters, or if a matching stored
    * document change (because it is created, updated or deleted), then you'll receive a notification about it.
    *
-   * @param kuzzleDataCollection the kuzzle data collection
-   * @param options              the options
+   * @param kuzzleDataCollection Data collection to link
+   * @param options              Subscription options
    */
   public Room(@NonNull final Collection kuzzleDataCollection, final RoomOptions options) {
     RoomOptions opts = options != null ? options : new RoomOptions();
@@ -145,7 +100,7 @@ public class Room {
   /**
    * Returns the number of other subscriptions on that room.
    *
-   * @param listener the listener
+   * @param listener Response callback listener
    */
   public void count(@NonNull final ResponseListener<Integer> listener) {
     if (listener == null) {
@@ -202,65 +157,48 @@ public class Room {
     }
 
     try {
-      if (!((JSONObject) args).isNull("error")) {
-        listener.onError((JSONObject) args);
+      String requestId = ((JSONObject) args).has("requestId") ? ((JSONObject) args).getString("requestId") : null;
+
+      if (((JSONObject) args).getString("type").equals("TokenExpired")) {
+        Room.this.kuzzle.jwtToken = null;
+        Room.this.kuzzle.emitEvent(Event.tokenExpired);
       }
-      else {
-        String key = ((JSONObject) args).getString("requestId");
 
-        if (((JSONObject) args).getString("action").equals("jwtTokenExpired")) {
-          Room.this.kuzzle.jwtToken = null;
-          Room.this.kuzzle.emitEvent(Event.jwtTokenExpired);
-        }
-
-        if (Room.this.kuzzle.getRequestHistory().containsKey(key)) {
-          if (Room.this.subscribeToSelf) {
-            listener.onSuccess(new NotificationResponse(kuzzle, (JSONObject) args));
-          }
-          Room.this.kuzzle.getRequestHistory().remove(key);
-        } else {
+      if (requestId != null && Room.this.kuzzle.getRequestHistory().containsKey(requestId)) {
+        if (Room.this.subscribeToSelf) {
           listener.onSuccess(new NotificationResponse(kuzzle, (JSONObject) args));
         }
+        Room.this.kuzzle.getRequestHistory().remove(requestId);
+      } else {
+        listener.onSuccess(new NotificationResponse(kuzzle, (JSONObject) args));
       }
     } catch (JSONException e) {
-      try {
-        listener.onError(((JSONObject) args).getJSONObject("error"));
-      } catch (JSONException err) {
-        throw new RuntimeException(e);
-      }
+      throw new RuntimeException(e);
     }
   }
 
   /**
-   * Renew the subscription. Force a resubscription using the same filters if no new ones are provided.
-   * Unsubscribes first if this Room was already listening to events.
-   *
-   * @param listener the listener
-   * @return kuzzle room
+   * {@link #renew(JSONObject, ResponseListener, SubscribeListener)}
    */
   public Room renew(@NonNull final ResponseListener<NotificationResponse> listener) {
     return this.renew(null, listener, null);
   }
 
   /**
-   * Renew the subscription. Force a resubscription using the same filters if no new ones are provided.
-   * Unsubscribes first if this Room was already listening to events.
-   *
-   * @param listener the listener
-   * @param subscribeResponseListener
-   * @return kuzzle room
+   * {@link #renew(JSONObject, ResponseListener, SubscribeListener)}
    */
   public Room renew(@NonNull final ResponseListener<NotificationResponse> listener, final SubscribeListener subscribeResponseListener) {
     return this.renew(null, listener, subscribeResponseListener);
   }
 
   /**
-   * Renew the subscription. Force a resubscription using the same filters if no new ones are provided.
+   * Renew the subscription. Force a resubscription using the same filters 
+   * if no new ones are provided.
    * Unsubscribes first if this Room was already listening to events.
    *
-   * @param filters  the filters
-   * @param listener the listener
-   * @return kuzzle room
+   * @param filters  Subscription filters, using Kuzzle DSL
+   * @param listener Response callback listener
+   * @return this
    */
   public Room renew(final JSONObject filters, @NonNull final ResponseListener<NotificationResponse> listener, final SubscribeListener subscribeResponseListener) {
     long now = System.currentTimeMillis();
@@ -376,11 +314,13 @@ public class Room {
 
   /**
    * Unsubscribes from Kuzzle.
-   * Stop listening immediately. If there is no listener left on that room, sends an unsubscribe request to Kuzzle, once
+   * Stop listening immediately. If there is no listener left on that room, 
+   * sends an unsubscribe request to Kuzzle, once
    * pending subscriptions reaches 0, and only if there is still no listener on that room.
-   * We wait for pending subscriptions to finish to avoid unsubscribing while another subscription on that room is
+   * We wait for pending subscriptions to finish to avoid unsubscribing while 
+   * another subscription on that room is
    *
-   * @return the kuzzle room
+   * @return this
    */
   public Room unsubscribe() {
     if (!this.isReady()) {
@@ -450,28 +390,29 @@ public class Room {
   }
 
   /**
-   * Gets collection.
+   * Linked data collection name getter
    *
-   * @return the collection
+   * @return linked data collection name
    */
   public String getCollection() {
     return collection;
   }
 
   /**
-   * Gets filters.
+   * Subscription filters getter
    *
-   * @return the filters
+   * @return subscription filters
    */
   public JSONObject getFilters() {
     return filters;
   }
 
   /**
-   * Sets filters.
+   * Subscription filters setter.
+   * renew must be called for this to take effect
    *
-   * @param filters the filters
-   * @return the filters
+   * @param filters New subscription filters
+   * @return this
    */
   public Room setFilters(final JSONObject filters) {
     this.filters = filters;
@@ -479,34 +420,27 @@ public class Room {
   }
 
   /**
-   * Gets headers.
+   * headers property getters
    *
-   * @return the headers
+   * @return headers value
    */
   public JSONObject getHeaders() {
     return this.headers;
   }
 
   /**
-   * Helper function allowing to set headers while chaining calls.
-   * If the replace argument is set to true, replace the current headers with the provided content.
-   * Otherwise, it appends the content to the current headers, only replacing already existing values
-   *
-   * @param content the headers
-   * @return the headers
+   * {@link #setHeaders(JSONObject, boolean)}
    */
   public Room setHeaders(final JSONObject content) {
     return this.setHeaders(content, false);
   }
 
   /**
-   * Helper function allowing to set headers while chaining calls.
-   * If the replace argument is set to true, replace the current headers with the provided content.
-   * Otherwise, it appends the content to the current headers, only replacing already existing values
-   *
+   * Subscription headers setter
+   * 
    * @param content - new headers content
-   * @param replace - default: false = append the content. If true: replace the current headers with tj
-   * @return the headers
+   * @param replace - default: false = append the content, true = replace
+   * @return this
    */
   public Room setHeaders(final JSONObject content, final boolean replace) {
     if (this.headers == null) {
@@ -541,8 +475,8 @@ public class Room {
   /**
    * Sets volatile metadata.
    *
-   * @param _volatile the volatile property
-   * @return kuzzle instance
+   * @param _volatile New volatile data value
+   * @return this
    */
   public Room setVolatile(final JSONObject _volatile) {
     this._volatile = _volatile;
@@ -550,19 +484,19 @@ public class Room {
   }
 
   /**
-   * Is subscribe to self boolean.
+   * subscribeToSelf property getter
    *
-   * @return the boolean
+   * @return subscribeToSelf property value
    */
   public boolean isSubscribeToSelf() {
     return subscribeToSelf;
   }
 
   /**
-   * Sets subscribe to self.
+   * subscribeToSelf property setter
    *
-   * @param subscribeToSelf the subscribe to self
-   * @return the subscribe to self
+   * @param subscribeToSelf New subscribeToSelf value
+   * @return this
    */
   public Room setSubscribeToSelf(final boolean subscribeToSelf) {
     this.subscribeToSelf = subscribeToSelf;
@@ -570,23 +504,27 @@ public class Room {
   }
 
   /**
-   * Get roomId
+   * roomId property getter
    *
-   * @return roomId room id
+   * @return roomId property value
    */
   public String getRoomId() {
     return this.roomId;
   }
 
   /**
-   * Getter for the listener property
+   * listener property getter
    *
-   * @return listener
+   * @return listener property value
    */
   public ResponseListener<NotificationResponse> getListener() {
     return this.listener;
   }
 
+  /**
+   * subscribeListener property getter
+   * @return subscribeListener property value
+   */
   public SubscribeListener getSubscribeListener() {
     return doneListener;
   }

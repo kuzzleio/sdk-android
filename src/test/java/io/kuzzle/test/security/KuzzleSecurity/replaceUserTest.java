@@ -55,7 +55,8 @@ public class replaceUserTest {
                 "{" +
                     "\"result\": {" +
                     "\"_id\": \"foo\"," +
-                    "\"_source\": {}" +
+                    "\"_source\": {}," +
+                    "\"_meta\": {}" +
                     "}" +
                 "}");
 

@@ -10,9 +10,6 @@ import io.kuzzle.sdk.enums.CollectionType;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.responses.SearchResult;
 
-/**
- * The type Kuzzle options.
- */
 public class Options {
   // Default values
   private boolean autoQueue = false;
@@ -96,19 +93,19 @@ public class Options {
   }
 
   /**
-   * Is auto reconnect boolean.
+   * autoReconnect option getter
    *
-   * @return the boolean
+   * @return isAutoReconnection option value
    */
   public boolean isAutoReconnect() {
     return autoReconnect;
   }
 
   /**
-   * Sets auto reconnect.
+   * autoReconnect option setter
    *
-   * @param autoReconnect the auto reconnect
-   * @return the auto reconnect
+   * @param autoReconnect New autoReconnect option value
+   * @return this
    */
   public Options setAutoReconnect(boolean autoReconnect) {
     this.autoReconnect = autoReconnect;
@@ -116,19 +113,19 @@ public class Options {
   }
 
   /**
-   * Gets headers.
+   * headers getter
    *
-   * @return the headers
+   * @return headers option value
    */
   public JSONObject getHeaders() {
     return headers;
   }
 
   /**
-   * Sets headers.
+   * headers setter
    *
-   * @param headers the headers
-   * @return the headers
+   * @param headers New headers value
+   * @return this
    */
   public Options setHeaders(JSONObject headers) {
     this.headers = headers;
@@ -136,20 +133,19 @@ public class Options {
   }
 
   /**
-   * Is update if exists boolean.
+   * exists option getter
    *
-   * @return value of the ifExists parameter
+   * @return exists option value
    */
   public String getIfExist() {
     return ifExist;
   }
 
   /**
-   * Sets update if exists.
+   * exists option setter
    *
-   * @param value the update if exists
-   * @return the update if exists
-   * @throws
+   * @param value new exists option value
+   * @return this
    */
   public Options setIfExist(String value) {
     if (value != "error" && value != "replace") {
@@ -172,8 +168,8 @@ public class Options {
   /**
    * Sets volatile data.
    *
-   * @param _volatile the volatile property
-   * @return kuzzle instance
+   * @param _volatile new volatile data value
+   * @return this
    */
   public Options setVolatile(JSONObject _volatile) {
     this._volatile = _volatile;
@@ -181,19 +177,19 @@ public class Options {
   }
 
   /**
-   * Gets connect.
+   * Gets connect property value
    *
-   * @return the connect
+   * @return the connect property value
    */
   public Mode getConnect() {
     return connect;
   }
 
   /**
-   * Sets connect.
+   * Sets connect property value
    *
-   * @param connect the connect
-   * @return the connect
+   * @param connect New connect property value
+   * @return this
    */
   public Options setConnect(Mode connect) {
     this.connect = connect;
@@ -201,19 +197,19 @@ public class Options {
   }
 
   /**
-   * Gets reconnection delay.
+   * reconnectionDelay property getter
    *
-   * @return the reconnection delay
+   * @return the reconnectionDelay property value
    */
   public long getReconnectionDelay() {
     return reconnectionDelay;
   }
 
   /**
-   * Sets reconnection delay.
+   * reconnectionDelay property setter
    *
-   * @param reconnectionDelay the reconnection delay
-   * @return the reconnection delay
+   * @param reconnectionDelay New reconnectionDelay property value
+   * @return this
    */
   public Options setReconnectionDelay(long reconnectionDelay) {
     this.reconnectionDelay = reconnectionDelay;
@@ -221,19 +217,19 @@ public class Options {
   }
 
   /**
-   * Gets offline mode.
+   * offlineMode property getter
    *
-   * @return the offline mode
+   * @return the offlineMode option value
    */
   public Mode getOfflineMode() {
     return offlineMode;
   }
 
   /**
-   * Sets offline mode.
+   * offlineMode property setter
    *
-   * @param offlineMode the offline mode
-   * @return the offline mode
+   * @param offlineMode New offlineMode value
+   * @return this
    */
   public Options setOfflineMode(Mode offlineMode) {
     this.offlineMode = offlineMode;
@@ -241,19 +237,19 @@ public class Options {
   }
 
   /**
-   * Gets queue ttl.
+   * queueTTL property getter
    *
-   * @return the queue ttl
+   * @return queueTTL property value
    */
   public int getQueueTTL() {
     return queueTTL;
   }
 
   /**
-   * Sets queue ttl.
+   * queueTTL property setter
    *
-   * @param queueTTL the queue ttl
-   * @return the queue ttl
+   * @param queueTTL New queueTTL value
+   * @return this
    */
   public Options setQueueTTL(int queueTTL) {
     this.queueTTL = queueTTL;
@@ -261,19 +257,19 @@ public class Options {
   }
 
   /**
-   * Is auto replay boolean.
-   *
-   * @return the boolean
+   * autoReplay property getter
+   * 
+   * @return autoReplay property value
    */
   public boolean isAutoReplay() {
     return autoReplay;
   }
 
   /**
-   * Sets auto replay.
+   * autoReplay property setter
    *
-   * @param autoReplay the auto replay
-   * @return the auto replay
+   * @param autoReplay New autoReplay value
+   * @return this
    */
   public Options setAutoReplay(boolean autoReplay) {
     this.autoReplay = autoReplay;
@@ -281,19 +277,19 @@ public class Options {
   }
 
   /**
-   * Is queuable boolean.
+   * queuable property getter
    *
-   * @return the boolean
+   * @return queuable property value
    */
   public boolean isQueuable() {
     return queuable;
   }
 
   /**
-   * Sets queuable.
+   * queuable property setter
    *
-   * @param queuable the queuable
-   * @return the queuable
+   * @param queuable New queuable value
+   * @return this
    */
   public Options setQueuable(boolean queuable) {
     this.queuable = queuable;
@@ -301,19 +297,19 @@ public class Options {
   }
 
   /**
-   * Gets queue max size.
+   * queueMaxSize property getter
    *
-   * @return the queue max size
+   * @return queueMaxSize value
    */
   public int getQueueMaxSize() {
     return queueMaxSize;
   }
 
   /**
-   * Sets queue max size.
+   * queueMaxSize property setter
    *
-   * @param queueMaxSize the queue max size
-   * @return the queue max size
+   * @param queueMaxSize New queueMaxSize value
+   * @return this
    */
   public Options setQueueMaxSize(int queueMaxSize) {
     this.queueMaxSize = queueMaxSize;
@@ -321,19 +317,19 @@ public class Options {
   }
 
   /**
-   * Gets replay interval.
+   * replayInterval property getter
    *
-   * @return the replay interval
+   * @return replayInterval property value
    */
   public int getReplayInterval() {
     return replayInterval;
   }
 
   /**
-   * Sets replay interval.
+   * replayInterval property setter
    *
-   * @param replayInterval the replay interval
-   * @return the replay interval
+   * @param replayInterval New replayInterval value
+   * @return this
    */
   public Options setReplayInterval(int replayInterval) {
     this.replayInterval = replayInterval;
@@ -341,19 +337,19 @@ public class Options {
   }
 
   /**
-   * Is auto resubscribe boolean.
+   * autoResubscribe property getter
    *
-   * @return the boolean
+   * @return autoResubscribe property value
    */
   public boolean isAutoResubscribe() {
     return autoResubscribe;
   }
 
   /**
-   * Sets auto resubscribe.
+   * autoResubscribe property setter
    *
-   * @param autoResubscribe the auto resubscribe
-   * @return the auto resubscribe
+   * @param autoResubscribe New autoResubscribe value
+   * @return this
    */
   public Options setAutoResubscribe(boolean autoResubscribe) {
     this.autoResubscribe = autoResubscribe;
@@ -361,19 +357,19 @@ public class Options {
   }
 
   /**
-   * Gets collection type.
+   * collectionType property getter
    *
-   * @return the collection type
+   * @return collectionType property value
    */
   public CollectionType getCollectionType() {
     return collectionType;
   }
 
   /**
-   * Sets collection type.
+   * collectionType property setter
    *
-   * @param type the type
-   * @return the collection type
+   * @param type New collectionType value
+   * @return this
    */
   public Options setCollectionType(CollectionType type) {
     this.collectionType = type;
@@ -381,10 +377,10 @@ public class Options {
   }
 
   /**
-   * Sets default index.
+   * defaultIndex property setter
    *
-   * @param index the index
-   * @return the default index
+   * @param index New defaultIndex value
+   * @return this
    */
   public Options setDefaultIndex(final String index) {
     this.defaultIndex = index;
@@ -392,19 +388,19 @@ public class Options {
   }
 
   /**
-   * Gets default index.
+   * defaultIndex property getter
    *
-   * @return the default index
+   * @return defaultIndex property value
    */
   public String getDefaultIndex() {
     return this.defaultIndex;
   }
 
   /**
-   * Sets auto queue.
+   * autoQueue property setter
    *
-   * @param autoQueue the auto queue
-   * @return the auto queue
+   * @param autoQueue New autoQueue value
+   * @return this
    */
   public Options setAutoQueue(boolean autoQueue) {
     this.autoQueue = autoQueue;
@@ -412,19 +408,19 @@ public class Options {
   }
 
   /**
-   * Is auto queue boolean.
+   * autoQueue property getter
    *
-   * @return the boolean
+   * @return autoQueue property value
    */
   public boolean isAutoQueue() {
     return this.autoQueue;
   }
 
   /**
-   * Sets replace if exist.
+   * replaceIfExist property setter
    *
-   * @param replace the replace
-   * @return the replace if exist
+   * @param replace New replaceIfExist value
+   * @return this
    */
   public Options setReplaceIfExist(boolean replace) {
     this.replaceIfExist = replace;
@@ -432,81 +428,153 @@ public class Options {
   }
 
   /**
-   * Is replace if exist boolean.
+   * replaceIfExist property getter
    *
-   * @return the boolean
+   * @return replaceIfExist property value
    */
   public boolean isReplaceIfExist() {
     return this.replaceIfExist;
   }
 
+  /**
+   * from property getter
+   * @return from property value
+   */
   public Long getFrom() {
     return from;
   }
 
+  /**
+   * from property setter
+   * @param  from New from value
+   * @return this
+   */
   public Options setFrom(Long from) {
     this.from = from;
     return this;
   }
 
+  /**
+   * size property getter
+   * @return size property value
+   */
   public Long getSize() {
     return size;
   }
 
+  /**
+   * size property setter
+   * @param  size New size value
+   * @return this
+   */
   public Options setSize(Long size) {
     this.size = size;
     return this;
   }
 
+  /**
+   * port property setter
+   * @param  port New port value
+   * @return this
+   */
   public Options setPort(Integer port) {
     this.port = port;
     return this;
   }
 
+  /**
+   * port property getter
+   * @return port property value
+   */
   public Integer getPort() {
     return this.port;
   }
 
+  /**
+   * refresh property getter
+   * @return refresh property value
+   */
   public String getRefresh() {
     return refresh;
   }
 
+  /**
+   * refresh property setter
+   * @param  refresh New refresh property value
+   * @return         [description]
+   */
   public Options setRefresh(String refresh) {
     this.refresh = refresh;
     return this;
   }
 
+  /**
+   * scroll property getter
+   * @return scroll property value
+   */
   public String getScroll() {
     return scroll;
   }
 
+  /**
+   * scroll property setter
+   * @param  scroll New scroll value
+   * @return this
+   */
   public Options setScroll(String scroll) {
     this.scroll = scroll;
     return this;
   }
 
+  /**
+   * previous property getter
+   * @return previous property value
+   */
   public SearchResult getPrevious() {
     return previous;
   }
 
+  /**
+   * previous property setter
+   * @param  previous New previous value
+   * @return this
+   */
   public Options setPrevious(SearchResult previous) {
     this.previous = previous;
     return this;
   }
 
+  /**
+   * scrollId property getter
+   * @return scrollId property value
+   */
   public String getScrollId() {
     return scrollId;
   }
 
+  /**
+   * scrollId property setter
+   * @param  scrollId New scrollId value
+   * @return this
+   */
   public Options setScrollId(String scrollId) {
     this.scrollId = scrollId;
     return this;
   }
 
+  /**
+   * retryOnConflict property getter
+   * @return retryOnConflict property value
+   */
   public int getRetryOnConflict() {
     return retryOnConflict;
   }
 
+  /**
+   * retryOnConflict property setter
+   * @param  retryOnConflict New retryOnConflict value
+   * @return this
+   */
   public Options setRetryOnConflict(int retryOnConflict) {
     if (retryOnConflict < 0) {
       throw new IllegalArgumentException("Invalid value for the retryOnConflict option (positive or null integer allowed)");
@@ -516,190 +584,379 @@ public class Options {
     return this;
   }
 
+  /**
+   * start property getter
+   * @return start property value
+   */
   public Long getStart() {
     return start;
   }
 
+  /**
+   * start property setter
+   * @param  start New start value
+   * @return this
+   */
   public Options setStart(Long start) {
     this.start = start;
     return this;
   }
 
+  /**
+   * end property getter
+   * @return end property value
+   */
   public Long getEnd() {
     return end;
   }
 
+  /**
+   * end property setter
+   * @param  end New end value
+   * @return this
+   */
   public Options setEnd(Long end) {
     this.end = end;
     return this;
   }
 
+  /**
+   * unit property getter
+   * @return unit property value
+   */
   public String getUnit() {
     return unit;
   }
 
+  /**
+   * unit property setter
+   * @param  unit New unit value
+   * @return this
+   */
   public Options setUnit(String unit) {
     this.unit = unit;
     return this;
   }
 
+  /**
+   * withcoord property getter
+   * @return withcoord property value
+   */
   public boolean getWithcoord() {
     return withcoord;
   }
 
+  /**
+   * withcoord property setter
+   * @param  withcoord New withcoord value
+   * @return this
+   */
   public Options setWithcoord(boolean withcoord) {
     this.withcoord = withcoord;
     return this;
   }
 
+  /**
+   * withdist property getter
+   * @return withdist property value
+   */
   public boolean getWithdist() {
     return withdist;
   }
 
+  /**
+   * withdist property setter
+   * @param  withdist New withdist value
+   * @return this
+   */
   public Options setWithdist(boolean withdist) {
     this.withdist = withdist;
     return this;
   }
 
+  /**
+   * count property getter
+   * @return count property value
+   */
   public Long getCount() {
     return count;
   }
 
+  /**
+   * count property setter
+   * @param  count New count value
+   * @return this
+   */
   public Options setCount(Long count) {
     this.count = count;
     return this;
   }
 
+  /**
+   * sort property getter
+   * @return sort property value
+   */
   public String getSort() {
     return sort;
   }
 
+  /**
+   * sort property setter
+   * @param  sort New sort value
+   * @return this
+   */
   public Options setSort(String sort) {
     this.sort = sort;
     return this;
   }
 
+  /**
+   * match property getter
+   * @return match property value
+   */
   public String getMatch() {
     return match;
   }
 
+  /**
+   * match property setter
+   * @param  match New match value
+   * @return this
+   */
   public Options setMatch(String match) {
     this.match = match;
     return this;
   }
 
+  /**
+   * ex property getter
+   * @return ex property value
+   */
   public Long getEx() {
     return ex;
   }
 
+  /**
+   * ex property setter
+   * @param  ex New ex value
+   * @return this
+   */
   public Options setEx(Long ex) {
     this.ex = ex;
     return this;
   }
 
+  /**
+   * nx property getter
+   * @return nx property value
+   */
   public boolean getNx() {
     return nx;
   }
 
+  /**
+   * nx property setter
+   * @param  nx New nx value
+   * @return this
+   */
   public Options setNx(boolean nx) {
     this.nx = nx;
     return this;
   }
 
+  /**
+   * px property getter
+   * @return px property value
+   */
   public Long getPx() {
     return px;
   }
 
+  /**
+   * px property setter
+   * @param  px New px value
+   * @return this
+   */
   public Options setPx(Long px) {
     this.px = px;
     return this;
   }
 
+  /**
+   * xx property getter
+   * @return xx property value
+   */
   public boolean getXx() {
     return xx;
   }
 
+  /**
+   * xx property setter
+   * @param  xx New xx value
+   * @return this
+   */
   public Options setXx(boolean xx) {
     this.xx = xx;
     return this;
   }
 
+  /**
+   * alpha property getter
+   * @return alpha property value
+   */
   public boolean getAlpha() {
     return alpha;
   }
 
+  /**
+   * alpha property setter
+   * @param  alpha New alpha value
+   * @return this
+   */
   public Options setAlpha(boolean alpha) {
     this.alpha = alpha;
     return this;
   }
 
+  /**
+   * by property getter
+   * @return by property value
+   */
   public String getBy() {
     return by;
   }
 
+  /**
+   * by property setter
+   * @param  by New by value
+   * @return this
+   */
   public Options setBy(String by) {
     this.by = by;
     return this;
   }
 
+  /**
+   * direction property getter
+   * @return direction property value
+   */
   public String getDirection() {
     return direction;
   }
 
+  /**
+   * direction property setter
+   * @param  direction New direction value
+   * @return this
+   */
   public Options setDirection(String direction) {
     this.direction = direction;
     return this;
   }
 
+  /**
+   * get property getter
+   * @return get property value
+   */
   public String[] getGet() {
     return get;
   }
 
+  /**
+   * get property setter
+   * @param  get New get value
+   * @return this
+   */
   public Options setGet(String[] get) {
     this.get = get;
     return this;
   }
 
+  /**
+   * limit property getter
+   * @return limit property value
+   */
   public Integer[] getLimit() {
     return limit;
   }
 
+  /**
+   * limit property setter
+   * @param  limit New limit value
+   * @return this
+   */
   public Options setLimit(Integer[] limit) {
     this.limit = limit;
     return this;
   }
 
+  /**
+   * ch property getter
+   * @return ch property value
+   */
   public boolean getCh() {
     return ch;
   }
 
+  /**
+   * ch property setter
+   * @param  ch New ch value
+   * @return this
+   */
   public Options setCh(boolean ch) {
     this.ch = ch;
     return this;
   }
 
+  /**
+   * incr property getter
+   * @return incr property value
+   */
   public boolean getIncr() {
     return incr;
   }
 
+  /**
+   * incr property setter
+   * @param  incr New incr value
+   * @return this
+   */
   public Options setIncr(boolean incr) {
     this.incr = incr;
     return this;
   }
 
+  /**
+   * aggregate property getter
+   * @return aggregate property value
+   */
   public String getAggregate() {
     return aggregate;
   }
 
+  /**
+   * aggregate property setter
+   * @param  aggregate New aggregate value
+   * @return this
+   */
   public Options setAggregate(String aggregate) {
     this.aggregate = aggregate;
     return this;
   }
 
+  /**
+   * weights property getter
+   * @return weights property value
+   */
   public Integer[] getWeights() {
     return weights;
   }
 
+  /**
+   * weights property setter
+   * @param  weights New weights value
+   * @return this
+   */
   public Options setWeights(Integer[] weights) {
     this.weights = weights;
     return this;

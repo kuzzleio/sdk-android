@@ -53,12 +53,13 @@ public class getRoleTest {
         JSONObject response = new JSONObject(
           "{" +
             "\"result\": {" +
-            "\"_id\": \"foobar\"," +
-            "\"_source\": {" +
-            "\"indexes\": {}" +
+              "\"_id\": \"foobar\"," +
+              "\"_source\": {" +
+                "\"indexes\": {}" +
+              "}," +
+              "\"_meta\": {}" +
             "}" +
-            "}" +
-            "}");
+          "}");
 
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
@@ -86,7 +87,7 @@ public class getRoleTest {
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "fetchRole");
+    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "getRole");
   }
 
   @Test(expected = RuntimeException.class)

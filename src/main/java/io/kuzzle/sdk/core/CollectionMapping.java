@@ -10,9 +10,6 @@ import java.util.Iterator;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
-/**
- * The type Kuzzle data mapping.
- */
 public class CollectionMapping {
 
   private JSONObject headers;
@@ -22,23 +19,19 @@ public class CollectionMapping {
   private Collection dataCollection;
 
   /**
-   * When creating a new data collection in the persistent data storage layer, Kuzzle uses a default mapping.
-   * It means that, by default, you won't be able to exploit the full capabilities of our persistent data storage layer
-   * (currently handled by ElasticSearch), and your searches may suffer from below-average performances, depending on
-   * the amount of data you stored in a collection and the complexity of your database.
-   * The CollectionMapping object allow to get the current mapping of a data collection and to modify it if needed.
+   * Constructor
    *
-   * @param kuzzleDataCollection the kuzzle data collection
+   * @param kuzzleDataCollection - Parent data collection
    */
   public CollectionMapping(final Collection kuzzleDataCollection) {
     this(kuzzleDataCollection, null);
   }
 
   /**
-   * Instantiates a new Kuzzle data mapping.
+   * Constructor
    *
-   * @param kuzzleDataCollection the kuzzle data collection
-   * @param mapping              the mapping
+   * @param kuzzleDataCollection - Parent data collection
+   * @param mapping - Mapping content
    */
   public CollectionMapping(final Collection kuzzleDataCollection, final JSONObject mapping) {
     try {
@@ -57,47 +50,39 @@ public class CollectionMapping {
   /**
    * Copy constructor
    *
-   * @param kuzzleDataMapping the CollectionMapping object to copy
+   * @param kuzzleDataMapping - The CollectionMapping object to copy
    */
   public CollectionMapping(final CollectionMapping kuzzleDataMapping) {
     this(kuzzleDataMapping.dataCollection, kuzzleDataMapping.mapping);
   }
 
   /**
-   * Applies the new mapping to the data collection.
-   *
-   * @return the kuzzle data mapping
+   * {@link #apply(Options, ResponseListener)}
    */
   public CollectionMapping apply() {
     return this.apply(null, null);
   }
 
   /**
-   * Applies the new mapping to the data collection.
-   *
-   * @param options the options
-   * @return the kuzzle data mapping
+   * {@link #apply(Options, ResponseListener)}
    */
   public CollectionMapping apply(final Options options) {
     return this.apply(options, null);
   }
 
   /**
-   * Applies the new mapping to the data collection.
-   *
-   * @param listener the listener
-   * @return the kuzzle data mapping
+   * {@link #apply(Options, ResponseListener)}
    */
   public CollectionMapping apply(final ResponseListener<CollectionMapping> listener) {
     return this.apply(null, listener);
   }
 
   /**
-   * Applies the new mapping to the data collection.
+   * Applies this mapping content to the data collection.
    *
-   * @param options  the options
-   * @param listener the cb
-   * @return the kuzzle data mapping
+   * @param options - Request options
+   * @param listener - Response callback listener
+   * @return this
    */
   public CollectionMapping apply(final Options options, final ResponseListener<CollectionMapping> listener) {
     JSONObject data = new JSONObject();
@@ -128,9 +113,7 @@ public class CollectionMapping {
   }
 
   /**
-   * Gets a refreshed copy of the current object
-   *
-   * @param listener the listener
+   * {@link #refresh(Options, ResponseListener)}
    */
   public void refresh(final ResponseListener<CollectionMapping> listener) {
     refresh(null, listener);
@@ -139,8 +122,8 @@ public class CollectionMapping {
   /**
    * Gets a refreshed copy of the current object
    *
-   * @param options  the options
-   * @param listener the listener
+   * @param options - Request options
+   * @param listener - Response callback listener
    */
   public void refresh(final Options options, @NonNull final ResponseListener<CollectionMapping> listener) {
     if (listener == null) {
@@ -175,11 +158,11 @@ public class CollectionMapping {
   }
 
   /**
-   * Adds or updates a field mapping.
+   * Remove a field from this mapping
    * Changes made by this function won't be applied until you call the apply method
    *
-   * @param field the field
-   * @return kuzzle data mapping
+   * @param field - Field name to remove
+   * @return this
    */
   public CollectionMapping remove(final String field) {
     if (this.mapping.has(field)) {
@@ -190,12 +173,12 @@ public class CollectionMapping {
   }
 
   /**
-   * Set kuzzle data mapping.
+   * Attach a mapping to a field
    *
-   * @param field   the field
-   * @param mapping the mapping
-   * @return the kuzzle data mapping
-   * @throws JSONException the json exception
+   * @param field - Field name
+   * @param mapping - Field mapping
+   * @return this
+   * @throws JSONException 
    */
   public CollectionMapping set(final String field, final JSONObject mapping) throws JSONException {
     this.mapping.put(field, mapping);
@@ -203,21 +186,16 @@ public class CollectionMapping {
   }
 
   /**
-   * Gets headers.
+   * Get the global headers for this object
    *
-   * @return the headers
+   * @return global headers for this object
    */
   public JSONObject getHeaders() {
     return headers;
   }
 
   /**
-   * Helper function allowing to set headers while chaining calls.
-   * If the replace argument is set to true, replace the current headers with the provided content.
-   * Otherwise, it appends the content to the current headers, only replacing already existing values
-   *
-   * @param content the headers
-   * @return the headers
+   * {@link #setHeaders(JSONObject, boolean)}
    */
   public CollectionMapping setHeaders(final JSONObject content) {
     return this.setHeaders(content, false);
@@ -228,9 +206,9 @@ public class CollectionMapping {
    * If the replace argument is set to true, replace the current headers with the provided content.
    * Otherwise, it appends the content to the current headers, only replacing already existing values
    *
-   * @param content - new headers content
-   * @param replace - default: false = append the content. If true: replace the current headers with tj
-   * @return the headers
+   * @param content - Headers to append or replace
+   * @param replace - false (default): append the content, true: replace the current headers
+   * @return this
    */
   public CollectionMapping setHeaders(final JSONObject content, final boolean replace) {
     try {
@@ -258,9 +236,9 @@ public class CollectionMapping {
   }
 
   /**
-   * Gets mapping.
+   * Get this mapping raw content
    *
-   * @return the mapping
+   * @return mapping raw content
    */
   public JSONObject getMapping() {
     return mapping;

@@ -19,9 +19,6 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
  * This class handles users management in Kuzzle
  */
 public class User extends AbstractSecurityDocument {
-  /**
-   * The Profiles Ids List.
-   */
   private ArrayList<String> profileIds = new ArrayList<>();
 
   private JSONObject credentials = new JSONObject();
@@ -29,13 +26,14 @@ public class User extends AbstractSecurityDocument {
   /**
    * Instantiates a new Kuzzle user.
    *
-   * @param kuzzle  the kuzzle
-   * @param id      the id
-   * @param content the content
-   * @throws JSONException the json exception
+   * @param kuzzle  Kuzzle instance to attach
+   * @param id      User unique identifier
+   * @param content User content
+   * @param meta User metadata
+   * @throws JSONException 
    */
-  public User(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
-    super(kuzzle, id, null);
+  public User(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content, final JSONObject meta) throws JSONException {
+    super(kuzzle, id, null, meta);
     this.deleteActionName = "deleteUser";
     this.updateActionName = "updateUser";
 
@@ -55,8 +53,8 @@ public class User extends AbstractSecurityDocument {
   /**
    * Set a new profiles set for this user
    *
-   * @param profileIds - Strings array of profiles IDs
-   * @return this profiles
+   * @param profileIds Array of profile identifiers
+   * @return this 
    */
   public User setProfiles(@NonNull final String[] profileIds) {
     if (profileIds == null) {
@@ -70,10 +68,10 @@ public class User extends AbstractSecurityDocument {
   }
 
   /**
-   * adds a new profile to the profiles set of this user
+   * Adds a new profile to the profiles set of this user
    *
-   * @param profile - String
-   * @return this profiles
+   * @param profile Profile unique ID to add
+   * @return this 
    */
   public User addProfile(@NonNull final String profile) {
     if (profile == null) {
@@ -86,12 +84,12 @@ public class User extends AbstractSecurityDocument {
   }
 
    /**
-   * Save this user in Kuzzle
+   * Replace a user in Kuzzle with this object's content
    *
-   * @param options  - Optional arguments
-   * @param listener - Callback listener
-   * @return this kuzzle user
-   * @throws JSONException the json exception
+   * @param options  Request optional arguments
+   * @param listener -Callback listener
+   * @return this 
+   * @throws JSONException 
    */
   public User replace(final Options options, final ResponseListener<User> listener) throws JSONException {
     JSONObject data = this.serialize();
@@ -117,32 +115,21 @@ public class User extends AbstractSecurityDocument {
   }
 
   /**
-   * Save this user in Kuzzle
-   *
-   * @param listener - Callback listener
-   * @return this kuzzle user
-   * @throws JSONException the json exception
+   * {@link #replace(Options, ResponseListener)}
    */
   public User replace(final ResponseListener<User> listener) throws JSONException {
     return replace(null, listener);
   }
 
   /**
-   * Save this user in Kuzzle
-   *
-   * @param options - Optional arguments
-   * @return this kuzzle user
-   * @throws JSONException the json exception
+   * {@link #replace(Options, ResponseListener)}
    */
   public User replace(final Options options) throws JSONException {
     return replace(options, null);
   }
 
   /**
-   * Save this user in Kuzzle
-   *
-   * @return this kuzzle user
-   * @throws JSONException the json exception
+   * {@link #replace(Options, ResponseListener)}
    */
   public User replace() throws JSONException {
     return replace(null, null);
@@ -151,10 +138,10 @@ public class User extends AbstractSecurityDocument {
   /**
    * Create this user into Kuzzle.
    *
-   * @param options  - Optional arguments
-   * @param listener - Callback listener
-   * @return this kuzzle user
-   * @throws JSONException the json exception
+   * @param options  Request optional arguments
+   * @param listener Callback listener
+   * @return this 
+   * @throws JSONException 
    */
   public User create(final Options options, final ResponseListener<User> listener) throws JSONException {
     JSONObject data = this.creationSerialize();
@@ -180,44 +167,33 @@ public class User extends AbstractSecurityDocument {
   }
 
   /**
-   * Create this user into Kuzzle.
-   *
-   * @param listener - Callback listener
-   * @return this kuzzle user
-   * @throws JSONException the json exception
+   * {@link #create(Options, ResponseListener)}
    */
   public User create(final ResponseListener<User> listener) throws JSONException {
     return create(null, listener);
   }
 
   /**
-   * Create this user into Kuzzle.
-   *
-   * @param options - Optional arguments
-   * @return this kuzzle user
-   * @throws JSONException the json exception
+   * {@link #create(Options, ResponseListener)}
    */
   public User create(final Options options) throws JSONException {
     return create(options, null);
   }
 
   /**
-   * Create this user into Kuzzle.
-   *
-   * @return this kuzzle user
-   * @throws JSONException the json exception
+   * {@link #create(Options, ResponseListener)}
    */
   public User create() throws JSONException {
     return create(null, null);
   }
 
   /**
-   * Saves this user as restricted into Kuzzle.
+   * Saves this object's content as a restricted user into Kuzzle.
    *
-   * @param options  - Optional arguments
-   * @param listener - Callback listener
-   * @return this kuzzle user
-   * @throws JSONException the json exception
+   * @param options  Request optional arguments
+   * @param listener Callback listener
+   * @return this 
+   * @throws JSONException 
    */
   public User saveRestricted(final Options options, final ResponseListener<User> listener) throws JSONException {
     JSONObject data = this.serialize();
@@ -243,32 +219,21 @@ public class User extends AbstractSecurityDocument {
   }
 
   /**
-   * Saves this user as restricted into Kuzzle.
-   *
-   * @param listener - Callback listener
-   * @return this kuzzle user
-   * @throws JSONException the json exception
+   * {@link #saveRestricted(Options, ResponseListener)}
    */
   public User saveRestricted(final ResponseListener<User> listener) throws JSONException {
     return saveRestricted(null, listener);
   }
 
   /**
-   * Saves this user as restricted into Kuzzle.
-   *
-   * @param options - Optional arguments
-   * @return this kuzzle user
-   * @throws JSONException the json exception
+   * {@link #saveRestricted(Options, ResponseListener)}
    */
   public User saveRestricted(final Options options) throws JSONException {
     return saveRestricted(options, null);
   }
 
   /**
-   * Saves this user as restricted into Kuzzle.
-   *
-   * @return this kuzzle user
-   * @throws JSONException the json exception
+   * {@link #saveRestricted(Options, ResponseListener)}
    */
   public User saveRestricted() throws JSONException {
     return saveRestricted(null, null);
@@ -278,7 +243,7 @@ public class User extends AbstractSecurityDocument {
    * Return a JSONObject representing a serialized version of this object
    *
    * @return serialized version of this object
-   * @throws JSONException the json exception
+   * @throws JSONException 
    */
   public JSONObject serialize() throws JSONException {
     JSONObject
@@ -298,7 +263,7 @@ public class User extends AbstractSecurityDocument {
    * Return a JSONObject representing a serialized version of this object
    *
    * @return serialized version of this object
-   * @throws JSONException the json exception
+   * @throws JSONException 
    */
   public JSONObject creationSerialize() throws JSONException {
     JSONObject
@@ -319,21 +284,26 @@ public class User extends AbstractSecurityDocument {
   }
 
   /**
-   * Returns the associated profiles
-   *
-   * @return an array of strings
+   * @return the associated profile identifiers
    */
   public String[] getProfileIds() {
     return this.profileIds.toArray(new String[0]);
   }
 
   /**
-   * Resolves to the associated profiles as Profile objects
+   * {@link #getProfiles(Options, ResponseListener)}
    */
   public void getProfiles(final ResponseListener<Profile[]> listener) throws JSONException {
     getProfiles(null, listener);
   }
 
+  /**
+   * Gets the profile objects from the associated profile identifiers
+   * 
+   * @param  options Request optional arguments
+   * @param  listener  Response callback listener
+   * @throws JSONException
+   */
   public void getProfiles(final Options options, final ResponseListener<Profile[]> listener) throws JSONException {
     if (listener == null) {
       throw new IllegalArgumentException("User.getProfiles: a valid ResponseListener object is required");
@@ -378,7 +348,9 @@ public class User extends AbstractSecurityDocument {
   }
 
   /**
-   * @param credentials the user credentials
+   * User credentials setter
+   * @param credentials New credentials value
+   * @return  this
    */
   public User setCredentials(JSONObject credentials) {
     this.credentials = credentials;

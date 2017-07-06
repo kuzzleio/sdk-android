@@ -128,6 +128,7 @@ public class scrollUsersTest {
                 "          \"status\": \"idle\",\n" +
                 "          \"type\": \"customer\"\n" +
                 "        },\n" +
+                "        \"_meta\": {},\n" +
                 "        \"_type\": \"users\"\n" +
                 "      },\n" +
                 "      {\n" +
@@ -143,6 +144,7 @@ public class scrollUsersTest {
                 "          \"status\": \"idle\",\n" +
                 "          \"type\": \"cab\"\n" +
                 "        },\n" +
+                "        \"_meta\": {},\n" +
                 "        \"_type\": \"users\"\n" +
                 "      }\n" +
                 "    ],\n" +

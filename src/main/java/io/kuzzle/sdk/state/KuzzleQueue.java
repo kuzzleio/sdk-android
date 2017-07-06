@@ -16,7 +16,7 @@ public class KuzzleQueue<T> implements Iterable<T> {
   /**
    * Add to queue.
    *
-   * @param object the object
+   * @param object Item to queue
    */
   public synchronized void addToQueue(T object) {
     _queue.add(object);
@@ -25,7 +25,7 @@ public class KuzzleQueue<T> implements Iterable<T> {
   /**
    * Dequeue t.
    *
-   * @return the t
+   * @return Dequeued item
    */
   public synchronized T dequeue() {
     return _queue.poll();
@@ -34,23 +34,22 @@ public class KuzzleQueue<T> implements Iterable<T> {
   private States _currentState = States.DISCONNECTED;
 
   /**
-   * Sets state.
-   *
-   * @param states the states
+   * @param states New connection state value
    */
   public void setState(States states) {
     _currentState = states;
   }
 
   /**
-   * State states.
-   *
-   * @return the states
+   * @return Connection state value
    */
   public States state() {
     return _currentState;
   }
 
+  /**
+   * @return queue content
+   */
   public Queue  getQueue() {
     return _queue;
   }

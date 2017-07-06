@@ -77,12 +77,12 @@ public class existsTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 JSONObject result = new JSONObject()
-                        .put("result", true);
+                    .put("result", true);
                 ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(result);
                 return null;
             }
         }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-        doThrow(JSONException.class).when(mockListener).onSuccess(any(Document.class));
+        doThrow(JSONException.class).when(mockListener).onSuccess(any(JSONObject.class));
         doc.exists(mockListener);
     }
 
@@ -97,7 +97,7 @@ public class existsTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 JSONObject response = new JSONObject()
-                        .put("result", true);
+                    .put("result", true);
                 ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
                 ((OnQueryDoneListener) invocation.getArguments()[3]).onError(null);
                 return null;
@@ -105,10 +105,10 @@ public class existsTest {
         }).when(k).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
         doc.setId("42");
         doc.setContent("foo", "baz");
-        doc.exists(new ResponseListener<JSONObject>() {
+        doc.exists(new ResponseListener<Boolean>() {
             @Override
-            public void onSuccess(JSONObject object) {
-                assertNotEquals(doc, object);
+            public void onSuccess(Boolean exists) {
+                assertEquals(exists, true);
             }
 
             @Override

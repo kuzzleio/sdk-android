@@ -28,7 +28,7 @@ You can configure your Android project to get Kuzzle's Android SDK from jcenter 
     buildscript {
         repositories {
             maven {
-                url  "http://dl.bintray.com/kblondel/maven"
+                url  "http://dl.bintray.com/kuzzle/maven"
             }
             jcenter()
         }
@@ -43,70 +43,52 @@ You can configure your Android project to get Kuzzle's Android SDK from jcenter 
 
 ```java
 Kuzzle kuzzle = new Kuzzle("host", new ResponseListener<Void>() {
-    @Override
-    public void onSuccess(Void object) {
-        // Handle success
-        Document doc = new Document(dataCollection);
-        try {
-            doc.setContent("foo", "bar").save();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
+@Override
+public void onSuccess(Void object) {
+    // Handle success
+    KuzzleDocument doc = new KuzzleDocument(dataCollection);
+    doc.setContent("foo", "bar").save();
+}
 
-    @Override
-    public void onError(JSONObject error) {
-        // Handle error
-    }
+@Override
+public void onError(JSONObject error) {
+    // Handle error
+}
 });
 ```
 
-## Document
+## KuzzleDocument
 
-Document is an encapsulation of a JSONObject.
+KuzzleDocument is an encapsulation of a JSONObject.
 
 ```java
-Collection myCollection = new Collection(kuzzle, "myNewCollection", "myNewIndex");
-Document myDocument = new Document(myCollection);
-
+KuzzleDataCollection myCollection = new KuzzleDataCollection(kuzzle, "myNewCollection");
+KuzzleDocument myDocument = new KuzzleDocument(myCollection);
 // Add properties to the body
 myDocument.setContent("foo", "bar");
-
 // Persist the document
 myDocument.save();
-
 // Send it on real time (not persistent)
 myDocument.publish();
 ```
 
-## Adding volatile data
+## Adding metadata
 
-As stated [here](http://docs.kuzzle.io/api-documentation/volatile-data/) you can add volatile data to a subscription.
+As stated [here](http://kuzzle.io/api-reference/#sending-metadata) you can add metadata to a subscription.
 
 ```java
-RoomOptions options = new RoomOptions();
-JSONObject volatileData = new JSONObject();
-
-volatileData.put("foo", "bar");
-options.setVolatile(volatileData);
-kuzzle.collection("foo", "test").subscribe(options, new ResponseListener<NotificationResponse>() {
-    @Override
-    public void onSuccess(NotificationResponse response) {
-        
-    }
-
-    @Override
-    public void onError(JSONObject error) {
-
-    }
-});
+KuzzleOptions options = new KuzzleOptions();
+JSONObject metadata = new JSONObject();
+metadata.put("foo", "bar");
+options.setMetadata(metadata);
+myCollection.subscribe(options);
 ```
 
 # Login
 
 ## Prerequisite
 
-To login using Kuzzle you need at least one authentication plugin. You can refer [here](https://github.com/kuzzleio/kuzzle-plugin-auth-passport-local) for a local authentication plugin
+To login using kuzzle you need at least one authentication plugin. You can refer [here](https://github.com/kuzzleio/kuzzle-plugin-auth-passport-local) for a local authentication plugin
 or [here](https://github.com/kuzzleio/kuzzle-plugin-auth-passport-oauth) to refer to our OAuth2 plugin.
 
 To know more about how to log in with a Kuzzle SDK, please refer to our [documentation](http://docs.kuzzle.io/sdk-reference/kuzzle/login/)
@@ -144,3 +126,7 @@ kuzzle.login("github", new KuzzleResponseListener<JSONObject>() {
       }
     });
 ```
+
+## License
+
+[Apache 2](LICENSE)

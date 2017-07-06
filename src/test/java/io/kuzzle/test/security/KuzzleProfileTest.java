@@ -34,12 +34,12 @@ public class KuzzleProfileTest {
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
     kuzzle.security = new Security(kuzzle);
-    stubProfile = new Profile(kuzzle, "foo", null);
+    stubProfile = new Profile(kuzzle, "foo", null, null);
   }
 
   @Test
   public void testConstructorNoContent() throws JSONException {
-    Profile profile = new Profile(kuzzle, "foo", null);
+    Profile profile = new Profile(kuzzle, "foo", null, null);
     assertEquals(profile.id, "foo");
     assertEquals(profile.getPolicies().length, 0);
     assertThat(profile.content, instanceOf(JSONObject.class));
@@ -53,7 +53,7 @@ public class KuzzleProfileTest {
         "\"policies\": [{\"roleId\": \"foo\"}, {\"roleId\": \"bar\"}, {\"roleId\": \"baz\"}]" +
       "}"
     );
-    Profile profile = new Profile(kuzzle, "foo", content);
+    Profile profile = new Profile(kuzzle, "foo", content, null);
     assertEquals(profile.id, "foo");
     assertEquals(profile.getPolicies().length, 3);
     assertEquals(profile.getPolicies()[2].getString("roleId"), "baz");
@@ -72,12 +72,25 @@ public class KuzzleProfileTest {
         "]" +
       "}"
     );
-    Profile profile = new Profile(kuzzle, "foo", content);
+    Profile profile = new Profile(kuzzle, "foo", content, null);
     assertEquals(profile.id, "foo");
     assertEquals(profile.getPolicies().length, 3);
     assertEquals(profile.getPolicies()[2].getString("roleId"), "baz");
     assertThat(profile.content, instanceOf(JSONObject.class));
     assertEquals(profile.content.length(), 0);
+  }
+
+  @Test
+  public void testConstructorMeta() throws JSONException {
+    JSONObject meta = new JSONObject()
+      .put("createdAt", "0123456789")
+      .put("author", "-1");
+    Profile profile = new Profile(kuzzle, "foo", null, meta);
+    assertEquals(profile.id, "foo");
+    assertEquals(profile.getMeta().length(), 2);
+    assertEquals(profile.getMeta().getString("createdAt"), "0123456789");
+    assertEquals(profile.getMeta().getString("author"), "-1");
+    assertThat(profile.meta, instanceOf(JSONObject.class));
   }
 
   @Test

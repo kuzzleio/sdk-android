@@ -22,7 +22,6 @@ public class SearchResult implements KuzzleList<Document> {
   private JSONObject filters;
   private long fetchedDocument;
 
-
   public SearchResult(Collection collection, long total, List<Document> documents) {
     this(collection, total, documents, null, new Options(), new JSONObject(), null);
   }
@@ -45,34 +44,59 @@ public class SearchResult implements KuzzleList<Document> {
     this.fetchedDocument = previous != null ? documents.size() + previous.getFetchedDocument() : documents.size();
   }
 
+  /**
+   * @return Fetched documents list
+   */
   public List<Document> getDocuments() {
     return documents;
   }
 
+  /**
+   * @return Total number of fetchable documents
+   */
   public long getTotal() {
     return total;
   }
 
+  /**
+   * @return Search request aggregations parameters
+   */
   public JSONObject getAggregations() {
     return aggregations;
   }
 
+  /**
+   * @return Number of fetched documents so far
+   */
   public long getFetchedDocument() {
     return fetchedDocument;
   }
 
+  /**
+   * @return Parent data collection
+   */
   public Collection getCollection() {
     return collection;
   }
 
+  /**
+   * @return Search request options
+   */
   public Options getOptions() {
     return options;
   }
 
+  /**
+   * @return Search request filters
+   */
   public JSONObject getFilters() {
     return filters;
   }
 
+  /**
+   * Fetches the next batch of documents
+   * @param listener Response callback listener
+   */
   public void fetchNext(ResponseListener<SearchResult> listener) {
     JSONObject filters;
     Options options;
