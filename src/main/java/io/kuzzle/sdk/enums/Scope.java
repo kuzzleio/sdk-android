@@ -4,5 +4,6 @@ public enum Scope {
   IN,
   OUT,
   ALL,
-  NONE
+  NONE,
+  UNKNOWN
 }

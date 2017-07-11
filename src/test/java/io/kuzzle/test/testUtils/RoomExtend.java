@@ -10,9 +10,6 @@ import io.kuzzle.sdk.core.Room;
 import io.kuzzle.sdk.core.RoomOptions;
 import io.kuzzle.sdk.listeners.ResponseListener;
 
-/**
- * Created by scottinet on 19/02/16.
- */
 public class RoomExtend extends Room {
 
   public RoomExtend(Collection kuzzleDataCollection) {
