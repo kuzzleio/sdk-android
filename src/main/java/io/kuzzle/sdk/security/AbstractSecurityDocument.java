@@ -20,6 +20,7 @@ public class AbstractSecurityDocument {
   protected String  updateActionName;
   public final String id;
   public JSONObject content;
+  public JSONObject meta;
 
   /**
    * Instantiates a new Abstract kuzzle security document.
@@ -29,7 +30,7 @@ public class AbstractSecurityDocument {
    * @param content Security document content
    * @throws JSONException 
    */
-  public AbstractSecurityDocument(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
+  public AbstractSecurityDocument(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content, final JSONObject meta) throws JSONException {
     if (id == null) {
       throw new IllegalArgumentException("Cannot initialize with a null ID");
     }
@@ -42,6 +43,12 @@ public class AbstractSecurityDocument {
       setContent(content);
     } else {
       this.content = new JSONObject();
+    }
+
+    if (meta != null) {
+      setMeta(meta);
+    } else {
+      this.meta = new JSONObject();
     }
   }
 
@@ -58,6 +65,23 @@ public class AbstractSecurityDocument {
     }
 
     this.content = new JSONObject(content.toString());
+
+    return this;
+  }
+
+  /**
+   * Sets the metadata of this object
+   *
+   * @param meta New metadata
+   * @return this
+   * @throws JSONException
+   */
+  public AbstractSecurityDocument setMeta(@NonNull final JSONObject meta) throws JSONException {
+    if (meta == null) {
+      throw new IllegalArgumentException("AbstractSecurityDocument.setMeta: cannot set null metadata");
+    }
+
+    this.meta = new JSONObject(meta.toString());
 
     return this;
   }
@@ -147,6 +171,15 @@ public class AbstractSecurityDocument {
    */
   public JSONObject getContent() {
     return this.content;
+  }
+
+  /**
+   * Getter for the "meta" property
+   *
+   * @return the document metadata
+   */
+  public JSONObject getMeta() {
+    return this.meta;
   }
 
   /**

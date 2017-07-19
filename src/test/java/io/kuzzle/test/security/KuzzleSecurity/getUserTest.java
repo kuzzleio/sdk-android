@@ -45,17 +45,18 @@ public class getUserTest {
   }
 
   @Test
-  public void testgetUserValidResponse() throws JSONException {
+  public void testGetUserValidResponse() throws JSONException {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
         JSONObject response = new JSONObject(
           "{" +
             "\"result\": {" +
-            "\"_id\": \"foobar\"," +
-            "\"_source\": {}" +
+              "\"_id\": \"foobar\"," +
+              "\"_source\": {}," +
+              "\"_meta\": {}" +
             "}" +
-            "}");
+          "}");
 
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(response);
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(new JSONObject().put("error", "stub"));
@@ -82,11 +83,11 @@ public class getUserTest {
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "fetchUser");
+    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "getUser");
   }
 
   @Test(expected = RuntimeException.class)
-  public void testgetUserBadResponse() throws JSONException {
+  public void testGetUserBadResponse() throws JSONException {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {

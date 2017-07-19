@@ -15,7 +15,9 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.security.Role;
 import io.kuzzle.sdk.security.Security;
 
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -30,7 +32,20 @@ public class KuzzleRoleTest {
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
     kuzzle.security = new Security(kuzzle);
-    stubRole = new Role(kuzzle, "foo", null);
+    stubRole = new Role(kuzzle, "foo", null, null);
+  }
+
+  @Test
+  public void testConstructorMeta() throws JSONException {
+    JSONObject meta = new JSONObject()
+      .put("createdAt", "0123456789")
+      .put("author", "-1");
+    Role role = new Role(kuzzle, "foo", null, meta);
+    assertEquals(role.id, "foo");
+    assertEquals(role.getMeta().length(), 2);
+    assertEquals(role.getMeta().getString("createdAt"), "0123456789");
+    assertEquals(role.getMeta().getString("author"), "-1");
+    assertThat(role.meta, instanceOf(JSONObject.class));
   }
 
   @Test

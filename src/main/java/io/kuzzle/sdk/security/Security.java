@@ -17,7 +17,6 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.SecurityDocumentList;
 import io.kuzzle.sdk.util.Scroll;
 
-
 /**
  * Kuzzle security API
  */
@@ -75,12 +74,12 @@ public class Security {
 
     try {
       data = new JSONObject().put("_id", id);
-      this.kuzzle.query(buildQueryArgs("fetchRole"), data, options, new OnQueryDoneListener() {
+      this.kuzzle.query(buildQueryArgs("getRole"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
           try {
             JSONObject result = response.getJSONObject("result");
-            listener.onSuccess(new Role(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+            listener.onSuccess(new Role(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source"), result.getJSONObject("_meta")));
           }
           catch (JSONException e) {
             throw new RuntimeException(e);
@@ -135,7 +134,7 @@ public class Security {
 
           for (int i = 0; i < documentsLength; i++) {
             JSONObject document = documents.getJSONObject(i);
-            roles.add(new Role(Security.this.kuzzle, document.getString("_id"), document.getJSONObject("_source")));
+            roles.add(new Role(Security.this.kuzzle, document.getString("_id"), document.getJSONObject("_source"), document.getJSONObject("_meta")));
           }
 
           listener.onSuccess(new SecurityDocumentList(roles, result.getLong("total")));
@@ -188,7 +187,7 @@ public class Security {
         public void onSuccess(JSONObject response) {
           try {
             JSONObject result = response.getJSONObject("result");
-            listener.onSuccess(new Role(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+            listener.onSuccess(new Role(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source"), result.getJSONObject("_meta")));
           }
           catch(JSONException e) {
             throw new RuntimeException(e);
@@ -312,7 +311,7 @@ public class Security {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(new Role(Security.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result").getJSONObject("_source")));
+            listener.onSuccess(new Role(Security.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result").getJSONObject("_source"), response.getJSONObject("result").getJSONObject("_meta")));
           }
           catch(JSONException e) {
             throw new RuntimeException(e);
@@ -359,18 +358,26 @@ public class Security {
    *
    * @param id Role unique identifier
    * @param content Role content
+   * @param meta Role metadata
    * @return new Role object
    * @throws JSONException 
    */
-  public Role role(@NonNull final String id, final JSONObject content) throws JSONException {
-    return new Role(this.kuzzle, id, content);
+  public Role role(@NonNull final String id, final JSONObject content, final JSONObject meta) throws JSONException {
+    return new Role(this.kuzzle, id, content, meta);
   }
 
   /**
-   * {@link #role(String, JSONObject)}
+   * {@link #role(String, JSONObject, JSONObject)}
+   */
+  public Role role(@NonNull final String id, final JSONObject content) throws JSONException {
+    return new Role(this.kuzzle, id, content, null);
+  }
+
+  /**
+   * {@link #role(String, JSONObject, JSONObject)}
    */
   public Role role(@NonNull final String id) throws JSONException {
-    return new Role(this.kuzzle, id, null);
+    return new Role(this.kuzzle, id, null, null);
   }
 
   /**
@@ -392,7 +399,7 @@ public class Security {
 
     JSONObject data = new JSONObject().put("_id", id);
 
-    this.kuzzle.query(buildQueryArgs("fetchProfile"), data, options, new OnQueryDoneListener() {
+    this.kuzzle.query(buildQueryArgs("getProfile"), data, options, new OnQueryDoneListener() {
       @Override
       public void onSuccess(JSONObject response) {
         try {
@@ -415,7 +422,7 @@ public class Security {
           result.getJSONObject("_source").remove("policies");
           result.getJSONObject("_source").put("policies", formattedPolicies);
 
-          listener.onSuccess(new Profile(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+          listener.onSuccess(new Profile(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source"), result.getJSONObject("_meta")));
         } catch (JSONException e) {
           throw new RuntimeException(e);
         }
@@ -465,7 +472,7 @@ public class Security {
 
           for (int i = 0; i < documentsLength; i++) {
             JSONObject document = documents.getJSONObject(i);
-            profiles.add(new Profile(Security.this.kuzzle, document.getString("_id"), document.getJSONObject("_source")));
+            profiles.add(new Profile(Security.this.kuzzle, document.getString("_id"), document.getJSONObject("_source"), document.getJSONObject("_meta")));
           }
 
           Scroll scroll = new Scroll();
@@ -526,7 +533,7 @@ public class Security {
         public void onSuccess(JSONObject response) {
           try {
             JSONObject result = response.getJSONObject("result");
-            listener.onSuccess(new Profile(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+            listener.onSuccess(new Profile(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source"), result.getJSONObject("_meta")));
           }
           catch(JSONException e) {
             throw new RuntimeException(e);
@@ -665,7 +672,7 @@ public class Security {
 
             for (int i = 0; i < hits.length(); i++) {
               JSONObject hit = hits.getJSONObject(i);
-              Profile profile = new Profile(Security.this.kuzzle, hit.getString("_id"), hit.getJSONObject("_source"));
+              Profile profile = new Profile(Security.this.kuzzle, hit.getString("_id"), hit.getJSONObject("_source"), hit.getJSONObject("_meta"));
 
               profiles.add(profile);
             }
@@ -718,7 +725,7 @@ public class Security {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(new Profile(Security.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result").getJSONObject("_source")));
+            listener.onSuccess(new Profile(Security.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result").getJSONObject("_source"), response.getJSONObject("result").getJSONObject("_meta")));
           }
           catch(JSONException e) {
             throw new RuntimeException(e);
@@ -765,18 +772,26 @@ public class Security {
    *
    * @param id Profile unique identifier
    * @param content Profile content
+   * @param meta Profile metadata
    * @return new Profile object
    * @throws JSONException 
    */
-  public Profile profile(@NonNull final String id, final JSONObject content) throws JSONException {
-    return new Profile(this.kuzzle, id, content);
+  public Profile profile(@NonNull final String id, final JSONObject content, final JSONObject meta) throws JSONException {
+    return new Profile(this.kuzzle, id, content, meta);
   }
 
   /**
-   * {@link #profile(String, JSONObject)}
+   * {@link #profile(String, JSONObject, JSONObject)}
+   */
+  public Profile profile(@NonNull final String id, final JSONObject content) throws JSONException {
+    return new Profile(this.kuzzle, id, content, null);
+  }
+
+  /**
+   * {@link #profile(String, JSONObject, JSONObject)}
    */
   public Profile profile(@NonNull final String id) throws JSONException {
-    return new Profile(this.kuzzle, id, null);
+    return new Profile(this.kuzzle, id, null, null);
   }
 
   /**
@@ -798,12 +813,12 @@ public class Security {
 
     JSONObject data = new JSONObject().put("_id", id);
 
-    this.kuzzle.query(buildQueryArgs("fetchUser"), data, options, new OnQueryDoneListener() {
+    this.kuzzle.query(buildQueryArgs("getUser"), data, options, new OnQueryDoneListener() {
       @Override
       public void onSuccess(JSONObject response) {
         try {
           JSONObject result = response.getJSONObject("result");
-          listener.onSuccess(new User(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+          listener.onSuccess(new User(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source"), result.getJSONObject("_meta")));
         } catch (JSONException e) {
           throw new RuntimeException(e);
         }
@@ -849,7 +864,7 @@ public class Security {
         public void onSuccess(JSONObject response) {
           try {
             JSONObject result = response.getJSONObject("result");
-            listener.onSuccess(new User(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+            listener.onSuccess(new User(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source"), result.getJSONObject("_meta")));
           }
           catch (JSONException e) {
             throw new RuntimeException(e);
@@ -919,7 +934,7 @@ public class Security {
 
           for (int i = 0; i < documentsLength; i++) {
             JSONObject document = documents.getJSONObject(i);
-            users.add(new User(Security.this.kuzzle, document.getString("_id"), document.getJSONObject("_source")));
+            users.add(new User(Security.this.kuzzle, document.getString("_id"), document.getJSONObject("_source"), document.getJSONObject("_meta")));
           }
 
           Scroll scroll = new Scroll();
@@ -971,7 +986,7 @@ public class Security {
         public void onSuccess(JSONObject response) {
           try {
             JSONObject result = response.getJSONObject("result");
-            listener.onSuccess(new User(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+            listener.onSuccess(new User(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source"), result.getJSONObject("_meta")));
           }
           catch (JSONException e) {
             throw new RuntimeException(e);
@@ -1039,7 +1054,7 @@ public class Security {
         public void onSuccess(JSONObject response) {
           try {
             JSONObject result = response.getJSONObject("result");
-            listener.onSuccess(new User(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source")));
+            listener.onSuccess(new User(Security.this.kuzzle, result.getString("_id"), result.getJSONObject("_source"), result.getJSONObject("_meta")));
           }
           catch (JSONException e) {
             throw new RuntimeException(e);
@@ -1178,7 +1193,7 @@ public class Security {
 
             for (int i = 0; i < hits.length(); i++) {
               JSONObject hit = hits.getJSONObject(i);
-              User user = new User(Security.this.kuzzle, hit.getString("_id"), hit.getJSONObject("_source"));
+              User user = new User(Security.this.kuzzle, hit.getString("_id"), hit.getJSONObject("_source"), hit.getJSONObject("_meta"));
 
               users.add(user);
             }
@@ -1231,7 +1246,7 @@ public class Security {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            listener.onSuccess(new User(Security.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result").getJSONObject("_source")));
+            listener.onSuccess(new User(Security.this.kuzzle, response.getJSONObject("result").getString("_id"), response.getJSONObject("result").getJSONObject("_source"), response.getJSONObject("result").getJSONObject("_meta")));
           }
           catch(JSONException e) {
             throw new RuntimeException(e);
@@ -1278,18 +1293,26 @@ public class Security {
    *
    * @param id      User unique identifier
    * @param content User content
+   * @param meta    User metadata
    * @return new User object
    * @throws JSONException 
    */
-  public User user(@NonNull final String id, final JSONObject content) throws JSONException {
-    return new User(this.kuzzle, id, content);
+  public User user(@NonNull final String id, final JSONObject content, final JSONObject meta) throws JSONException {
+    return new User(this.kuzzle, id, content, meta);
   }
 
   /**
-   * {@link #user(String, JSONObject)}
+   * {@link #user(String, JSONObject, JSONObject)}
+   */
+  public User user(@NonNull final String id, final JSONObject content) throws JSONException {
+    return new User(this.kuzzle, id, content, null);
+  }
+
+  /**
+   * {@link #user(String, JSONObject, JSONObject)}
    */
   public User user(@NonNull final String id) throws JSONException {
-    return new User(this.kuzzle, id, null);
+    return new User(this.kuzzle, id, null, null);
   }
 
   /**

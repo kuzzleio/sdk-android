@@ -29,10 +29,11 @@ public class User extends AbstractSecurityDocument {
    * @param kuzzle  Kuzzle instance to attach
    * @param id      User unique identifier
    * @param content User content
+   * @param meta User metadata
    * @throws JSONException 
    */
-  public User(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content) throws JSONException {
-    super(kuzzle, id, null);
+  public User(final Kuzzle kuzzle, @NonNull final String id, final JSONObject content, final JSONObject meta) throws JSONException {
+    super(kuzzle, id, null, meta);
     this.deleteActionName = "deleteUser";
     this.updateActionName = "updateUser";
 

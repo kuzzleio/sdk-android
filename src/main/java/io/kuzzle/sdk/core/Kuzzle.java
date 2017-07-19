@@ -912,7 +912,7 @@ public class Kuzzle {
       }
 
       if (expiresIn >= 0) {
-        body.put("expiresIn", expiresIn);
+        query.put("expiresIn", expiresIn);
       }
 
       query.put("strategy", strategy);
@@ -1303,7 +1303,7 @@ public class Kuzzle {
 
   /**
    * Renew all registered subscriptions. Usually called after:
-   * - a connection, if subscriptions occured before
+   * - a connection, if subscriptions occurred before
    * - a reconnection
    * - after a successful login attempt, to subscribe with the new credentials
    */
@@ -1430,7 +1430,7 @@ public class Kuzzle {
    */
   protected Socket createSocket() throws URISyntaxException {
     IO.Options opt = new IO.Options();
-    opt.forceNew = true;
+    opt.forceNew = false;
     opt.reconnection = this.autoReconnect;
     opt.reconnectionDelay = this.reconnectionDelay;
     return IO.socket("http://" + host + ":" + this.port, opt);
@@ -2152,7 +2152,7 @@ public class Kuzzle {
         public void onSuccess(JSONObject response) {
           try {
             JSONObject result = response.getJSONObject("result");
-            listener.onSuccess(new User(Kuzzle.this, result.getString("_id"), result.getJSONObject("_source")));
+            listener.onSuccess(new User(Kuzzle.this, result.getString("_id"), result.getJSONObject("_source"), result.getJSONObject("_meta")));
           } catch (JSONException e) {
             throw new RuntimeException(e);
           }
