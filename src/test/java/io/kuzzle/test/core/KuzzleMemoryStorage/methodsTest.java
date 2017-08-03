@@ -1515,7 +1515,7 @@ public class methodsTest {
 
     this.testWriteMethod("renamenx", new Class[]{String.class, String.class}, args, opts, expected);
 
-    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ResponseListener<Integer> listener = verifyResultInt(1, 1);
     ms.renamenx("key", "foo", listener);
   }
 

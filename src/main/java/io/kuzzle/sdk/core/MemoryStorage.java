@@ -2498,7 +2498,7 @@ public class MemoryStorage {
   /**
    * {@link #renamenx(String, String, Options, ResponseListener)}
    */
-  public MemoryStorage renamenx(@NonNull String key, @NonNull String newkey, final ResponseListener<String> listener) {
+  public MemoryStorage renamenx(@NonNull String key, @NonNull String newkey, final ResponseListener<Integer> listener) {
     return renamenx(key, newkey, null, listener);
   }
 
@@ -2511,20 +2511,20 @@ public class MemoryStorage {
 
   /**
    * Renames a key to newkey, only if newkey does not already exist.
-   * @param  key     Key ID
-   * @param  newkey  New key ID
-   * @param options Request options
+   * @param key      Key ID
+   * @param newkey   New key ID
+   * @param options  Request options
    * @param listener Response callback listener
    * @return this
    */
-  public MemoryStorage renamenx(@NonNull String key, @NonNull String newkey, Options options, final ResponseListener<String> listener) {
+  public MemoryStorage renamenx(@NonNull String key, @NonNull String newkey, Options options, final ResponseListener<Integer> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("newkey", newkey)
       );
 
-    send("renamenx", query, options, listener != null ? getCallbackString(listener) : null);
+    send("renamenx", query, options, listener != null ? getCallbackInt(listener) : null);
 
     return this;
   }
