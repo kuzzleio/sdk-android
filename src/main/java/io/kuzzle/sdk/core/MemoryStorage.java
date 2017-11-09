@@ -182,6 +182,39 @@ public class MemoryStorage {
     };
   }
 
+  protected ResponseListener<JSONObject> getCallbackBool(final ResponseListener<Boolean> listener) {
+    return new ResponseListener<JSONObject>() {
+      @Override
+      public void onSuccess(JSONObject response) {
+        try {
+          listener.onSuccess(response.getBoolean("result"));
+        }
+        catch(JSONException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+        listener.onError(error);
+      }
+    };
+  }
+
+  protected ResponseListener<JSONObject> getCallbackVoid(final ResponseListener<Void> listener) {
+    return new ResponseListener<JSONObject>() {
+      @Override
+      public void onSuccess(JSONObject response) {
+        listener.onSuccess(null);
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+        listener.onError(error);
+      }
+    };
+  }
+
   protected ResponseListener<JSONObject> getCallbackString(final ResponseListener<String> listener) {
     return new ResponseListener<JSONObject>() {
       @Override
@@ -592,7 +625,7 @@ public class MemoryStorage {
   /**
    * {@link #expire(String, long, Options, ResponseListener)}
    */
-  public MemoryStorage expire(@NonNull String key, long seconds, final ResponseListener<Integer> listener) {
+  public MemoryStorage expire(@NonNull String key, long seconds, final ResponseListener<Boolean> listener) {
     return expire(key, seconds, null, listener);
   }
 
@@ -604,14 +637,14 @@ public class MemoryStorage {
    * @param listener Response callback listener
    * @return this
    */
-  public MemoryStorage expire(@NonNull String key, long seconds, Options options, final ResponseListener<Integer> listener) {
+  public MemoryStorage expire(@NonNull String key, long seconds, Options options, final ResponseListener<Boolean> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("seconds", seconds)
       );
 
-    send("expire", query, options, listener != null ? getCallbackInt(listener) : null);
+    send("expire", query, options, listener != null ? getCallbackBool(listener) : null);
 
     return this;
   }
@@ -633,7 +666,7 @@ public class MemoryStorage {
   /**
    * {@link #expireat(String, long, Options, ResponseListener)}
    */
-  public MemoryStorage expireat(@NonNull String key, long timestamp, final ResponseListener<Integer> listener) {
+  public MemoryStorage expireat(@NonNull String key, long timestamp, final ResponseListener<Boolean> listener) {
     return expireat(key, timestamp, null, listener);
   }
 
@@ -645,14 +678,14 @@ public class MemoryStorage {
    * @param listener Response callback listener
    * @return this
    */
-  public MemoryStorage expireat(@NonNull String key, long timestamp, Options options, final ResponseListener<Integer> listener) {
+  public MemoryStorage expireat(@NonNull String key, long timestamp, Options options, final ResponseListener<Boolean> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("timestamp", timestamp)
       );
 
-    send("expireat", query, options, listener != null ? getCallbackInt(listener) : null);
+    send("expireat", query, options, listener != null ? getCallbackBool(listener) : null);
 
     return this;
   }
@@ -667,7 +700,7 @@ public class MemoryStorage {
   /**
    * {@link #flushdb(Options, ResponseListener)}
    */
-  public MemoryStorage flushdb(final ResponseListener<String> listener) {
+  public MemoryStorage flushdb(final ResponseListener<Void> listener) {
     return flushdb(null, listener);
   }
 
@@ -685,8 +718,8 @@ public class MemoryStorage {
    * @param listener Response callback listener
    * @return this
    */
-  public MemoryStorage flushdb(Options options, final ResponseListener<String> listener) {
-    send("flushdb", new KuzzleJSONObject(), options, listener != null ? getCallbackString(listener) : null);
+  public MemoryStorage flushdb(Options options, final ResponseListener<Void> listener) {
+    send("flushdb", new KuzzleJSONObject(), options, listener != null ? getCallbackVoid(listener) : null);
 
     return this;
   }
@@ -1091,7 +1124,7 @@ public class MemoryStorage {
   /**
    * {@link #hexists(String, String, Options, ResponseListener)}
    */
-  public void hexists(@NonNull String key, @NonNull String field, @NonNull final ResponseListener<Integer> listener) {
+  public void hexists(@NonNull String key, @NonNull String field, @NonNull final ResponseListener<Boolean> listener) {
     hexists(key, field, null, listener);
   }
 
@@ -1102,10 +1135,10 @@ public class MemoryStorage {
    * @param options Request options
    * @param listener Response callback listener
    */
-  public void hexists(@NonNull String key, @NonNull String field, Options options, @NonNull final ResponseListener<Integer> listener) {
+  public void hexists(@NonNull String key, @NonNull String field, Options options, @NonNull final ResponseListener<Boolean> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key).put("field", field);
 
-    send("hexists", query, options, getCallbackInt(listener));
+    send("hexists", query, options, getCallbackBool(listener));
   }
 
   /**
@@ -1323,7 +1356,7 @@ public class MemoryStorage {
   /**
    * {@link #hmset(String, JSONObject[], Options, ResponseListener)}
    */
-  public MemoryStorage hmset(@NonNull String key, @NonNull JSONObject[] entries, final ResponseListener<String> listener) {
+  public MemoryStorage hmset(@NonNull String key, @NonNull JSONObject[] entries, final ResponseListener<Void> listener) {
     return hmset(key, entries, null, listener);
   }
 
@@ -1342,14 +1375,14 @@ public class MemoryStorage {
    * @param listener Response callback listener
    * @return this
    */
-  public MemoryStorage hmset(@NonNull String key, @NonNull JSONObject[] entries, Options options, final ResponseListener<String> listener) {
+  public MemoryStorage hmset(@NonNull String key, @NonNull JSONObject[] entries, Options options, final ResponseListener<Void> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("entries", new JSONArray(Arrays.asList(entries)))
       );
 
-    send("hmset", query, options, listener != null ? getCallbackString(listener) : null);
+    send("hmset", query, options, listener != null ? getCallbackVoid(listener) : null);
 
     return this;
   }
@@ -1396,7 +1429,7 @@ public class MemoryStorage {
   /**
    * {@link #hset(String, String, String, Options, ResponseListener)}
    */
-  public MemoryStorage hset(@NonNull String key, @NonNull String field, @NonNull String value, final ResponseListener<Integer> listener) {
+  public MemoryStorage hset(@NonNull String key, @NonNull String field, @NonNull String value, final ResponseListener<Boolean> listener) {
     return hset(key, field, value, null, listener);
   }
 
@@ -1417,7 +1450,7 @@ public class MemoryStorage {
    * @param listener Response callback listener
    * @return this
    */
-  public MemoryStorage hset(@NonNull String key, @NonNull String field, @NonNull String value, Options options, final ResponseListener<Integer> listener) {
+  public MemoryStorage hset(@NonNull String key, @NonNull String field, @NonNull String value, Options options, final ResponseListener<Boolean> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -1425,7 +1458,7 @@ public class MemoryStorage {
         .put("value", value)
       );
 
-    send("hset", query, options, listener != null ? getCallbackInt(listener) : null);
+    send("hset", query, options, listener != null ? getCallbackBool(listener) : null);
 
     return this;
   }
@@ -1440,7 +1473,7 @@ public class MemoryStorage {
   /**
    * {@link #hsetnx(String, String, String, Options, ResponseListener)}
    */
-  public MemoryStorage hsetnx(@NonNull String key, @NonNull String field, @NonNull String value, final ResponseListener<Integer> listener) {
+  public MemoryStorage hsetnx(@NonNull String key, @NonNull String field, @NonNull String value, final ResponseListener<Boolean> listener) {
     return hsetnx(key, field, value, null, listener);
   }
 
@@ -1460,7 +1493,7 @@ public class MemoryStorage {
    * @param listener Response callback listener
    * @return this
    */
-  public MemoryStorage hsetnx(@NonNull String key, @NonNull String field, @NonNull String value, Options options, final ResponseListener<Integer> listener) {
+  public MemoryStorage hsetnx(@NonNull String key, @NonNull String field, @NonNull String value, Options options, final ResponseListener<Boolean> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -1468,7 +1501,7 @@ public class MemoryStorage {
         .put("value", value)
       );
 
-    send("hsetnx", query, options, listener != null ? getCallbackInt(listener) : null);
+    send("hsetnx", query, options, listener != null ? getCallbackBool(listener) : null);
 
     return this;
   }
@@ -1935,7 +1968,7 @@ public class MemoryStorage {
   /**
    * {@link #lset(String, long, String, Options, ResponseListener)}
    */
-  public MemoryStorage lset(@NonNull String key, long index, @NonNull String value, final ResponseListener<String> listener) {
+  public MemoryStorage lset(@NonNull String key, long index, @NonNull String value, final ResponseListener<Void> listener) {
     return lset(key, index, value, null, listener);
   }
 
@@ -1955,7 +1988,7 @@ public class MemoryStorage {
    * @param listener Response callback listener
    * @return this
    */
-  public MemoryStorage lset(@NonNull String key, long index, @NonNull String value, Options options, final ResponseListener<String> listener) {
+  public MemoryStorage lset(@NonNull String key, long index, @NonNull String value, Options options, final ResponseListener<Void> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -1963,7 +1996,7 @@ public class MemoryStorage {
         .put("value", value)
       );
 
-    send("lset", query, options, listener != null ? getCallbackString(listener) : null);
+    send("lset", query, options, listener != null ? getCallbackVoid(listener) : null);
 
     return this;
   }
@@ -1978,7 +2011,7 @@ public class MemoryStorage {
   /**
    * {@link #ltrim(String, long, long, Options, ResponseListener)}
    */
-  public MemoryStorage ltrim(@NonNull String key, long start, long stop, final ResponseListener<String> listener) {
+  public MemoryStorage ltrim(@NonNull String key, long start, long stop, final ResponseListener<Void> listener) {
     return ltrim(key, start, stop, null, listener);
   }
 
@@ -1999,7 +2032,7 @@ public class MemoryStorage {
    * @param listener Response callback listener
    * @return this
    */
-  public MemoryStorage ltrim(@NonNull String key, long start, long stop, Options options, final ResponseListener<String> listener) {
+  public MemoryStorage ltrim(@NonNull String key, long start, long stop, Options options, final ResponseListener<Void> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -2007,7 +2040,7 @@ public class MemoryStorage {
         .put("stop", stop)
       );
 
-    send("ltrim", query, options, listener != null ? getCallbackString(listener) : null);
+    send("ltrim", query, options, listener != null ? getCallbackVoid(listener) : null);
 
     return this;
   }
@@ -2048,7 +2081,7 @@ public class MemoryStorage {
   /**
    * {@link #mset(JSONObject[], Options, ResponseListener)}
    */
-  public MemoryStorage mset(@NonNull JSONObject[] entries, final ResponseListener<String> listener) {
+  public MemoryStorage mset(@NonNull JSONObject[] entries, final ResponseListener<Void> listener) {
     return mset(entries, null, listener);
   }
 
@@ -2060,11 +2093,11 @@ public class MemoryStorage {
    * @param listener Response callback listener
    * @return this
    */
-  public MemoryStorage mset(@NonNull JSONObject[] entries, Options options, final ResponseListener<String> listener) {
+  public MemoryStorage mset(@NonNull JSONObject[] entries, Options options, final ResponseListener<Void> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("body", new KuzzleJSONObject().put("entries", new JSONArray(Arrays.asList(entries))));
 
-    send("mset", query, options, listener != null ? getCallbackString(listener) : null);
+    send("mset", query, options, listener != null ? getCallbackVoid(listener) : null);
 
     return this;
   }
@@ -2086,7 +2119,7 @@ public class MemoryStorage {
   /**
    * {@link #msetnx(JSONObject[], Options, ResponseListener)}
    */
-  public MemoryStorage msetnx(@NonNull JSONObject[] entries, final ResponseListener<Integer> listener) {
+  public MemoryStorage msetnx(@NonNull JSONObject[] entries, final ResponseListener<Boolean> listener) {
     return msetnx(entries, null, listener);
   }
 
@@ -2098,11 +2131,11 @@ public class MemoryStorage {
    * @param listener Response callback listener
    * @return this
    */
-  public MemoryStorage msetnx(@NonNull JSONObject[] entries, Options options, final ResponseListener<Integer> listener) {
+  public MemoryStorage msetnx(@NonNull JSONObject[] entries, Options options, final ResponseListener<Boolean> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("body", new KuzzleJSONObject().put("entries", new JSONArray(Arrays.asList(entries))));
 
-    send("msetnx", query, options, listener != null ? getCallbackInt(listener) : null);
+    send("msetnx", query, options, listener != null ? getCallbackBool(listener) : null);
 
     return this;
   }
@@ -2139,7 +2172,7 @@ public class MemoryStorage {
   /**
    * {@link #persist(String, Options, ResponseListener)}
    */
-  public MemoryStorage persist(@NonNull String key, final ResponseListener<Integer> listener) {
+  public MemoryStorage persist(@NonNull String key, final ResponseListener<Boolean> listener) {
     return persist(key, null, listener);
   }
 
@@ -2157,10 +2190,10 @@ public class MemoryStorage {
    * @param listener Response callback listener
    * @return this
    */
-  public MemoryStorage persist(@NonNull String key, Options options, final ResponseListener<Integer> listener) {
+  public MemoryStorage persist(@NonNull String key, Options options, final ResponseListener<Boolean> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
 
-    send("persist", query, options, listener != null ? getCallbackInt(listener) : null);
+    send("persist", query, options, listener != null ? getCallbackBool(listener) : null);
 
     return this;
   }
@@ -2182,7 +2215,7 @@ public class MemoryStorage {
   /**
    * {@link #pexpire(String, long, Options, ResponseListener)}
    */
-  public MemoryStorage pexpire(@NonNull String key, long milliseconds, final ResponseListener<Integer> listener) {
+  public MemoryStorage pexpire(@NonNull String key, long milliseconds, final ResponseListener<Boolean> listener) {
     return pexpire(key, milliseconds, null, listener);
   }
 
@@ -2195,14 +2228,14 @@ public class MemoryStorage {
    * @param listener Response callback listener
    * @return this
    */
-  public MemoryStorage pexpire(@NonNull String key, long milliseconds, Options options, final ResponseListener<Integer> listener) {
+  public MemoryStorage pexpire(@NonNull String key, long milliseconds, Options options, final ResponseListener<Boolean> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("milliseconds", milliseconds)
       );
 
-    send("pexpire", query, options, listener != null ? getCallbackInt(listener) : null);
+    send("pexpire", query, options, listener != null ? getCallbackBool(listener) : null);
 
     return this;
   }
@@ -2224,7 +2257,7 @@ public class MemoryStorage {
   /**
    * {@link #pexpireat(String, long, Options, ResponseListener)}
    */
-  public MemoryStorage pexpireat(@NonNull String key, long timestamp, final ResponseListener<Integer> listener) {
+  public MemoryStorage pexpireat(@NonNull String key, long timestamp, final ResponseListener<Boolean> listener) {
     return pexpireat(key, timestamp, null, listener);
   }
 
@@ -2237,14 +2270,14 @@ public class MemoryStorage {
    * @param listener Response callback listener
    * @return this
    */
-  public MemoryStorage pexpireat(@NonNull String key, long timestamp, Options options, final ResponseListener<Integer> listener) {
+  public MemoryStorage pexpireat(@NonNull String key, long timestamp, Options options, final ResponseListener<Boolean> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("timestamp", timestamp)
       );
 
-    send("pexpireat", query, options, listener != null ? getCallbackInt(listener) : null);
+    send("pexpireat", query, options, listener != null ? getCallbackBool(listener) : null);
 
     return this;
   }
@@ -2259,7 +2292,7 @@ public class MemoryStorage {
   /**
    * {@link #pfadd(String, String[], Options, ResponseListener)}
    */
-  public MemoryStorage pfadd(@NonNull String key, @NonNull String[] elements, final ResponseListener<Integer> listener) {
+  public MemoryStorage pfadd(@NonNull String key, @NonNull String[] elements, final ResponseListener<Boolean> listener) {
     return pfadd(key, elements, null, listener);
   }
 
@@ -2278,14 +2311,14 @@ public class MemoryStorage {
    * @param listener Response callback listener
    * @return this
    */
-  public MemoryStorage pfadd(@NonNull String key, @NonNull String[] elements, Options options, final ResponseListener<Integer> listener) {
+  public MemoryStorage pfadd(@NonNull String key, @NonNull String[] elements, Options options, final ResponseListener<Boolean> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("elements", new JSONArray(Arrays.asList(elements)))
       );
 
-    send("pfadd", query, options, listener != null ? getCallbackInt(listener) : null);
+    send("pfadd", query, options, listener != null ? getCallbackBool(listener) : null);
 
     return this;
   }
@@ -2320,7 +2353,7 @@ public class MemoryStorage {
   /**
    * {@link #pfmerge(String, String[], Options, ResponseListener)}
    */
-  public MemoryStorage pfmerge(@NonNull String key, @NonNull String[] sources, final ResponseListener<String> listener) {
+  public MemoryStorage pfmerge(@NonNull String key, @NonNull String[] sources, final ResponseListener<Void> listener) {
     return pfmerge(key, sources, null, listener);
   }
 
@@ -2340,14 +2373,14 @@ public class MemoryStorage {
    * @param listener Response callback listener
    * @return this
    */
-  public MemoryStorage pfmerge(@NonNull String key, @NonNull String[] sources, Options options, final ResponseListener<String> listener) {
+  public MemoryStorage pfmerge(@NonNull String key, @NonNull String[] sources, Options options, final ResponseListener<Void> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("sources", new JSONArray(Arrays.asList(sources)))
       );
 
-    send("pfmerge", query, options, listener != null ? getCallbackString(listener) : null);
+    send("pfmerge", query, options, listener != null ? getCallbackVoid(listener) : null);
 
     return this;
   }
@@ -2378,7 +2411,7 @@ public class MemoryStorage {
   /**
    * {@link #psetex(String, String, long, Options, ResponseListener)}
    */
-  public MemoryStorage psetex(@NonNull String key, @NonNull String value, long milliseconds, final ResponseListener<String> listener) {
+  public MemoryStorage psetex(@NonNull String key, @NonNull String value, long milliseconds, final ResponseListener<Void> listener) {
     return psetex(key, value, milliseconds, null, listener);
   }
 
@@ -2399,7 +2432,7 @@ public class MemoryStorage {
    * @param listener Response callback listener
    * @return this
    */
-  public MemoryStorage psetex(@NonNull String key, @NonNull String value, long milliseconds, Options options, final ResponseListener<String> listener) {
+  public MemoryStorage psetex(@NonNull String key, @NonNull String value, long milliseconds, Options options, final ResponseListener<Void> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -2407,7 +2440,7 @@ public class MemoryStorage {
         .put("milliseconds", milliseconds)
       );
 
-    send("psetex", query, options, listener != null ? getCallbackString(listener) : null);
+    send("psetex", query, options, listener != null ? getCallbackVoid(listener) : null);
 
     return this;
   }
@@ -2457,7 +2490,7 @@ public class MemoryStorage {
   /**
    * {@link #rename(String, String, Options, ResponseListener)}
    */
-  public MemoryStorage rename(@NonNull String key, @NonNull String newkey, final ResponseListener<String> listener) {
+  public MemoryStorage rename(@NonNull String key, @NonNull String newkey, final ResponseListener<Void> listener) {
     return rename(key, newkey, null, listener);
   }
 
@@ -2476,14 +2509,14 @@ public class MemoryStorage {
    * @param listener Response callback listener
    * @return this
    */
-  public MemoryStorage rename(@NonNull String key, @NonNull String newkey, Options options, final ResponseListener<String> listener) {
+  public MemoryStorage rename(@NonNull String key, @NonNull String newkey, Options options, final ResponseListener<Void> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("newkey", newkey)
       );
 
-    send("rename", query, options, listener != null ? getCallbackString(listener) : null);
+    send("rename", query, options, listener != null ? getCallbackVoid(listener) : null);
 
     return this;
   }
@@ -2498,7 +2531,7 @@ public class MemoryStorage {
   /**
    * {@link #renamenx(String, String, Options, ResponseListener)}
    */
-  public MemoryStorage renamenx(@NonNull String key, @NonNull String newkey, final ResponseListener<Integer> listener) {
+  public MemoryStorage renamenx(@NonNull String key, @NonNull String newkey, final ResponseListener<Boolean> listener) {
     return renamenx(key, newkey, null, listener);
   }
 
@@ -2517,14 +2550,14 @@ public class MemoryStorage {
    * @param listener Response callback listener
    * @return this
    */
-  public MemoryStorage renamenx(@NonNull String key, @NonNull String newkey, Options options, final ResponseListener<Integer> listener) {
+  public MemoryStorage renamenx(@NonNull String key, @NonNull String newkey, Options options, final ResponseListener<Boolean> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("newkey", newkey)
       );
 
-    send("renamenx", query, options, listener != null ? getCallbackInt(listener) : null);
+    send("renamenx", query, options, listener != null ? getCallbackBool(listener) : null);
 
     return this;
   }
@@ -2860,7 +2893,7 @@ public class MemoryStorage {
   /**
    * {@link #set(String, String, Options, ResponseListener)}
    */
-  public MemoryStorage set(@NonNull String key, @NonNull String value, final ResponseListener<String> listener) {
+  public MemoryStorage set(@NonNull String key, @NonNull String value, final ResponseListener<Void> listener) {
     return set(key, value, null, listener);
   }
 
@@ -2879,7 +2912,7 @@ public class MemoryStorage {
    * @param  listener [description]
    * @return this
    */
-  public MemoryStorage set(@NonNull String key, @NonNull String value, Options options, final ResponseListener<String> listener) {
+  public MemoryStorage set(@NonNull String key, @NonNull String value, Options options, final ResponseListener<Void> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key);
     KuzzleJSONObject body = new KuzzleJSONObject().put("value", value);
 
@@ -2898,7 +2931,7 @@ public class MemoryStorage {
 
     query.put("body", body);
 
-    send("set", query, options, listener != null ? getCallbackString(listener) : null);
+    send("set", query, options, listener != null ? getCallbackVoid(listener) : null);
 
     return this;
   }
@@ -2913,7 +2946,7 @@ public class MemoryStorage {
   /**
    * {@link #setex(String, String, long, Options, ResponseListener)}
    */
-  public MemoryStorage setex(@NonNull String key, @NonNull String value, long seconds, final ResponseListener<String> listener) {
+  public MemoryStorage setex(@NonNull String key, @NonNull String value, long seconds, final ResponseListener<Void> listener) {
     return setex(key, value, seconds, null, listener);
   }
 
@@ -2934,7 +2967,7 @@ public class MemoryStorage {
    * @param  listener [description]
    * @return this
    */
-  public MemoryStorage setex(@NonNull String key, @NonNull String value, long seconds, Options options, final ResponseListener<String> listener) {
+  public MemoryStorage setex(@NonNull String key, @NonNull String value, long seconds, Options options, final ResponseListener<Void> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -2942,7 +2975,7 @@ public class MemoryStorage {
         .put("seconds", seconds)
       );
 
-    send("setex", query, options, listener != null ? getCallbackString(listener) : null);
+    send("setex", query, options, listener != null ? getCallbackVoid(listener) : null);
 
     return this;
   }
@@ -2957,7 +2990,7 @@ public class MemoryStorage {
   /**
    * {@link #setnx(String, String, Options, ResponseListener)}
    */
-  public MemoryStorage setnx(@NonNull String key, @NonNull String value, final ResponseListener<Integer> listener) {
+  public MemoryStorage setnx(@NonNull String key, @NonNull String value, final ResponseListener<Boolean> listener) {
     return setnx(key, value, null, listener);
   }
 
@@ -2976,14 +3009,14 @@ public class MemoryStorage {
    * @param  listener [description]
    * @return this
    */
-  public MemoryStorage setnx(@NonNull String key, @NonNull String value, Options options, final ResponseListener<Integer> listener) {
+  public MemoryStorage setnx(@NonNull String key, @NonNull String value, Options options, final ResponseListener<Boolean> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
         .put("value", value)
       );
 
-    send("setnx", query, options, listener != null ? getCallbackInt(listener) : null);
+    send("setnx", query, options, listener != null ? getCallbackBool(listener) : null);
 
     return this;
   }
@@ -3052,7 +3085,7 @@ public class MemoryStorage {
   /**
    * {@link #sismember(String, String, Options, ResponseListener)}
    */
-  public void sismember(@NonNull String key, @NonNull String member, @NonNull final ResponseListener<Integer> listener) {
+  public void sismember(@NonNull String key, @NonNull String member, @NonNull final ResponseListener<Boolean> listener) {
     sismember(key, member, null, listener);
   }
 
@@ -3063,10 +3096,10 @@ public class MemoryStorage {
    * @param options Request options
    * @param listener Response callback listener
    */
-  public void sismember(@NonNull String key, @NonNull String member, Options options, @NonNull final ResponseListener<Integer> listener) {
+  public void sismember(@NonNull String key, @NonNull String member, Options options, @NonNull final ResponseListener<Boolean> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject().put("_id", key).put("member", member);
 
-    send("sismember", query, options, getCallbackInt(listener));
+    send("sismember", query, options, getCallbackBool(listener));
   }
 
   /**
@@ -3098,7 +3131,7 @@ public class MemoryStorage {
   /**
    * {@link #smove(String, String, String, Options, ResponseListener)}
    */
-  public MemoryStorage smove(@NonNull String key, @NonNull String destination, @NonNull String member, final ResponseListener<Integer> listener) {
+  public MemoryStorage smove(@NonNull String key, @NonNull String destination, @NonNull String member, final ResponseListener<Boolean> listener) {
     return smove(key, destination, member, null, listener);
   }
 
@@ -3118,7 +3151,7 @@ public class MemoryStorage {
    * @param  listener    [description]
    * @return this
    */
-  public MemoryStorage smove(@NonNull String key, @NonNull String destination, @NonNull String member, Options options, final ResponseListener<Integer> listener) {
+  public MemoryStorage smove(@NonNull String key, @NonNull String destination, @NonNull String member, Options options, final ResponseListener<Boolean> listener) {
     KuzzleJSONObject query = new KuzzleJSONObject()
       .put("_id", key)
       .put("body", new KuzzleJSONObject()
@@ -3126,7 +3159,7 @@ public class MemoryStorage {
         .put("member", member)
       );
 
-    send("smove", query, options, listener != null ? getCallbackInt(listener) : null);
+    send("smove", query, options, listener != null ? getCallbackBool(listener) : null);
 
     return this;
   }
