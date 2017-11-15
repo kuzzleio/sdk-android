@@ -76,7 +76,7 @@ public class searchUsersTest {
       @Override
       public void onSuccess(SecurityDocumentList response) {
         assertEquals(response.getTotal(), 1);
-        assertEquals(response.getDocuments().get(0).id, "foobar");
+        assertEquals(response.getDocuments().get(0).getId(), "foobar");
       }
 
       @Override
@@ -91,8 +91,8 @@ public class searchUsersTest {
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "searchUsers");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "searchUsers");
   }
 
   @Test(expected = RuntimeException.class)

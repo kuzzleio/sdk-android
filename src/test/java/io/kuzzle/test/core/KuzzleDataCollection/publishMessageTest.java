@@ -95,8 +95,8 @@ public class publishMessageTest {
     collection.publishMessage(doc, new Options());
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "realtime");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "publish");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "realtime");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "publish");
   }
 
   @Test
@@ -114,8 +114,8 @@ public class publishMessageTest {
     collection.publishMessage(message, listener);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "realtime");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "publish");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "realtime");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "publish");
   }
 
   @Test(expected = RuntimeException.class)

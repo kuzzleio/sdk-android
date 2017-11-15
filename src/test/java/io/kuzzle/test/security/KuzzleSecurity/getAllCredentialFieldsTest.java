@@ -83,7 +83,7 @@ public class getAllCredentialFieldsTest {
     kuzzleSecurity.getAllCredentialFields(mock(Options.class), listener);
 
     verify(kuzzle, times(2)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "getAllCredentialFields");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "getAllCredentialFields");
   }
 }

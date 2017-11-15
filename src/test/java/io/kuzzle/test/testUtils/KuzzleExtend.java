@@ -43,15 +43,15 @@ public class KuzzleExtend extends Kuzzle {
   }
 
   public void setState(States newState) {
-    this.state = newState;
+    this.setState(newState);
   }
 
   public void setSocket(Socket s) {
-    this.socket = this.savedSocket = s;
+    this.setSocket(this.savedSocket = s);
   }
 
   public void setListener(ResponseListener listener) {
-    this.connectionCallback = listener;
+    this.setConnectionCallback(listener);
   }
 
 
@@ -70,7 +70,7 @@ public class KuzzleExtend extends Kuzzle {
    * @param event
    */
   public EventList getEventListeners(Event event) {
-    return this.eventListeners.get(event);
+    return this.getEventListeners().get(event);
   }
 
   /**
@@ -79,7 +79,7 @@ public class KuzzleExtend extends Kuzzle {
    * @return
    */
   public Map<String, ConcurrentHashMap<String, Room>> getSubscriptions() {
-    return this.subscriptions;
+    return this.getSubscriptions();
   }
 
   /**
@@ -87,7 +87,7 @@ public class KuzzleExtend extends Kuzzle {
    * @return
    */
   public Socket getSocket() {
-    return this.socket;
+    return this.getSocket();
   }
 
   public void isValid() {
@@ -115,12 +115,12 @@ public class KuzzleExtend extends Kuzzle {
   }
 
   public ResponseListener<Void> spyAndGetConnectionCallback() {
-    super.connectionCallback = spy(super.connectionCallback);
-    return super.connectionCallback;
+    super.setConnectionCallback(spy(super.getConnectionCallback()));
+    return super.getConnectionCallback();
   }
 
   public void setSuperDefaultIndex(final String index) {
-    super.defaultIndex = index;
+    super.setDefaultIndex(index);
   }
 
   public void emitEvent(final Event event, final Object... args) {
@@ -132,7 +132,7 @@ public class KuzzleExtend extends Kuzzle {
   }
 
   public void setJwtTokenWithoutSubscribe(final String token) {
-    super.jwtToken = token;
+    super.setJwtToken(token);
   }
 
 }

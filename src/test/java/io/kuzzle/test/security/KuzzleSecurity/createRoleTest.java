@@ -49,8 +49,8 @@ public class createRoleTest {
     kuzzleSecurity.createRole("foo", new JSONObject(), new Options());
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createRole");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "createRole");
   }
 
   @Test
@@ -60,8 +60,8 @@ public class createRoleTest {
     kuzzleSecurity.createRole("foo", new JSONObject(), options);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createOrReplaceRole");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "createOrReplaceRole");
   }
 
   @Test
@@ -89,7 +89,7 @@ public class createRoleTest {
     kuzzleSecurity.createRole("foobar", new JSONObject(), new ResponseListener<Role>() {
       @Override
       public void onSuccess(Role response) {
-        assertEquals(response.id, "foobar");
+        assertEquals(response.getId(), "foobar");
       }
 
       @Override
@@ -104,8 +104,8 @@ public class createRoleTest {
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createRole");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "createRole");
   }
 
   @Test(expected = RuntimeException.class)

@@ -107,7 +107,7 @@ public class mCreateOrReplaceDocumentTest {
         collection.mCreateOrReplaceDocument(documents, new Options(), listener);
         ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
         verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-        assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");
-        assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "mCreateOrReplace");
+        assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "document");
+        assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "mCreateOrReplace");
     }
 }

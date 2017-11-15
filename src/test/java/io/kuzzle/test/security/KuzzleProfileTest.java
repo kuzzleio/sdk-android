@@ -33,17 +33,17 @@ public class KuzzleProfileTest {
   @Before
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
-    kuzzle.security = new Security(kuzzle);
+    kuzzle.setSecurity(new Security(kuzzle));
     stubProfile = new Profile(kuzzle, "foo", null, null);
   }
 
   @Test
   public void testConstructorNoContent() throws JSONException {
     Profile profile = new Profile(kuzzle, "foo", null, null);
-    assertEquals(profile.id, "foo");
+    assertEquals(profile.getId(), "foo");
     assertEquals(profile.getPolicies().length, 0);
-    assertThat(profile.content, instanceOf(JSONObject.class));
-    assertEquals(profile.content.length(), 0);
+    assertThat(profile.getContent(), instanceOf(JSONObject.class));
+    assertEquals(profile.getContent().length(), 0);
   }
 
   @Test
@@ -54,11 +54,11 @@ public class KuzzleProfileTest {
       "}"
     );
     Profile profile = new Profile(kuzzle, "foo", content, null);
-    assertEquals(profile.id, "foo");
+    assertEquals(profile.getId(), "foo");
     assertEquals(profile.getPolicies().length, 3);
     assertEquals(profile.getPolicies()[2].getString("roleId"), "baz");
-    assertThat(profile.content, instanceOf(JSONObject.class));
-    assertEquals(profile.content.length(), 0);
+    assertThat(profile.getContent(), instanceOf(JSONObject.class));
+    assertEquals(profile.getContent().length(), 0);
   }
 
   @Test
@@ -73,11 +73,11 @@ public class KuzzleProfileTest {
       "}"
     );
     Profile profile = new Profile(kuzzle, "foo", content, null);
-    assertEquals(profile.id, "foo");
+    assertEquals(profile.getId(), "foo");
     assertEquals(profile.getPolicies().length, 3);
     assertEquals(profile.getPolicies()[2].getString("roleId"), "baz");
-    assertThat(profile.content, instanceOf(JSONObject.class));
-    assertEquals(profile.content.length(), 0);
+    assertThat(profile.getContent(), instanceOf(JSONObject.class));
+    assertEquals(profile.getContent().length(), 0);
   }
 
   @Test
@@ -86,11 +86,11 @@ public class KuzzleProfileTest {
       .put("createdAt", "0123456789")
       .put("author", "-1");
     Profile profile = new Profile(kuzzle, "foo", null, meta);
-    assertEquals(profile.id, "foo");
+    assertEquals(profile.getId(), "foo");
     assertEquals(profile.getMeta().length(), 2);
     assertEquals(profile.getMeta().getString("createdAt"), "0123456789");
     assertEquals(profile.getMeta().getString("author"), "-1");
-    assertThat(profile.meta, instanceOf(JSONObject.class));
+    assertThat(profile.getMeta(), instanceOf(JSONObject.class));
   }
 
   @Test
@@ -124,8 +124,8 @@ public class KuzzleProfileTest {
     stubProfile.save();
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createOrReplaceProfile");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "createOrReplaceProfile");
   }
 
   @Test
@@ -160,8 +160,8 @@ public class KuzzleProfileTest {
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createOrReplaceProfile");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "createOrReplaceProfile");
   }
 
   @Test

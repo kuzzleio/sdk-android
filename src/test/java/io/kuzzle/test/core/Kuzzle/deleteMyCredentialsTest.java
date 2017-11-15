@@ -88,7 +88,7 @@ public class deleteMyCredentialsTest {
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
 
     verify(kuzzle, times(4)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "auth");
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "deleteMyCredentials");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "auth");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "deleteMyCredentials");
   }
 }

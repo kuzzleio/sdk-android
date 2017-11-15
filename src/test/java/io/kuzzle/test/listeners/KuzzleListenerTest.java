@@ -104,8 +104,8 @@ public class KuzzleListenerTest {
     kuzzleExtend.startQueuing();
 
     Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
-    args.controller = "foo";
-    args.action = "bar";
+    args.setController("foo");
+    args.setAction("bar");
     kuzzleExtend.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(QueryObject.class);
     verify(event).trigger(argument.capture());
@@ -124,8 +124,8 @@ public class KuzzleListenerTest {
     kuzzleExtend.startQueuing();
 
     Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
-    args.controller = "foo";
-    args.action = "bar";
+    args.setController("foo");
+    args.setAction("bar");
     kuzzleExtend.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
 
     kuzzleExtend.connect();

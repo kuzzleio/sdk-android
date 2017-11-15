@@ -50,8 +50,8 @@ public class createProfileTest {
     kuzzleSecurity.createProfile("foo", new JSONObject[0], new Options());
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createProfile");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "createProfile");
   }
 
   @Test
@@ -61,8 +61,8 @@ public class createProfileTest {
     kuzzleSecurity.createProfile("foo", new JSONObject[0], options);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createOrReplaceProfile");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "createOrReplaceProfile");
   }
 
   @Test
@@ -90,7 +90,7 @@ public class createProfileTest {
     kuzzleSecurity.createProfile("foobar", new JSONObject[0], new ResponseListener<Profile>() {
       @Override
       public void onSuccess(Profile response) {
-        assertEquals(response.id, "foobar");
+        assertEquals(response.getId(), "foobar");
       }
 
       @Override
@@ -105,8 +105,8 @@ public class createProfileTest {
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createProfile");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "createProfile");
   }
 
   @Test(expected = RuntimeException.class)

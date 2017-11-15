@@ -35,7 +35,7 @@ public class AbstractKuzzleSecurityDocumentTest {
   @Before
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
-    kuzzle.security = new Security(kuzzle);
+    kuzzle.setSecurity(new Security(kuzzle));
     listener = mock(ResponseListener.class);
     stubRole = new Role(kuzzle, "foo", new JSONObject("{\"foo\":\"bar\"}"), null);
   }
@@ -49,8 +49,8 @@ public class AbstractKuzzleSecurityDocumentTest {
   public void testSetContent() throws JSONException {
     JSONObject content = new JSONObject().put("foo", "bar");
     assertEquals(stubRole.setContent(content), stubRole);
-    assertThat(stubRole.content, not(equalTo(content)));
-    assertEquals(stubRole.content.toString(), content.toString());
+    assertThat(stubRole.getContent(), not(equalTo(content)));
+    assertEquals(stubRole.getContent().toString(), content.toString());
   }
 
   @Test
@@ -63,7 +63,7 @@ public class AbstractKuzzleSecurityDocumentTest {
 
     serialized = stubRole.serialize();
 
-    assertEquals(serialized.getString("_id"), stubRole.id);
+    assertEquals(serialized.getString("_id"), stubRole.getId());
     assertEquals(serialized.getJSONObject("body").toString(), content.toString());
   }
 
@@ -72,8 +72,8 @@ public class AbstractKuzzleSecurityDocumentTest {
     stubRole.delete();
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "deleteRole");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "deleteRole");
   }
 
   @Test
@@ -111,8 +111,8 @@ public class AbstractKuzzleSecurityDocumentTest {
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     verify(kuzzle, times(2)).query(any(Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class));
 
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "deleteRole");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "deleteRole");
   }
 
   @Test(expected = RuntimeException.class)

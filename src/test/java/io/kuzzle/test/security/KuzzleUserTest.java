@@ -36,16 +36,16 @@ public class KuzzleUserTest {
   @Before
   public void setUp() throws JSONException {
     kuzzle = mock(Kuzzle.class);
-    kuzzle.security = new Security(kuzzle);
+    kuzzle.setSecurity(new Security(kuzzle));
     stubUser = new User(kuzzle, "foo", null, null);
   }
 
   @Test
   public void testKuzzleUserConstructorNoContent() throws JSONException {
     User user = new User(kuzzle, "foo", null, null);
-    assertEquals(user.id, "foo");
+    assertEquals(user.getId(), "foo");
     assertEquals(user.getProfileIds().length, 0);
-    assertThat(user.content, instanceOf(JSONObject.class));
+    assertThat(user.getContent(), instanceOf(JSONObject.class));
   }
 
   @Test
@@ -57,20 +57,20 @@ public class KuzzleUserTest {
       "}"
     );
     User user = new User(kuzzle, "foo", stubProfile, null);
-    assertEquals(user.id, "foo");
+    assertEquals(user.getId(), "foo");
     assertEquals(user.getProfileIds()[0], "bar");
-    assertThat(user.content, instanceOf(JSONObject.class));
-    assertEquals(user.content.getString("someuseless"), "field");
+    assertThat(user.getContent(), instanceOf(JSONObject.class));
+    assertEquals(user.getContent().getString("someuseless"), "field");
   }
 
   @Test
   public void testKuzzleUserConstructorProfileWithContent() throws JSONException {
     JSONObject stubProfile = new JSONObject("{\"profileIds\": [\"bar\"]}");
     User user = new User(kuzzle, "foo", stubProfile, null);
-    assertEquals(user.id, "foo");
+    assertEquals(user.getId(), "foo");
     assertThat(user.getProfileIds(), instanceOf(String[].class));
     assertEquals(user.getProfileIds()[0], "bar");
-    assertThat(user.content, instanceOf(JSONObject.class));
+    assertThat(user.getContent(), instanceOf(JSONObject.class));
   }
 
   @Test
@@ -79,11 +79,11 @@ public class KuzzleUserTest {
       .put("createdAt", "0123456789")
       .put("author", "-1");
     User user = new User(kuzzle, "foo", null, meta);
-    assertEquals(user.id, "foo");
+    assertEquals(user.getId(), "foo");
     assertEquals(user.getMeta().length(), 2);
     assertEquals(user.getMeta().getString("createdAt"), "0123456789");
     assertEquals(user.getMeta().getString("author"), "-1");
-    assertThat(user.meta, instanceOf(JSONObject.class));
+    assertThat(user.getMeta(), instanceOf(JSONObject.class));
   }
 
   @Test
@@ -106,8 +106,8 @@ public class KuzzleUserTest {
     stubUser.replace();
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "replaceUser");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "replaceUser");
   }
 
   @Test
@@ -141,8 +141,8 @@ public class KuzzleUserTest {
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "replaceUser");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "replaceUser");
   }
 
   @Test
@@ -150,8 +150,8 @@ public class KuzzleUserTest {
     stubUser.create();
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createUser");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "createUser");
   }
 
   @Test
@@ -185,8 +185,8 @@ public class KuzzleUserTest {
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createUser");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "createUser");
   }
 
   @Test
@@ -194,8 +194,8 @@ public class KuzzleUserTest {
     stubUser.saveRestricted();
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createRestrictedUser");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "createRestrictedUser");
   }
 
   @Test
@@ -204,8 +204,8 @@ public class KuzzleUserTest {
     stubUser.saveRestricted(options);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createRestrictedUser");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "createRestrictedUser");
   }
 
   @Test
@@ -239,25 +239,25 @@ public class KuzzleUserTest {
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "createRestrictedUser");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "createRestrictedUser");
   }
 
   @Test
   public void testSerializeNoProfile() throws JSONException {
-    stubUser.content.put("foo", "bar");
+    stubUser.getContent().put("foo", "bar");
     JSONObject serialized = stubUser.serialize();
-    assertEquals(serialized.getString("_id"), stubUser.id);
-    assertEquals(serialized.getJSONObject("body").toString(), stubUser.content.toString());
+    assertEquals(serialized.getString("_id"), stubUser.getId());
+    assertEquals(serialized.getJSONObject("body").toString(), stubUser.getContent().toString());
     assertEquals(serialized.has("profile"), false);
   }
 
   @Test
   public void testSerializeWithProfile() throws JSONException {
-    stubUser.content.put("foo", "bar");
+    stubUser.getContent().put("foo", "bar");
     stubUser.setProfiles(new String[]{"profile"});
     JSONObject serialized = stubUser.serialize();
-    assertEquals(serialized.getString("_id"), stubUser.id);
+    assertEquals(serialized.getString("_id"), stubUser.getId());
     assertEquals(serialized.getJSONObject("body").getString("foo"), "bar");
     assertEquals(serialized.getJSONObject("body").getJSONArray("profileIds").getString(0), stubUser.getProfileIds()[0]);
   }

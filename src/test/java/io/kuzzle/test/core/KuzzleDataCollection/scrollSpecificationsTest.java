@@ -161,7 +161,7 @@ public class scrollSpecificationsTest {
         collection.scrollSpecifications(scrollId, mock(ResponseListener.class));
         ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
         verify(kuzzle, times(2)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-        assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "collection");
-        assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "scrollSpecifications");
+        assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "collection");
+        assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "scrollSpecifications");
     }
 }

@@ -88,8 +88,8 @@ public class createIndexTest {
     kuzzle.createIndex("index", mock(ResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     verify(kuzzle).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "index");
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "create");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "index");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "create");
   }
 
 }

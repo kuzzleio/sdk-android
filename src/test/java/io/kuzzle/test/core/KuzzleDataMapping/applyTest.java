@@ -91,8 +91,8 @@ public class applyTest {
     dataMapping.apply(new Options(), mock(ResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(k, times(4)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "collection");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "updateMapping");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "collection");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "updateMapping");
   }
 
 }

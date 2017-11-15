@@ -70,7 +70,7 @@ public class getRoleTest {
     kuzzleSecurity.fetchRole("foobar", null, new ResponseListener<Role>() {
       @Override
       public void onSuccess(Role response) {
-        assertEquals(response.id, "foobar");
+        assertEquals(response.getId(), "foobar");
       }
 
       @Override
@@ -86,8 +86,8 @@ public class getRoleTest {
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "getRole");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "getRole");
   }
 
   @Test(expected = RuntimeException.class)

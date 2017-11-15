@@ -90,8 +90,8 @@ public class loginTest {
     kuzzle.login("local", new JSONObject().put("username", "username").put("password", "password"), 42, listenerSpy);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(3)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "auth");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "login");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "auth");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "login");
   }
 
   @Test(expected = IllegalArgumentException.class)

@@ -110,7 +110,7 @@ public class replaceDocumentTest {
     collection.replaceDocument("42", mock(JSONObject.class), mock(Options.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "document");
   }
 
 }

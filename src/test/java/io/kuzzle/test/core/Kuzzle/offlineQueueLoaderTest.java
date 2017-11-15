@@ -70,7 +70,7 @@ public class offlineQueueLoaderTest {
     kuzzleExtend.startQueuing();
 
     Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
-    args.action = "bar";
+    args.setAction("bar");
     kuzzleExtend.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
 
     OfflineQueueLoader offlineQueueLoader = new OfflineQueueLoader() {
@@ -109,7 +109,7 @@ public class offlineQueueLoaderTest {
     kuzzleExtend.startQueuing();
 
     Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
-    args.action = "bar";
+    args.setAction("bar");
     kuzzleExtend.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
 
     OfflineQueueLoader offlineQueueLoader = new OfflineQueueLoader() {
@@ -143,7 +143,7 @@ public class offlineQueueLoaderTest {
     kuzzleExtend.startQueuing();
 
     Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
-    args.action = "bar";
+    args.setAction("bar");
     kuzzleExtend.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
 
     OfflineQueueLoader offlineQueueLoader = new OfflineQueueLoader() {
@@ -177,7 +177,7 @@ public class offlineQueueLoaderTest {
     kuzzleExtend.startQueuing();
 
     Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
-    args.action = "bar";
+    args.setAction("bar");
     kuzzleExtend.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
 
     OfflineQueueLoader offlineQueueLoader = new OfflineQueueLoader() {
@@ -211,7 +211,7 @@ public class offlineQueueLoaderTest {
     kuzzleExtend.startQueuing();
 
     Kuzzle.QueryArgs args = new Kuzzle.QueryArgs();
-    args.action = "bar";
+    args.setAction("bar");
     kuzzleExtend.query(args, new JSONObject().put("requestId", "42"), opts, mock(OnQueryDoneListener.class));
 
     OfflineQueueLoader offlineQueueLoader = new OfflineQueueLoader() {

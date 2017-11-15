@@ -43,8 +43,8 @@ public class methodsTest {
   }
 
   private void validate(String command, JSONObject expected, boolean withOpts) throws JSONException {
-    assertEquals(((Kuzzle.QueryArgs) capturedQueryArgs.getValue()).controller, "ms");
-    assertEquals(((Kuzzle.QueryArgs) capturedQueryArgs.getValue()).action, command);
+    assertEquals(((Kuzzle.QueryArgs) capturedQueryArgs.getValue()).getController(), "ms");
+    assertEquals(((Kuzzle.QueryArgs) capturedQueryArgs.getValue()).getAction(), command);
 
     /*
      if options are provided, the expected result should come first
@@ -268,7 +268,7 @@ public class methodsTest {
     ms = new MemoryStorage(kuzzle);
     capturedQueryArgs = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     capturedQuery = ArgumentCaptor.forClass(io.kuzzle.sdk.util.KuzzleJSONObject.class);
-    queryArgs.controller = "ms";
+    queryArgs.setController("ms");
   }
 
   @Test

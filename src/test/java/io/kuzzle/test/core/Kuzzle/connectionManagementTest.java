@@ -160,8 +160,8 @@ public class connectionManagementTest {
     Thread.sleep(2);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzleSpy, atLeastOnce()).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "realtime");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "subscribe");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "realtime");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "subscribe");
   }
 
   @Test

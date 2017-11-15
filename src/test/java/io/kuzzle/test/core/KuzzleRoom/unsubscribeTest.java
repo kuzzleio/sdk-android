@@ -77,8 +77,8 @@ public class unsubscribeTest {
     assertEquals(room.getRoomId(), null);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "realtime");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "unsubscribe");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "realtime");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "unsubscribe");
   }
 
   @Test

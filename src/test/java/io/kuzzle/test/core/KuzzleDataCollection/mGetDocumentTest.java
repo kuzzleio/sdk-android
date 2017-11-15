@@ -120,7 +120,7 @@ public class mGetDocumentTest {
         collection.mGetDocument(documentIds, new Options(), mock(ResponseListener.class));
         ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
         verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-        assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");
-        assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "mGet");
+        assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "document");
+        assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "mGet");
     }
 }

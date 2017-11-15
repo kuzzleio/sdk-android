@@ -83,8 +83,8 @@ public class deleteDocumentTest {
     collection.deleteDocument(new JSONObject(), listener);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "deleteByQuery");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "document");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "deleteByQuery");
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -129,8 +129,8 @@ public class deleteDocumentTest {
     collection.deleteDocument("42", listener);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "document");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "delete");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "document");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "delete");
   }
 
 }

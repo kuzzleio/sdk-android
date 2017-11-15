@@ -109,9 +109,9 @@ public class getAutoRefreshTest {
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     verify(kuzzle, times(2)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "index");
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "getAutoRefresh");
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).index, kuzzle.getDefaultIndex());
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "index");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "getAutoRefresh");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getIndex(), kuzzle.getDefaultIndex());
   }
 
 }

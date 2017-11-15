@@ -72,8 +72,8 @@ public class updateSelfTest {
     verify(kuzzle, times(4)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     verify(listener, times(2)).onSuccess(any(JSONObject.class));
     verify(listener, times(2)).onError(any(JSONObject.class));
-    assertEquals("auth", ((Kuzzle.QueryArgs)argument.getValue()).controller);
-    assertEquals("updateSelf", ((Kuzzle.QueryArgs)argument.getValue()).action);
+    assertEquals("auth", ((Kuzzle.QueryArgs) argument.getValue()).getController());
+    assertEquals("updateSelf", ((Kuzzle.QueryArgs) argument.getValue()).getAction());
   }
 
 }

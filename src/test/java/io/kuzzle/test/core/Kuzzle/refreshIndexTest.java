@@ -108,9 +108,9 @@ public class refreshIndexTest {
     kuzzle.refreshIndex(mock(Options.class), listener);
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     verify(kuzzle, times(3)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "index");
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "refresh");
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).index, kuzzle.getDefaultIndex());
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "index");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "refresh");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getIndex(), kuzzle.getDefaultIndex());
   }
 
 }

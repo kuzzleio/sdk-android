@@ -67,7 +67,7 @@ public class getUserTest {
     kuzzleSecurity.fetchUser("foobar", new ResponseListener<User>() {
       @Override
       public void onSuccess(User response) {
-        assertEquals(response.id, "foobar");
+        assertEquals(response.getId(), "foobar");
       }
 
       @Override
@@ -82,8 +82,8 @@ public class getUserTest {
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "getUser");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "getUser");
   }
 
   @Test(expected = RuntimeException.class)

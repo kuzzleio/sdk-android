@@ -41,8 +41,8 @@ public class updateProfileTest {
     kuzzleSecurity.updateProfile("foo", policies, new Options());
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class));
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "updateProfile");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "updateProfile");
   }
 
   @Test
@@ -83,8 +83,8 @@ public class updateProfileTest {
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     verify(kuzzle, times(1)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "updateProfile");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "updateProfile");
   }
 
   @Test(expected = RuntimeException.class)

@@ -80,7 +80,7 @@ public class deleteCredentialsTest {
       .deleteCredentials("strategy", "kuid", mock(Options.class), mock(ResponseListener.class));
 
     verify(kuzzle, times(4)).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "deleteCredentials");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "deleteCredentials");
   }
 }

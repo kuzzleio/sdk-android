@@ -25,15 +25,15 @@ public class RoomExtend extends Room {
   }
 
   public void setListener(final ResponseListener listener) {
-    this.listener = listener;
+    this.setListener(listener);
   }
 
   public void setRoomId(final String id) {
-    this.roomId = id;
+    this.setRoomId(id);
   }
 
   public void setSubscribing(final boolean isSubscribing) {
-    super.subscribing = isSubscribing;
+    super.setSubscribing(isSubscribing);
   }
 
   public void dequeue() {
@@ -55,7 +55,7 @@ public class RoomExtend extends Room {
   }
 
   public Room makeHeadersNull() {
-    super.headers = null;
+    super.setHeaders(null);
     return this;
   }
 

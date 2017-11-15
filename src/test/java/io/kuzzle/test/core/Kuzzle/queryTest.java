@@ -50,8 +50,8 @@ public class queryTest {
     kuzzle.setSocket(socket);
 
     args = new Kuzzle.QueryArgs();
-    args.controller = "foo";
-    args.action = "bar";
+    args.setController("foo");
+    args.setAction("bar");
   }
 
   @Test
@@ -79,8 +79,8 @@ public class queryTest {
     verify(socket).emit(any(String.class), (JSONObject) argument.capture());
 
     JSONObject request = (JSONObject) argument.getValue();
-    assertEquals(request.getString("controller"), args.controller);
-    assertEquals(request.getString("action"), args.action);
+    assertEquals(request.getString("controller"), args.getController());
+    assertEquals(request.getString("action"), args.getAction());
     assertEquals(request.getJSONObject("volatile").length(), 1);
     assertEquals(request.has("index"), false);
     assertEquals(request.has("collection"), false);
@@ -90,16 +90,16 @@ public class queryTest {
 
   @Test
   public void shouldAddIndexIfNeeded() throws JSONException {
-    args.index = "index";
+    args.setIndex("index");
     kuzzle.query(args, new JSONObject());
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
     verify(socket).emit(any(String.class), (JSONObject) argument.capture());
 
     JSONObject request = (JSONObject) argument.getValue();
-    assertEquals(request.getString("controller"), args.controller);
-    assertEquals(request.getString("action"), args.action);
-    assertEquals(request.getString("index"), args.index);
+    assertEquals(request.getString("controller"), args.getController());
+    assertEquals(request.getString("action"), args.getAction());
+    assertEquals(request.getString("index"), args.getIndex());
     assertEquals(request.has("collection"), false);
     assertEquals(request.has("headers"), false);
     assertEquals(request.getJSONObject("volatile").length(), 1);
@@ -108,16 +108,16 @@ public class queryTest {
 
   @Test
   public void shouldAddCollectionIfNeeded() throws JSONException {
-    args.collection = "collection";
+    args.setCollection("collection");
     kuzzle.query(args, new JSONObject());
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
     verify(socket).emit(any(String.class), (JSONObject) argument.capture());
 
     JSONObject request = (JSONObject) argument.getValue();
-    assertEquals(request.getString("controller"), args.controller);
-    assertEquals(request.getString("action"), args.action);
-    assertEquals(request.getString("collection"), args.collection);
+    assertEquals(request.getString("controller"), args.getController());
+    assertEquals(request.getString("action"), args.getAction());
+    assertEquals(request.getString("collection"), args.getCollection());
     assertEquals(request.has("index"), false);
     assertEquals(request.has("headers"), false);
     assertEquals(request.getJSONObject("volatile").length(), 1);
@@ -133,8 +133,8 @@ public class queryTest {
     verify(socket).emit(any(String.class), (JSONObject) argument.capture());
 
     JSONObject request = (JSONObject) argument.getValue();
-    assertEquals(request.getString("controller"), args.controller);
-    assertEquals(request.getString("action"), args.action);
+    assertEquals(request.getString("controller"), args.getController());
+    assertEquals(request.getString("action"), args.getAction());
     assertEquals(request.getJSONObject("volatile").length(), 1);
     assertEquals(request.has("index"), false);
     assertEquals(request.has("collection"), false);
@@ -145,16 +145,16 @@ public class queryTest {
   @Test
   public void shouldNotAddJwtTokenIfCheckingToken() throws JSONException {
     kuzzle.setJwtToken("token");
-    args.controller = "auth";
-    args.action = "checkToken";
+    args.setController("auth");
+    args.setAction("checkToken");
     kuzzle.query(args, new JSONObject());
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
     verify(socket).emit(any(String.class), (JSONObject) argument.capture());
 
     JSONObject request = (JSONObject) argument.getValue();
-    assertEquals(request.getString("controller"), args.controller);
-    assertEquals(request.getString("action"), args.action);
+    assertEquals(request.getString("controller"), args.getController());
+    assertEquals(request.getString("action"), args.getAction());
     assertEquals(request.getJSONObject("volatile").length(), 1);
     assertEquals(request.has("index"), false);
     assertEquals(request.has("collection"), false);

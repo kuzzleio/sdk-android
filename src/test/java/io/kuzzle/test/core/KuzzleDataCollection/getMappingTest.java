@@ -64,8 +64,8 @@ public class getMappingTest {
     collection.getMapping(mock(ResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(kuzzle, times(2)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "collection");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "getMapping");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "collection");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "getMapping");
   }
 
 }

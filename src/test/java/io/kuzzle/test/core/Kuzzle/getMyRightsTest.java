@@ -75,8 +75,8 @@ public class getMyRightsTest {
     kuzzle.getMyRights(mock(ResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     verify(kuzzle).query((Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).controller, "security");
-    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).action, "getMyRights");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getController(), "security");
+    assertEquals(((Kuzzle.QueryArgs) argument.getValue()).getAction(), "getMyRights");
   }
 
 }
