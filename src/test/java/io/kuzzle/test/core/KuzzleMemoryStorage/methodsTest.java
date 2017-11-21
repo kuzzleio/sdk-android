@@ -91,6 +91,36 @@ public class methodsTest {
     };
   }
 
+  private ResponseListener<Boolean> verifyResultBool(Boolean returnValue, final Boolean expected) throws JSONException {
+    mockResult(new KuzzleJSONObject().put("result", returnValue));
+
+    return new ResponseListener<Boolean>() {
+      @Override
+      public void onSuccess(Boolean response) {
+        assertEquals(response, expected);
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+      }
+    };
+  }
+
+  private ResponseListener<Void> verifyResultVoid() throws JSONException {
+    mockResult(new KuzzleJSONObject().put("result", null));
+
+    return new ResponseListener<Void>() {
+      @Override
+      public void onSuccess(Void v) {
+      }
+
+      @Override
+      public void onError(JSONObject error) {
+        assertEquals(true, false);
+      }
+    };
+  }
+
   private ResponseListener<String> verifyResultString(String returnValue, final String expected) throws JSONException {
     mockResult(new KuzzleJSONObject().put("result", returnValue));
 
@@ -424,7 +454,7 @@ public class methodsTest {
 
     this.testWriteMethod("expire", new Class[]{String.class, long.class}, args, opts, expected);
 
-    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ResponseListener<Boolean> listener = verifyResultBool(true, true);
     ms.expire("foo", 42, listener);
   }
 
@@ -440,7 +470,7 @@ public class methodsTest {
 
     this.testWriteMethod("expireat", new Class[]{String.class, long.class}, args, opts, expected);
 
-    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ResponseListener<Boolean> listener = verifyResultBool(true, true);
     ms.expireat("foo", 42, listener);
   }
 
@@ -452,7 +482,7 @@ public class methodsTest {
 
     this.testWriteMethod("flushdb", new Class[]{}, args, opts, expected);
 
-    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ResponseListener<Void> listener = verifyResultVoid();
     ms.flushdb(listener);
   }
 
@@ -806,7 +836,7 @@ public class methodsTest {
 
     this.testReadMethod("hexists", new Class[]{String.class, String.class}, args, opts, expected);
 
-    ResponseListener<Integer> listener = verifyResultInt(1, 1);
+    ResponseListener<Boolean> listener = verifyResultBool(true, true);
     ms.hexists("key", "foobar", listener);
   }
 
@@ -946,7 +976,7 @@ public class methodsTest {
 
     this.testWriteMethod("hmset", new Class[]{String.class, JSONObject[].class}, args, opts, expected);
 
-    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ResponseListener<Void> listener = verifyResultVoid();
     ms.hmset("key", entries, listener);
   }
 
@@ -1000,7 +1030,7 @@ public class methodsTest {
 
     this.testWriteMethod("hset", new Class[]{String.class, String.class, String.class}, args, opts, expected);
 
-    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ResponseListener<Boolean> listener = verifyResultBool(true, true);
     ms.hset("key", "foo", "bar", listener);
   }
 
@@ -1017,7 +1047,7 @@ public class methodsTest {
 
     this.testWriteMethod("hsetnx", new Class[]{String.class, String.class, String.class}, args, opts, expected);
 
-    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ResponseListener<Boolean> listener = verifyResultBool(true, true);
     ms.hsetnx("key", "foo", "bar", listener);
   }
 
@@ -1246,7 +1276,7 @@ public class methodsTest {
 
     this.testWriteMethod("lset", new Class[]{String.class, long.class, String.class}, args, opts, expected);
 
-    ResponseListener<String> listener = verifyResultString("foo", "foo");
+    ResponseListener<Void> listener = verifyResultVoid();
     ms.lset("key", 42, "bar", listener);
   }
 
@@ -1263,7 +1293,7 @@ public class methodsTest {
 
     this.testWriteMethod("ltrim", new Class[]{String.class, long.class, long.class}, args, opts, expected);
 
-    ResponseListener<String> listener = verifyResultString("foo", "foo");
+    ResponseListener<Void> listener = verifyResultVoid();
     ms.ltrim("key", 13, 42, listener);
   }
 
@@ -1300,7 +1330,7 @@ public class methodsTest {
 
     this.testWriteMethod("mset", new Class[]{JSONObject[].class}, args, opts, expected);
 
-    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ResponseListener<Void> listener = verifyResultVoid();
     ms.mset(entries, listener);
   }
 
@@ -1322,7 +1352,7 @@ public class methodsTest {
 
     this.testWriteMethod("msetnx", new Class[]{JSONObject[].class}, args, opts, expected);
 
-    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ResponseListener<Boolean> listener = verifyResultBool(true, true);
     ms.msetnx(entries, listener);
   }
 
@@ -1349,7 +1379,7 @@ public class methodsTest {
 
     this.testWriteMethod("persist", new Class[]{String.class}, args, opts, expected);
 
-    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ResponseListener<Boolean> listener = verifyResultBool(true, true);
     ms.persist("key", listener);
   }
 
@@ -1365,7 +1395,7 @@ public class methodsTest {
 
     this.testWriteMethod("pexpire", new Class[]{String.class, long.class}, args, opts, expected);
 
-    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ResponseListener<Boolean> listener = verifyResultBool(true, true);
     ms.pexpire("key", 42000, listener);
   }
 
@@ -1381,7 +1411,7 @@ public class methodsTest {
 
     this.testWriteMethod("pexpireat", new Class[]{String.class, long.class}, args, opts, expected);
 
-    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ResponseListener<Boolean> listener = verifyResultBool(true, true);
     ms.pexpireat("key", 1234567890, listener);
   }
 
@@ -1398,7 +1428,7 @@ public class methodsTest {
 
     this.testWriteMethod("pfadd", new Class[]{String.class, String[].class}, args, opts, expected);
 
-    ResponseListener<Integer> listener = verifyResultInt(123, 123);
+    ResponseListener<Boolean> listener = verifyResultBool(true, true);
     ms.pfadd("key", elements, listener);
   }
 
@@ -1429,7 +1459,7 @@ public class methodsTest {
 
     this.testWriteMethod("pfmerge", new Class[]{String.class, String[].class}, args, opts, expected);
 
-    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ResponseListener<Void> listener = verifyResultVoid();
     ms.pfmerge("key", keys, listener);
   }
 
@@ -1458,7 +1488,7 @@ public class methodsTest {
 
     this.testWriteMethod("psetex", new Class[]{String.class, String.class, long.class}, args, opts, expected);
 
-    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ResponseListener<Void> listener = verifyResultVoid();
     ms.psetex("key", "foo", 42000, listener);
   }
 
@@ -1499,7 +1529,7 @@ public class methodsTest {
 
     this.testWriteMethod("rename", new Class[]{String.class, String.class}, args, opts, expected);
 
-    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ResponseListener<Void> listener = verifyResultVoid();
     ms.rename("key", "foo", listener);
   }
 
@@ -1515,7 +1545,7 @@ public class methodsTest {
 
     this.testWriteMethod("renamenx", new Class[]{String.class, String.class}, args, opts, expected);
 
-    ResponseListener<Integer> listener = verifyResultInt(1, 1);
+    ResponseListener<Boolean> listener = verifyResultBool(true, true);
     ms.renamenx("key", "foo", listener);
   }
 
@@ -1696,7 +1726,7 @@ public class methodsTest {
 
     this.testWriteMethod("set", new Class[]{String.class, String.class}, args, opts, expected);
 
-    ResponseListener<String> listener = verifyResultString("foobar", "foobar");
+    ResponseListener<Void> listener = verifyResultVoid();
     ms.set("key", "value", listener);
   }
 
@@ -1713,7 +1743,7 @@ public class methodsTest {
 
     this.testWriteMethod("setex", new Class[]{String.class, String.class, long.class}, args, opts, expected);
 
-    ResponseListener<String> listener = verifyResultString("OK", "OK");
+    ResponseListener<Void> listener = verifyResultVoid();
     ms.setex("key", "foo", 42, listener);
   }
 
@@ -1727,7 +1757,7 @@ public class methodsTest {
 
     this.testWriteMethod("setnx", new Class[]{String.class, String.class}, args, opts, expected);
 
-    ResponseListener<Integer> listener = verifyResultInt(1, 1);
+    ResponseListener<Boolean> listener = verifyResultBool(true, true);
     ms.setnx("key", "value", listener);
   }
 
@@ -1773,7 +1803,7 @@ public class methodsTest {
 
     this.testReadMethod("sismember", new Class[]{String.class, String.class}, args, opts, expected);
 
-    ResponseListener<Integer> listener = verifyResultInt(1, 1);
+    ResponseListener<Boolean> listener = verifyResultBool(true, true);
     ms.sismember("key", "foo", listener);
   }
 
@@ -1805,7 +1835,7 @@ public class methodsTest {
 
     this.testWriteMethod("smove", new Class[]{String.class, String.class, String.class}, args, opts, expected);
 
-    ResponseListener<Integer> listener = verifyResultInt(1, 1);
+    ResponseListener<Boolean> listener = verifyResultBool(true, true);
     ms.smove("key", "foo", "bar", listener);
   }
 
