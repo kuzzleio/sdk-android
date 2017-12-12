@@ -99,11 +99,6 @@ public class saveTest {
       public void onSuccess(Document object) {
         assertEquals(object.getId(), "id-42");
       }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
     });
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
     verify(k, times(3)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));

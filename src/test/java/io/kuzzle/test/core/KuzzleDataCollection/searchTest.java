@@ -155,10 +155,6 @@ public class searchTest {
           throw new RuntimeException(e);
         }
       }
-
-      @Override
-      public void onError(JSONObject error) {
-      }
     });
     collection.search(filters, mock(ResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
@@ -264,10 +260,6 @@ public class searchTest {
         } catch (JSONException e) {
           throw new RuntimeException(e);
         }
-      }
-
-      @Override
-      public void onError(JSONObject error) {
       }
     });
     collection.search(filters, mock(ResponseListener.class));

@@ -69,10 +69,6 @@ public class methodsTest {
       public void onSuccess(Long response) {
         assertEquals((long)response, expected);
       }
-
-      @Override
-      public void onError(JSONObject error) {
-      }
     };
   }
 
@@ -84,10 +80,6 @@ public class methodsTest {
       public void onSuccess(Integer response) {
         assertEquals((int)response, expected);
       }
-
-      @Override
-      public void onError(JSONObject error) {
-      }
     };
   }
 
@@ -98,10 +90,6 @@ public class methodsTest {
       @Override
       public void onSuccess(Boolean response) {
         assertEquals(response, expected);
-      }
-
-      @Override
-      public void onError(JSONObject error) {
       }
     };
   }
@@ -129,10 +117,6 @@ public class methodsTest {
       public void onSuccess(String response) {
         assertEquals(response, expected);
       }
-
-      @Override
-      public void onError(JSONObject error) {
-      }
     };
   }
 
@@ -144,10 +128,6 @@ public class methodsTest {
       public void onSuccess(String[] response) {
         assertArrayEquals(response, expected);
       }
-
-      @Override
-      public void onError(JSONObject error) {
-      }
     };
   }
 
@@ -158,10 +138,6 @@ public class methodsTest {
       @Override
       public void onSuccess(String[] response) {
         assertArrayEquals(response, expected);
-      }
-
-      @Override
-      public void onError(JSONObject error) {
       }
     };
   }
@@ -181,11 +157,6 @@ public class methodsTest {
           }
         }
       }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
     };
   }
 
@@ -196,10 +167,6 @@ public class methodsTest {
       @Override
       public void onSuccess(Double response) {
         assertEquals(response, expected, 10e-12);
-      }
-
-      @Override
-      public void onError(JSONObject error) {
       }
     };
   }
@@ -216,11 +183,6 @@ public class methodsTest {
         catch(JSONException e) {
           fail(e.getMessage());
         }
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
       }
     };
   }
@@ -870,10 +832,6 @@ public class methodsTest {
       @Override
       public void onSuccess(JSONObject response) {
         assertEquals(response, result);
-      }
-
-      @Override
-      public void onError(JSONObject error) {
       }
     };
 
@@ -2015,11 +1973,6 @@ public class methodsTest {
       @Override
       public void onSuccess(Long[] response) {
         assertArrayEquals(response, new Long[]{Long.valueOf(123), Long.valueOf(456)});
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
       }
     });
   }

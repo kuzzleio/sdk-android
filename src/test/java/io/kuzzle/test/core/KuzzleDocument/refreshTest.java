@@ -123,11 +123,6 @@ public class refreshTest {
           e.printStackTrace();
         }
       }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
     });
     doc.refresh(mockListener);
     doc.refresh(mock(Options.class), mockListener);

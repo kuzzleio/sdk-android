@@ -304,11 +304,6 @@ public class queryTest {
       public void onSuccess(JSONObject response) {
 
       }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
     });
     doThrow(JSONException.class).when(listener).onSuccess(any(JSONObject.class));
     kuzzle.emitRequest(new JSONObject().put("requestId", "foo"), listener);

@@ -37,11 +37,6 @@ public class countTest {
     public void onSuccess(Object response) {
 
     }
-
-    @Override
-    public void onError(JSONObject error) {
-
-    }
   });
   private JSONObject mockNotif = new JSONObject();
   private JSONObject  mockResponse = new JSONObject();

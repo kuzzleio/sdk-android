@@ -153,10 +153,6 @@ public class scrollSpecificationsTest {
                     throw new RuntimeException(e);
                 }
             }
-
-            @Override
-            public void onError(JSONObject error) {
-            }
         });
         collection.scrollSpecifications(scrollId, mock(ResponseListener.class));
         ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);

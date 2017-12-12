@@ -33,11 +33,6 @@ public class validateCredentialsTest {
       public void onSuccess(Object response) {
 
       }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
     };
   }
 

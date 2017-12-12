@@ -154,10 +154,6 @@ public class searchSpecificationsTest {
                     throw new RuntimeException(e);
                 }
             }
-
-            @Override
-            public void onError(JSONObject error) {
-            }
         });
         collection.searchSpecifications(filters, mock(ResponseListener.class));
         ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);

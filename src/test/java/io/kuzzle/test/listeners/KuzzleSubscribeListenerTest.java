@@ -27,11 +27,6 @@ public class KuzzleSubscribeListenerTest {
       public void onSuccess(Room response) {
 
       }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
     });
   }
 

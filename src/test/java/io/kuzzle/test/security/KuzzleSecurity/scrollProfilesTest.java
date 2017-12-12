@@ -167,10 +167,6 @@ public class scrollProfilesTest {
                 assertEquals(result.getTotal(), 2);
                 assertEquals(result.getDocuments().get(1).getId(), "AVJAwyOvZAGQHg9Dhfw3");
             }
-
-            @Override
-            public void onError(JSONObject error) {
-            }
         });
         security.scrollProfiles(scroll, mock(ResponseListener.class));
         ArgumentCaptor argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);

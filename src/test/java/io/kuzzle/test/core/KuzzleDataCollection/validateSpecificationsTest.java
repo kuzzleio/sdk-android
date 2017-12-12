@@ -117,11 +117,6 @@ public class validateSpecificationsTest {
                     e.printStackTrace();
                 }
             }
-
-            @Override
-            public void onError(JSONObject error) {
-
-            }
         });
         collection.validateSpecifications(new JSONObject(), new Options(), new ResponseListener<Boolean>() {
             @Override
@@ -131,11 +126,6 @@ public class validateSpecificationsTest {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-            }
-
-            @Override
-            public void onError(JSONObject error) {
-
             }
         });
         ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);

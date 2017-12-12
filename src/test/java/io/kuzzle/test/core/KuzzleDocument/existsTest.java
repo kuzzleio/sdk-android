@@ -110,11 +110,6 @@ public class existsTest {
             public void onSuccess(Boolean exists) {
                 assertEquals(exists, true);
             }
-
-            @Override
-            public void onError(JSONObject error) {
-
-            }
         });
         doc.exists(mockListener);
         doc.exists(mock(Options.class), mockListener);

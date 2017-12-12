@@ -39,11 +39,6 @@ public class updateSelfTest {
       public void onSuccess(JSONObject response) {
 
       }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
     });
   }
 

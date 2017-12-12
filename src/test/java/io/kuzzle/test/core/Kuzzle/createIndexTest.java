@@ -39,11 +39,6 @@ public class createIndexTest {
       public void onSuccess(Object object) {
 
       }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
     };
   }
   @Test(expected = IllegalArgumentException.class)

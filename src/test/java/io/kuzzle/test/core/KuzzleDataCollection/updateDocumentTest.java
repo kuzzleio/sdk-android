@@ -124,21 +124,11 @@ public class updateDocumentTest {
         assertEquals(document.getId(), "42");
         assertEquals(document.getVersion(), 1337);
       }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
     });
     collection.updateDocument("42", doc.serialize(), new Options(), new ResponseListener<Document>() {
       @Override
       public void onSuccess(Document document) {
         assertEquals(document.getId(), "42");
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
       }
     });
     verify(kuzzle, times(6)).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));

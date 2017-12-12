@@ -49,11 +49,6 @@ public class getAllStatisticsTest {
       public void onSuccess(Object object) {
 
       }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
     };
   }
 
@@ -138,11 +133,6 @@ public class getAllStatisticsTest {
         } catch (JSONException e) {
           e.printStackTrace();
         }
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
       }
     });
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);

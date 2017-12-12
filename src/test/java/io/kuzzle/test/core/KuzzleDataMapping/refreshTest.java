@@ -137,11 +137,6 @@ public class refreshTest {
           throw new RuntimeException(e);
         }
       }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
     });
     dataMapping.refresh(new Options(), mock(ResponseListener.class));
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);

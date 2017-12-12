@@ -124,21 +124,11 @@ public class updateSpecificationsTest {
                 assertEquals(response, specifications);
                 assertEquals(response, specifications);
             }
-
-            @Override
-            public void onError(JSONObject error) {
-
-            }
         });
         collection.updateSpecifications(new JSONObject(), new Options(), new ResponseListener<JSONObject>() {
             @Override
             public void onSuccess(JSONObject response) {
                 assertEquals(response, specifications);
-            }
-
-            @Override
-            public void onError(JSONObject error) {
-
             }
         });
         ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);

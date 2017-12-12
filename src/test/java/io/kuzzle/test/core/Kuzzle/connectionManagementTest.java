@@ -58,12 +58,6 @@ public class connectionManagementTest {
     listener = new ResponseListener<Object>() {
       @Override
       public void onSuccess(Object object) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
       }
     };
     kuzzle = new KuzzleExtend("localhost", options, listener);
