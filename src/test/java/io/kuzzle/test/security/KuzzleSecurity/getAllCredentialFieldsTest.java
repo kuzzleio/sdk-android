@@ -13,10 +13,17 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.modules.junit4.PowerMockRunner;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({android.util.Log.class})
 public class getAllCredentialFieldsTest {
   private Kuzzle kuzzle;
   private Security kuzzleSecurity;
@@ -24,16 +31,12 @@ public class getAllCredentialFieldsTest {
 
   @Before
   public void setUp() {
+    PowerMockito.mockStatic(android.util.Log.class);
     kuzzle = mock(Kuzzle.class);
     kuzzleSecurity = new Security(kuzzle);
     listener = new ResponseListener() {
       @Override
       public void onSuccess(Object response) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
 
       }
     };

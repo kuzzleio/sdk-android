@@ -8,6 +8,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.modules.junit4.PowerMockRunner;
+
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Collection;
@@ -30,6 +35,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({android.util.Log.class})
 public class updateSpecificationsTest {
     private Kuzzle kuzzle;
     private Collection collection;
@@ -37,6 +44,7 @@ public class updateSpecificationsTest {
 
     @Before
     public void setUp() throws URISyntaxException {
+        PowerMockito.mockStatic(android.util.Log.class);
         Options opts = new Options();
         opts.setConnect(Mode.MANUAL);
         KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
@@ -124,21 +132,11 @@ public class updateSpecificationsTest {
                 assertEquals(response, specifications);
                 assertEquals(response, specifications);
             }
-
-            @Override
-            public void onError(JSONObject error) {
-
-            }
         });
         collection.updateSpecifications(new JSONObject(), new Options(), new ResponseListener<JSONObject>() {
             @Override
             public void onSuccess(JSONObject response) {
                 assertEquals(response, specifications);
-            }
-
-            @Override
-            public void onError(JSONObject error) {
-
             }
         });
         ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);

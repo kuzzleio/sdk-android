@@ -38,11 +38,6 @@ public class getMyCredentialsTest {
       public void onSuccess(Object object) {
 
       }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
     };
   }
 

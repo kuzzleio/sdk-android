@@ -8,6 +8,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.modules.junit4.PowerMockRunner;
+
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
@@ -24,6 +29,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({android.util.Log.class})
 public class updateSelfTest {
 
   Kuzzle kuzzle;
@@ -32,16 +39,12 @@ public class updateSelfTest {
 
   @Before
   public void setUp() throws URISyntaxException {
+    PowerMockito.mockStatic(android.util.Log.class);
     kuzzle = spy(new Kuzzle("localhost"));
     argument = ArgumentCaptor.forClass(Kuzzle.QueryArgs.class);
     listener = spy(new ResponseListener<JSONObject>() {
       @Override
       public void onSuccess(JSONObject response) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
 
       }
     });

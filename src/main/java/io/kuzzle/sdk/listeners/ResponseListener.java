@@ -1,22 +1,30 @@
 package io.kuzzle.sdk.listeners;
 
 import org.json.JSONObject;
+import android.util.Log;
+import java.util.Arrays;
 
 /**
  * The interface Response listener.
  */
-public interface ResponseListener<T> {
+public abstract class ResponseListener<T> {
+  public static final String LOG_TAG = "Kuzzle SDK Error";
+
   /**
    * On success.
    *
    * @param response Raw Kuzzle API response
    */
-  void onSuccess(T response);
+  public abstract void onSuccess(T response);
 
   /**
    * On error.
    *
    * @param error Raw Kuzzle API error content
    */
-  void onError(JSONObject error);
+  public void onError(JSONObject error) {
+    if (error != null) {
+      Log.e(LOG_TAG, "Default error handler invoked: " + error.toString());
+    } 
+  }
 }

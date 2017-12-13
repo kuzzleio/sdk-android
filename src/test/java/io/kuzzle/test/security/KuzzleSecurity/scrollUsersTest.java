@@ -8,6 +8,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.modules.junit4.PowerMockRunner;
+
 import java.net.URISyntaxException;
 
 import io.kuzzle.sdk.core.Kuzzle;
@@ -33,6 +38,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({android.util.Log.class})
 public class scrollUsersTest {
     private Kuzzle kuzzle;
     private Security security;
@@ -43,6 +50,7 @@ public class scrollUsersTest {
 
     @Before
     public void setUp() throws URISyntaxException {
+        PowerMockito.mockStatic(android.util.Log.class);
         Options opts = new Options();
         opts.setConnect(Mode.MANUAL);
         KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
@@ -166,10 +174,6 @@ public class scrollUsersTest {
             public void onSuccess(SecurityDocumentList result) {
                 assertEquals(result.getTotal(), 2);
                 assertEquals(result.getDocuments().get(1).getId(), "AVJAwyOvZAGQHg9Dhfw3");
-            }
-
-            @Override
-            public void onError(JSONObject error) {
             }
         });
         security.scrollUsers(scroll, mock(ResponseListener.class));
