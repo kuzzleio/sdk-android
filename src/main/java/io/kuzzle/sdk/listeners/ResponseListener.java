@@ -8,7 +8,7 @@ import java.util.Arrays;
  * The interface Response listener.
  */
 public abstract class ResponseListener<T> {
-  public static final String TAG_API_ERROR = "Kuzzle SDK Error";
+  public static final String LOG_TAG = "Kuzzle SDK Error";
 
   /**
    * On success.
@@ -24,9 +24,7 @@ public abstract class ResponseListener<T> {
    */
   public void onError(JSONObject error) {
     if (error != null) {
-      Log.e(TAG_API_ERROR, "Default error handler invoked: " + error.toString());
-    } else {
-      Log.e(TAG_API_ERROR, Arrays.toString(Thread.currentThread().getStackTrace()));
-    }
+      Log.e(LOG_TAG, "Default error handler invoked: " + error.toString());
+    } 
   }
 }

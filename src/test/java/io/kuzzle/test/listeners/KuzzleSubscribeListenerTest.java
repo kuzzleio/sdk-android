@@ -4,6 +4,11 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.modules.junit4.PowerMockRunner;
+
 import io.kuzzle.sdk.core.Room;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.SubscribeListener;
@@ -13,6 +18,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({android.util.Log.class})
 public class KuzzleSubscribeListenerTest {
 
   private SubscribeListener subListener;
@@ -21,6 +28,7 @@ public class KuzzleSubscribeListenerTest {
 
   @Before
   public void setUp() {
+    PowerMockito.mockStatic(android.util.Log.class);
     subListener = new SubscribeListener();
     callback = spy(new ResponseListener<Room>() {
       @Override
