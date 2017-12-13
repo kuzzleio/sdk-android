@@ -1,11 +1,15 @@
 package io.kuzzle.sdk.listeners;
 
 import org.json.JSONObject;
+import android.util.Log;
+import java.util.Arrays;
 
 /**
  * The interface Response listener.
  */
 public abstract class ResponseListener<T> {
+  public static final String TAG_API_ERROR = "Kuzzle SDK Error";
+
   /**
    * On success.
    *
@@ -20,9 +24,9 @@ public abstract class ResponseListener<T> {
    */
   public void onError(JSONObject error) {
     if (error != null) {
-      System.err.println("Default error handler invoked: " + error.toString());
+      Log.e(TAG_API_ERROR, "Default error handler invoked: " + error.toString());
     } else {
-      new Throwable().printStackTrace(System.err);
+      Log.e(TAG_API_ERROR, Arrays.toString(Thread.currentThread().getStackTrace()));
     }
   }
 }
