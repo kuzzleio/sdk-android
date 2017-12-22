@@ -16,7 +16,6 @@ public class Document {
   private final Collection dataCollection;
   private final String collection;
   private final Kuzzle kuzzle;
-  private JSONObject headers;
 
   private String id;
   private JSONObject content;
@@ -44,7 +43,6 @@ public class Document {
     this.setId(id);
     this.setContent(content, true);
     this.setMeta(meta, true);
-    this.headers = kuzzleDataCollection.getHeaders();
   }
 
   /**
@@ -552,53 +550,6 @@ public class Document {
   }
 
   /**
-   * {@link #setHeaders(JSONObject, boolean)}
-   */
-  public Document setHeaders(final JSONObject content) {
-    return this.setHeaders(content, false);
-  }
-
-  /**
-   * Replace or append/update global headers for this object
-   * 
-   * @param content - new headers content
-   * @param replace - true: replace the current headers, false (default): append/update
-   * @return this
-   */
-  public Document setHeaders(final JSONObject content, final boolean replace) {
-    try {
-      if (content == null) {
-        if (replace) {
-          this.content = new JSONObject();
-        }
-
-        return this;
-      }
-
-      if (replace) {
-        this.headers = new JSONObject(content.toString());
-      } else {
-        for (Iterator ite = content.keys(); ite.hasNext(); ) {
-          String key = (String) ite.next();
-          this.headers.put(key, content.get(key));
-        }
-      }
-    } catch (JSONException e) {
-      throw new RuntimeException(e);
-    }
-    return this;
-  }
-
-  /**
-   * Get the global headers for this object
-   *
-   * @return global headers for this object
-   */
-  public JSONObject getHeaders() {
-    return this.headers;
-  }
-
-  /**
    * Unique identifier getter
    *
    * @return this document unique identifier
@@ -645,7 +596,6 @@ public class Document {
       }
 
       data.put("body", this.getContent());
-      this.kuzzle.addHeaders(data, getHeaders());
     }
     catch (JSONException e) {
       throw new RuntimeException(e);

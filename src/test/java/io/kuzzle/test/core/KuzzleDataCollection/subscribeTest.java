@@ -45,8 +45,6 @@ public class subscribeTest {
     extended.setState(States.CONNECTED);
 
     kuzzle = spy(extended);
-    when(kuzzle.getHeaders()).thenReturn(new JSONObject());
-
     collection = new Collection(kuzzle, "test", "index");
     listener = mock(ResponseListener.class);
   }

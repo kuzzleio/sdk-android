@@ -84,7 +84,6 @@ public class queryTest {
     assertEquals(request.getJSONObject("volatile").length(), 1);
     assertEquals(request.has("index"), false);
     assertEquals(request.has("collection"), false);
-    assertEquals(request.has("headers"), false);
     assertNotNull(request.getString("requestId"));
   }
 
@@ -101,7 +100,6 @@ public class queryTest {
     assertEquals(request.getString("action"), args.action);
     assertEquals(request.getString("index"), args.index);
     assertEquals(request.has("collection"), false);
-    assertEquals(request.has("headers"), false);
     assertEquals(request.getJSONObject("volatile").length(), 1);
     assertNotNull(request.getString("requestId"));
   }
@@ -119,7 +117,6 @@ public class queryTest {
     assertEquals(request.getString("action"), args.action);
     assertEquals(request.getString("collection"), args.collection);
     assertEquals(request.has("index"), false);
-    assertEquals(request.has("headers"), false);
     assertEquals(request.getJSONObject("volatile").length(), 1);
     assertNotNull(request.getString("requestId"));
   }
@@ -158,7 +155,6 @@ public class queryTest {
     assertEquals(request.getJSONObject("volatile").length(), 1);
     assertEquals(request.has("index"), false);
     assertEquals(request.has("collection"), false);
-    assertEquals(request.has("headers"), false);
     assertNotNull(request.getString("requestId"));
   }
 
@@ -207,20 +203,6 @@ public class queryTest {
 
     String refresh = ((JSONObject) argument.getValue()).getString("refresh");
     assertEquals(refresh, optionsRefresh);
-  }
-
-  @Test
-  public void shouldAddHeaders() throws JSONException {
-    JSONObject headers = new JSONObject().put("foo", "bar");
-
-    kuzzle.setHeaders(headers);
-
-    kuzzle.query(args, new JSONObject());
-
-    ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
-    verify(socket).emit(any(String.class), (JSONObject) argument.capture());
-
-    assertEquals(((JSONObject) argument.getValue()).getString("foo"), "bar");
   }
 
   @Test

@@ -27,16 +27,8 @@ public class constructorTest {
   public void setUp() {
     k = mock(Kuzzle.class);
     when(k.getDefaultIndex()).thenReturn("index");
-    when(k.getHeaders()).thenReturn(new JSONObject());
     dataCollection = new Collection(k, "test", "index");
     dataMapping = new CollectionMapping(dataCollection);
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void testConstructorException() {
-    Collection fake = spy(new Collection(k, "test", "index"));
-    doThrow(JSONException.class).when(fake).getHeaders();
-    dataMapping = new CollectionMapping(fake);
   }
 
   @Test
@@ -45,36 +37,6 @@ public class constructorTest {
     mapping.put("type", "string");
     dataMapping = new CollectionMapping(dataCollection, mapping);
     dataMapping = new CollectionMapping(dataMapping);
-  }
-
-  @Test
-  public void testSetHeaders() throws JSONException {
-    dataMapping.setHeaders(null, true);
-    JSONObject headers = new JSONObject();
-    headers.put("foo", "bar");
-    dataMapping.setHeaders(headers, true);
-    assertEquals(dataMapping.getHeaders().getString("foo"), "bar");
-    headers.put("oof", "baz");
-    dataMapping.setHeaders(headers);
-    assertEquals(dataMapping.getHeaders().getString("foo"), "bar");
-    assertEquals(dataMapping.getHeaders().getString("oof"), "baz");
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void testSetHeadersException() {
-    JSONObject json = spy(new JSONObject());
-    doThrow(JSONException.class).when(json).keys();
-    dataMapping.setHeaders(json, false);
-  }
-
-  @Test
-  public void testGetHeaders() throws JSONException {
-    dataMapping.setHeaders(null);
-    assertNotNull(dataMapping.getHeaders());
-    JSONObject headers = new JSONObject();
-    headers.put("foo", "bar");
-    dataMapping.setHeaders(headers);
-    assertEquals(dataMapping.getHeaders().getString("foo"), "bar");
   }
 
   @Test

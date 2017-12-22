@@ -44,8 +44,6 @@ public class deleteSpecificationsTest {
         extended.setState(States.CONNECTED);
 
         kuzzle = spy(extended);
-        when(kuzzle.getHeaders()).thenReturn(new JSONObject());
-
         collection = new KuzzleDataCollectionExtend(kuzzle, "index", "test");
         listener = mock(ResponseListener.class);
     }

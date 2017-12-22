@@ -57,8 +57,6 @@ public class scrollUsersTest {
         extended.setSocket(mock(Socket.class));
         extended.setState(States.CONNECTED);
         kuzzle = spy(extended);
-        when(kuzzle.getHeaders()).thenReturn(new JSONObject());
-
         security = new Security(kuzzle);
         listener = mock(ResponseListener.class);
         options = mock(Options.class);

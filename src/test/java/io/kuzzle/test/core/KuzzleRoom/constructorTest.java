@@ -41,7 +41,6 @@ public class constructorTest {
       .put("requestId", "42");
     mockResponse.put("result", new JSONObject().put("channel", "channel").put("roomId", "42"));
     k = mock(Kuzzle.class);
-    when(k.getHeaders()).thenReturn(new JSONObject());
     room = new RoomExtend(new Collection(k, "test", "index"));
   }
 
@@ -55,43 +54,6 @@ public class constructorTest {
     assertEquals(room.isSubscribeToSelf(), false);
     room.setSubscribeToSelf(true);
     assertEquals(room.isSubscribeToSelf(), true);
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void testConstructorException() {
-    Collection fake = spy(new Collection(k, "test", "index"));
-    doThrow(JSONException.class).when(fake).getHeaders();
-    room = new RoomExtend(fake);
-  }
-
-  @Test
-  public void testSetHeaders() throws JSONException {
-    room.makeHeadersNull();
-    JSONObject headers = new JSONObject();
-    headers.put("foo", "bar");
-    room.setHeaders(headers, true);
-    assertEquals(room.getHeaders().getString("foo"), "bar");
-    headers.put("oof", "baz");
-    room.setHeaders(headers);
-    assertEquals(room.getHeaders().getString("foo"), "bar");
-    assertEquals(room.getHeaders().getString("oof"), "baz");
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void testSetHeadersException() {
-    JSONObject json = spy(new JSONObject());
-    doThrow(JSONException.class).when(json).keys();
-    room.setHeaders(json, false);
-  }
-
-  @Test
-  public void testGetHeaders() throws JSONException {
-    room.setHeaders(null);
-    assertNotNull(room.getHeaders());
-    JSONObject headers = new JSONObject();
-    headers.put("foo", "bar");
-    room.setHeaders(headers);
-    assertEquals(room.getHeaders().getString("foo"), "bar");
   }
 
   @Test

@@ -59,7 +59,6 @@ public class renewTest {
       .put("requestId", "42");
     mockResponse.put("result", new JSONObject().put("channel", "channel").put("roomId", "42"));
     k = mock(Kuzzle.class);
-    when(k.getHeaders()).thenReturn(new JSONObject());
     room = new RoomExtend(new Collection(k, "text", "index"));
 
     MockitoAnnotations.initMocks(this);

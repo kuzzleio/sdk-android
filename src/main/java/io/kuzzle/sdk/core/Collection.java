@@ -25,8 +25,6 @@ public class Collection {
   private JSONObject subscribeError = null;
   private Room subscribeRoom = null;
 
-  protected JSONObject headers;
-
   /**
    * Constructor
    *
@@ -45,13 +43,6 @@ public class Collection {
     this.kuzzle = kuzzle;
     this.collection = collection;
     this.index = index;
-
-    try {
-      this.headers = new JSONObject(kuzzle.getHeaders().toString());
-    }
-    catch (JSONException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   /**
@@ -81,8 +72,6 @@ public class Collection {
       if (filters != null) {
         data.put("body", filters);
       }
-
-      this.kuzzle.addHeaders(data, this.getHeaders());
 
       this.kuzzle.query(makeQueryArgs("document", "search"), data, options, new OnQueryDoneListener() {
         @Override
@@ -251,8 +240,6 @@ public class Collection {
     try {
       data.put("scrollId", scrollId);
 
-      this.kuzzle.addHeaders(data, this.getHeaders());
-
       this.kuzzle.query(makeQueryArgs("collection", "scrollSpecifications"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -316,8 +303,6 @@ public class Collection {
           .put("query", filters)
         );
       }
-
-      this.kuzzle.addHeaders(data, this.getHeaders());
 
       this.kuzzle.query(makeQueryArgs("collection", "searchSpecifications"), data, options, new OnQueryDoneListener() {
         @Override
@@ -401,7 +386,6 @@ public class Collection {
     }
     JSONObject data = new JSONObject();
     try {
-      this.kuzzle.addHeaders(data, this.getHeaders());
       data.put("body", filters);
       this.kuzzle.query(makeQueryArgs("document", "count"), data, options, new OnQueryDoneListener() {
         @Override
@@ -455,7 +439,6 @@ public class Collection {
   public Collection create(final Options options, final ResponseListener<JSONObject> listener) {
     JSONObject data = new JSONObject();
     try {
-      this.kuzzle.addHeaders(data, this.getHeaders());
       this.kuzzle.query(makeQueryArgs("collection", "create"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -585,8 +568,6 @@ public class Collection {
     if (options != null && options.getIfExist().equals("replace")) {
       action = "createOrReplace";
     }
-
-    this.kuzzle.addHeaders(data, this.getHeaders());
 
     try {
       this.kuzzle.query(makeQueryArgs("document", action), data, options, new OnQueryDoneListener() {
@@ -721,7 +702,6 @@ public class Collection {
     JSONObject data = new JSONObject();
     String action;
     try {
-      this.kuzzle.addHeaders(data, this.getHeaders());
       if (documentId != null) {
         data.put("_id", documentId);
         action = "delete";
@@ -797,7 +777,6 @@ public class Collection {
     JSONObject data = new JSONObject();
 
     try {
-      this.kuzzle.addHeaders(data, this.getHeaders());
       this.kuzzle.query(makeQueryArgs("collection", "deleteSpecifications"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -883,7 +862,6 @@ public class Collection {
 
     try {
       JSONObject data = new JSONObject().put("_id", documentId);
-      this.kuzzle.addHeaders(data, this.getHeaders());
 
       this.kuzzle.query(makeQueryArgs("document", "exists"), data, options, new OnQueryDoneListener() {
         @Override
@@ -925,7 +903,6 @@ public class Collection {
 
     try {
       JSONObject data = new JSONObject().put("_id", documentId);
-      this.kuzzle.addHeaders(data, this.getHeaders());
 
       this.kuzzle.query(makeQueryArgs("document", "get"), data, options, new OnQueryDoneListener() {
         @Override
@@ -990,7 +967,6 @@ public class Collection {
       .put("body", new JSONObject());
 
     try {
-      this.kuzzle.addHeaders(data, this.getHeaders());
       this.kuzzle.query(makeQueryArgs("collection", "getSpecifications"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -1031,7 +1007,6 @@ public class Collection {
       );
 
     try {
-      this.kuzzle.addHeaders(data, this.getHeaders());
       this.kuzzle.query(makeQueryArgs("document", "mCreate"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -1099,7 +1074,6 @@ public class Collection {
       );
 
     try {
-      this.kuzzle.addHeaders(data, this.getHeaders());
       this.kuzzle.query(makeQueryArgs("document", "mCreateOrReplace"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -1167,7 +1141,6 @@ public class Collection {
       );
 
     try {
-      this.kuzzle.addHeaders(data, this.getHeaders());
       this.kuzzle.query(makeQueryArgs("document", "mDelete"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -1234,7 +1207,6 @@ public class Collection {
       );
 
     try {
-      this.kuzzle.addHeaders(data, this.getHeaders());
       this.kuzzle.query(makeQueryArgs("document", "mGet"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -1282,7 +1254,6 @@ public class Collection {
       );
 
     try {
-      this.kuzzle.addHeaders(data, this.getHeaders());
       this.kuzzle.query(makeQueryArgs("document", "mReplace"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -1350,7 +1321,6 @@ public class Collection {
       );
 
     try {
-      this.kuzzle.addHeaders(data, this.getHeaders());
       this.kuzzle.query(makeQueryArgs("document", "mUpdate"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -1471,7 +1441,6 @@ public class Collection {
 
     try {
       JSONObject data = new JSONObject().put("body", content);
-      this.kuzzle.addHeaders(data, this.getHeaders());
       this.kuzzle.query(makeQueryArgs("realtime", "publish"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -1530,7 +1499,6 @@ public class Collection {
 
     try {
       JSONObject data = new JSONObject().put("_id", documentId).put("body", content);
-      this.kuzzle.addHeaders(data, this.getHeaders());
       this.kuzzle.query(makeQueryArgs("document", "createOrReplace"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -1591,7 +1559,6 @@ public class Collection {
       );
 
     try {
-      this.kuzzle.addHeaders(data, this.getHeaders());
       this.kuzzle.query(makeQueryArgs("collection", "validateSpecifications"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -1628,44 +1595,6 @@ public class Collection {
    */
   public Room room(RoomOptions options) {
     return new Room(this, options);
-  }
-
-  /**
-   * {@link #setHeaders(JSONObject, boolean)}
-   */
-  public Collection setHeaders(final JSONObject content) {
-    return this.setHeaders(content, false);
-  }
-
-  /**
-   * Sets headers global to this data collection
-   *
-   * @param content  Headers content
-   * @param replace  true: replace existing headers, false: append
-   * @return this
-   */
-  public Collection setHeaders(final JSONObject content, final boolean replace) {
-    try {
-      if (content == null) {
-        if (replace) {
-          this.headers = new JSONObject();
-        }
-
-        return this;
-      }
-
-      if (replace) {
-        this.headers = new JSONObject(content.toString());
-      } else {
-        for (Iterator ite = content.keys(); ite.hasNext(); ) {
-          String key = (String) ite.next();
-          this.headers.put(key, content.get(key));
-        }
-      }
-    } catch (JSONException e) {
-      throw new RuntimeException(e);
-    }
-    return this;
   }
 
   /**
@@ -1734,7 +1663,6 @@ public class Collection {
   public Collection truncate(final Options options, final ResponseListener<JSONObject> listener) {
     JSONObject  data = new JSONObject();
     try {
-      this.kuzzle.addHeaders(data, this.getHeaders());
       this.kuzzle.query(makeQueryArgs("collection", "truncate"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -1800,7 +1728,6 @@ public class Collection {
 
     try {
       JSONObject data = new JSONObject().put("_id", documentId).put("body", content);
-      this.kuzzle.addHeaders(data, this.getHeaders());
 
       if (options != null && options.getRetryOnConflict() > 0) {
         data.put("retryOnConflict", options.getRetryOnConflict());
@@ -1876,7 +1803,6 @@ public class Collection {
       );
 
     try {
-      this.kuzzle.addHeaders(data, this.getHeaders());
       this.kuzzle.query(makeQueryArgs("collection", "updateSpecifications"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -1928,14 +1854,5 @@ public class Collection {
    */
   public String getIndex() {
     return this.index;
-  }
-
-  /**
-   * Get the data collection global headers
-   *
-   * @return data collection global headers
-   */
-  public JSONObject getHeaders() {
-    return this.headers;
   }
 }

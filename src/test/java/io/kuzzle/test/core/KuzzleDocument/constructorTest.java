@@ -55,7 +55,6 @@ public class constructorTest {
   @Test
   public void testCollection() throws JSONException {
     Kuzzle k = mock(Kuzzle.class);
-    when(k.getHeaders()).thenReturn(new JSONObject());
     Collection collection = new Collection(k, "test", "index");
     Document doc = new Document(collection);
     assertEquals(doc.getCollection(), collection.getCollection());
@@ -170,44 +169,6 @@ public class constructorTest {
     doc.setMeta("author", "foo");
     assertEquals(doc.getMeta().getString("author"), "foo");
     assertNull(doc.getMeta("!exist"));
-  }
-
-  @Test
-  public void checkSetHeadersVariants() {
-    doc = spy(doc);
-    doc.setHeaders(new JSONObject());
-    verify(doc).setHeaders(any(JSONObject.class), eq(false));
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void testSetHeadersException() {
-    JSONObject fake = spy(new JSONObject());
-    doThrow(JSONException.class).when(fake).toString();
-    doc.setHeaders(fake, true);
-  }
-
-  @Test
-  public void testSetHeaders() throws JSONException {
-    doc.setHeaders(null, true);
-    assertNotNull(doc.getHeaders());
-    JSONObject headers = new JSONObject();
-    headers.put("foo", "bar");
-    doc.setHeaders(headers, true);
-    assertEquals(doc.getHeaders().getString("foo"), "bar");
-    headers.put("oof", "baz");
-    doc.setHeaders(headers);
-    assertEquals(doc.getHeaders().getString("foo"), "bar");
-    assertEquals(doc.getHeaders().getString("oof"), "baz");
-  }
-
-  @Test
-  public void testGetHeaders() throws JSONException {
-    doc.setHeaders(null);
-    assertNotNull(doc.getHeaders());
-    JSONObject headers = new JSONObject();
-    headers.put("foo", "bar");
-    doc.setHeaders(headers);
-    assertEquals(doc.getHeaders().getString("foo"), "bar");
   }
 
   @Test

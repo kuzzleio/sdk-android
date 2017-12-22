@@ -31,7 +31,6 @@ public class Room {
   protected String collection;
   protected Collection dataCollection;
   protected JSONObject filters = new JSONObject();
-  protected JSONObject headers;
   protected JSONObject _volatile;
   protected boolean subscribeToSelf;
   protected String roomId;
@@ -82,14 +81,6 @@ public class Room {
     this.dataCollection = kuzzleDataCollection;
     this.kuzzle = kuzzleDataCollection.getKuzzle();
     this.collection = kuzzleDataCollection.getCollection();
-
-    try {
-      this.headers = new JSONObject(kuzzleDataCollection.getHeaders().toString());
-    }
-    catch (JSONException e) {
-      throw new RuntimeException(e);
-    }
-
     this.subscribeToSelf = opts.isSubscribeToSelf();
     this._volatile = opts.getVolatile();
     this.scope = opts.getScope();
@@ -124,7 +115,6 @@ public class Room {
 
     try {
       JSONObject data = new JSONObject().put("body", new JSONObject().put("roomId", this.roomId));
-      this.kuzzle.addHeaders(data, this.headers);
 
       this.kuzzle.query(this.dataCollection.makeQueryArgs("realtime", "count"), data, new OnQueryDoneListener() {
         @Override
@@ -255,7 +245,6 @@ public class Room {
           .put("users", this.users.toString().toLowerCase());
 
       options.setVolatile(this._volatile);
-      this.kuzzle.addHeaders(subscribeQuery, this.headers);
 
       new Thread(new Runnable() {
         @Override
@@ -339,7 +328,6 @@ public class Room {
 
     try {
       final JSONObject data = new JSONObject().put("body", new JSONObject().put("roomId", this.roomId));
-      this.kuzzle.addHeaders(data, this.headers);
 
       this.kuzzle.getSocket().off(Room.this.channel);
       this.kuzzle.deleteSubscription(this.roomId, this.id);
@@ -416,50 +404,6 @@ public class Room {
    */
   public Room setFilters(final JSONObject filters) {
     this.filters = filters;
-    return this;
-  }
-
-  /**
-   * headers property getters
-   *
-   * @return headers value
-   */
-  public JSONObject getHeaders() {
-    return this.headers;
-  }
-
-  /**
-   * {@link #setHeaders(JSONObject, boolean)}
-   */
-  public Room setHeaders(final JSONObject content) {
-    return this.setHeaders(content, false);
-  }
-
-  /**
-   * Subscription headers setter
-   * 
-   * @param content - new headers content
-   * @param replace - default: false = append the content, true = replace
-   * @return this
-   */
-  public Room setHeaders(final JSONObject content, final boolean replace) {
-    if (this.headers == null) {
-      this.headers = new JSONObject();
-    }
-    if (replace) {
-      this.headers = content;
-    } else {
-      if (content != null) {
-        try {
-          for (Iterator ite = content.keys(); ite.hasNext(); ) {
-            String key = (String) ite.next();
-            this.headers.put(key, content.get(key));
-          }
-        } catch (JSONException e) {
-          throw new RuntimeException(e);
-        }
-      }
-    }
     return this;
   }
 

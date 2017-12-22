@@ -40,42 +40,9 @@ public class constructorTest {
     extended.setState(States.CONNECTED);
 
     kuzzle = spy(extended);
-    when(kuzzle.getHeaders()).thenReturn(new JSONObject());
 
     collection = new Collection(kuzzle, "test", "index");
     listener = mock(ResponseListener.class);
-  }
-
-  @Test
-  public void checkSignaturesVariants() {
-    collection = spy(collection);
-    collection.setHeaders(new JSONObject());
-    verify(collection).setHeaders(any(JSONObject.class), eq(false));
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void testSetHeaders() throws JSONException {
-    when(kuzzle.getHeaders()).thenCallRealMethod();
-    when(kuzzle.setHeaders(any(JSONObject.class), anyBoolean())).thenCallRealMethod();
-    JSONObject content = new JSONObject();
-    content.put("foo", "bar");
-    collection.setHeaders(content);
-    assertEquals(collection.getHeaders().getString("foo"), "bar");
-    content.put("foo", "baz");
-    collection.setHeaders(content, true);
-    assertEquals(collection.getHeaders().getString("foo"), "baz");
-    content.put("bar", "foo");
-    collection.setHeaders(content, false);
-    assertEquals(collection.getHeaders().getString("foo"), "baz");
-    assertEquals(collection.getHeaders().getString("bar"), "foo");
-    collection.setHeaders(null, false);
-    assertEquals(collection.getHeaders().getString("foo"), "baz");
-    assertEquals(collection.getHeaders().getString("bar"), "foo");
-    collection.setHeaders(null, true);
-    assertEquals(collection.getHeaders().length(), 0);
-    JSONObject fake = spy(new JSONObject());
-    doThrow(JSONException.class).when(fake).keys();
-    collection.setHeaders(fake, false);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -91,11 +58,5 @@ public class constructorTest {
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowIfNoCollectionProvided() {
     new Collection(mock(Kuzzle.class), null, "foo");
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void testConstructorException() {
-    doThrow(JSONException.class).when(kuzzle).getHeaders();
-    new Collection(kuzzle, "collections", "foo");
   }
 }

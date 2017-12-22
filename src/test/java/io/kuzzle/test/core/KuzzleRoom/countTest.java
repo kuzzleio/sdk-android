@@ -60,7 +60,6 @@ public class countTest {
     k = spy(new KuzzleExtend("localhost", null, null));
     k.setSocket(mock(Socket.class));
     k.setState(States.CONNECTED);
-    when(k.getHeaders()).thenReturn(new JSONObject());
     room = new RoomExtend(new Collection(k, "test", "index"));
   }
 

@@ -35,12 +35,6 @@ public class serializeTest {
     doc = new Document(new Collection(k, "test", "index"));
   }
 
-  @Test(expected = RuntimeException.class)
-  public void testException() {
-    doThrow(JSONException.class).when(k).addHeaders(any(JSONObject.class), any(JSONObject.class));
-    doc.serialize();
-  }
-
   @Test
   public void testToString() throws JSONException {
     JSONObject o = new JSONObject()

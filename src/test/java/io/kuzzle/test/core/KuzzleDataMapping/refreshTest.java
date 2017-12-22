@@ -35,7 +35,6 @@ public class refreshTest {
   public void setUp() {
     k = mock(Kuzzle.class);
     when(k.getDefaultIndex()).thenReturn("index");
-    when(k.getHeaders()).thenReturn(new JSONObject());
     dataCollection = new Collection(k, "test", "index");
     dataMapping = new CollectionMapping(dataCollection);
   }

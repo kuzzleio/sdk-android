@@ -12,7 +12,6 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 
 public class CollectionMapping {
 
-  private JSONObject headers;
   private JSONObject mapping;
   private Kuzzle kuzzle;
   private String collection;
@@ -34,13 +33,6 @@ public class CollectionMapping {
    * @param mapping - Mapping content
    */
   public CollectionMapping(final Collection kuzzleDataCollection, final JSONObject mapping) {
-    try {
-      this.headers = new JSONObject(kuzzleDataCollection.getHeaders().toString());
-    }
-    catch(JSONException e) {
-      throw new RuntimeException(e);
-    }
-
     this.kuzzle = kuzzleDataCollection.getKuzzle();
     this.collection = kuzzleDataCollection.getCollection();
     this.mapping = mapping == null ? new JSONObject() : mapping;
@@ -90,7 +82,6 @@ public class CollectionMapping {
     try {
       properties.put("properties", this.mapping);
       data.put("body", properties);
-      this.kuzzle.addHeaders(data, this.headers);
       this.kuzzle.query(this.dataCollection.makeQueryArgs("collection", "updateMapping"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
@@ -132,7 +123,6 @@ public class CollectionMapping {
 
     JSONObject data = new JSONObject();
     try {
-      this.kuzzle.addHeaders(data, this.headers);
       this.kuzzle.query(this.dataCollection.makeQueryArgs("collection", "getMapping"), data, options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject args) {
@@ -182,56 +172,6 @@ public class CollectionMapping {
    */
   public CollectionMapping set(final String field, final JSONObject mapping) throws JSONException {
     this.mapping.put(field, mapping);
-    return this;
-  }
-
-  /**
-   * Get the global headers for this object
-   *
-   * @return global headers for this object
-   */
-  public JSONObject getHeaders() {
-    return headers;
-  }
-
-  /**
-   * {@link #setHeaders(JSONObject, boolean)}
-   */
-  public CollectionMapping setHeaders(final JSONObject content) {
-    return this.setHeaders(content, false);
-  }
-
-  /**
-   * Helper function allowing to set headers while chaining calls.
-   * If the replace argument is set to true, replace the current headers with the provided content.
-   * Otherwise, it appends the content to the current headers, only replacing already existing values
-   *
-   * @param content - Headers to append or replace
-   * @param replace - false (default): append the content, true: replace the current headers
-   * @return this
-   */
-  public CollectionMapping setHeaders(final JSONObject content, final boolean replace) {
-    try {
-      if (content == null) {
-        if (replace) {
-          this.headers = new JSONObject();
-        }
-
-        return this;
-      }
-
-      if (replace) {
-        this.headers = new JSONObject(content.toString());
-      } else {
-        for (Iterator ite = content.keys(); ite.hasNext(); ) {
-          String key = (String) ite.next();
-          this.headers.put(key, content.get(key));
-        }
-      }
-    } catch (JSONException e) {
-      throw new RuntimeException(e);
-    }
-
     return this;
   }
 

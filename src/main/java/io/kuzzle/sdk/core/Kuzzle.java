@@ -55,7 +55,6 @@ public class Kuzzle {
   protected Socket socket;
   protected Map<String, Map<String, Collection>> collections = new ConcurrentHashMap<>();
   protected boolean autoReconnect = true;
-  protected JSONObject headers = new JSONObject();
   protected JSONObject _volatile;
   protected String host;
   protected Integer port;
@@ -169,7 +168,6 @@ public class Kuzzle {
     this.autoReplay = opt.isAutoReplay();
     this.autoResubscribe = opt.isAutoResubscribe();
     this.defaultIndex = opt.getDefaultIndex();
-    this.headers = opt.getHeaders();
     this._volatile = opt.getVolatile();
     this.port = opt.getPort();
     this.queueMaxSize = opt.getQueueMaxSize();
@@ -1218,8 +1216,6 @@ public class Kuzzle {
       object.put("index", queryArgs.index);
     }
 
-    this.addHeaders(object, this.headers);
-
     /*
      * Do not add the token for the checkToken route, to avoid getting a token error when
      * a developer simply wish to verify his token
@@ -1325,43 +1321,6 @@ public class Kuzzle {
     if (this.state != States.OFFLINE && !this.autoReplay) {
       this.cleanQueue();
       this.dequeue();
-    }
-    return this;
-  }
-
-  /**
-   * {@link #setHeaders(JSONObject, boolean)}
-   */
-  public Kuzzle setHeaders(final JSONObject content) throws JSONException {
-    return this.setHeaders(content, false);
-  }
-
-  /**
-   * Helper function allowing to set headers while chaining calls.
-   * If the replace argument is set to true, replace the current headers with the provided content.
-   * Otherwise, it appends the content to the current headers, only replacing already existing values
-   *
-   * @param content - New headers content
-   * @param replace - false = append to existing headers (default) - true = replace
-   * @return this
-   */
-  public Kuzzle setHeaders(final JSONObject content, boolean replace) {
-    if (this.headers == null) {
-      this.headers = new JSONObject();
-    }
-    if (replace) {
-      this.headers = content;
-    } else {
-      if (content != null) {
-        try {
-          for (Iterator ite = content.keys(); ite.hasNext(); ) {
-            String key = (String) ite.next();
-            this.headers.put(key, content.get(key));
-          }
-        } catch (JSONException e) {
-          throw new RuntimeException(e);
-        }
-      }
     }
     return this;
   }
@@ -1498,25 +1457,6 @@ public class Kuzzle {
   }
 
   /**
-   * Helper function copying headers to the query data
-   *
-   * @param query - Query to update
-   * @param headers - Headers to set
-   */
-  public void addHeaders(JSONObject query, final JSONObject headers) {
-    try {
-      for (Iterator iterator = headers.keys(); iterator.hasNext(); ) {
-        String key = (String) iterator.next();
-        if (query.isNull(key)) {
-          query.put(key, headers.get(key));
-        }
-      }
-    } catch (JSONException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
    * autoReconnect option getter
    *
    * @return autoReconnect option value
@@ -1543,15 +1483,6 @@ public class Kuzzle {
   public Kuzzle setAutoResubscribe(boolean resubscribe) {
     this.autoResubscribe = resubscribe;
     return this;
-  }
-
-  /**
-   * Global headers getter
-   *
-   * @return global headers
-   */
-  public JSONObject getHeaders() {
-    return this.headers;
   }
 
   /**

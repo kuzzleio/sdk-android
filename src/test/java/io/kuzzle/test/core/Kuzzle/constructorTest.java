@@ -76,42 +76,6 @@ public class constructorTest {
   }
 
   @Test
-  public void testSetHeadersSignaturesVariants() throws JSONException {
-    kuzzle = spy(kuzzle);
-    kuzzle.setHeaders(new JSONObject());
-    verify(kuzzle).setHeaders(any(JSONObject.class), eq(false));
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void testSetHeaders() throws JSONException {
-    kuzzle.setHeaders(null, true);
-    kuzzle.setHeaders(new JSONObject());
-    assertNotNull(kuzzle.getHeaders());
-    JSONObject content = new JSONObject();
-    content.put("foo", "bar");
-    kuzzle.setHeaders(content);
-    assertEquals(kuzzle.getHeaders().getString("foo"), "bar");
-    content.put("foo", "baz");
-    kuzzle.setHeaders(content, true);
-    assertEquals(kuzzle.getHeaders().getString("foo"), "baz");
-    JSONObject fake = spy(new JSONObject());
-    doThrow(JSONException.class).when(fake).keys();
-    kuzzle.setHeaders(fake, false);
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void testAddHeaders() throws JSONException {
-    JSONObject query = new JSONObject();
-    JSONObject headers = new JSONObject();
-    headers.put("testPurpose", "test");
-    kuzzle.addHeaders(query, headers);
-    assertEquals(query.get("testPurpose"), "test");
-    JSONObject fake = mock(JSONObject.class);
-    doThrow(JSONException.class).when(fake).keys();
-    kuzzle.addHeaders(new JSONObject(), fake);
-  }
-
-  @Test
   public void testVolatileOptions() throws URISyntaxException, JSONException {
     Options options = new Options();
     options.setQueuable(false);

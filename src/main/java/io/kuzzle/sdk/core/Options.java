@@ -16,7 +16,6 @@ public class Options {
   private boolean autoReconnect = true;
   private boolean autoReplay = false;
   private boolean autoResubscribe = true;
-  private JSONObject headers = new JSONObject();
   private JSONObject _volatile = new JSONObject();
   private int queueMaxSize = 500;
   private int queueTTL = 120000;
@@ -71,7 +70,6 @@ public class Options {
     this.autoQueue = originalOptions.autoQueue;
     this.autoReconnect = originalOptions.autoReconnect;
     this.autoResubscribe = originalOptions.autoResubscribe;
-    this.headers = new JSONObject(originalOptions.headers.toString());
     this._volatile = new JSONObject(originalOptions._volatile.toString());
     this.queueMaxSize = originalOptions.queueMaxSize;
     this.queueTTL = originalOptions.queueTTL;
@@ -109,26 +107,6 @@ public class Options {
    */
   public Options setAutoReconnect(boolean autoReconnect) {
     this.autoReconnect = autoReconnect;
-    return this;
-  }
-
-  /**
-   * headers getter
-   *
-   * @return headers option value
-   */
-  public JSONObject getHeaders() {
-    return headers;
-  }
-
-  /**
-   * headers setter
-   *
-   * @param headers New headers value
-   * @return this
-   */
-  public Options setHeaders(JSONObject headers) {
-    this.headers = headers;
     return this;
   }
 

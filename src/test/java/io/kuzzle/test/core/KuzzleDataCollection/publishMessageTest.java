@@ -45,10 +45,7 @@ public class publishMessageTest {
     extended.setState(States.CONNECTED);
 
     kuzzle = spy(extended);
-    when(kuzzle.getHeaders()).thenReturn(new JSONObject());
-
     collection = new Collection(kuzzle, "test", "index");
-
     MockitoAnnotations.initMocks(this);
   }
 
@@ -117,11 +114,4 @@ public class publishMessageTest {
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "realtime");
     assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "publish");
   }
-
-  @Test(expected = RuntimeException.class)
-  public void testPublishMEssageException() {
-    doThrow(JSONException.class).when(kuzzle).addHeaders(any(JSONObject.class), any(JSONObject.class));
-    collection.publishMessage(mock(JSONObject.class));
-  }
-
 }

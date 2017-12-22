@@ -53,10 +53,4 @@ public class RoomExtend extends Room {
   public TimerTask  unsubscribeTask(final Timer timer, final String roomId, final JSONObject data) {
     return super.unsubscribeTask(timer, roomId, data);
   }
-
-  public Room makeHeadersNull() {
-    super.headers = null;
-    return this;
-  }
-
 }
