@@ -43,7 +43,11 @@ public class Document {
     this.kuzzle = kuzzleDataCollection.getKuzzle();
     this.setId(id);
     this.setContent(content, true);
-    this.setMeta(meta, true);
+
+    if (meta != null) {
+      this.meta = new JSONObject(meta.toString());
+    }
+
     this.headers = kuzzleDataCollection.getHeaders();
   }
 
@@ -401,59 +405,6 @@ public class Document {
     }
 
     this.content.put(key, value);
-    return this;
-  }
-
-  /**
-   * {@link #setMeta(JSONObject, boolean)}
-   */
-  public Document setMeta(final JSONObject meta) throws JSONException {
-    this.setMeta(meta, false);
-    
-    return this;
-  }
-
-  /**
-   * Set document metadata
-   *
-   * @param meta - Metadata content
-   * @param replace - true: replace, false (default): append/update otherwise
-   * @return this
-   * @throws JSONException 
-   */
-  public Document setMeta(final JSONObject meta, final boolean replace) throws JSONException {
-    if (replace) {
-      if (meta != null) {
-        this.meta = new JSONObject(meta.toString());
-      }
-      else {
-        this.meta = new JSONObject();
-      }
-    } else if (meta != null) {
-      for (Iterator iterator = meta.keys(); iterator.hasNext(); ) {
-        String key = (String) iterator.next();
-        this.meta.put(key, meta.get(key));
-      }
-    }
-
-    return this;
-  }
-
-  /**
-   * Set a metadata field value
-   *
-   * @param key - Metadata field name
-   * @param value - Metadata field value
-   * @return this
-   * @throws JSONException
-   */
-  public Document setMeta(@NonNull final String key, final Object value) throws JSONException {
-    if (key == null) {
-      throw new IllegalArgumentException("Document.setMeta: key required");
-    }
-
-    this.meta.put(key, value);
-
     return this;
   }
 

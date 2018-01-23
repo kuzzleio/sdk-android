@@ -131,47 +131,6 @@ public class constructorTest {
     assertEquals(doc.getMeta().getString("author"), "foo");
   }
 
-  @Test(expected = RuntimeException.class)
-  public void testSetMetaPutException() throws JSONException {
-    doc = spy(doc);
-    doc.setMeta(mock(JSONObject.class));
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testSetMetaIllegalKey() throws JSONException {
-    doc.setMeta(null, "value");
-  }
-
-  @Test
-  public void checkSetMetaVariants() throws JSONException {
-    doc = spy(doc);
-    doc.setMeta(new JSONObject());
-    verify(doc).setMeta(any(JSONObject.class), eq(false));
-  }
-
-  @Test
-  public void testSetMeta() throws JSONException {
-    assertEquals(doc.getMeta().toString(), new JSONObject().toString());
-    JSONObject meta = new JSONObject();
-    meta.put("author", "foo");
-    doc.setMeta(meta, false);
-    assertEquals(doc.getMeta().get("author"), "foo");
-    meta = new JSONObject();
-    meta.put("updater", "bar");
-    doc.setMeta(meta, true);
-    assertEquals(doc.getMeta().get("updater"), "bar");
-    assertTrue(doc.getMeta().isNull("author"));
-  }
-
-  @Test
-  public void testGetMeta() throws JSONException {
-    doc.setMeta(null);
-    assertNotNull(doc.getMeta());
-    doc.setMeta("author", "foo");
-    assertEquals(doc.getMeta().getString("author"), "foo");
-    assertNull(doc.getMeta("!exist"));
-  }
-
   @Test
   public void checkSetHeadersVariants() {
     doc = spy(doc);

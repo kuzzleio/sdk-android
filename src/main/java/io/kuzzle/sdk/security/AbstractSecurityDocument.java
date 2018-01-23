@@ -46,9 +46,7 @@ public class AbstractSecurityDocument {
     }
 
     if (meta != null) {
-      setMeta(meta);
-    } else {
-      this.meta = new JSONObject();
+      this.meta = new JSONObject(meta.toString());
     }
   }
 
@@ -65,23 +63,6 @@ public class AbstractSecurityDocument {
     }
 
     this.content = new JSONObject(content.toString());
-
-    return this;
-  }
-
-  /**
-   * Sets the metadata of this object
-   *
-   * @param meta New metadata
-   * @return this
-   * @throws JSONException
-   */
-  public AbstractSecurityDocument setMeta(@NonNull final JSONObject meta) throws JSONException {
-    if (meta == null) {
-      throw new IllegalArgumentException("AbstractSecurityDocument.setMeta: cannot set null metadata");
-    }
-
-    this.meta = new JSONObject(meta.toString());
 
     return this;
   }
