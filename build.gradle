@@ -3,7 +3,7 @@ apply plugin: 'jacoco-android'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'com.github.dcendents.android-maven'
 
-version = "3.0.3"
+version = "3.0.4"
 
 buildscript {
     repositories {
@@ -57,7 +57,7 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     // Temporary using v21, until Travis supports v23+
     compile 'com.android.support:appcompat-v7:23.+'
-    compile 'io.socket:socket.io-client:0.6.2'
+    compile 'io.socket:socket.io-client:1.0.0'
     testCompile 'junit:junit:4.12'
     testCompile 'org.hamcrest:hamcrest-junit:2.0.0.0'
     testCompile 'org.mockito:mockito-core:1.9.5'
