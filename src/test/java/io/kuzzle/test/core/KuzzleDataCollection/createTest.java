@@ -18,6 +18,7 @@ import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
+import io.kuzzle.sdk.core.Kuzzle.QueryArgs;
 import io.socket.client.Socket;
 
 import static org.junit.Assert.assertEquals;
@@ -53,15 +54,21 @@ public class createTest {
   @Test
   public void checkSignaturesVariants() {
     collection = spy(collection);
+
     collection.create();
     collection.create(mock(Options.class));
     collection.create(listener);
-    verify(collection, times(3)).create(any(Options.class), any(ResponseListener.class));
+    collection.create(mock(Options.class), listener);
+    collection.create(mock(JSONObject.class));
+    collection.create(mock(JSONObject.class), mock(Options.class));
+    collection.create(mock(JSONObject.class), listener);
+
+    verify(collection, times(7)).create(any(JSONObject.class), any(Options.class), any(ResponseListener.class));
   }
 
   @Test(expected = RuntimeException.class)
   public void testCreateQueryException() throws JSONException {
-    doThrow(JSONException.class).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+    doThrow(JSONException.class).when(kuzzle).query(any(QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     collection.create(listener);
   }
 
@@ -73,13 +80,13 @@ public class createTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", mock(JSONObject.class)));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
     doThrow(JSONException.class).when(listener).onSuccess(any(JSONObject.class));
     collection.create(listener);
   }
 
   @Test
-  public void testCreate() throws JSONException {
+  public void testCreateWithoutMapping() throws JSONException {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -87,15 +94,49 @@ public class createTest {
         ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
         return null;
       }
-    }).when(kuzzle).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+    }).when(kuzzle).query(any(QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+
     collection.create(new Options(), listener);
     collection.create(listener);
     collection.create(new Options());
     collection.create();
-    ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzle, times(4)).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "collection");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "create");
+
+    ArgumentCaptor argument = ArgumentCaptor.forClass(QueryArgs.class);
+    verify(kuzzle, times(4)).query((QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+    assertEquals(((QueryArgs) argument.getValue()).controller, "collection");
+    assertEquals(((QueryArgs) argument.getValue()).action, "create");
   }
 
+  @Test
+  public void testCreateWithMapping() throws JSONException {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onSuccess(new JSONObject().put("result", mock(JSONObject.class)));
+        ((OnQueryDoneListener) invocation.getArguments()[3]).onError(mock(JSONObject.class));
+        return null;
+      }
+    }).when(kuzzle).query(any(QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
+
+    JSONObject mapping = new JSONObject().put("foo", "bar");
+
+    collection.create(mapping);
+    collection.create(mapping, new Options(), listener);
+    collection.create(mapping, listener);
+    collection.create(mapping, new Options());
+
+    ArgumentCaptor
+      capturedQargs = ArgumentCaptor.forClass(QueryArgs.class),
+      capturedMappings = ArgumentCaptor.forClass(JSONObject.class);
+
+    verify(kuzzle, times(4)).query((QueryArgs)capturedQargs.capture(), (JSONObject)capturedMappings.capture(), any(Options.class), any(OnQueryDoneListener.class));
+
+    assertEquals(((QueryArgs) capturedQargs.getValue()).controller, "collection");
+    assertEquals(((QueryArgs) capturedQargs.getValue()).action, "create");
+
+    String expected = (new JSONObject().put("body", mapping)).toString();
+    for (Object m : capturedMappings.getAllValues()) {
+      assertEquals(expected, m.toString());
+    }
+  }
 }
