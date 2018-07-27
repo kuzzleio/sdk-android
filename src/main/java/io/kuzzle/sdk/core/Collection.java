@@ -150,7 +150,7 @@ public class Collection {
 
   /**
    * Gets the next page of results from a previous search or scroll request
-   * 
+   *
    * @param scrollId  Scroll unique identifier
    * @param options  Request options
    * @param listener  Response callback listener
@@ -424,37 +424,73 @@ public class Collection {
   }
 
   /**
-   * {@link #create(Options, ResponseListener)}
+   * {@link #create(JSONObject, Options, ResponseListener)}
    */
   public Collection create(final Options options) {
-    return this.create(options, null);
+    return this.create(null, options, null);
   }
 
   /**
-   * {@link #create(Options, ResponseListener)}
+   * {@link #create(JSONObject, Options, ResponseListener)}
    */
   public Collection create() {
-    return this.create(null, null);
+    return this.create(null, null, null);
   }
 
   /**
-   * {@link #create(Options, ResponseListener)}
+   * {@link #create(JSONObject, Options, ResponseListener)}
    */
   public Collection create(final ResponseListener<JSONObject> listener) {
-    return this.create(null, listener);
+    return this.create(null, null, listener);
   }
 
   /**
-   * Create a new empty data collection, with no associated mapping.
-   * Kuzzle automatically creates data collections when storing documents, but there are cases where we want to create and prepare data collections before storing documents in it.
+   * {@link #create(JSONObject, Options, ResponseListener)}
+   */
+  public Collection create(final Options options, final ResponseListener<JSONObject> listener) {
+    return this.create(null, options, listener);
+  }
+
+  /**
+   * {@link #create(JSONObject, Options, ResponseListener)}
+   */
+  public Collection create(final JSONObject mapping) {
+    return this.create(mapping, null, null);
+  }
+
+  /**
+   * {@link #create(JSONObject, Options, ResponseListener)}
+   */
+  public Collection create(final JSONObject mapping, final Options options) {
+    return this.create(mapping, options, null);
+  }
+
+  /**
+   * {@link #create(JSONObject, Options, ResponseListener)}
+   */
+  public Collection create(final JSONObject mapping, final ResponseListener<JSONObject> listener) {
+    return this.create(mapping, null, listener);
+  }
+
+ /**
+   * Create a new empty data collection, with associated mappings.
+   * Kuzzle automatically creates data collections when storing documents,
+   * but there are cases where we want to create and prepare data collections
+   * before storing documents in it.
    *
+   * @param mapping  Collection mapping
    * @param options  Request options
    * @param listener  Response callback listener
    * @return this
    */
-  public Collection create(final Options options, final ResponseListener<JSONObject> listener) {
+  public Collection create(final JSONObject mapping, final Options options, final ResponseListener<JSONObject> listener) {
     JSONObject data = new JSONObject();
+
     try {
+      if (mapping != null) {
+        data.put("body", mapping);
+      }
+
       this.kuzzle.addHeaders(data, this.getHeaders());
       this.kuzzle.query(makeQueryArgs("collection", "create"), data, options, new OnQueryDoneListener() {
         @Override
@@ -538,7 +574,7 @@ public class Collection {
    * @param options      Request options
    * @param listener  Response callback listener
    * @return this
-   * @throws JSONException 
+   * @throws JSONException
    */
   public Collection createDocument(final String id, @NonNull final JSONObject content, Options options, final ResponseListener<Document> listener) throws JSONException {
     if (content == null) {
@@ -709,7 +745,7 @@ public class Collection {
 
   /**
    * Delete either a single document or multiple ones using search filters
-   * 
+   *
    * @param documentId  Document unique identifier
    * @param filter  Search fitlers
    * @param options  Request options
@@ -853,7 +889,7 @@ public class Collection {
    * @param id  Document unique identifier
    * @param content  Document content
    * @return newly instantiated Document object
-   * @throws JSONException 
+   * @throws JSONException
    */
   public Document document(final String id, final JSONObject content) throws JSONException {
     return new Document(this, id, content);
@@ -983,7 +1019,7 @@ public class Collection {
    *
    * @param options  Request options
    * @param listener  Response callback listener
-   * @throws JSONException 
+   * @throws JSONException
    */
   public void getSpecifications(final Options options, @NonNull final ResponseListener<JSONObject> listener) throws JSONException {
     JSONObject data = new JSONObject()
@@ -1018,7 +1054,7 @@ public class Collection {
    * @param options  Request options
    * @param listener  Response callback listener
    * @return this
-   * @throws JSONException 
+   * @throws JSONException
    */
   public Collection mCreateDocument(final Document[] documents, final Options options, final ResponseListener<JSONObject> listener) throws JSONException {
     if (documents.length == 0) {
@@ -1216,7 +1252,7 @@ public class Collection {
   }
 
   /**
-   * Fetch multiple documents 
+   * Fetch multiple documents
    *
    * @param documentIds  Array of document IDs to retrieve
    * @param options  Request options
