@@ -1,0 +1,3 @@
+[submodule "sdk-java"]
+	path = sdk-java
+	url = https://github.com/kuzzleio/sdk-java
