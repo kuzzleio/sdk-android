@@ -1,0 +1,5 @@
+sudo: required
+services:
+  - docker
+script:
+  - docker run --rm -it -v "$(pwd)":/go/src/github.com/kuzzleio/sdk-go kuzzleio/sdk-cross:android-x86 /build.sh
