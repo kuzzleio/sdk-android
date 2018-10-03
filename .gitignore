@@ -1,0 +1,6 @@
+kcore_*
+build/android/app/src/main/java
+build/android/app/src/main/jniLibs
+build/android/app/src/main/libs
+build/android/app/src/main/obj
+build/android/build

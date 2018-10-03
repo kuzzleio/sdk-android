@@ -44,7 +44,7 @@
 %ignore getListener;
 %ignore getListeners;
 
-%include "../sdk-java/swig/std_function.i"
+%include "std_function.i"
 %std_function(NotificationListener, void, onMessage, const kuzzleio::notification_result*);
 %std_function(EventListener, void, trigger, const std::string);
 
@@ -53,7 +53,7 @@
 #include "realtime.cpp"
 %}
 
-%include "../sdk-java/swig/exceptions.i"
+%include "exceptions.i"
 %include "std_string.i"
 %include "typemap.i"
 %include "json_wrap/kuzzle.i"

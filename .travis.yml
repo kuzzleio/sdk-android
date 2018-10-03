@@ -1,5 +1,121 @@
+os: linux
 sudo: required
+
 services:
   - docker
-script:
-  - docker run --rm -it -v "$(pwd)":/go/src/github.com/kuzzleio/sdk-go kuzzleio/sdk-cross:android-x86 /build.sh
+
+env:
+  global:
+    - TRAVIS_S3_BUCKET=travis-cache.kuzzle.io
+    - AWS_S3_BUCKET=dl.kuzzle.io
+    - AWS_CLOUDFRONT_DISTRIBUTION=E12YL8EZVABYR0
+    # BINTRAY_USER
+    - secure: "LxONQZ8tHhxTqgu+kqx9fMCubCfTQHZsy/3ibE+l72xG8sOAYfj4hB5k1p4kklnv3skeFQEiL6B++B2qRITOEAPRdD8FExkc+UF/TM1rY5aUtjIjoA3uH4n9hYjHirTO5qNKf4KxDr1Zbcn4ISGebJ0EYwE0SG/ptrd06wPp1G8AHshc8XaZgen6gDaik66OWpQkOkmGsRz2EPmIBVgo7L2LGK21DSxE4/PTo+ou0WYCyxyyWSKLTLt1xZpt9LOtk7IckrHl+Nenl6IbV/CjHb3+5vwdifyFQd+K6AVe32iTIVjdxj7rDhEHYD0EqKb79ey+u8p9HquLnGH03gcVBeFQu/qhhQStsiwrD/S9c8jwBjWOOUnVI4bEbqjqxFaRlPfVnRaAjQZLRKHdqxyTJCdC2Ls79LmkqSCyTxM7WBwwgu4Slf6RJSbKJb5naHYlwDuKPbeyHLAYrxgjEHC28bxQiTr5wwBWxE9BLxUcnkFAXzsy3qE74FQOIjvQbtrruLIOGwRGRYtzyfygGA3MfTHug6JwZGngqFf3k+kbznE8fZe7zxMwT63P6/54rR5fU/plLoTNFqdQsZGAfGOSYuHIEzWXOkWxffqsOwxPa1VxQTLD32O95oBcrcvmw4toC2NeFTe/+zZRMfGMbu7QIi0AL3qFpky3j12zcyA/M2I="
+    # BINTRAY_KEY
+    - secure: "Iqn4ImAwFmQeoXXDb5JOsfcunSiSeLvdp4+AEsIeniMhpIk++ZJPDSxecC+NrvndTrxOXVqHEsFUfHnZYvPHMuvg9nhXvz/rmmyYH0hZqkKg2q2qM+Sz2UJBCvs6D1sJv3ZEVi8d6fVx5bbKXMzSE023XFBBK7l8nBsG5ObXBOzTzrus9UP+fk4FXif/QKJNcUSN7rLejUIxMCk36gMQYqYGiiqL3VE60aTpaUh7Vqj/8nCEPcO3K3gXTVybcGBcmsvinV5YEc+5s5ue8eX10ONY0oYF5GFd7aEsrKEFzT2d7MVq0a29cH1rWrxt6q7vXGZNKAdAQrDyRZUz9rMFtqH+2xOgagm22UiUYNlzrn2eDYRBd08X0y043gumdgmOq/CsyaI5bcUSKMr+rsZ2XIzBjefl8MU0xBhtKMO9g9WRfGBxjRbdg0ivRQoVGJbcUXTDl2WrLMgMjt8DT4nQP+PHdIV2FjZVNioqucqmEzfHIJt+hiw7EonGDnZ9uqkW6hm6b4JpGr5QF1yY6kKVCUQxLueUBAVdiZpULdevL7uYEUzdWIES2wTFE7LaWpHqnCOHYVpkIQpdole6+R0OhINhSHK0FW858xhZ2QGjtL1SSh5yzK4th6dpGKCiwMUSGSj5frpIeWPi+GqYoUQz+TvMGLGG2XGfihx74kQE0FA="
+    # AWS_ACCESS_KEY_ID
+    - secure: "lQqLSW+EOjdikwY5gazOJDqBEcbFhFZr1cyVakLKID2I1ZzP8+DXGzLRkCn4IdUWzKQ8Tnim74AFHvfKK3+52PS7Y3fo7LIYyMN9gpqnM91dyItwCrRW7T3SLCI/+FaJY11pPG6KYG4nWieZ7e3ZO2VG/EDIRLoE/dsPPT9eGAgydCTutSkTrOcug0x/VgGs5rjzs9ENKsJefEeQJ3ubKeQ+y7gnfzSxs1111SZMqlL9agRCgzK4Z3uVUyL6Jtp5MAxK+agT4hqtqpdO8n7inHYA3ijq66tiT6phfd8J/ouqQug6MguXRPunsPZSWN2Bp2wLw+xqlS6NvYrZ1iCZFSRyekRkPBJTTa+lUkkTe2HO0to4qcLFll8DT3/NHjmcfdYk+uxCCuTcEUSkVJz9lPdVlWTyTigJRfvx1jETd13C0xtXvdQkoeQKn46mOqz/MkQgBeGyoLCe8YTuBiZJ/QBmi4zCUpLEu2+6v2Wo1nZEiUHxNj1xWqZ36As4cyWD1oyeXBIxG8Y1YU9eUv59+VbfPmwwUtXD5HmbZVPvPWy2e+AI/g0ib+FvaXUoDCJQYFQCXJM1bSB9GOS4xOnR7nvC0PcFHzXSud6zhwK1zgVnUWep+4RuPjBbUE0Lry/q8KRVHT4BfTJAnDWtloTCZ9rGbk+tX/6ul6T27nvWlGs="
+    # AWS_SECRET_ACCESS_KEY
+    - secure: "uFnMw+cfUhplVbstbVU5+K+H2Lm5uVxaFbIByz3g7h/KgEDKN18XLLZUEGiIVzXYRgRn/RTogyqyDF5YtOBx3x2WErVzoc2JxBFDkNlvDC+DxLACTs9t5UV94Nd3VxC9bvGl3dLkPS5/gY1FGQRR/eFK4KvMtIemNOQa7Yn4YqJ1SjGfBt+j+ThhUCWRgS/tf1koiVbVA6q9HiS9HmpFnk89mvplUlhzaW8nd/H7fo+L3ywwhhHURU4u533s3IT5aoj7IkXrxkf+r7pXj3ARbJ+QJh8qAaoozovt1fRCHV/XZ95aNSLr5OiMb44yTKITlc+WQH9hr4gj7G0rRaL33rIg1AAUhKcIbjxdVb9KinuGZBCW0lEpEmA6OfqF2xQv3LmzIpA2l/eWx2nR6/QyZLfXcUEcdvOdU6lbvi2cvoFzNJpviwayS2z9A72SmHOm+E+3H+megxgah9FgWvZJvvdEHtti9g3s8EFw7Ue9AdBZBGNJ/fz+HlL1QcJpOjFuXxvVf365lsvJpkH2uxEkWLDerGe6KUJJAGdI9rcWeGp/L/1r+bhXTdt1agh2/cIqp3BDEZm00+vHHXDmRBjUrJ+HPvuUoQyIIitqdIf0sMCkMslMfc6XcAFlq6wvJ9B0ERVvlsDDDIfFbiok6qmHU5mIGlWAWCiEkzh1w3KleSA="
+
+addons:
+  apt:
+    packages:
+    - python
+    - python-pip
+
+install:
+  - pip install awscli --upgrade --user
+
+jobs:
+  include:
+# ---------------------------------------
+# Build - x86
+# ---------------------------------------
+    - stage: build
+      name: "Build - x86"
+
+      script:
+        - docker run --rm -it -v "$(pwd)":/mnt kuzzleio/sdk-cross:android-i386 make clean all
+
+      after_success:
+        - aws s3 sync build/android/app/src/main s3://$TRAVIS_S3_BUCKET/sdk-android/$TRAVIS_BUILD_NUMBER # clean up after ourselves
+
+# ---------------------------------------
+# Build - armhf
+# ---------------------------------------
+    - stage: build
+      name: "Build - armhf"
+
+      script:
+        - docker run --rm -it -v "$(pwd)":/mnt kuzzleio/sdk-cross:android-armhf make clean all
+
+      after_success:
+        - aws s3 sync build/android/app/src/main s3://$TRAVIS_S3_BUCKET/sdk-android/$TRAVIS_BUILD_NUMBER # clean up after ourselves
+
+# ---------------------------------------
+# Build - aarch64
+# ---------------------------------------
+    - stage: build
+      name: "Build - aarch64"
+
+      script:
+        - docker run --rm -it -v "$(pwd)":/mnt kuzzleio/sdk-cross:android-aarch64 make clean all
+
+      after_success:
+        - aws s3 sync build/android/app/src/main s3://$TRAVIS_S3_BUCKET/sdk-android/$TRAVIS_BUILD_NUMBER # clean up after ourselves
+
+# ---------------------------------------
+# Create Multi-Architecture AAR
+# ---------------------------------------
+    - stage: create aar
+      name: "Create Multi-architecture AAR"
+
+      before_script:
+        - aws s3 sync s3://$TRAVIS_S3_BUCKET/sdk-android/$TRAVIS_BUILD_NUMBER ./build/android/app/src/main
+      script:
+        - docker run --rm -it -v "$(pwd)":/mnt kuzzleio/sdk-cross:android-base make package
+
+      after_success:
+        - aws s3 rm --recursive s3://$TRAVIS_S3_BUCKET/sdk-android/$TRAVIS_BUILD_NUMBER # clean up after ourselves
+        - if [[ "$TRAVIS_BRANCH" =~ ^(master|.*-dev)$ ]]; then aws s3 cp ./build/android/app/build/outputs/aar/app-release.aar s3://$TRAVIS_S3_BUCKET/sdk-android/$TRAVIS_BUILD_NUMBER/app-release.aar; fi;
+
+# ---------------------------------------
+# Deploy
+# ---------------------------------------
+    - stage: deploy
+      name: "Deploy on S3"
+
+      before_deploy:
+        - mkdir -p ./deploy
+        - aws s3 cp s3://$TRAVIS_S3_BUCKET/sdk-android/$TRAVIS_BUILD_NUMBER/app-release.aar ./deploy
+
+      deploy:
+        provider: s3
+        access_key_id: $AWS_ACCESS_KEY_ID
+        secret_access_key: $AWS_SECRET_ACCESS_KEY
+        bucket: $AWS_S3_BUCKET
+        region: us-west-2
+        skip_cleanup: true
+        upload-dir: sdk/android/$TRAVIS_BRANCH
+        local-dir: deploy
+        on:
+          all_branches: true
+          condition: $TRAVIS_BRANCH =~ ^master|*-dev$
+
+        provider: script
+        script: cd build/android/app && sudo gradle bintrayUpload
+        skip_cleanup: true
+        on:
+          branch: master
+
+      after_deploy:
+        - aws s3 rm --recursive s3://$TRAVIS_S3_BUCKET/sdk-android/$TRAVIS_BUILD_NUMBER # clean up after ourselves
+        - aws cloudfront create-invalidation --distribution-id $AWS_CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
+
+stages:
+  - name: build
+  - name: create aar
+  - name: deploy
+    if: branche =~ ^(master|.*-dev)$
+
