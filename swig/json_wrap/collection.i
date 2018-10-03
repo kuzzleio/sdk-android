@@ -78,11 +78,11 @@
     return updateSpecifications(index, collection, body, null);
   }
 
-  public boolean validateSpecifications(org.json.JSONObject body, QueryOptions options) throws org.json.JSONException, KuzzleException {
+  public ValidationResponse validateSpecifications(org.json.JSONObject body, QueryOptions options) throws org.json.JSONException, KuzzleException {
     return validateSpecifications(body.toString(), options);
   }
 
-  public boolean validateSpecifications(org.json.JSONObject body) throws org.json.JSONException, KuzzleException {
+  public ValidationResponse validateSpecifications(org.json.JSONObject body) throws org.json.JSONException, KuzzleException {
     return validateSpecifications(body, null);
   }
 

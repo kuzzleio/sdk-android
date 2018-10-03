@@ -38,6 +38,7 @@ LDFLAGS = -lkuzzlesdk
 OBJS = $(SRCS:.cxx=.o)
 SRCS = kcore_wrap.cxx
 SWIG = swig
+STRIP ?= strip
 
 all: android
 
@@ -55,20 +56,18 @@ swig:
 
 make_lib:
 	$(CXX) -shared kcore_wrap.o -o $(OUTDIR)/../../../../jniLibs/$(ARCH)/$(LIB_PREFIX)kuzzle-wrapper-android$(DYNLIB) $(LDFLAGS)$(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(LIBS) $(INCS) $(JAVAINCLUDE)
-	strip $(OUTDIR)/../../../../jniLibs/$(ARCH)/$(LIB_PREFIX)kuzzle-wrapper-android$(DYNLIB)
+	$(STRIP) $(OUTDIR)/../../../../jniLibs/$(ARCH)/$(LIB_PREFIX)kuzzle-wrapper-android$(DYNLIB)
 
-GOFLAGS = -buildmode=c-shared
-export GOFLAGS
-android: ARCH ?= x86
 android: OUTDIR = $(ROOTOUTDIR)/android/app/src/main/java/io/kuzzle/sdk
 android: make_java makeabifolder swig $(OBJS) make_lib
-	cd build/android/app/src/main/jni && ndk-build && cd - && cd build/android && cp app/src/main/obj/local/$(ARCH)/*.so app/src/main/jniLibs/$(ARCH)/ && bash ./gradlew assemble
+	cd $(ROOTOUTDIR)/android/app/src/main/jni && ndk-build && cd - && cd $(ROOTOUTDIR)/android && cp app/src/main/obj/local/$(ARCH)/*.so app/src/main/jniLibs/$(ARCH)/
+
+package:
+	 cd $(ROOTOUTDIR)/android && gradle assemble
 
 clean:
 	cd sdk-java && $(MAKE) clean
-	$(RRM) build/android/app/build
-	$(RRM) build/android/app/src/main/java
-	$(RRM) build/android/app/src/main/jniLibs/
-	$(RRM) build/android/build
+	$(RRM) $(ROOTOUTDIR)$(PATHSEP)android$(PATHSEP)app$(PATHSEP)build
+	$(RRM) $(ROOTOUTDIR)$(PATHSEP)android$(PATHSEP).gradle && $(RRM) $(ROOT_DIR)kcore_wrap.{cxx,h,o}
 
 .PHONY: all makeabifolder swig make_lib android clean
