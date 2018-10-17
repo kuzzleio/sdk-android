@@ -8,7 +8,6 @@ env:
   global:
     - TRAVIS_S3_BUCKET=travis-cache.kuzzle.io
     - AWS_S3_BUCKET=dl.kuzzle.io
-    - AWS_CLOUDFRONT_DISTRIBUTION=E12YL8EZVABYR0
     # BINTRAY_USER
     - secure: "LxONQZ8tHhxTqgu+kqx9fMCubCfTQHZsy/3ibE+l72xG8sOAYfj4hB5k1p4kklnv3skeFQEiL6B++B2qRITOEAPRdD8FExkc+UF/TM1rY5aUtjIjoA3uH4n9hYjHirTO5qNKf4KxDr1Zbcn4ISGebJ0EYwE0SG/ptrd06wPp1G8AHshc8XaZgen6gDaik66OWpQkOkmGsRz2EPmIBVgo7L2LGK21DSxE4/PTo+ou0WYCyxyyWSKLTLt1xZpt9LOtk7IckrHl+Nenl6IbV/CjHb3+5vwdifyFQd+K6AVe32iTIVjdxj7rDhEHYD0EqKb79ey+u8p9HquLnGH03gcVBeFQu/qhhQStsiwrD/S9c8jwBjWOOUnVI4bEbqjqxFaRlPfVnRaAjQZLRKHdqxyTJCdC2Ls79LmkqSCyTxM7WBwwgu4Slf6RJSbKJb5naHYlwDuKPbeyHLAYrxgjEHC28bxQiTr5wwBWxE9BLxUcnkFAXzsy3qE74FQOIjvQbtrruLIOGwRGRYtzyfygGA3MfTHug6JwZGngqFf3k+kbznE8fZe7zxMwT63P6/54rR5fU/plLoTNFqdQsZGAfGOSYuHIEzWXOkWxffqsOwxPa1VxQTLD32O95oBcrcvmw4toC2NeFTe/+zZRMfGMbu7QIi0AL3qFpky3j12zcyA/M2I="
     # BINTRAY_KEY
@@ -108,13 +107,10 @@ jobs:
         bucket: $AWS_S3_BUCKET
         region: us-west-2
         skip_cleanup: true
-        upload-dir: sdk/android/$TRAVIS_BRANCH
+        upload-dir: releases/sdk/android/$TRAVIS_BRANCH
         local-dir: deploy
         on:
           all_branches: true
-
-      after_deploy:
-        - aws cloudfront create-invalidation --distribution-id $AWS_CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
 
 # --------------------------------------
 # Deploy on Bintray
