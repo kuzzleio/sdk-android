@@ -101,6 +101,12 @@ jobs:
         - mkdir -p ./deploy
         - aws s3 sync s3://$TRAVIS_S3_BUCKET/sdk-android/$TRAVIS_BUILD_NUMBER ./deploy
 
+      before_deploy:
+        - |
+          if [[ $TRAVIS_BRANCH =~ ^.?-dev$ ]]; then
+            sudo mv ./deploy/kuzzlesdk-*-release.aar ./deploy/kuzzlesdk-android-experimental.tar.gz;
+          fi;
+
       deploy:
         provider: s3
         access_key_id: $AWS_ACCESS_KEY_ID
