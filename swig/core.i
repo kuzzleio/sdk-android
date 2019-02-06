@@ -4,6 +4,7 @@
 %include "common.i"
 %include "exceptions.i"
 %include "typemap.i"
+%include "kcore.i"
 %include "json_wrap/kuzzle.i"
 %include "json_wrap/listeners.i"
 %include "json_wrap/document.i"
@@ -11,8 +12,6 @@
 %include "json_wrap/server.i"
 %include "json_wrap/collection.i"
 %include "json_wrap/auth.i"
-%include "kcore.i"
-
 
 typedef long long time_t;
 

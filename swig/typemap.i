@@ -152,3 +152,16 @@
 %typemap(javaout) std::vector<kuzzleio::user_right*> {
   return $jnicall;
 }
+
+%typemap(jni) Event& "jobject"
+%typemap(jtype) Event& "Event"
+%typemap(jstype) Event& "Event"
+%typemap(javain) Event& "$javainput"
+%typemap(in) Event& (Event tmp) {
+  jmethodID swigValueMethod = jenv->GetMethodID(jenv->GetObjectClass($input), "swigValue", "()I");
+  jint swigValue = jenv->CallIntMethod($input, swigValueMethod, 0);
+
+  Event e = (Event)swigValue;
+  $1 = &e;
+}
+%apply Event& event { Event& event };

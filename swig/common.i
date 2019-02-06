@@ -86,9 +86,7 @@
 %ignore *_response::status;
 %ignore token_validity::status;
 
-
 %include "std_string.i"
-
 
 %{
 #include "websocket.cpp"
