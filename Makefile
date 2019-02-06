@@ -32,13 +32,23 @@ ROOTOUTDIR = $(ROOT_DIR)build
 JAVAINCLUDE = -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux
 JAVA_HOME =
 
-CXXFLAGS = -g -fPIC -std=c++11 -I.$(PATHSEP)sdk-cpp$(PATHSEP)include -I.$(PATHSEP)sdk-cpp$(PATHSEP)src -I.$(PATHSEP)sdk-cpp$(PATHSEP)sdk-c$(PATHSEP)include$(PATHSEP) -I.$(PATHSEP)sdk-cpp$(PATHSEP)sdk-c$(PATHSEP)build -L.$(PATHSEP)sdk-cpp$(PATHSEP)sdk-c$(PATHSEP)build
+CXXFLAGS = -g -fPIC -std=c++11 -MMD \
+	-I.$(PATHSEP)include \
+	-I.$(PATHSEP)sdk-cpp$(PATHSEP)include \
+	-I.$(PATHSEP)sdk-cpp$(PATHSEP)src \
+	-I.$(PATHSEP)sdk-cpp$(PATHSEP)build$(PATHSEP)kuzzle-cpp-sdk$(PATHSEP)include \
+	-L.$(PATHSEP)sdk-cpp$(PATHSEP)build$(PATHSEP)kuzzle-cpp-sdk$(PATHSEP)lib
+	
 LDFLAGS = -lkuzzlesdk
 
 OBJS = $(SRCS:.cxx=.o)
 SRCS = kcore_wrap.cxx
 SWIG = swig
 STRIP ?= strip
+
+# Ignore SWIG warning: 451-memory allocation
+# http://www.swig.org/Doc1.3/Warnings.html#Warnings_nn12
+IGNORED_SWIG_WARNING = -w451
 
 all: android
 
@@ -52,10 +62,10 @@ makeabifolder:
 	mkdir -p $(OUTDIR)/../../../../jniLibs/$(ARCH)
 
 swig:
-	$(SWIG) -Wall -c++ -java -package io.kuzzle.sdk -outdir $(OUTDIR) -o $(SRCS) -I.$(PATHSEP)sdk-cpp$(PATHSEP)include -I.$(PATHSEP)sdk-cpp$(PATHSEP)sdk-c$(PATHSEP)include$(PATHSEP) -I.$(PATHSEP)sdk-cpp$(PATHSEP)src -I.$(PATHSEP)sdk-cpp$(PATHSEP)sdk-c$(PATHSEP)build$(PATHSEP) $(JAVAINCLUDE) swig/core.i
+	$(SWIG) -Wextra $(IGNORED_SWIG_WARNING) -c++ -java -package io.kuzzle.sdk -outdir $(OUTDIR) -o $(SRCS) -I.$(PATHSEP)sdk-cpp$(PATHSEP)include -I.$(PATHSEP)sdk-cpp$(PATHSEP)sdk-c$(PATHSEP)include$(PATHSEP) -I.$(PATHSEP)sdk-cpp$(PATHSEP)src -I.$(PATHSEP)sdk-cpp$(PATHSEP)sdk-c$(PATHSEP)build$(PATHSEP) $(JAVAINCLUDE) swig/core.i
 
 make_lib:
-	$(CXX) -shared kcore_wrap.o -o $(OUTDIR)/../../../../jniLibs/$(ARCH)/$(LIB_PREFIX)kuzzle-wrapper-android$(DYNLIB) $(LDFLAGS)$(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(LIBS) $(INCS) $(JAVAINCLUDE)
+	$(CXX) -shared kcore_wrap.o -o $(OUTDIR)/../../../../jniLibs/$(ARCH)/$(LIB_PREFIX)kuzzle-wrapper-android$(DYNLIB) $(LDFLAGS)$(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(JAVAINCLUDE)
 	$(STRIP) $(OUTDIR)/../../../../jniLibs/$(ARCH)/$(LIB_PREFIX)kuzzle-wrapper-android$(DYNLIB)
 
 android: OUTDIR = $(ROOTOUTDIR)/android/app/src/main/java/io/kuzzle/sdk

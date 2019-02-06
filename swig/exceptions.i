@@ -6,8 +6,8 @@
   }
 %enddef
 
-%javaexception("io.kuzzle.sdk.BadRequestException, io.kuzzle.sdk.ForbiddenException, 
-                io.kuzzle.sdk.GatewayTimeoutException, io.kuzzle.sdk.InternalException, 
+%javaexception("io.kuzzle.sdk.BadRequestException, io.kuzzle.sdk.ForbiddenException,
+                io.kuzzle.sdk.GatewayTimeoutException, io.kuzzle.sdk.InternalException,
                 io.kuzzle.sdk.NotFoundException, io.kuzzle.sdk.PartialException,
                 io.kuzzle.sdk.PreconditionException, io.kuzzle.sdk.ServiceUnavailableException,
                 io.kuzzle.sdk.SizeLimitException, io.kuzzle.sdk.UnauthorizedException,
@@ -24,7 +24,7 @@
     CATCH (kuzzleio::ServiceUnavailableException, "io/kuzzle/sdk/ServiceUnavailableException")
     CATCH (kuzzleio::SizeLimitException, "io/kuzzle/sdk/SizeLimitException")
     CATCH (kuzzleio::UnauthorizedException, "io/kuzzle/sdk/UnauthorizedException")
-    CATCH (kuzzleio::KuzzleException, "io/kuzzle/sdk/KuzzleException")   
+    CATCH (kuzzleio::KuzzleException, "io/kuzzle/sdk/KuzzleException")
 }
 
 
