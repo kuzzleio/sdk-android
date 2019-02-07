@@ -80,7 +80,7 @@ jobs:
       before_script:
         - aws s3 sync s3://$TRAVIS_S3_BUCKET/sdk-android/$TRAVIS_BUILD_NUMBER ./build/android/app/src/main
       script:
-        - docker run --rm -it -v "$(pwd)":/mnt kuzzleio/sdk-cross:android-base make package
+        - docker run --rm -it -v "$(pwd)":/mnt kuzzleio/sdk-cross:android-base bash -c "yes | \$ANDROID_HOME/tools/bin/sdkmanager --licenses && make package"  
 
       after_success:
         - |

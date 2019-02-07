@@ -1,61 +1,10 @@
-%rename(TokenValidity) token_validity;
-%rename(AckResponse) ack_response;
-%rename(queueTTL) queue_ttl;
-%rename(Options, match="class") options;
-%rename(QueryOptions) query_options;
-%rename(JsonObject) json_object;
-%rename(JsonResult) json_result;
-%rename(LoginResult) login_result;
-%rename(BoolResult) bool_result;
-%rename(Statistics) statistics;
-%rename(AllStatisticsResult) all_statistics_result;
-%rename(StatisticsResult) statistics_result;
-%rename(CollectionsList) collection_entry;
-%rename(CollectionsListResult) collection_entry_result;
-%rename(StringArrayResult) string_array_result;
-%rename(KuzzleResponse) kuzzle_response;
-%rename(KuzzleRequest) kuzzle_request;
-%rename(ShardsResult) shards_result;
-%rename(DateResult) date_result;
-%rename(UserData) user_data;
-%rename(KuzzleUser, match="class") kuzzle_user;
-%rename(RoomOptions) room_options;
-%rename(SearchFilters) search_filters;
-%rename(SearchResult) search_result;
-%rename(NotificationResult) notification_result;
-%rename(NotificationContent) notification_content;
-%rename(SubscribeToSelf) subscribe_to_self;
-%rename(ValidationResponse) validation_response;
-
-%rename(delete) delete_;
-
-%ignore *::error;
-%ignore *::status;
-%ignore *::stack;
-
-%{
-#include "collection.cpp"
-#include "auth.cpp"
-#include "index.cpp"
-#include "server.cpp"
-#include "document.cpp"
-%}
-
-%ignore getListener;
-%ignore getListeners;
-
-%include "std_function.i"
-%std_function(NotificationListener, void, onMessage, const kuzzleio::notification_result*);
-%std_function(EventListener, void, trigger, const std::string);
-
-%{
-#include "kuzzle.cpp"
-#include "realtime.cpp"
-%}
-
-%include "exceptions.i"
 %include "std_string.i"
+%include "std_vector.i"
+
+%include "common.i"
+%include "exceptions.i"
 %include "typemap.i"
+%include "kcore.i"
 %include "json_wrap/kuzzle.i"
 %include "json_wrap/listeners.i"
 %include "json_wrap/document.i"
@@ -64,40 +13,51 @@
 %include "json_wrap/collection.i"
 %include "json_wrap/auth.i"
 
-%include "kcore.i"
-
-%include "std_vector.i"
-
 typedef long long time_t;
 
 %template(StringVector) std::vector<std::string>;
-
 %typemap(out) const StringVector& %{
+    return $1;
+%}
+
+%template(UserRightVector) std::vector<kuzzleio::user_right*>;
+%typemap(out) const UserRightVector& %{
     return $1;
 %}
 
 %pragma(java) jniclasscode=%{
   static {
     try {
-      System.loadLibrary("kuzzle-wrapper-android");
-    } catch (Exception e) {
-      System.err.println("Native code library failed to load. \n");
-      e.printStackTrace();
-      System.exit(1);
+      System.loadLibrary("kuzzle-wrapper-java");
+    } catch (UnsatisfiedLinkError e) {
+      try {
+        java.io.InputStream inputStream = kuzzlesdk.class.getResourceAsStream("/libkuzzle-wrapper-java.so");
+        java.nio.file.Path path = java.nio.file.FileSystems.getDefault().getPath("").toAbsolutePath();
+        String sharedObject = path.toString() + "/libs/libkuzzle-wrapper-java.so";
+
+        try {
+          java.io.File folder = new java.io.File(path.toString() + "/libs/");
+          folder.mkdir();
+        } catch(Exception ee) {}
+
+        java.io.OutputStream outputStream = new java.io.FileOutputStream(new java.io.File(sharedObject));
+
+        int read = 0;
+        byte[] bytes = new byte[1024];
+
+        while ((read = inputStream.read(bytes)) != -1) {
+          outputStream.write(bytes, 0, read);
+        }
+
+        System.load(path.toString() + "/libs/libkuzzle-wrapper-java.so");
+      } catch (Exception ex) {
+        System.err.println("Native code library failed to load. \n");
+        ex.printStackTrace();
+        System.exit(1);
+      }
     }
   }
 %}
-
-%extend kuzzleio::options {
-    options() {
-        options *o = kuzzle_new_options();
-        return o;
-    }
-
-    ~options() {
-        free($self);
-    }
-}
 
 %extend kuzzleio::kuzzle_response {
     ~kuzzle_response() {
@@ -105,6 +65,7 @@ typedef long long time_t;
     }
 }
 
+%include "websocket.cpp"
 %include "kuzzle.cpp"
 %include "collection.cpp"
 %include "document.cpp"
@@ -112,3 +73,5 @@ typedef long long time_t;
 %include "auth.cpp"
 %include "index.cpp"
 %include "server.cpp"
+%include "search_result.cpp"
+%include "default_constructors.cpp"
