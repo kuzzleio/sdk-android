@@ -817,7 +817,7 @@ public class Kuzzle {
         @Override
         public void onSuccess(JSONObject response) {
           try {
-            JSONArray array = response.getJSONObject("result").getJSONArray("hits");
+            JSONArray array = response.getJSONObject("result").getJSONArray("indexes");
             int length = array.length();
             String[] indexes = new String[length];
             for (int i = 0; i < length; i++) {
