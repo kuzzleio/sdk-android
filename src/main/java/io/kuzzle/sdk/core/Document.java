@@ -384,8 +384,11 @@ public class Document {
     }
 
     if (this.content.has("version")) {
-      this.version = this.content.getLong("version");
-      this.content.remove("version");
+      Object version = this.content.get("version");
+      if (version instanceof Long) {
+        this.version = this.content.getLong("version");
+        this.content.remove("version");
+      }
     }
 
     return this;
