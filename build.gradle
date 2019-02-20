@@ -2,7 +2,8 @@ apply plugin: 'com.android.library'
 apply plugin: 'jacoco-android'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'com.github.dcendents.android-maven'
-version = "3.0.5"
+version = "3.0.6"
+
 buildscript {
     repositories {
     	google()
@@ -48,13 +49,14 @@ android {
 }
 
 repositories {
+    google()
     jcenter()
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     // Temporary using v21, until Travis supports v23+
-    implementation 'com.android.support:appcompat-v7:23.+'
+    implementation 'com.android.support:appcompat-v7:23.0.1'
     implementation 'io.socket:socket.io-client:1.0.0'
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.hamcrest:hamcrest-junit:2.0.0.0'
