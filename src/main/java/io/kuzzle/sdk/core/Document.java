@@ -385,7 +385,7 @@ public class Document {
 
     if (this.content.has("version")) {
       Object version = this.content.get("version");
-      if (version instanceof Long) {
+      if (version instanceof Long || version instanceof Integer) {
         this.version = this.content.getLong("version");
         this.content.remove("version");
       }
