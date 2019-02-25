@@ -80,15 +80,20 @@
 %rename(_document, match="class") document;
 %rename(_server, match="class") server;
 
+%ignore s_options;
 %ignore *::error;
 %ignore *::stack;
 %ignore *_result::status;
 %ignore *_response::status;
 %ignore token_validity::status;
+%ignore _c_emit_event;
 
 %include "std_string.i"
 
 %{
+#include "options.cpp"
+#include "event_emitter.cpp"
+#include "protocol.cpp"
 #include "websocket.cpp"
 #include "search_result.cpp"
 #include "collection.cpp"
@@ -103,7 +108,7 @@
 %ignore getListeners;
 
 %include "std_function.i"
-%std_function(NotificationListener, void, onMessage, kuzzleio::notification_result*);
+%std_function(NotificationListener, void, onMessage, std::shared_ptr<kuzzleio::notification_result>);
 %std_function(EventListener, void, trigger, const std::string);
 
 %{

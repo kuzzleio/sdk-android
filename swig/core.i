@@ -65,6 +65,7 @@ typedef long long time_t;
     }
 }
 
+%include "options.cpp"
 %include "websocket.cpp"
 %include "kuzzle.cpp"
 %include "collection.cpp"
