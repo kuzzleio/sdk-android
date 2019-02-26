@@ -2477,7 +2477,7 @@ public class Kuzzle {
       throw new IllegalArgumentException("Security.getMyRights: listener is mandatory.");
     }
     try {
-      Kuzzle.this.query(buildQueryArgs("getMyRights"), new JSONObject(), options, new OnQueryDoneListener() {
+      Kuzzle.this.query(buildQueryArgs("auth", "getMyRights"), new JSONObject(), options, new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
           try {
