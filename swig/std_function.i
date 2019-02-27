@@ -21,7 +21,7 @@
   GET_MACRO(__VA_ARGS__, FE_5, FE_4, FE_3, FE_2, FE_1, FE_0)(action,__VA_ARGS__)
 %enddef
 
-%define %std_function(Name, Ret, AbstractMethodName, ...)
+%define %std_function_vararg(Name, Ret, AbstractMethodName, ...)
 
 %feature("director") Name##Impl;
 %typemap(javaclassmodifiers) Name##Impl "abstract class";
@@ -88,6 +88,82 @@ namespace std {
       function<Ret(__VA_ARGS__)>(Name##Impl *in) {
         return new std::function<Ret(__VA_ARGS__)>([=](FOR_EACH(lvalref,__VA_ARGS__)){
               return in->AbstractMethodName(FOR_EACH(forward,__VA_ARGS__));
+        });
+      }
+    }
+  };
+}
+
+%enddef
+
+
+%define %std_function(Name, Ret, AbstractMethodName, Arg)
+
+%feature("director") Name##Impl;
+%typemap(javaclassmodifiers) Name##Impl "abstract class";
+
+%{
+  struct Name##Impl {
+    virtual ~Name##Impl() {}
+    virtual Ret AbstractMethodName(Arg) = 0;
+  };
+%}
+
+%javamethodmodifiers Name##Impl::AbstractMethodName "abstract protected";
+%typemap(javaout) Ret Name##Impl::AbstractMethodName ";"
+
+%typemap(javaclassmodifiers) std::function<Ret(Arg)> "public abstract class"
+%javamethodmodifiers std::function<Ret(Arg)>::operator() "public abstract"
+%typemap(javaout) Ret std::function<Ret(Arg)>::operator() ";"
+
+struct Name##Impl {
+  virtual ~Name##Impl();
+protected:
+  virtual Ret AbstractMethodName(Arg) = 0;
+};
+
+%typemap(maybereturn) SWIGTYPE "return ";
+%typemap(maybereturn) void "";
+
+%typemap(javain) std::function<Ret(Arg)>, std::function<Ret(Arg)>* "$javaclassname.getCPtr($javaclassname.makeNative($javainput))"
+%typemap(javacode) std::function<Ret(Arg)> %{
+  public Name() {
+    wrapper = new Name##Impl(){
+      public $typemap(jstype, Ret) AbstractMethodName(Arg) {
+        $typemap(maybereturn, Ret)Name.this.AbstractMethodName(Arg);
+      }
+    };
+    proxy = new $javaclassname(wrapper){
+      public $typemap(jstype, Ret) AbstractMethodName(Arg) {
+        $typemap(maybereturn, Ret)Name.this.AbstractMethodName(Arg);
+      }
+    };
+  }
+
+  static $javaclassname makeNative($javaclassname in) {
+    if (null == in.wrapper) return in;
+    return in.proxy;
+  }
+
+  private Name##Impl wrapper;
+  private $javaclassname proxy;
+%}
+
+%rename(Name) std::function<Ret(Arg)>;
+%rename(AbstractMethodName) std::function<Ret(Arg)>::operator();
+
+namespace std {
+  struct function<Ret(Arg)> {
+    function<Ret(Arg)>(const std::function<Ret(Arg)>&);
+
+    Ret operator()(Arg) const;
+
+    function<Ret(Arg)>(Ret(*const)(Arg));
+
+    %extend {
+      function<Ret(Arg)>(Name##Impl *in) {
+        return new std::function<Ret(Arg)>([=](Arg n){
+              return in->AbstractMethodName(n);
         });
       }
     }
