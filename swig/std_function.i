@@ -129,13 +129,13 @@ protected:
 %typemap(javacode) std::function<Ret(Arg)> %{
   public Name() {
     wrapper = new Name##Impl(){
-      public $typemap(jstype, Ret) AbstractMethodName(Arg) {
-        $typemap(maybereturn, Ret)Name.this.AbstractMethodName(Arg);
+      public $typemap(jstype, Ret) AbstractMethodName($typemap(jstype, Arg) arg) {
+        $typemap(maybereturn, Ret)Name.this.AbstractMethodName(arg);
       }
     };
     proxy = new $javaclassname(wrapper){
-      public $typemap(jstype, Ret) AbstractMethodName(Arg) {
-        $typemap(maybereturn, Ret)Name.this.AbstractMethodName(Arg);
+      public $typemap(jstype, Ret) AbstractMethodName($typemap(jstype, Arg) arg) {
+        $typemap(maybereturn, Ret)Name.this.AbstractMethodName(arg);
       }
     };
   }
