@@ -80,6 +80,33 @@
 %rename(_document, match="class") document;
 %rename(_server, match="class") server;
 
+%rename(isAutoQueue, fullname="1") kuzzleio::Options::autoQueue() const;
+%rename(setAutoQueue, fullname="1") kuzzleio::Options::autoQueue(bool value);
+%rename(isAutoReconnect, fullname="1") kuzzleio::Options::autoReconnect() const;
+%rename(setAutoReconnect, fullname="1") kuzzleio::Options::autoReconnect(bool value);
+%rename(isAutoReplay, fullname="1") kuzzleio::Options::autoReplay() const;
+%rename(setAutoReplay, fullname="1") kuzzleio::Options::autoReplay(bool value);
+%rename(isAutoResubscribe, fullame="1") kuzzleio::Options::autoResubscribe() const;
+%rename(setAutoResubscribe, fullname="1") kuzzleio::Options::autoResubscribe(bool value);
+%rename(getPort, fullname="1") kuzzleio::Options::port() const;
+%rename(setPort, fullname="1") kuzzleio::Options::port(unsigned int value);
+%rename(getQueueMaxSize, fullname="1") kuzzleio::Options::queueMaxSize() const;
+%rename(setQueueMaxSize, fullname="1") kuzzleio::Options::queueMaxSize(unsigned long value);
+%rename(getQueueTTL, fullename="1") kuzzleio::Options::queueTTL() const;
+%rename(setQueueTTL, fullname="1") kuzzleio::Options::queueTTL(unsigned int value);
+%rename(getReconnectionDelay, fullname="1") kuzzleio::Options::reconnectionDelay() const;
+%rename(setReconnectionDelay, fullname="1") kuzzleio::Options::reconnectionDelay(unsigned long value);
+%rename(getReplayInterval, fullname="1") kuzzleio::Options::replayInterval() const;
+%rename(setReplayInterval, fullname="1") kuzzleio::Options::replayInterval(unsigned long value);
+%rename(isSslConnection, fullname="1") kuzzleio::Options::sslConnection() const;
+%rename(setSslConnection, fullname="1") kuzzleio::Options::sslConnection(bool value);
+
+%rename(Event) KuzzleEvent;
+%rename(State) KuzzleState;
+%rename(Action) KuzzleAction;
+
+%rename("%(regex:/^KUZZLE_EVENT_(.*)/\\1/)s", %$isenumitem) "";
+
 %ignore s_options;
 %ignore *::error;
 %ignore *::stack;
@@ -89,6 +116,7 @@
 %ignore _c_emit_event;
 
 %include "std_string.i"
+%include <std_shared_ptr.i>
 
 %{
 #include "options.cpp"
@@ -109,7 +137,15 @@
 
 %include "std_function.i"
 %std_function(NotificationListener, void, onMessage, std::shared_ptr<kuzzleio::notification_result>);
-%std_function(EventListener, void, trigger, const std::string);
+
+%std_function(EventListener, void, trigger, const std::string&);
+
+%shared_ptr(kuzzleio::EventListener);
+%typemap(javadirectorin) kuzzleio::SharedEventListener "new $typemap(jstype, kuzzleio::EventListener)($1,false)";
+%typemap(directorin,descriptor="L$typemap(jstype, kuzzleio::EventListener);") kuzzleio::SharedEventListener %{ 
+  *($&1_type*)&j$1 = &$1;
+%}
+
 
 %{
 #include "kuzzle.cpp"

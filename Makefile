@@ -73,7 +73,7 @@ android: make_cpp makeabifolder swig $(OBJS) make_lib
 	cd $(ROOTOUTDIR)/android/app/src/main/jni && ndk-build && cd - && cd $(ROOTOUTDIR)/android && cp app/src/main/obj/local/$(ARCH)/*.so app/src/main/jniLibs/$(ARCH)/
 
 package:
-	 cd $(ROOTOUTDIR)/android && gradle assemble
+	 yes | $(ANDROID_HOME)/tools/bin/sdkmanager --licenses && cd $(ROOTOUTDIR)/android && gradle assemble
 
 clean:
 	cd sdk-cpp && $(MAKE) clean

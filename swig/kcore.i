@@ -1,6 +1,7 @@
 %module(directors="1") kuzzlesdk
 %{
 #include "internal/options.hpp"
+#include "internal/event_emitter.hpp"
 #include "protocol.hpp"
 #include "websocket.hpp"
 #include "internal/exceptions.hpp"
