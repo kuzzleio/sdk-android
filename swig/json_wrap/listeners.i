@@ -25,7 +25,7 @@
 /*               EventListener              */
 /********************************************/
 
-TYPEMAP_DIRECTOR_INPUT("jobject", const std::string& jsonResponse, "org.json.JSONObject", "java/lang/String", "org/json/JSONObject")
+TYPEMAP_DIRECTOR_INPUT("jobject", const std::string&, "org.json.JSONObject", "java/lang/String", "org/json/JSONObject")
 
 
 /********************************************/

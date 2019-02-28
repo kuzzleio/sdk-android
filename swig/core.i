@@ -28,33 +28,37 @@ typedef long long time_t;
 %pragma(java) jniclasscode=%{
   static {
     try {
-      System.loadLibrary("kuzzle-wrapper-java");
+      System.loadLibrary("kuzzle-wrapper-android");
     } catch (UnsatisfiedLinkError e) {
-      try {
-        java.io.InputStream inputStream = kuzzlesdk.class.getResourceAsStream("/libkuzzle-wrapper-java.so");
-        java.nio.file.Path path = java.nio.file.FileSystems.getDefault().getPath("").toAbsolutePath();
-        String sharedObject = path.toString() + "/libs/libkuzzle-wrapper-java.so";
+      e.printStackTrace();
+      // try {
+      //   System.err.println("Loading " + android.os.Build.CPU_ABI + " " + android.os.Build.CPU_ABI);
+      //   java.io.InputStream inputStream = kuzzlesdk.class.getResourceAsStream("/jni/"+android.os.Build.CPU_ABI+"/libkuzzle-wrapper-android.so");
+      //   java.nio.file.Path path = java.nio.file.FileSystems.getDefault().getPath("").toAbsolutePath();
+      //   String sharedObject = path.toString() + "/libs/libkuzzle-wrapper-android.so";
 
-        try {
-          java.io.File folder = new java.io.File(path.toString() + "/libs/");
-          folder.mkdir();
-        } catch(Exception ee) {}
+      //   try {
+      //     java.io.File folder = new java.io.File(path.toString() + "/libs/");
+      //     folder.mkdir();
+      //   } catch(Exception ee) {
+      //     ee.printStackTrace();
+      //   }
 
-        java.io.OutputStream outputStream = new java.io.FileOutputStream(new java.io.File(sharedObject));
+      //   java.io.OutputStream outputStream = new java.io.FileOutputStream(new java.io.File(sharedObject));
 
-        int read = 0;
-        byte[] bytes = new byte[1024];
+      //   int read = 0;
+      //   byte[] bytes = new byte[1024];
 
-        while ((read = inputStream.read(bytes)) != -1) {
-          outputStream.write(bytes, 0, read);
-        }
+      //   while ((read = inputStream.read(bytes)) != -1) {
+      //     outputStream.write(bytes, 0, read);
+      //   }
 
-        System.load(path.toString() + "/libs/libkuzzle-wrapper-java.so");
-      } catch (Exception ex) {
-        System.err.println("Native code library failed to load. \n");
-        ex.printStackTrace();
-        System.exit(1);
-      }
+      //   System.load(path.toString() + "/libs/libkuzzle-wrapper-android.so");
+      // } catch (Exception ex) {
+      //   System.err.println("Native code library failed to load. \n");
+      //   ex.printStackTrace();
+      //   System.exit(1);
+      // }
     }
   }
 %}

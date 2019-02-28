@@ -146,7 +146,6 @@
   *($&1_type*)&j$1 = &$1;
 %}
 
-
 %{
 #include "kuzzle.cpp"
 #include "realtime.cpp"
