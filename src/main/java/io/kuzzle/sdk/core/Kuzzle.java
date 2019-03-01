@@ -1239,7 +1239,7 @@ public class Kuzzle {
 
         @Override
         public void onError(JSONObject error) {
-          if (error != null) {
+          if (error != null && listener != null) {
             listener.onError(error);
           }
         }
