@@ -1229,17 +1229,15 @@ public class Kuzzle {
     }
 
     if (this.state == States.CONNECTED || (options != null && !options.isQueuable())) {
-      emitRequest(object, new OnQueryDoneListener() {
+      emitRequest(object, listener == null ? null : new OnQueryDoneListener() {
         @Override
         public void onSuccess(JSONObject response) {
-          if (listener != null) {
-            listener.onSuccess(response);
-          }
+          listener.onSuccess(response);
         }
 
         @Override
         public void onError(JSONObject error) {
-          if (error != null && listener != null) {
+          if (error != null) {
             listener.onError(error);
           }
         }
