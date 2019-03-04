@@ -326,101 +326,6 @@ public class Kuzzle {
 
     Kuzzle.this.state = States.CONNECTING;
 
-    /*
-    if (socket != null) {
-      socket.once(Socket.EVENT_CONNECT, new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-          Kuzzle.this.state = States.CONNECTED;
-
-          Kuzzle.this.renewSubscriptions();
-          Kuzzle.this.dequeue();
-          Kuzzle.this.emitEvent(Event.connected);
-
-          if (Kuzzle.this.connectionCallback != null) {
-            Kuzzle.this.connectionCallback.onSuccess(null);
-          }
-        }
-      });
-    }
-    */
-
-    /*
-    if (socket != null) {
-      socket.once(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-          Kuzzle.this.state = States.ERROR;
-          Kuzzle.this.emitEvent(Event.error, args);
-
-          if (connectionCallback != null) {
-            JSONObject error = new JSONObject();
-            try {
-              error.put("message", ((EngineIOException) args[0]).getMessage());
-              error.put("code", ((EngineIOException) args[0]).code);
-            } catch (JSONException e) {
-              throw new RuntimeException(e);
-            }
-            connectionCallback.onError(error);
-          }
-        }
-      });
-    }
-    */
-
-    /*
-    if (socket != null) {
-      socket.once(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-          Kuzzle.this.state = States.OFFLINE;
-          if (!Kuzzle.this.autoReconnect) {
-            Kuzzle.this.disconnect();
-          }
-          if (Kuzzle.this.autoQueue) {
-            Kuzzle.this.queuing = true;
-          }
-
-          Kuzzle.this.emitEvent(Event.disconnected);
-        }
-      });
-    }
-    */
-
-    /*
-    if (socket != null) {
-      socket.once(Socket.EVENT_RECONNECT, new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-          Kuzzle.this.state = States.CONNECTED;
-
-          if (Kuzzle.this.jwtToken != null) {
-            Kuzzle.this.checkToken(jwtToken, new ResponseListener<TokenValidity>() {
-              @Override
-              public void onSuccess(TokenValidity response) {
-                if (!response.isValid()) {
-                  Kuzzle.this.jwtToken = null;
-                  Kuzzle.this.emitEvent(Event.tokenExpired);
-                }
-
-                Kuzzle.this.reconnect();
-              }
-
-              @Override
-              public void onError(JSONObject error) {
-                Kuzzle.this.jwtToken = null;
-                Kuzzle.this.emitEvent(Event.tokenExpired);
-                Kuzzle.this.reconnect();
-              }
-            });
-          } else {
-            Kuzzle.this.reconnect();
-          }
-        }
-      });
-    }
-    */
-
     if (socket != null) {
       socket.connect();
     }
@@ -1583,33 +1488,9 @@ public class Kuzzle {
 
     if (this.jwtToken != null || listener != null) {
       currentQueries.put(request.get("requestId").toString(), listener);
-      /*
-      socket.once(request.get("requestId").toString(), new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-          try {
-            // checking token expiration
-            if (!((JSONObject) args[0]).isNull("error") && ((JSONObject) args[0]).getJSONObject("error").getString("message").equals("Token expired") && !((JSONObject) args[0]).getString("action").equals("logout")) {
-              emitEvent(Event.tokenExpired, listener);
-            }
-
-            if (listener != null) {
-              if (!((JSONObject) args[0]).isNull("error")) {
-                listener.onError(((JSONObject) args[0]).getJSONObject("error"));
-              } else {
-                listener.onSuccess((JSONObject) args[0]);
-              }
-            }
-          } catch (JSONException e) {
-            throw new RuntimeException(e);
-          }
-        }
-      });
-      */
     }
 
     socket.send(request.toString());
-    // socket.emit("kuzzle", request);
 
     // Track requests made to allow Room.subscribeToSelf to work
     this.requestHistory.put(request.getString("requestId"), new Date());
