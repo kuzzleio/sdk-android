@@ -287,14 +287,6 @@ public class Room {
                     callAfterRenew(args[0]);
                   }
                 });
-                /*
-                Room.this.kuzzle.getSocket().on(Room.this.channel, new Emitter.Listener() {
-                  @Override
-                  public void call(final Object... args) {
-                    callAfterRenew(args[0]);
-                  }
-                });
-                */
 
                 Room.this.dequeue();
               }
@@ -349,7 +341,6 @@ public class Room {
       final JSONObject data = new JSONObject().put("body", new JSONObject().put("roomId", this.roomId));
       this.kuzzle.addHeaders(data, this.headers);
 
-      //this.kuzzle.getSocket().off(Room.this.channel);
       this.kuzzle.removeRoom(Room.this.channel);
       this.kuzzle.deleteSubscription(this.roomId, this.id);
 
