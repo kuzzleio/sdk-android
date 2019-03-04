@@ -18,12 +18,12 @@ import io.kuzzle.sdk.enums.Event;
 import io.kuzzle.sdk.enums.Scope;
 import io.kuzzle.sdk.enums.State;
 import io.kuzzle.sdk.enums.Users;
+import io.kuzzle.sdk.listeners.EventListener;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.SubscribeListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.responses.NotificationResponse;
 import io.kuzzle.sdk.state.States;
-import io.socket.emitter.Emitter;
 
 public class Room {
 
@@ -54,7 +54,7 @@ public class Room {
 
   /**
    * Constructor
-   * 
+   *
    * @param kuzzleDataCollection Data collection to link
    */
   public Room(@NonNull final Collection kuzzleDataCollection) {
@@ -248,11 +248,11 @@ public class Room {
     try {
       final Options options = new Options();
       final JSONObject
-          subscribeQuery = new JSONObject()
-          .put("body", this.filters)
-          .put("scope", this.scope.toString().toLowerCase())
-          .put("state", this.state.toString().toLowerCase())
-          .put("users", this.users.toString().toLowerCase());
+              subscribeQuery = new JSONObject()
+              .put("body", this.filters)
+              .put("scope", this.scope.toString().toLowerCase())
+              .put("state", this.state.toString().toLowerCase())
+              .put("users", this.users.toString().toLowerCase());
 
       options.setVolatile(this._volatile);
       this.kuzzle.addHeaders(subscribeQuery, this.headers);
@@ -281,12 +281,20 @@ public class Room {
 
                 Room.this.kuzzle.addSubscription(Room.this.roomId, Room.this.id, Room.this);
 
+                Room.this.kuzzle.addRoom(Room.this.channel,  new EventListener() {
+                  @Override
+                  public void trigger(final Object... args) {
+                    callAfterRenew(args[0]);
+                  }
+                });
+                /*
                 Room.this.kuzzle.getSocket().on(Room.this.channel, new Emitter.Listener() {
                   @Override
                   public void call(final Object... args) {
                     callAfterRenew(args[0]);
                   }
                 });
+                */
 
                 Room.this.dequeue();
               }
@@ -314,10 +322,10 @@ public class Room {
 
   /**
    * Unsubscribes from Kuzzle.
-   * Stop listening immediately. If there is no listener left on that room, 
+   * Stop listening immediately. If there is no listener left on that room,
    * sends an unsubscribe request to Kuzzle, once
    * pending subscriptions reaches 0, and only if there is still no listener on that room.
-   * We wait for pending subscriptions to finish to avoid unsubscribing while 
+   * We wait for pending subscriptions to finish to avoid unsubscribing while
    * another subscription on that room is
    *
    * @return this
@@ -341,7 +349,8 @@ public class Room {
       final JSONObject data = new JSONObject().put("body", new JSONObject().put("roomId", this.roomId));
       this.kuzzle.addHeaders(data, this.headers);
 
-      this.kuzzle.getSocket().off(Room.this.channel);
+      //this.kuzzle.getSocket().off(Room.this.channel);
+      this.kuzzle.removeRoom(Room.this.channel);
       this.kuzzle.deleteSubscription(this.roomId, this.id);
 
       if (this.kuzzle.getSubscriptions(this.roomId) == null) {
@@ -437,7 +446,7 @@ public class Room {
 
   /**
    * Subscription headers setter
-   * 
+   *
    * @param content - new headers content
    * @param replace - default: false = append the content, true = replace
    * @return this

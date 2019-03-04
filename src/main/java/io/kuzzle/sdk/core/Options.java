@@ -33,6 +33,8 @@ public class Options {
   private Long size = null;
   private Integer port = 7512;
   private String scroll = null;
+
+  private boolean ssl = false;
   private SearchResult previous = null;
   private String scrollId = null;
   private int retryOnConflict = 0;
@@ -488,6 +490,23 @@ public class Options {
    */
   public Integer getPort() {
     return this.port;
+  }
+
+  /**
+   * ssl property getter
+   * @return ssl property value
+   */
+  public boolean isSsl() {
+    return ssl;
+  }
+
+  /**
+   * ssl property setter
+   * @param  ssl New port value
+   * @return this
+   */
+  public void setSsl(boolean ssl) {
+    this.ssl = ssl;
   }
 
   /**
