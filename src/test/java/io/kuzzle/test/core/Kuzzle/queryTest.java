@@ -19,16 +19,12 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.States;
 import io.kuzzle.sdk.util.QueueFilter;
 import io.kuzzle.test.testUtils.KuzzleExtend;
-import io.socket.client.Socket;
-import io.socket.emitter.Emitter;
+import tech.gusavila92.websocketclient.WebSocketClient;
 
 import static junit.framework.Assert.assertNotNull;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.hamcrest.junit.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -37,7 +33,7 @@ import static org.mockito.Mockito.verify;
 
 public class queryTest {
   private KuzzleExtend kuzzle;
-  private Socket socket = mock(Socket.class);
+  private WebSocketClient socket = mock(WebSocketClient.class);
   private Kuzzle.QueryArgs args;
 
   @Before
@@ -76,7 +72,7 @@ public class queryTest {
     kuzzle.query(args, new JSONObject());
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
-    verify(socket).emit(any(String.class), (JSONObject) argument.capture());
+    verify(socket).send(argument.capture().toString());
 
     JSONObject request = (JSONObject) argument.getValue();
     assertEquals(request.getString("controller"), args.controller);
@@ -94,7 +90,7 @@ public class queryTest {
     kuzzle.query(args, new JSONObject());
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
-    verify(socket).emit(any(String.class), (JSONObject) argument.capture());
+    verify(socket).send(argument.capture().toString());
 
     JSONObject request = (JSONObject) argument.getValue();
     assertEquals(request.getString("controller"), args.controller);
@@ -112,7 +108,7 @@ public class queryTest {
     kuzzle.query(args, new JSONObject());
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
-    verify(socket).emit(any(String.class), (JSONObject) argument.capture());
+    verify(socket).send(argument.capture().toString());
 
     JSONObject request = (JSONObject) argument.getValue();
     assertEquals(request.getString("controller"), args.controller);
@@ -130,7 +126,7 @@ public class queryTest {
     kuzzle.query(args, new JSONObject());
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
-    verify(socket).emit(any(String.class), (JSONObject) argument.capture());
+    verify(socket).send(argument.capture().toString());
 
     JSONObject request = (JSONObject) argument.getValue();
     assertEquals(request.getString("controller"), args.controller);
@@ -150,7 +146,7 @@ public class queryTest {
     kuzzle.query(args, new JSONObject());
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
-    verify(socket).emit(any(String.class), (JSONObject) argument.capture());
+    verify(socket).send(argument.capture().toString());
 
     JSONObject request = (JSONObject) argument.getValue();
     assertEquals(request.getString("controller"), args.controller);
@@ -173,7 +169,7 @@ public class queryTest {
     kuzzle.query(args, new JSONObject(), opts);
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
-    verify(socket).emit(any(String.class), (JSONObject) argument.capture());
+    verify(socket).send(argument.capture().toString());
 
     JSONObject _volatile = ((JSONObject) argument.getValue()).getJSONObject("volatile");
     assertEquals(_volatile.length(), 4);
@@ -188,7 +184,7 @@ public class queryTest {
     kuzzle.query(args, new JSONObject(), new Options());
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
-    verify(socket).emit(any(String.class), (JSONObject) argument.capture());
+    verify(socket).send(argument.capture().toString());
 
     JSONObject _volatile = ((JSONObject) argument.getValue()).getJSONObject("volatile");
     assertEquals(_volatile.length(), 1);
@@ -203,7 +199,7 @@ public class queryTest {
     kuzzle.query(args, new JSONObject(), opts);
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
-    verify(socket).emit(any(String.class), (JSONObject) argument.capture());
+    verify(socket).send(argument.capture().toString());
 
     String refresh = ((JSONObject) argument.getValue()).getString("refresh");
     assertEquals(refresh, optionsRefresh);
@@ -218,7 +214,7 @@ public class queryTest {
     kuzzle.query(args, new JSONObject());
 
     ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
-    verify(socket).emit(any(String.class), (JSONObject) argument.capture());
+    verify(socket).send(argument.capture().toString());
 
     assertEquals(((JSONObject) argument.getValue()).getString("foo"), "bar");
   }
@@ -282,36 +278,12 @@ public class queryTest {
             .put("error", new JSONObject()
                 .put("message", "Token expired"))
             .put("action", "notlogout");
-        ((Emitter.Listener) invocation.getArguments()[1]).call(response);
+        socket.onTextReceived(response.toString());
         return null;
       }
-    }).when(socket).once(any(String.class), any(Emitter.Listener.class));
+    }).when(socket).send(any(String.class));
     kuzzle.emitRequest(new JSONObject().put("requestId", "foo"), mock(OnQueryDoneListener.class));
     verify(fake).trigger(any(Object.class));
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void testEmitRequestException() throws JSONException {
-    doAnswer(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((Emitter.Listener) invocation.getArguments()[1]).call(new JSONObject());
-        return null;
-      }
-    }).when(socket).once(any(String.class), any(Emitter.Listener.class));
-    OnQueryDoneListener listener = spy(new OnQueryDoneListener() {
-      @Override
-      public void onSuccess(JSONObject response) {
-
-      }
-
-      @Override
-      public void onError(JSONObject error) {
-
-      }
-    });
-    doThrow(JSONException.class).when(listener).onSuccess(any(JSONObject.class));
-    kuzzle.emitRequest(new JSONObject().put("requestId", "foo"), listener);
   }
 
   @Test

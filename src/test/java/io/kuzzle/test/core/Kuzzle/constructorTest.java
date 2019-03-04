@@ -17,7 +17,7 @@ import io.kuzzle.sdk.util.QueryObject;
 import io.kuzzle.sdk.util.QueueFilter;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.QueryArgsHelper;
-import io.socket.client.Socket;
+import tech.gusavila92.websocketclient.WebSocketClient;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
@@ -30,7 +30,7 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
 public class constructorTest {
   private KuzzleExtend kuzzle;
-  private Socket s;
+  private WebSocketClient s;
   private ResponseListener listener;
 
   @Before
@@ -40,7 +40,7 @@ public class constructorTest {
     options.setPort(12345);
     options.setDefaultIndex("testIndex");
 
-    s = mock(Socket.class);
+    s = mock(WebSocketClient.class);
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
 
@@ -134,7 +134,7 @@ public class constructorTest {
     jsonObj.put("requestId", "42");
 
     extended.query(QueryArgsHelper.makeQueryArgs("controller", "action"), jsonObj, options, null);
-    verify(s).emit(eq("kuzzle"), eq(jsonObj));
+    verify(s).send(eq(jsonObj.toString()));
     assertEquals(jsonObj.getJSONObject("volatile").getString("foo"), "bar");
   }
 
@@ -152,7 +152,7 @@ public class constructorTest {
     extended.setSocket(s);
     extended.setState(States.CONNECTED);
     extended.query(QueryArgsHelper.makeQueryArgs("controller", "action"), jsonObj, options);
-    verify(s).emit(eq("kuzzle"), eq(jsonObj));
+    verify(s).send(eq(jsonObj.toString()));
     assertEquals(jsonObj.getJSONObject("volatile").getString("foo"), "bar");
   }
 

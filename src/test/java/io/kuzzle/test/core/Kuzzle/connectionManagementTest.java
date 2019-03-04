@@ -26,9 +26,7 @@ import io.kuzzle.sdk.responses.TokenValidity;
 import io.kuzzle.sdk.state.States;
 import io.kuzzle.sdk.util.QueryObject;
 import io.kuzzle.test.testUtils.KuzzleExtend;
-import io.socket.client.Socket;
-import io.socket.emitter.Emitter;
-import io.socket.engineio.client.EngineIOException;
+import tech.gusavila92.websocketclient.WebSocketClient;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -45,7 +43,7 @@ import static org.mockito.Mockito.verify;
 
 public class connectionManagementTest {
   private KuzzleExtend kuzzle;
-  private Socket s;
+  private WebSocketClient s;
   private ResponseListener listener;
 
   @Before
@@ -54,7 +52,7 @@ public class connectionManagementTest {
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
-    s = mock(Socket.class);
+    s = mock(WebSocketClient.class);
     listener = new ResponseListener<Object>() {
       @Override
       public void onSuccess(Object object) {
@@ -92,17 +90,10 @@ public class connectionManagementTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
+        ((EventListener) invocation.getArguments()[1]).trigger(null, null);
         return s;
       }
-    }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
-    doAnswer(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
-        return s;
-      }
-    }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
+    }).when(s).connect();
 
     kuzzle.connect();
     kuzzle.setOfflineQueue(o);
@@ -142,20 +133,10 @@ public class connectionManagementTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
+        ((EventListener) invocation.getArguments()[1]).trigger(null, null);
         return s;
       }
-    }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
-
-    doAnswer(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null, listener);
-
-        return s;
-      }
-    }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
-    kuzzleSpy.connect();
+    }).when(s).connect();
 
     Thread.sleep(2);
     ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
@@ -173,10 +154,10 @@ public class connectionManagementTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
+        ((EventListener) invocation.getArguments()[1]).trigger(null, null);
         return s;
       }
-    }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
+    }).when(s).connect();
 
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
@@ -207,12 +188,10 @@ public class connectionManagementTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        EngineIOException engineIOException = new EngineIOException("foo");
-        engineIOException.code = "42";
-        ((Emitter.Listener) invocation.getArguments()[1]).call(engineIOException);
+        s.onException(new Exception("error"));
         return s;
       }
-    }).when(s).once(eq(Socket.EVENT_CONNECT_ERROR), any(Emitter.Listener.class));
+    }).when(s).connect();
     kuzzle.connect();
     verify(listener, times(1)).onError(any(JSONObject.class));
   }
@@ -224,15 +203,14 @@ public class connectionManagementTest {
       public Object answer(InvocationOnMock invocation) throws Throwable {
         //Mock response
         //Call callback with response
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
+        s.onOpen();
         return s;
       }
-    }).when(s).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
+    }).when(s).connect();
     kuzzle = spy(kuzzle);
     ResponseListener<Void> fake = kuzzle.spyAndGetConnectionCallback();
     doReturn(true).when(kuzzle).isValidState();
     kuzzle.connect();
-    verify(s).once(eq(Socket.EVENT_CONNECT), any(Emitter.Listener.class));
     verify(fake).onSuccess(any(Void.class));
   }
 
@@ -252,15 +230,6 @@ public class connectionManagementTest {
 
   @Test
   public void testJWTTokenAfterReconnect() throws URISyntaxException {
-    doAnswer(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        //Mock response
-        //Call callback with response
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
-        return s;
-      }
-    }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
     kuzzle = spy(kuzzle);
     kuzzle.setJwtToken("foo");
     TokenValidity tokenValidity = spy(new TokenValidity());
@@ -287,10 +256,10 @@ public class connectionManagementTest {
       public Object answer(InvocationOnMock invocation) throws Throwable {
         //Mock response
         //Call callback with response
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
+        s.onException(new Exception("error"));
         return s;
       }
-    }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
+    }).when(s).connect();
     kuzzle = spy(kuzzle);
     kuzzle.setJwtToken("foo");
     doAnswer(new Answer() {

@@ -6,7 +6,8 @@ import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
-import io.socket.client.Socket;
+import tech.gusavila92.websocketclient.WebSocketClient;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -32,7 +33,7 @@ public class createIndexTest {
     options.setConnect(Mode.MANUAL);
 
     kuzzle = new KuzzleExtend("localhost", options, null);
-    kuzzle.setSocket(mock(Socket.class));
+    kuzzle.setSocket(mock(WebSocketClient.class));
 
     listener = new ResponseListener<Object>() {
       @Override

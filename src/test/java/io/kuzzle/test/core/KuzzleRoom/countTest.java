@@ -18,7 +18,7 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.RoomExtend;
-import io.socket.client.Socket;
+import tech.gusavila92.websocketclient.WebSocketClient;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -63,7 +63,7 @@ public class countTest {
         .put("requestId", "42");
     mockResponse.put("result", new JSONObject().put("channel", "channel").put("roomId", "42"));
     k = spy(new KuzzleExtend("localhost", null, null));
-    k.setSocket(mock(Socket.class));
+    k.setSocket(mock(WebSocketClient.class));
     k.setState(States.CONNECTED);
     when(k.getHeaders()).thenReturn(new JSONObject());
     room = new RoomExtend(new Collection(k, "test", "index"));
@@ -79,7 +79,7 @@ public class countTest {
     Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
-    extended.setSocket(mock(Socket.class));
+    extended.setSocket(mock(WebSocketClient.class));
     extended.setState(States.CONNECTED);
     extended = spy(extended);
     room = new RoomExtend(new Collection(extended, "test", "index"));
@@ -142,7 +142,7 @@ public class countTest {
     when(o.put(any(String.class), any(Object.class))).thenReturn(new JSONObject());
 
     KuzzleExtend extended = new KuzzleExtend("localhost", null, null);
-    extended.setSocket(mock(Socket.class));
+    extended.setSocket(mock(WebSocketClient.class));
     extended.setState(States.CONNECTED);
     extended = spy(extended);
     room = new RoomExtend(new Collection(extended, "test", "index"));

@@ -22,8 +22,7 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.RoomExtend;
-import io.socket.client.Socket;
-import io.socket.emitter.Emitter;
+import tech.gusavila92.websocketclient.WebSocketClient;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.atLeastOnce;
@@ -84,7 +83,7 @@ public class notificationHandlerTest {
     Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
-    Socket s = mock(Socket.class);
+    WebSocketClient s = mock(WebSocketClient.class);
     extended.setSocket(s);
     extended.setState(States.CONNECTED);
     extended = spy(extended);
@@ -100,7 +99,7 @@ public class notificationHandlerTest {
     Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
-    Socket s = mock(Socket.class);
+    WebSocketClient s = mock(WebSocketClient.class);
     extended.setSocket(s);
     extended.setState(States.CONNECTED);
     extended = spy(extended);
@@ -119,16 +118,6 @@ public class notificationHandlerTest {
         return null;
       }
     }).when(extended).query(any(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    doAnswer(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        //Call callback with response
-        ((Emitter.Listener) invocation.getArguments()[1]).call(mockNotif);
-        verify(room).callAfterRenew(any(Object.class));
-
-        return null;
-      }
-    }).when(s).on(any(String.class), any(Emitter.Listener.class));
     room.renew(listener);
   }
 
@@ -157,7 +146,7 @@ public class notificationHandlerTest {
     Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
-    Socket s = mock(Socket.class);
+    WebSocketClient s = mock(WebSocketClient.class);
     extended.setSocket(s);
     extended.setState(States.CONNECTED);
     extended = spy(extended);

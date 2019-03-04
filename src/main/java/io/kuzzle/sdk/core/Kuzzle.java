@@ -1395,7 +1395,12 @@ public class Kuzzle {
       public void onTextReceived(String message) {
         try {
           JSONObject json = new JSONObject(message);
-          OnQueryDoneListener listener = currentQueries.get(json.getString("requestId"));
+          OnQueryDoneListener listener = null;
+          if (json.has("requestId")) {
+            listener = currentQueries.get(json.getString("requestId"));
+          } else {
+            listener = currentQueries.get(json.getString("room"));
+          }
 
           if (listener != null) {
             // checking token expiration
