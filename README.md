@@ -30,7 +30,7 @@ You can configure your Android project to get Kuzzle's Android SDK from jcenter 
     }
 
     dependencies {
-        compile 'io.kuzzle:sdk-android:3.0.7'
+        compile 'io.kuzzle:sdk-android:3.0.8'
     }
 
 ## Basic usage
