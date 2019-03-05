@@ -21,7 +21,7 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.RoomExtend;
-import io.socket.client.Socket;
+import tech.gusavila92.websocketclient.WebSocketClient;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -64,7 +64,7 @@ public class unsubscribeTest {
   public void testUnsubscribe() throws JSONException, URISyntaxException {
     Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
-    Socket s = mock(Socket.class);
+    WebSocketClient s = mock(WebSocketClient.class);
 
     KuzzleExtend kuzzle = new KuzzleExtend("localhost", opts, null);
     kuzzle.setState(States.CONNECTED);
@@ -86,7 +86,7 @@ public class unsubscribeTest {
     Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
-    extended.setSocket(mock(Socket.class));
+    extended.setSocket(mock(WebSocketClient.class));
     extended.setState(States.CONNECTED);
     extended = spy(extended);
     room = new RoomExtend(new Collection(extended, "test", "index"));
@@ -119,7 +119,7 @@ public class unsubscribeTest {
   public void testUnsubscribeWithPendingSubscriptions() throws URISyntaxException, JSONException {
     Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
-    Socket s = mock(Socket.class);
+    WebSocketClient s = mock(WebSocketClient.class);
 
     KuzzleExtend kuzzle = new KuzzleExtend("localhost", opts, null);
     kuzzle.setState(States.CONNECTED);
@@ -141,10 +141,10 @@ public class unsubscribeTest {
     Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
-    extended.setSocket(mock(Socket.class));
+    extended.setSocket(mock(WebSocketClient.class));
     extended.setState(States.CONNECTED);
     extended = spy(extended);
-    doThrow(JSONException.class).when(extended).getSocket();
+    doThrow(JSONException.class).when(extended).removeRoom(any(String.class));
     room = new RoomExtend(new Collection(extended, "test", "index"));
     room.setRoomId("foobar");
     room.superUnsubscribe();
@@ -155,7 +155,7 @@ public class unsubscribeTest {
     Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
-    extended.setSocket(mock(Socket.class));
+    extended.setSocket(mock(WebSocketClient.class));
     extended.setState(States.CONNECTED);
     extended = spy(extended);
 
@@ -170,7 +170,7 @@ public class unsubscribeTest {
     Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
-    extended.setSocket(mock(Socket.class));
+    extended.setSocket(mock(WebSocketClient.class));
     extended.setState(States.CONNECTED);
     extended = spy(extended);
     doThrow(JSONException.class).when(extended).getPendingSubscriptions();

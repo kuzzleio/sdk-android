@@ -15,7 +15,7 @@ import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
-import io.socket.client.Socket;
+import tech.gusavila92.websocketclient.WebSocketClient;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -37,7 +37,7 @@ public class getLastStatisticsTest {
     options.setDefaultIndex("testIndex");
 
     kuzzle = new KuzzleExtend("localhost", options, null);
-    kuzzle.setSocket(mock(Socket.class));
+    kuzzle.setSocket(mock(WebSocketClient.class));
 
     listener = new ResponseListener<Object>() {
       @Override

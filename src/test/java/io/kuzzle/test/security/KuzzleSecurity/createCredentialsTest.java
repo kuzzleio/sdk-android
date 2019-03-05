@@ -2,12 +2,9 @@ package io.kuzzle.test.security.KuzzleSecurity;
 
 import io.kuzzle.sdk.core.Kuzzle;
 import io.kuzzle.sdk.core.Options;
-import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.security.Security;
-import io.kuzzle.test.testUtils.KuzzleExtend;
-import io.socket.client.Socket;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -15,8 +12,6 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import java.net.URISyntaxException;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;

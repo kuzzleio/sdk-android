@@ -10,14 +10,14 @@ import io.kuzzle.sdk.core.Options;
 import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
-import io.socket.client.Socket;
+import tech.gusavila92.websocketclient.WebSocketClient;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
 public class factoriesTest {
   private KuzzleExtend kuzzle;
-  private Socket s;
+  private WebSocketClient s;
   private ResponseListener listener;
 
   @Before
@@ -26,7 +26,7 @@ public class factoriesTest {
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
-    s = mock(Socket.class);
+    s = mock(WebSocketClient.class);
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
 

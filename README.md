@@ -30,13 +30,33 @@ You can configure your Android project to get Kuzzle's Android SDK from jcenter 
     }
 
     dependencies {
-        compile 'io.kuzzle:sdk-android:3.0.8'
+        compile 'io.kuzzle:sdk-android:3.0.9'
     }
 
 ## Basic usage
 
 ```java
 Kuzzle kuzzle = new Kuzzle("host", new ResponseListener<Void>() {
+@Override
+public void onSuccess(Void object) {
+    // Handle success
+    KuzzleDocument doc = new KuzzleDocument(dataCollection);
+    doc.setContent("foo", "bar").save();
+}
+
+@Override
+public void onError(JSONObject error) {
+    // Handle error
+}
+});
+```
+
+## SSL Connection
+
+```java
+Options options = new Options();
+options.setSsl(true);
+Kuzzle kuzzle = new Kuzzle("host", options, new ResponseListener<Void>() {
 @Override
 public void onSuccess(Void object) {
     // Handle success

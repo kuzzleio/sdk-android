@@ -23,8 +23,7 @@ import io.kuzzle.sdk.responses.NotificationResponse;
 import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.RoomExtend;
-import io.socket.client.Socket;
-import io.socket.emitter.Emitter;
+import tech.gusavila92.websocketclient.WebSocketClient;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -74,7 +73,7 @@ public class renewTest {
   public void testRenew() throws JSONException, URISyntaxException {
     Options options = new Options();
     options.setConnect(Mode.MANUAL);
-    Socket s = mock(Socket.class);
+    WebSocketClient s = mock(WebSocketClient.class);
     KuzzleExtend kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setState(States.CONNECTED);
     kuzzle.setSocket(s);
@@ -82,14 +81,6 @@ public class renewTest {
     final Kuzzle kuzzleSpy = spy(kuzzle);
     Room testRoom = new Room(new Collection(kuzzleSpy, "collection", "index"));
 
-    doAnswer(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        //Call callback with response
-        ((Emitter.Listener) invocation.getArguments()[1]).call(mockNotif);
-        return null;
-      }
-    }).when(s).on(any(String.class), any(Emitter.Listener.class));
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -117,7 +108,7 @@ public class renewTest {
     options.setConnect(Mode.MANUAL);
     KuzzleExtend kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setState(States.CONNECTED);
-    kuzzle.setSocket(mock(Socket.class));
+    kuzzle.setSocket(mock(WebSocketClient.class));
 
     final Kuzzle kuzzleSpy = spy(kuzzle);
     RoomExtend testRoom = new RoomExtend(new Collection(kuzzleSpy, "collection", "index"));
@@ -145,7 +136,7 @@ public class renewTest {
     Options opts = new Options();
     opts.setConnect(Mode.MANUAL);
     KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
-    extended.setSocket(mock(Socket.class));
+    extended.setSocket(mock(WebSocketClient.class));
     extended.setState(States.CONNECTED);
     extended = spy(extended);
     room = new RoomExtend(new Collection(extended, "test", "index"));

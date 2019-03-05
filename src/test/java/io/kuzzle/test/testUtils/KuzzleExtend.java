@@ -19,12 +19,12 @@ import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.States;
 import io.kuzzle.sdk.util.EventList;
-import io.socket.client.Socket;
+import tech.gusavila92.websocketclient.WebSocketClient;
 
 import static org.mockito.Mockito.spy;
 
 public class KuzzleExtend extends Kuzzle {
-  protected Socket savedSocket = null;
+  protected WebSocketClient savedSocket = null;
 
   public ResponseListener loginCallback;
 
@@ -46,7 +46,7 @@ public class KuzzleExtend extends Kuzzle {
     this.state = newState;
   }
 
-  public void setSocket(Socket s) {
+  public void setSocket(WebSocketClient s) {
     this.socket = this.savedSocket = s;
   }
 
@@ -60,7 +60,7 @@ public class KuzzleExtend extends Kuzzle {
   }
 
 
-  protected Socket createSocket() throws URISyntaxException {
+  protected WebSocketClient createSocket() throws URISyntaxException {
     return this.savedSocket != null ? this.savedSocket : super.createSocket();
   }
 
@@ -86,7 +86,7 @@ public class KuzzleExtend extends Kuzzle {
    * Gets the internal socket instance from the kuzzle object
    * @return
    */
-  public Socket getSocket() {
+  public WebSocketClient getSocket() {
     return this.socket;
   }
 
@@ -133,6 +133,12 @@ public class KuzzleExtend extends Kuzzle {
 
   public void setJwtTokenWithoutSubscribe(final String token) {
     super.jwtToken = token;
+  }
+
+  public Kuzzle removeRoom(String channel) {
+    super.removeRoom(channel);
+
+    return this;
   }
 
 }

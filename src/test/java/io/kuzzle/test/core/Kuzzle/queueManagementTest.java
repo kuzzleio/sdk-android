@@ -18,8 +18,7 @@ import io.kuzzle.sdk.state.States;
 import io.kuzzle.sdk.util.QueryObject;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.QueryArgsHelper;
-import io.socket.client.Socket;
-import io.socket.emitter.Emitter;
+import tech.gusavila92.websocketclient.WebSocketClient;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -32,7 +31,7 @@ import static org.mockito.Mockito.verify;
 
 public class queueManagementTest {
   private KuzzleExtend kuzzle;
-  private Socket s;
+  private WebSocketClient s;
   private ResponseListener listener;
 
   @Before
@@ -41,7 +40,7 @@ public class queueManagementTest {
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
-    s = mock(Socket.class);
+    s = mock(WebSocketClient.class);
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
 
@@ -89,6 +88,7 @@ public class queueManagementTest {
     options.setQueueTTL(10000);
     options.setReplayInterval(1);
     options.setConnect(Mode.MANUAL);
+    options.setQueuable(false);
     KuzzleExtend extended = new KuzzleExtend("localhost", options, null);
     extended.setSocket(s);
     extended.setState(States.CONNECTED);
@@ -96,10 +96,10 @@ public class queueManagementTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
+        s.onCloseReceived();
         return s;
       }
-    }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
+    }).when(s).close();
     extended.connect();
     extended.startQueuing();
     JSONObject query = new JSONObject();
@@ -109,7 +109,7 @@ public class queueManagementTest {
     extended.flushQueue();
     extended.stopQueuing();
     assertEquals(extended.getOfflineQueue().size(), 0);
-    extended.query(QueryArgsHelper.makeQueryArgs("test", "test"), query, null, null);
+    extended.query(QueryArgsHelper.makeQueryArgs("test", "test"), query, options, null);
     assertEquals(extended.getOfflineQueue().size(), 0);
   }
 
@@ -118,10 +118,10 @@ public class queueManagementTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
+        s.onCloseReceived();
         return s;
       }
-    }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
+    }).when(s).close();
     Options options = new Options();
     options.setAutoReconnect(false);
     options.setDefaultIndex("testIndex");
@@ -151,17 +151,17 @@ public class queueManagementTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
+        s.onCloseReceived();
         return s;
       }
-    }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
+    }).when(s).close();
     kuzzle.connect();
     kuzzle.query(QueryArgsHelper.makeQueryArgs("test", "test"), new JSONObject(), mock(OnQueryDoneListener.class));
     kuzzle.query(QueryArgsHelper.makeQueryArgs("test2", "test2"), new JSONObject());
     kuzzle.query(QueryArgsHelper.makeQueryArgs("test3", "test3"), new JSONObject());
     assertEquals(kuzzle.getOfflineQueue().size(), 1);
     assertEquals(kuzzle.getOfflineQueue().peek().getQuery().getString("controller"), "test3");
-    verify(s, never()).emit(any(String.class), any(Emitter.Listener.class));
+    verify(s, never()).send(any(String.class));
   }
 
 
@@ -180,10 +180,10 @@ public class queueManagementTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
+        s.onCloseReceived();
         return s;
       }
-    }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
+    }).when(s).close();
     kuzzle.connect();
 
     QueryObject o = new QueryObject();
@@ -197,19 +197,13 @@ public class queueManagementTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
+        s.onOpen();
         return s;
       }
-    }).when(s).once(eq(Socket.EVENT_DISCONNECT), any(Emitter.Listener.class));
-    doAnswer(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((Emitter.Listener) invocation.getArguments()[1]).call(null, null);
-        return s;
-      }
-    }).when(s).once(eq(Socket.EVENT_RECONNECT), any(Emitter.Listener.class));
+    }).when(s).connect();
     kuzzle.connect();
     kuzzle.setAutoReplay(false);
     kuzzle.replayQueue();
-    verify(s, atLeastOnce()).emit(eq("kuzzle"), eq(query));
+    verify(s, atLeastOnce()).send(eq(query.toString()));
   }
 }

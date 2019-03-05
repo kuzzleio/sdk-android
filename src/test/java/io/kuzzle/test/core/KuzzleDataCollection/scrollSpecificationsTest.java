@@ -18,7 +18,7 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
-import io.socket.client.Socket;
+import tech.gusavila92.websocketclient.WebSocketClient;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -44,7 +44,7 @@ public class scrollSpecificationsTest {
         opts.setConnect(Mode.MANUAL);
         opts.setScroll("30s");
         KuzzleExtend extended = new KuzzleExtend("localhost", opts, null);
-        extended.setSocket(mock(Socket.class));
+        extended.setSocket(mock(WebSocketClient.class));
         extended.setState(States.CONNECTED);
         kuzzle = spy(extended);
         when(kuzzle.getHeaders()).thenReturn(new JSONObject());

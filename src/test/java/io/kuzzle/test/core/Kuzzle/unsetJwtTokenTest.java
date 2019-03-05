@@ -15,7 +15,7 @@ import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.test.testUtils.KuzzleDataCollectionExtend;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.RoomExtend;
-import io.socket.client.Socket;
+import tech.gusavila92.websocketclient.WebSocketClient;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.verify;
 
 public class unsetJwtTokenTest {
   private KuzzleExtend kuzzle;
-  private Socket s;
+  private WebSocketClient s;
   private ConcurrentHashMap<String, Room> chp = new ConcurrentHashMap<>();
   private Room room;
 
@@ -37,7 +37,7 @@ public class unsetJwtTokenTest {
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
-    s = mock(Socket.class);
+    s = mock(WebSocketClient.class);
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.getSubscriptions().put("1", chp);
     kuzzle.setSocket(s);

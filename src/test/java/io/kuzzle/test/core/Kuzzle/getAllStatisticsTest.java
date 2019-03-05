@@ -18,7 +18,7 @@ import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.sdk.state.States;
 import io.kuzzle.test.testUtils.KuzzleExtend;
 import io.kuzzle.test.testUtils.QueryArgsHelper;
-import io.socket.client.Socket;
+import tech.gusavila92.websocketclient.WebSocketClient;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -41,7 +41,7 @@ public class getAllStatisticsTest {
     options.setDefaultIndex("testIndex");
 
     kuzzle = new KuzzleExtend("localhost", options, null);
-    kuzzle.setSocket(mock(Socket.class));
+    kuzzle.setSocket(mock(WebSocketClient.class));
     kuzzle.setState(States.CONNECTED);
 
     listener = new ResponseListener<Object>() {

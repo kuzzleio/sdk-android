@@ -15,7 +15,7 @@ import io.kuzzle.sdk.enums.Mode;
 import io.kuzzle.sdk.listeners.ResponseListener;
 import io.kuzzle.sdk.listeners.OnQueryDoneListener;
 import io.kuzzle.test.testUtils.KuzzleExtend;
-import io.socket.client.Socket;
+import tech.gusavila92.websocketclient.WebSocketClient;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.verify;
 
 public class nowTest {
   private KuzzleExtend kuzzle;
-  private Socket s;
+  private WebSocketClient s;
   private ResponseListener listener;
 
   @Before
@@ -37,7 +37,7 @@ public class nowTest {
     options.setConnect(Mode.MANUAL);
     options.setDefaultIndex("testIndex");
 
-    s = mock(Socket.class);
+    s = mock(WebSocketClient.class);
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
 
