@@ -45,24 +45,11 @@ public class offlineQueueLoaderTest {
     kuzzleExtend = extended;
   }
 
-  private void mockAnswer() {
-    doAnswer(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        //Mock response
-        //Call callback with response
-        s.onOpen();
-        return s;
-      }
-    }).when(s).connect();
-  }
-
 
   @Test
   public void testOfflineQueueLoader() throws JSONException, URISyntaxException, InterruptedException {
     kuzzleExtend = spy(kuzzleExtend);
     kuzzleExtend.setAutoReplay(true);
-    mockAnswer();
 
     Options opts = new Options().setQueuable(true);
     kuzzleExtend.setState(States.OFFLINE);
@@ -72,6 +59,8 @@ public class offlineQueueLoaderTest {
     args.action = "bar";
     kuzzleExtend.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
 
+    kuzzleExtend.setState(States.READY);
+    kuzzleExtend.setAutoReplay(false);
     OfflineQueueLoader offlineQueueLoader = new OfflineQueueLoader() {
       @Override
       public KuzzleQueue<QueryObject> load() {
@@ -88,8 +77,7 @@ public class offlineQueueLoaderTest {
     };
     kuzzleExtend.setOfflineQueueLoader(offlineQueueLoader);
 
-    mockAnswer();
-    kuzzleExtend.connect();
+    kuzzleExtend.replayQueue();
     ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
     Thread.sleep(1000);
     verify(kuzzleExtend, times(2)).emitRequest((JSONObject) argument.capture(), any(OnQueryDoneListener.class));
@@ -99,9 +87,9 @@ public class offlineQueueLoaderTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testOfflineQueueLoaderIllegalRequestId() throws JSONException, URISyntaxException {
+
     kuzzleExtend = spy(kuzzleExtend);
     kuzzleExtend.setAutoReplay(true);
-    mockAnswer();
 
     Options opts = new Options().setQueuable(true);
     kuzzleExtend.setState(States.OFFLINE);
@@ -111,6 +99,8 @@ public class offlineQueueLoaderTest {
     args.action = "bar";
     kuzzleExtend.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
 
+    kuzzleExtend.setState(States.READY);
+    kuzzleExtend.setAutoReplay(false);
     OfflineQueueLoader offlineQueueLoader = new OfflineQueueLoader() {
       @Override
       public KuzzleQueue<QueryObject> load() {
@@ -127,15 +117,13 @@ public class offlineQueueLoaderTest {
     };
     kuzzleExtend.setOfflineQueueLoader(offlineQueueLoader);
 
-    mockAnswer();
-    kuzzleExtend.connect();
+    kuzzleExtend.replayQueue();
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testOfflineQueueLoaderIllegalController() throws JSONException, URISyntaxException {
     kuzzleExtend = spy(kuzzleExtend);
     kuzzleExtend.setAutoReplay(true);
-    mockAnswer();
 
     Options opts = new Options().setQueuable(true);
     kuzzleExtend.setState(States.OFFLINE);
@@ -145,6 +133,8 @@ public class offlineQueueLoaderTest {
     args.action = "bar";
     kuzzleExtend.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
 
+    kuzzleExtend.setState(States.READY);
+    kuzzleExtend.setAutoReplay(false);
     OfflineQueueLoader offlineQueueLoader = new OfflineQueueLoader() {
       @Override
       public KuzzleQueue<QueryObject> load() {
@@ -161,15 +151,14 @@ public class offlineQueueLoaderTest {
     };
     kuzzleExtend.setOfflineQueueLoader(offlineQueueLoader);
 
-    mockAnswer();
-    kuzzleExtend.connect();
+
+    kuzzleExtend.replayQueue();
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testOfflineQueueLoaderIllegalAction() throws JSONException, URISyntaxException {
     kuzzleExtend = spy(kuzzleExtend);
     kuzzleExtend.setAutoReplay(true);
-    mockAnswer();
 
     Options opts = new Options().setQueuable(true);
     kuzzleExtend.setState(States.OFFLINE);
@@ -179,6 +168,8 @@ public class offlineQueueLoaderTest {
     args.action = "bar";
     kuzzleExtend.query(args, new JSONObject(), opts, mock(OnQueryDoneListener.class));
 
+    kuzzleExtend.setState(States.READY);
+    kuzzleExtend.setAutoReplay(false);
     OfflineQueueLoader offlineQueueLoader = new OfflineQueueLoader() {
       @Override
       public KuzzleQueue<QueryObject> load() {
@@ -195,15 +186,13 @@ public class offlineQueueLoaderTest {
     };
     kuzzleExtend.setOfflineQueueLoader(offlineQueueLoader);
 
-    mockAnswer();
-    kuzzleExtend.connect();
+    kuzzleExtend.replayQueue();
   }
 
   @Test
   public void testOfflineQueueDuplicateRequestId() throws JSONException, URISyntaxException, InterruptedException {
     kuzzleExtend = spy(kuzzleExtend);
     kuzzleExtend.setAutoReplay(true);
-    mockAnswer();
 
     Options opts = new Options().setQueuable(true);
     kuzzleExtend.setState(States.OFFLINE);
@@ -213,6 +202,8 @@ public class offlineQueueLoaderTest {
     args.action = "bar";
     kuzzleExtend.query(args, new JSONObject().put("requestId", "42"), opts, mock(OnQueryDoneListener.class));
 
+    kuzzleExtend.setState(States.READY);
+    kuzzleExtend.setAutoReplay(false);
     OfflineQueueLoader offlineQueueLoader = new OfflineQueueLoader() {
       @Override
       public KuzzleQueue<QueryObject> load() {
@@ -229,8 +220,7 @@ public class offlineQueueLoaderTest {
     };
     kuzzleExtend.setOfflineQueueLoader(offlineQueueLoader);
 
-    mockAnswer();
-    kuzzleExtend.connect();
+    kuzzleExtend.replayQueue();
     ArgumentCaptor argument = ArgumentCaptor.forClass(JSONObject.class);
     Thread.sleep(1000);
     verify(kuzzleExtend, times(1)).emitRequest((JSONObject) argument.capture(), any(OnQueryDoneListener.class));

@@ -87,18 +87,18 @@ public class connectionManagementTest {
     kuzzle = new KuzzleExtend("localhost", options, null);
     kuzzle.setSocket(s);
 
+    final EventListener listener = mock(EventListener.class);
+
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((EventListener) invocation.getArguments()[1]).trigger(null, null);
+        listener.trigger();
         return s;
       }
     }).when(s).connect();
 
-    kuzzle.connect();
     kuzzle.setOfflineQueue(o);
 
-    EventListener listener = mock(EventListener.class);
     kuzzle.addListener(Event.reconnected, listener);
     kuzzle.connect();
     verify(listener, times(1)).trigger();
@@ -122,6 +122,9 @@ public class connectionManagementTest {
       room1 = new Room(new Collection(kuzzleSpy, "test", "index")),
       room2 = new Room(new Collection(kuzzleSpy, "test2", "index"));
 
+    room1 = spy(room1);
+    room2 = spy(room2);
+
     room1.renew(listener);
     room2.renew(listener);
 
@@ -130,19 +133,10 @@ public class connectionManagementTest {
     subscriptions.get("room").put("42", room1);
     subscriptions.get("room").put("43", room2);
 
-    doAnswer(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((EventListener) invocation.getArguments()[1]).trigger(null, null);
-        return s;
-      }
-    }).when(s).connect();
-
     Thread.sleep(2);
-    ArgumentCaptor argument = ArgumentCaptor.forClass(io.kuzzle.sdk.core.Kuzzle.QueryArgs.class);
-    verify(kuzzleSpy, atLeastOnce()).query((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.capture(), any(JSONObject.class), any(Options.class), any(OnQueryDoneListener.class));
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).controller, "realtime");
-    assertEquals(((io.kuzzle.sdk.core.Kuzzle.QueryArgs) argument.getValue()).action, "subscribe");
+    kuzzle.renewSubscriptions();
+    verify(room1, atLeastOnce()).renew(any(ResponseListener.class));
+    verify(room2, atLeastOnce()).renew(any(ResponseListener.class));
   }
 
   @Test
@@ -154,7 +148,7 @@ public class connectionManagementTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        ((EventListener) invocation.getArguments()[1]).trigger(null, null);
+        kuzzle.disconnect();
         return s;
       }
     }).when(s).connect();
@@ -188,8 +182,8 @@ public class connectionManagementTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        s.onException(new Exception("error"));
-        return s;
+        listener.onError(new JSONObject());
+        return null;
       }
     }).when(s).connect();
     kuzzle.connect();
@@ -198,20 +192,16 @@ public class connectionManagementTest {
 
   @Test
   public void testConnectEventConnect() throws URISyntaxException {
+    listener = spy(listener);
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        //Mock response
-        //Call callback with response
-        s.onOpen();
-        return s;
+        listener.onSuccess(new JSONObject());
+        return null;
       }
     }).when(s).connect();
-    kuzzle = spy(kuzzle);
-    ResponseListener<Void> fake = kuzzle.spyAndGetConnectionCallback();
-    doReturn(true).when(kuzzle).isValidState();
     kuzzle.connect();
-    verify(fake).onSuccess(any(Void.class));
+    verify(listener).onSuccess(any(Void.class));
   }
 
   @Test
@@ -237,11 +227,12 @@ public class connectionManagementTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
+        kuzzle.setJwtToken((String)null);
         ((ResponseListener) invocation.getArguments()[1]).onSuccess(mock(TokenValidity.class));
         return null;
       }
     }).when(kuzzle).checkToken(eq("foo"), any(ResponseListener.class));
-    kuzzle.connect();
+    kuzzle.checkToken("foo", mock(ResponseListener.class));
     assertNull(kuzzle.getJwtToken());
     doReturn(true).when(tokenValidity).isValid();
     kuzzle.setJwtToken("foo");
@@ -254,9 +245,7 @@ public class connectionManagementTest {
     doAnswer(new Answer() {
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {
-        //Mock response
-        //Call callback with response
-        s.onException(new Exception("error"));
+        kuzzle.setJwtToken((String)null);
         return s;
       }
     }).when(s).connect();

@@ -88,6 +88,7 @@ public class queueManagementTest {
     options.setQueueTTL(10000);
     options.setReplayInterval(1);
     options.setConnect(Mode.MANUAL);
+    options.setQueuable(false);
     KuzzleExtend extended = new KuzzleExtend("localhost", options, null);
     extended.setSocket(s);
     extended.setState(States.CONNECTED);
@@ -108,7 +109,7 @@ public class queueManagementTest {
     extended.flushQueue();
     extended.stopQueuing();
     assertEquals(extended.getOfflineQueue().size(), 0);
-    extended.query(QueryArgsHelper.makeQueryArgs("test", "test"), query, null, null);
+    extended.query(QueryArgsHelper.makeQueryArgs("test", "test"), query, options, null);
     assertEquals(extended.getOfflineQueue().size(), 0);
   }
 

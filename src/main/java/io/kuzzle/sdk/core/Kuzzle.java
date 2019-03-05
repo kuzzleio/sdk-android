@@ -1491,7 +1491,7 @@ public class Kuzzle {
     c.setTime(now);
     c.add(Calendar.SECOND, -MAX_EMIT_TIMEOUT);
 
-    if (this.jwtToken != null || listener != null) {
+    if (listener != null) {
       currentQueries.put(request.get("requestId").toString(), listener);
     }
 
@@ -1635,13 +1635,17 @@ public class Kuzzle {
   }
 
   protected Kuzzle addRoom(final String channel, EventListener listener) {
-    roomList.put(channel, listener);
+    if (channel != null) {
+      roomList.put(channel, listener);
+    }
 
     return this;
   }
 
   protected Kuzzle removeRoom(final String channel) {
-    roomList.remove(channel);
+    if (channel != null) {
+      roomList.remove(channel);
+    }
 
     return this;
   }

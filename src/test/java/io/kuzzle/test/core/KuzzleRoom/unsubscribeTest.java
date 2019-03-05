@@ -144,7 +144,7 @@ public class unsubscribeTest {
     extended.setSocket(mock(WebSocketClient.class));
     extended.setState(States.CONNECTED);
     extended = spy(extended);
-    doThrow(JSONException.class).when(extended).getSocket();
+    doThrow(JSONException.class).when(extended).removeRoom(any(String.class));
     room = new RoomExtend(new Collection(extended, "test", "index"));
     room.setRoomId("foobar");
     room.superUnsubscribe();

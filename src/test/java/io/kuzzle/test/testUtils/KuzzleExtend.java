@@ -135,4 +135,10 @@ public class KuzzleExtend extends Kuzzle {
     super.jwtToken = token;
   }
 
+  public Kuzzle removeRoom(String channel) {
+    super.removeRoom(channel);
+
+    return this;
+  }
+
 }
