@@ -1345,7 +1345,7 @@ public class Kuzzle {
   protected WebSocketClient createSocket() throws URISyntaxException {
     URI uri = null;
     try {
-      uri = new URI("ws"+(this.isSsl ? "s" : "")+"://"+this.host+":"+this.port+"/");
+      uri = new URI((this.isSsl ? "wss" : "ws")+"://"+this.host+":"+this.port+"/");
     }
     catch (URISyntaxException e) {
       e.printStackTrace();
