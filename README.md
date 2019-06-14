@@ -13,7 +13,13 @@ You can access the Kuzzle repository on [Github](https://github.com/kuzzleio/kuz
 
 ## SDK Documentation
 
-The complete SDK documentation is available [here](http://docs.kuzzle.io/sdk-reference)
+The complete SDK documentation is available [here](http://docs.kuzzle.io/sdk)
+
+## Get trained by the creators of Kuzzle :zap:
+
+Train yourself and your teams to use Kuzzle to maximize its potential and accelerate the development of your projects.  
+Our teams will be able to meet your needs in terms of expertise and multi-technology support for IoT, mobile/web, backend/frontend, devops.  
+:point_right: [Get a quote](https://hubs.ly/H0jkfJ_0)
 
 ## Installation
 
@@ -106,7 +112,7 @@ myCollection.subscribe(options);
 To login using kuzzle you need at least one authentication plugin. You can refer [here](https://github.com/kuzzleio/kuzzle-plugin-auth-passport-local) for a local authentication plugin
 or [here](https://github.com/kuzzleio/kuzzle-plugin-auth-passport-oauth) to refer to our OAuth2 plugin.
 
-To know more about how to log in with a Kuzzle SDK, please refer to our [documentation](http://docs.kuzzle.io/sdk-reference/kuzzle/login/)
+To know more about how to log in with a Kuzzle SDK, please refer to our [documentation](http://docs.kuzzle.io/sdk/android/3/core-classes/kuzzle/login/)
 
 If you have the kuzzle-plugin-auth-passport-local installed you can login using either the Kuzzle's constructor or the login method.
 
