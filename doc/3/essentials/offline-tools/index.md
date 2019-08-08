@@ -36,7 +36,7 @@ While in offline mode, API requests can be queued, and then executed once the ne
 By default, there is no request queuing.
 
 - Queue all requests automatically when going offline by setting the `autoQueue` option to `true` (see [Kuzzle SDK constructor](/sdk/android/3/core-classes/kuzzle/))
-- Start and stop queuing manually, by using the [startQueuing](/sdk/android/3/core-classes/kuzzle/start-queuing/) and [stopQueuing](/sdk/android/3/core-classes/kuzzle/stop-queuing/) methods
+- Start and stop queuing manually, by using the [startQueuing](/sdk/android/3/core-classes/kuzzle/start-queuing/) and [stopQueuing](/sdk/android/3/core-classes/kuzzle/stop-queuing) methods
 
 The queue itself can be configured using the `queueTTL` and `queueMaxSize` options.
 
@@ -70,7 +70,7 @@ Any request made while the client is processing the queue will be delayed until 
 
 ## Taking Control of the Offline Queue
 
-You can be notified about what's going on in the offline queue, by using the [`offlineQueuePush`](/sdk/android/3/essentials/events/) and the [`offlineQueuePop`](/sdk/android/3/essentials/events/) events.
+You can be notified about what's going on in the offline queue, by using the [`offlineQueuePush`](/sdk/android/3/essentials/events/) and the [`offlineQueuePop`](/sdk/android/3/essentials/events) events.
 
 The `offlineQueuePush` event is fired whenever a request is queued. It will emit an object containing a `query` property, describing the queued request, and an optional `cb` property containing the corresponding callback, if any.
 
@@ -88,7 +88,7 @@ Finally, if the provided methods don't give you enough control over the offline 
 
 ## Automatic Offline-Mode
 
-You can set the `offlineMode` option to `auto` when instantiating the [Kuzzle SDK instance](/sdk/android/3/core-classes/kuzzle/). This sets the offline mode configuration to the following presets:
+You can set the `offlineMode` option to `auto` when instantiating the [Kuzzle SDK instance](/sdk/android/3/core-classes/kuzzle). This sets the offline mode configuration to the following presets:
 
 - `autoReconnect` = `true`
 - `autoQueue` = `true`
