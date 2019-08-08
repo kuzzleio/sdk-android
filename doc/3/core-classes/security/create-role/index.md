@@ -39,7 +39,7 @@ That means that a role that was just created may not be immediately returned by 
 
 ## Callback Response
 
-Returns a [Role](/sdk/android/3/core-classes/role/) object.
+Returns a [Role](/sdk/android/3/core-classes/role) object.
 
 ## Usage
 

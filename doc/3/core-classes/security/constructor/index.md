@@ -18,7 +18,7 @@ Please refer to our [permissions guide](/core/1/guides/essentials/security/#user
 
 | Arguments | Type   | Description                                                          |
 | --------- | ------ | -------------------------------------------------------------------- |
-| `Kuzzle`  | object | An instantiated [Kuzzle](/sdk/android/3/core-classes/kuzzle/) object |
+| `Kuzzle`  | object | An instantiated [Kuzzle](/sdk/android/3/core-classes/kuzzle) object |
 
 ## Usage
 

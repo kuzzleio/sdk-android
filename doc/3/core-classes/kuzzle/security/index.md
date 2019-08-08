@@ -7,4 +7,4 @@ description: Kuzzle:security
 
 # security
 
-A [Security](/sdk/android/3/core-classes/security/) singleton.
+A [Security](/sdk/android/3/core-classes/security) singleton.

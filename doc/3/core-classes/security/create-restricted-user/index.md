@@ -39,7 +39,7 @@ That means that a user that was just created may not be immediately returned by 
 
 ## Callback response
 
-Resolves to a [User](/sdk/android/3/core-classes/user/) object.
+Resolves to a [User](/sdk/android/3/core-classes/user) object.
 
 ## Usage
 

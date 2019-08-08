@@ -7,7 +7,7 @@ description: Security:user
 
 # user
 
-Instantiates a new [User](/sdk/android/3/core-classes/user/) object.
+Instantiates a new [User](/sdk/android/3/core-classes/user) object.
 
 ---
 
@@ -22,7 +22,7 @@ Instantiates a new [User](/sdk/android/3/core-classes/user/) object.
 
 ## Return value
 
-Returns the new [User](/sdk/android/3/core-classes/user/) object.
+Returns the new [User](/sdk/android/3/core-classes/user) object.
 
 ## Usage
 

@@ -10,7 +10,7 @@ description: User:setProfiles
 Replaces the security profiles linked to the user.
 
 :::info
-Updating a user will have no impact until the [create](/sdk/android/3/core-classes/user/create/) or [replace](/sdk/android/3/core-classes/user/replace/) method is called.
+Updating a user will have no impact until the [create](/sdk/android/3/core-classes/user/create/) or [replace](/sdk/android/3/core-classes/user/replace) method is called.
 :::
 
 ---
@@ -27,7 +27,7 @@ Updating a user will have no impact until the [create](/sdk/android/3/core-class
 
 | Arguments  | Type                     | Description                                                                     |
 | ---------- | ------------------------ | ------------------------------------------------------------------------------- |
-| `profiles` | array of Profile objects | An array of instantiated [Profile](/sdk/android/3/core-classes/profile/) objects |
+| `profiles` | array of Profile objects | An array of instantiated [Profile](/sdk/android/3/core-classes/profile) objects |
 
 ---
 

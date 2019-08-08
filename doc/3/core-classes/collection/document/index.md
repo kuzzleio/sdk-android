@@ -7,7 +7,7 @@ description: Collection:document
 
 # document
 
-Creates a new [Document](/sdk/android/3/core-classes/document/) object, using its constructor.
+Creates a new [Document](/sdk/android/3/core-classes/document) object, using its constructor.
 
 ---
 
@@ -22,7 +22,7 @@ Creates a new [Document](/sdk/android/3/core-classes/document/) object, using it
 
 ## Return Value
 
-Returns the newly created [Document](/sdk/android/3/core-classes/document/) object.
+Returns the newly created [Document](/sdk/android/3/core-classes/document) object.
 
 ## Usage
 

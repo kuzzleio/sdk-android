@@ -9,7 +9,7 @@ description: Collection:subscribe
 
 Subscribes to this collection with a set of filters.
 
-The provided callback will be called everytime a [notification](/sdk/android/3/essentials/realtime-notifications/) is received from Kuzzle.
+The provided callback will be called everytime a [notification](/sdk/android/3/essentials/realtime-notifications) is received from Kuzzle.
 
 ---
 
@@ -34,7 +34,7 @@ The provided callback will be called everytime a [notification](/sdk/android/3/e
 | `users`           | string      | Filter notifications fired upon a user entering the room (user: `in`), leaving the room (user: `out`), or both (user: `all`). Setting this variable to `none` prevents receiving these notifications                                                                                                                                                          | `none`  |
 
 The `options` object is directly passed to the Room constructor.
-See the [Room object](/sdk/android/3/core-classes/room/) documentation for more information about these options and notifications.
+See the [Room object](/sdk/android/3/core-classes/room) documentation for more information about these options and notifications.
 
 ---
 

@@ -10,7 +10,7 @@ description: User:addProfile
 Replaces the security profile associated with the user.
 
 :::info
-Updating a user will have no impact until the [create](/sdk/android/3/core-classes/user/create/) or [replace](/sdk/android/3/core-classes/user/replace/) method is called
+Updating a user will have no impact until the [create](/sdk/android/3/core-classes/user/create/) or [replace](/sdk/android/3/core-classes/user/replace) method is called
 :::
 
 ---
@@ -27,7 +27,7 @@ Updating a user will have no impact until the [create](/sdk/android/3/core-class
 
 | Arguments | Type    | Description                                                           |
 | --------- | ------- | --------------------------------------------------------------------- |
-| `profile` | Profile | An instantiated [Profile](/sdk/android/3/core-classes/profile/) object |
+| `profile` | Profile | An instantiated [Profile](/sdk/android/3/core-classes/profile) object |
 
 ---
 

@@ -39,7 +39,7 @@ That means that a profile that was just created might not be immediately returne
 
 ## Callback Response
 
-Returns a security [Profile](/sdk/android/3/core-classes/profile/) object.
+Returns a security [Profile](/sdk/android/3/core-classes/profile) object.
 
 ## Usage
 
