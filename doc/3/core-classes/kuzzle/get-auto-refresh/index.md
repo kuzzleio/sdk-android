@@ -26,7 +26,7 @@ using it in production or at least carefully monitor its implications before usi
 
 | Arguments  | Type        | Description                                                                                                           |
 | ---------- | ----------- | --------------------------------------------------------------------------------------------------------------------- |
-| `index`    | string      | Optional index to query. If no set, defaults to [Kuzzle.defaultIndex](/sdk/android/3/core-classes/kuzzle/#properties) |
+| `index`    | string      | Optional index to query. If no set, defaults to [Kuzzle.defaultIndex](/sdk/android/3/core-classes/kuzzle#properties) |
 | `options`  | JSON object | Optional parameters                                                                                                   |
 | `callback` | function    | Callback handling the response                                                                                        |
 

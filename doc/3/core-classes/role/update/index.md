@@ -13,10 +13,10 @@ Updates the role object in Kuzzle.
 Unlike a regular document update, this method will replace the whole role definition under the indexes node with the `updateContent` parameter.  
 In other words, you always need to provide the complete role definition in the `updateContent` object.
 
-This method has the same effect as calling [setContent](/sdk/android/3/core-classes/role/set-content/) followed by the [save](/sdk/android/3/core-classes/role/save) method.
+This method has the same effect as calling [setContent](/sdk/android/3/core-classes/role/set-content) followed by the [save](/sdk/android/3/core-classes/role/save) method.
 :::
 
-To get more information about Kuzzle permissions, please refer to our [permissions guide](/core/1/guides/essentials/security/#user-permissions).
+To get more information about Kuzzle permissions, please refer to our [permissions guide](/core/1/guides/essentials/security#user-permissions).
 
 ---
 
