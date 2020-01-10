@@ -34,3 +34,4 @@ proguard/
 captures/
 
 doc/framework
+node_modules
