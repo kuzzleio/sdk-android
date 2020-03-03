@@ -1848,7 +1848,7 @@ public class Collection {
           if (listener != null) {
             try {
               JSONObject result = response.getJSONObject("result");
-              Document document = new Document(Collection.this, result.getString("_id"), result.getJSONObject("_source"));
+              Document document = new Document(Collection.this, result.getString("_id"));
               document.setVersion(result.getLong("_version"));
               document.refresh(listener);
             } catch (JSONException e) {
